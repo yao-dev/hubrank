@@ -1,7 +1,6 @@
 import axios from "axios";
 import OpenAI from 'openai';
 import { shuffle } from 'lodash';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
 
 const openai = new OpenAI({
   baseURL: 'https://oai.hconeai.com/v1',
@@ -134,6 +133,5 @@ export async function POST(request: Request) {
     ],
   });
 
-  const stream = OpenAIStream(response);
-  return new StreamingTextResponse(stream);
+  return response
 }
