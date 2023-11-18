@@ -16,6 +16,7 @@ type Action = {
 
 const initialState = {
   session: null,
+  loading: false,
 };
 
 const setSession = (

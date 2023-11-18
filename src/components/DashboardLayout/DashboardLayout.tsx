@@ -1,28 +1,24 @@
-'use client'
-
+'use client';
 import styles from './style.module.css';
 import { MouseEvent, useEffect, useState } from 'react';
-import { AppShell, Divider, ScrollArea, Title, useMantineColorScheme } from '@mantine/core';
+import { AppShell, Divider, ScrollArea, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconSettings,
   IconLogout,
-  IconArticle,
   IconStack2,
   IconUsers,
   IconApps,
   IconPlug,
   IconCreditCard,
-  IconTournament,
   IconSitemap,
   IconVersions,
 } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { Notifications } from '@mantine/notifications';
-import useSession from '@/hooks/useSession';
 import Link from 'next/link';
 import cx from 'clsx';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 // const useStyles = createStyles((theme) => ({
 //   header: {
@@ -79,14 +75,14 @@ import { usePathname, useRouter } from 'next/navigation';
 // }));
 
 const data = [
-  { link: '/projects', label: 'Projects', icon: IconStack2 },
-  { link: '/topics', label: 'Topics', icon: IconSitemap },
-  { link: '/articles', label: 'Articles', icon: IconVersions },
-  { link: '/target-audiences', label: 'Target audiences', icon: IconUsers },
-  { link: '/competitors', label: 'Competitors', icon: IconApps },
-  { link: '/integrations', label: 'Integrations', icon: IconPlug },
-  { link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
-  { link: '/settings', label: 'Settings', icon: IconSettings },
+  { id: "project", link: '/', label: 'Projects', icon: IconStack2 },
+  { id: "topic", link: '/topics', label: 'Topics', icon: IconSitemap },
+  { id: "article", link: '/articles', label: 'Articles', icon: IconVersions },
+  { id: "target-audience", link: '/target-audiences', label: 'Target audiences', icon: IconUsers },
+  { id: "competitor", link: '/competitors', label: 'Competitors', icon: IconApps },
+  { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
+  { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
+  { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
 ];
 
 export default function DashboardLayout({
@@ -95,22 +91,19 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [active, setActive] = useState('Projects');
-  const [opened, { toggle }] = useDisclosure();
-  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
-  const session = useSession();
+  const [opened] = useDisclosure();
   const pathname = usePathname();
-  const router = useRouter()
 
   useEffect(() => {
-    const item = data.find(i => pathname.startsWith(i.link));
-    if (item) {
-      setActive(item.label);
+    if (pathname === '/') {
+      setActive('Projects');
+    } else {
+      const item = data.find(i => pathname === i.link);
+      if (item) {
+        setActive(item.label);
+      }
     }
   }, [pathname])
-
-  if (!session.session) {
-    return children
-  }
 
   const onLogout = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -121,13 +114,7 @@ export default function DashboardLayout({
     return (
       <Link
         prefetch={false}
-        // className={cx(styles.link, pathname.startsWith(item.link) && styles.linkActive)}
-        className={cx(styles.link, (active === item.label) && styles.linkActive)}
-        onClick={(event) => {
-          // event.preventDefault();
-          // setActive(item.label);
-          router.push(item.link)
-        }}
+        className={cx(styles.link, active === item.label && styles.linkActive)}
         href={item.link}
         key={item.label}
         style={{
@@ -200,10 +187,8 @@ export default function DashboardLayout({
       </AppShell.Navbar>
 
       <AppShell.Main>
-        {/* <Paper shadow="xs" p="xl" style={{ height: '100%' }}> */}
         <Notifications limit={5} position="top-center" />
         {children}
-        {/* </Paper> */}
       </AppShell.Main>
     </AppShell>
   )

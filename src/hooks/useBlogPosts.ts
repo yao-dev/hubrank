@@ -15,7 +15,6 @@ const useGetOne = (id: number) => {
     queryKey: queryKeys.blogPost(id),
     queryFn: () => getOne(id),
     select: ({ data }) => {
-      console.log(data)
       return data;
     },
     onError: (error) => {

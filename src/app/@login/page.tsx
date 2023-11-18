@@ -1,26 +1,14 @@
-import {
-  Paper,
-  Title,
-  Text,
-  TextInput,
-  Button,
-  Container,
-  Group,
-  Anchor,
-  Center,
-  Box,
-  rem,
-  Alert,
-} from '@mantine/core';
-import { IconAlertCircle, IconArrowLeft, IconLock, IconMail } from '@tabler/icons-react';
-import classes from './ForgotPassword.module.css';
+'use client'
+import { Paper, Title, Text, TextInput, Button, Container, Group, Alert, Flex } from '@mantine/core';
+import { IconAlertCircle, IconLock, IconMail } from '@tabler/icons-react';
+import classes from './styles.module.css';
 import supabase from '@/helpers/supabase';
 import { ResendParams, VerifyEmailOtpParams } from '@supabase/supabase-js';
 import { useForm } from '@mantine/form';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
 
-export function AuthPage() {
+export default function AuthPage() {
   const [type, toggleMode] = useToggle(['email', 'otp']);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [otpParams, setOtpParams] = useState<ResendParams | null>(null);
@@ -119,39 +107,41 @@ export function AuthPage() {
       </Text>
 
       <Paper withBorder shadow="md" p={30} radius="md" mt="xl">
-        {error && (
-          <Alert icon={<IconAlertCircle size="1rem" />} title="Bummer!" color="red" variant="filled">
-            Something went wrong! Try again please.
-          </Alert>
-        )}
-        <TextInput
-          withAsterisk
-          label="Email"
-          placeholder="me@gmail.com"
-          leftSection={<IconMail />}
-          size="md"
-          autoComplete="email"
-          required
-          {...form.getInputProps('email')}
-        />
-
-        {type === 'otp' && (
-          <>
+        <form onSubmit={onSubmit}>
+          <Flex direction="column" gap="md">
+            {error && (
+              <Alert icon={<IconAlertCircle size="1rem" />} title="Bummer!" color="red" variant="filled">
+                Something went wrong! Try again please.
+              </Alert>
+            )}
             <TextInput
               withAsterisk
-              label="One-time login code"
-              placeholder="Enter your login code"
-              leftSection={<IconLock />}
+              label="Email"
+              placeholder="me@gmail.com"
+              leftSection={<IconMail />}
               size="md"
-              {...form.getInputProps('otp')}
+              autoComplete="email"
+              required
+              {...form.getInputProps('email')}
             />
-            <Group justify="center">
-              <Text size="sm" onClick={resendOtp} style={{ cursor: 'pointer' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Text>
-            </Group>
-          </>
-        )}
 
-        {/* <Group justify="space-between" mt="lg" className={classes.controls}>
+            {type === 'otp' && (
+              <>
+                <TextInput
+                  withAsterisk
+                  label="One-time login code"
+                  placeholder="Enter your login code"
+                  leftSection={<IconLock />}
+                  size="md"
+                  {...form.getInputProps('otp')}
+                />
+                <Group justify="center">
+                  <Text size="sm" onClick={resendOtp} style={{ cursor: 'pointer' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Text>
+                </Group>
+              </>
+            )}
+
+            {/* <Group justify="space-between" mt="lg" className={classes.controls}>
           <Anchor c="dimmed" size="sm" className={classes.control}>
             <Center inline>
               <IconArrowLeft style={{ width: rem(12), height: rem(12) }} stroke={1.5} />
@@ -161,9 +151,11 @@ export function AuthPage() {
           <Button className={classes.control}>Reset password</Button>
         </Group> */}
 
-        <Group justify="center" mt="md">
-          <Button className={classes.control} size="md" loading={isAuthLoading} fullWidth type="submit">Continue</Button>
-        </Group>
+            <Group justify="center" mt="md">
+              <Button className={classes.control} size="md" loading={isAuthLoading} fullWidth type="submit">Continue</Button>
+            </Group>
+          </Flex>
+        </form>
       </Paper>
     </Container>
   );

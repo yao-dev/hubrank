@@ -3,7 +3,7 @@ import supabase from "@/helpers/supabase";
 import useSession from "@/hooks/useSession";
 import React, { ReactNode } from "react";
 
-const SessionProvider = ({ children }: { children: ReactNode }) => {
+const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) => {
   const sessionStore = useSession();
 
   React.useEffect(() => {
@@ -26,7 +26,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SessionContext.Provider value={{ session: sessionStore.session }}>
-      {children}
+      {children(sessionStore.session)}
     </SessionContext.Provider>
   );
 };

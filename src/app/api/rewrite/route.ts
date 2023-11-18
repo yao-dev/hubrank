@@ -4,10 +4,10 @@ import { shuffle } from 'lodash';
 
 const openai = new OpenAI({
   baseURL: 'https://oai.hconeai.com/v1',
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
   defaultHeaders: {
-    "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
   }
 });
 
@@ -15,8 +15,8 @@ const gpt = axios.create({
   baseURL: 'https://oai.hconeai.com/v1',
   headers: {
     "Content-Type": "application/json",
-    "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
   },
 });
 

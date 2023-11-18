@@ -1,11 +1,11 @@
 import axios from "axios";
 
 const gpt = axios.create({
-  baseURL: process.env.HELICONE_BASE_URL,
+  baseURL: process.env.NEXT_PUBLIC_HELICONE_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+    Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
   },
 });
 
