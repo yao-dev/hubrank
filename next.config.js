@@ -11,6 +11,14 @@ const nextConfig = {
       },
     ],
   },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    // Rome does the job locally
+    ignoreBuildErrors: true,
+  },
 }
 
 module.exports = nextConfig
