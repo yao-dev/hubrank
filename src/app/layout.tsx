@@ -51,11 +51,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
+        <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body className={inter.className}>
         <MantineProvider
-          defaultColorScheme="auto"
+          defaultColorScheme="light"
           theme={theme}
         >
           <QueryClientProvider client={queryClient}>

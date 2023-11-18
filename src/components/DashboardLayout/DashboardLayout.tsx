@@ -95,10 +95,10 @@ export default function DashboardLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname === '/') {
+    if (pathname === '/' || pathname === "") {
       setActive('Projects');
     } else {
-      const item = data.find(i => pathname === i.link);
+      const item = data.find(i => pathname.startsWith(i.link));
       if (item) {
         setActive(item.label);
       }
