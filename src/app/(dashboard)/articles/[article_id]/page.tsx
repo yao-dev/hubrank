@@ -37,7 +37,7 @@ const ArticleDetail = ({
   const onRetry = async () => {
     await supabase.from('blog_posts_headings').delete().eq("blog_post_id", article.id).throwOnError();
     await supabase.from('blog_posts').update({ status: "writing" }).eq("id", article.id);
-    await supabase.from('blog_posts_headings').insert(article.headings.map((h, hIdx) => {
+    await supabase.from('blog_posts_headings').insert(article.headings.map((h: any, hIdx: any) => {
       return {
         blog_post_id: article.id,
         heading: h.heading,
