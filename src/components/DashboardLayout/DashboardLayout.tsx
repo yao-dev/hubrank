@@ -141,7 +141,7 @@ export default function DashboardLayout({
           sm: 250
         },
         breakpoint: 'sm',
-        collapsed: { mobile: !opened }
+        // collapsed: { mobile: !opened }
       }}
       className={styles.appShell}
     >
