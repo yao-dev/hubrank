@@ -1,6 +1,6 @@
 'use client';
 import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
-import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
+import DashboardWrapper from '@/components/DashboardLayout/DashboardLayout';
 import { ModalsProvider } from '@mantine/modals';
 
 export default function DashboardLayout({
@@ -11,9 +11,9 @@ export default function DashboardLayout({
   return (
     <RealtimeWrapper>
       <ModalsProvider>
-        <DashboardLayout>
+        <DashboardWrapper>
           {children}
-        </DashboardLayout>
+        </DashboardWrapper>
       </ModalsProvider>
     </RealtimeWrapper>
   )
