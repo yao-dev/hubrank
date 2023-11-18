@@ -1,0 +1,5 @@
+.modal {
+  & .mantine-q2m2r0 {
+    overflow-y: visible;
+  }
+}
