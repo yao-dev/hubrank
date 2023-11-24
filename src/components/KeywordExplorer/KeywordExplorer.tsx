@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { useMemo, useState } from "react";
 import { chunk } from "lodash";
 import { Group, Button, Flex, Text, Table, Pagination, Checkbox, Skeleton } from '@mantine/core';

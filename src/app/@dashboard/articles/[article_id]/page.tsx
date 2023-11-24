@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { Button, Drawer, Flex, Grid, SimpleGrid, Skeleton, Tabs, Title } from '@mantine/core';
 import HtmlHeadTagsForm from '@/components/HtmlHeadTagsForm/HtmlHeadTagsForm';
 import useHtmlTagsForm from '@/hooks/useHtmlTagsForm';
@@ -15,6 +15,7 @@ const ArticleDetail = ({
   params: { article_id: number }
 }) => {
   const articleId = +params.article_id;
+  console.log('articleId', articleId)
   const {
     data: article,
     isLoading,

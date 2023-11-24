@@ -23,6 +23,10 @@ const statuses = [
     value: 'waiting_to_be_written'
   },
   {
+    label: 'Saved for later',
+    value: 'saved_for_later'
+  },
+  {
     label: 'Queue',
     value: 'queue'
   },
@@ -30,22 +34,26 @@ const statuses = [
     label: 'Writing',
     value: 'writing'
   },
+  // {
+  //   label: 'Writing sections',
+  //   value: 'writing_sections'
+  // },
   {
-    label: 'Writing sections',
-    value: 'writing_sections'
-  },
-  {
-    label: 'Completed',
-    value: 'completed'
+    label: 'Ready to view',
+    value: 'ready_to_view'
   },
   {
     label: 'Draft',
     value: 'draft'
   },
   {
-    label: 'Published',
-    value: 'published'
+    label: 'Completed',
+    value: 'completed'
   },
+  // {
+  //   label: 'Published',
+  //   value: 'published'
+  // },
   {
     label: 'Error',
     value: 'error'

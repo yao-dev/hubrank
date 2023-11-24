@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { useCallback, useState } from "react";
 import { Button, Flex, Skeleton, Pagination } from '@mantine/core';
 import ArticleRow from "../ArticleRow/ArticleRow";

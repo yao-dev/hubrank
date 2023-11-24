@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 // import "@blocknote/core/style.css";
 // import "./styles.css";
 import { ActionIcon, Drawer, Flex } from '@mantine/core';

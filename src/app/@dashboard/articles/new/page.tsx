@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import {
   ActionIcon,
   Affix,
@@ -35,18 +35,26 @@ import {
   IconCheck,
 } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
-import { callToActions, wordsCounts, contentTypes, languages, medias, purposes, tones, headingsCount } from "../../../../options";
+import {
+  callToActions,
+  wordsCounts,
+  contentTypes,
+  languages,
+  purposes,
+  tones,
+  headingsCount,
+} from "../../../../options";
 import { randomId } from "@mantine/hooks";
 import { useForm } from "@mantine/form";
 import axios from "axios";
 import { notifications } from "@mantine/notifications";
 import { urlRegex } from "@/constants";
 import supabase from "@/helpers/supabase";
-import { getUserId } from "@/helpers/user";
 import KeywordExplorer from "@/components/KeywordExplorer/KeywordExplorer";
 import { useRouter } from "next/navigation";
 import useTargetAudiences from "@/hooks/useTargetAudiences";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getUserId } from "@/helpers/user";
 
 const notifyError = (e?: any) => {
   if (e) {
@@ -61,7 +69,13 @@ const notifyError = (e?: any) => {
   })
 }
 
-export default function NewArticle() {
+const getKeywordResearch = ({ keyword, countryCode }: any) => {
+  return axios.post('/api/keywords-research', { keyword, countryCode })
+}
+
+const NewArticle = () => {
+  const router = useRouter()
+  const queryClient = useQueryClient();
   const [selectedHeadline, setSelectedHeadline] = useState("");
   const [step, setStep] = useState(0);
   const [stepLoading, setStepLoading] = useState<number | null>(null);
@@ -71,8 +85,9 @@ export default function NewArticle() {
   const [outlines, setOutlines] = useState([])
   const [isKeywordExplorerOpen, setIsKeywordExplorerOpen] = useState<boolean | null>(false);
   const [createAnotherArticle, setCreateAnotherArticle] = useState(false);
+  const [blogPostId, setBlogPostId] = useState<number | null>(null);
   const [lockedStep, setLockedStep] = useState<{ articleSettings?: boolean; selectHeadline?: boolean }>({});
-  const router = useRouter()
+  const [savedHeadlines, setSavedHeadlines] = useState([]);
   const { data: targetAudiences } = useTargetAudiences().getAll();
 
   const form = useForm({
@@ -120,9 +135,13 @@ export default function NewArticle() {
   });
 
   const { data: keywordsData } = useQuery({
-    enabled: !!form.values?.topic?.length,
+    // enabled: stepLoading === 0,
+    enabled: false,
     queryKey: ["keywords", form.values.topic],
-    queryFn: () => axios.post('/api/keywords-research', { keyword: form.values.topic, countryCode: languages.find(i => i.value === form.values.language)?.language_code })
+    queryFn: () => getKeywordResearch({ keyword: form.values.topic, countryCode: languages.find(i => i.value === form.values.language)?.language_code }),
+    // onSuccess(data) {
+
+    // },
   });
 
   const foundKeywords = useMemo(() => {
@@ -143,8 +162,38 @@ export default function NewArticle() {
     } else {
       try {
         setStepLoading(0);
-        console.log(values)
-        supabase.from('target_audience').insert({ audience: values.target_audience[0] })
+        const result = await queryClient.fetchQuery(
+          ["keywords", values.topic],
+          () => getKeywordResearch({
+            keyword: values.topic,
+            countryCode: languages.find(i => i.value === values.language)?.language_code
+          }))
+        const topic_keywords = (result?.data?.result || []).map((i) => ({
+          keyword: i.keyword,
+          search_volume: i.search_volume,
+          competition: i.competition,
+          cpc: i.cpc,
+        }));
+        const { data: newBlogPost } = await supabase.from('blog_posts')
+          .insert({
+            user_id: await getUserId(),
+            topic: values.topic,
+            language: values.language,
+            content_type: values.content_type,
+            purpose: values.purpose,
+            tones: values.tones,
+            target_audience: values.target_audience[0],
+            clickbait: values.clickbait,
+            additional_information: values.additional_information,
+            topic_keywords,
+          })
+          .select()
+          .single();
+
+        setBlogPostId(newBlogPost.id)
+
+        // supabase.from('target_audience').insert({ audience: values.target_audience[0] });
+
         const headlinesResponse = await axios.post('/api/headline-ideas', {
           topic: values.topic,
           language: values.language,
@@ -165,6 +214,49 @@ export default function NewArticle() {
       }
     }
   })
+
+  const saveHeadlineForLater = async ({ headline, headlineIndex }) => {
+    const result = await queryClient.fetchQuery(
+      ["keywords", form.values.topic],
+      () => getKeywordResearch({
+        keyword: form.values.topic,
+        countryCode: languages.find(i => i.value === form.values.language)?.language_code
+      }));
+
+    const topic_keywords = (result?.data?.result || []).map((i) => ({
+      keyword: i.keyword,
+      search_volume: i.search_volume,
+      competition: i.competition,
+      cpc: i.cpc,
+    }));
+
+    const { data: newBlogPost } = await supabase.from('blog_posts')
+      .insert({
+        user_id: await getUserId(),
+        topic: form.values.topic,
+        language: form.values.language,
+        content_type: form.values.content_type,
+        purpose: form.values.purpose,
+        tones: form.values.tones,
+        target_audience: form.values.target_audience[0],
+        clickbait: form.values.clickbait,
+        additional_information: form.values.additional_information,
+        topic_keywords,
+        headline,
+        status: 'saved_for_later'
+      })
+      .select()
+      .single();
+
+    setSavedHeadlines(prev => [
+      ...prev, {
+        headline,
+        headlineIndex,
+        id: newBlogPost.id
+      }
+    ]);
+
+  }
 
   const onSubmitHeadline = async () => {
     setStep(2);
@@ -198,27 +290,17 @@ export default function NewArticle() {
     try {
       console.log(form.values);
       setStepLoading(3)
-      const { data: newBlogPost } = await supabase.from('blog_posts')
-        .insert({
-          user_id: await getUserId(),
+      await supabase.from('blog_posts')
+        .update({
           headline: selectedHeadline,
-          topic: form.values.topic,
-          language: form.values.language,
-          content_type: form.values.content_type,
-          purpose: form.values.purpose,
-          tones: form.values.tones,
-          target_audience: form.values.target_audience,
-          clickbait: form.values.clickbait,
-          additional_information: form.values.additional_information,
-          headings: form.values.headings
+          headings: form.values.headings,
         })
-        .select()
-        .single();
+        .eq('id', blogPostId)
 
       await supabase.from('blog_posts_headings').insert(
         form.values.headings.map((item, itemIndex) => {
           return {
-            blog_post_id: newBlogPost.id,
+            blog_post_id: blogPostId,
             order: itemIndex,
             heading: item.heading,
             words_count: item.words_count,
@@ -259,6 +341,8 @@ export default function NewArticle() {
     setSelectedHeadline("");
     setCreateAnotherArticle(false);
     setLockedStep({})
+    setBlogPostId(null);
+    setSavedHeadlines([]);
     form.reset()
   }
 
@@ -272,7 +356,7 @@ export default function NewArticle() {
       </Flex>
 
       <Grid gutter="xl">
-        <Grid.Col span={5}>
+        <Grid.Col span={6}>
           {step === 0 && (
             <form onSubmit={onSubmitArticleSettings}>
               <Flex direction="column" gap="sm" w="100%">
@@ -363,7 +447,7 @@ export default function NewArticle() {
                 />
 
                 <Affix position={{ bottom: 20, right: 20 }}>
-                  <Button onClick={() => onSubmitArticleSettings()}>
+                  <Button disabled={stepLoading !== null} onClick={() => onSubmitArticleSettings()}>
                     Next
                   </Button>
                 </Affix>
@@ -372,7 +456,7 @@ export default function NewArticle() {
           )}
           {step === 1 && (
             <Flex direction="column" gap="sm" w="100%">
-              <Text size="sm">Select one headline</Text>
+              <Text size="md" mb="md">Select one headline</Text>
               <Radio.Group
                 name="headline"
                 value={selectedHeadline}
@@ -383,15 +467,29 @@ export default function NewArticle() {
                 }}
               >
                 {headlines.map((headline, headlineIndex) => {
+                  const isSaved = savedHeadlines.find(i => i.headline === headline && i.headlineIndex === headlineIndex);
+                  const isSelected = selectedHeadline === headline
+                  const isSaveEnabled = !isSaved && !isSelected
                   return (
-                    <Radio
-                      key={headlineIndex}
-                      icon={CheckIcon}
-                      my="md"
-                      label={headline}
-                      value={headline}
-                      disabled={lockedStep.selectHeadline}
-                    />
+                    <Flex align="center" justify="space-between" mb="sm">
+                      <Radio
+                        key={headlineIndex}
+                        icon={CheckIcon}
+                        label={headline}
+                        value={headline}
+                        disabled={lockedStep.selectHeadline || isSaved}
+                        size="xs"
+                        mr="lg"
+                      />
+                      <Button
+                        size="compact-xs"
+                        variant="subtle"
+                        onClick={() => isSaveEnabled ? saveHeadlineForLater({ headline, headlineIndex }) : undefined}
+                        disabled={isSelected}
+                      >
+                        {isSaveEnabled || isSelected ? 'save for later' : <IconCheck color="green" size={14} />}
+                      </Button>
+                    </Flex>
                   )
                 })}
               </Radio.Group>
@@ -404,7 +502,7 @@ export default function NewArticle() {
                   >
                     Back
                   </Button>
-                  <Button onClick={onSubmitHeadline} disabled={!selectedHeadline}>
+                  <Button disabled={stepLoading !== null} onClick={onSubmitHeadline} disabled={!selectedHeadline}>
                     Next
                   </Button>
                 </Flex>
@@ -517,7 +615,7 @@ export default function NewArticle() {
                   <Button
                     // onClick={onSubmitHeadings}
                     onClick={onSubmitOutline}
-                    disabled={typeof selectedOutlineIndex !== "number"}
+                    disabled={typeof selectedOutlineIndex !== "number" || stepLoading !== null}
                   >
                     Next
                   </Button>
@@ -681,7 +779,7 @@ export default function NewArticle() {
                         <Flex direction="column" gap="sm">
                           <TagsInput
                             label="Keywords"
-                            description="Press Enter to add a keyword (up to 10)"
+                            description="Press Enter to add a keyword (up to 20)"
                             placeholder="Enter keyword"
                             data={foundKeywords}
                             limit={20}
@@ -694,9 +792,27 @@ export default function NewArticle() {
                               variant="outline"
                               rightSection={<IconExternalLink size={14} />}
                               size="compact-sm"
-                              onClick={() => setIsKeywordExplorerOpen(headingIndex)}
+                              // onClick={() => setIsKeywordExplorerOpen(headingIndex)}
+                              onClick={async () => {
+                                try {
+                                  setStepLoading(3)
+                                  const response = await axios.post('/api/keywords-suggestion', {
+                                    article_id: blogPostId,
+                                    user_id: await getUserId(),
+                                    heading: item.heading,
+                                    query: 'Select 20 of the most suitable keyword for this blog section'
+                                  })
+                                  console.log('foundKeywordsSuggestion', response.data.keywords)
+                                  form.setFieldValue(`headings.${headingIndex}.keywords`, response.data.keywords.map(i => i.keyword))
+                                } catch (e) {
+                                  console.error(e)
+                                } finally {
+                                  setStepLoading(null)
+                                }
+                              }}
                             >
-                              Keyword explorer
+                              {/* Keyword explorer */}
+                              Get suggestion
                             </Button>
                           </Group>
                         </Flex>
@@ -756,7 +872,7 @@ export default function NewArticle() {
                   </Button>
 
                   <Button
-                    disabled={form.values.headings.some(i => !i.heading)}
+                    disabled={stepLoading !== null || form.values.headings.some(i => !i.heading)}
                     onClick={onGenerateArticle}
                   >
                     Generate article
@@ -766,7 +882,7 @@ export default function NewArticle() {
             </>
           )}
         </Grid.Col>
-        <Grid.Col span={3} offset={4}>
+        <Grid.Col span={3} offset={3}>
           <Stepper size="sm" mt="lg" orientation="vertical" active={step}>
             <Stepper.Step label="Article settings" />
             <Stepper.Step label="Select headline" />
@@ -790,3 +906,5 @@ export default function NewArticle() {
     </div>
   )
 }
+
+export default NewArticle

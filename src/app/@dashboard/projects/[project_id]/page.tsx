@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { Badge, Flex, Text, Title, Image, Button } from '@mantine/core';
 import TopicClusterList from "../../../../components/TopicClusterList/TopicClusterList";
 import { IconCheck } from "@tabler/icons-react";

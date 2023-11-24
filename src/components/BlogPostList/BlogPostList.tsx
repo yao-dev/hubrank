@@ -1,9 +1,8 @@
-'use client';;
+'use client';
 import { useCallback, useState } from "react";
 import { Button, Flex, Skeleton, Pagination, Text } from '@mantine/core';
 import ArticleRow from "../ArticleRow/ArticleRow";
 import ArticleFilters from "../ArticleFilters/ArticleFilters";
-import useArticles from "@/hooks/useArticles";
 import { IconPlus } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import useBlogPosts from "@/hooks/useBlogPosts";

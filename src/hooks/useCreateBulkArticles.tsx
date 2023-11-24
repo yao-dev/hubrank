@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { useState } from "react";
 import { IconCheck, IconX } from '@tabler/icons-react';
 import { notifications } from "@mantine/notifications";

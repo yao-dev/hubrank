@@ -79,9 +79,9 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 								queryKey: queryKeys.blogPost(data.new.id),
 							});
 
-							if (data.new.status === "completed") {
+							if (["completed", "ready_to_view"].includes(data.new.status)) {
 								notifications.show({
-									message: <Text><b><Link href={`${data.new.id}`}>{data.new.headline}</Link></b> is ready to view</Text>,
+									message: <Text><b><Link href={`/articles/${data.new.id}`}>{data.new.headline}</Link></b> is ready to view</Text>,
 									autoClose: 5000,
 									withCloseButton: true,
 									color: "blue",

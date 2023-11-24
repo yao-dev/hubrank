@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import ArticleList from "@/components/ArticleList/ArticleList";
 import EditTopicModal from "@/components/EditTopicModal/EditTopicModal";
 import MyBreadcrumbs from "@/components/MyBreadcrumbs/MyBreadcrumbs";

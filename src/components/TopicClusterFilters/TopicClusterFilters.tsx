@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { useEffect, useMemo } from "react";
 import { TextInput, Flex } from '@mantine/core';
 import { useRouter } from "next/navigation";

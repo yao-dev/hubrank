@@ -1,7 +1,6 @@
 'use client';;
-import styles from './style.module.css';
-import { Button, Flex, Text, Badge, Skeleton } from '@mantine/core';
-import { IconCheck, IconEye, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
+import { Button, Flex, Text, Badge, Skeleton, Grid } from '@mantine/core';
+import { IconCheck, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
 import { notifications } from "@mantine/notifications";
 import Link from "next/link";
 import { modals } from '@mantine/modals';
@@ -118,15 +117,9 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
   const href = `${window.location.pathname}/${article.id}`
 
   return (
-    <>
+    <Grid dir="row" mb="xs">
       {/* {articleSettings.modal()} */}
-      <Flex
-        direction="row"
-        justify="space-between"
-        align="center"
-        // mb="xs"
-        className={styles.wrapper}
-      >
+      <Grid.Col span="auto">
         <Link
           prefetch={false}
           href={href}
@@ -136,25 +129,25 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
             cursor: 'pointer'
           }}
         >
-          <Flex direction="row" align="center" gap="sm" pl="md">
-            <Flex direction="column">
-              <Text size="sm">{article.headline}</Text>
-              <Flex direction="row" gap="xs" mt="xs">
-                {article.content_type && contentType && <Badge variant="light" size="xs" color="violet">{contentType}</Badge>}
-                {article.purpose && purpose && <Badge variant="light" size="xs" color="pink">{purpose}</Badge>}
-                {article.topic && <Badge variant="light" size="xs" color="teal">{article.topic}</Badge>}
-              </Flex>
-            </Flex>
-          </Flex>
+          <Text size="sm" fw="">{article.headline}</Text>
         </Link>
-        <Flex direction="row" align="center">
+      </Grid.Col>
+      <Grid.Col span={4}>
+        <Flex direction="row" gap="xs" mt="xs">
+          {article.content_type && contentType && <Badge variant="light" size="xs" color="violet">{contentType}</Badge>}
+          {article.purpose && purpose && <Badge variant="light" size="xs" color="pink">{purpose}</Badge>}
+          {article.topic && <Badge variant="light" size="xs" color="teal">{article.topic}</Badge>}
+        </Flex>
+      </Grid.Col>
+      <Grid.Col span={2}>
+        <Flex direction="row" align="center" justify="flex-end">
           <Flex align="center" gap="xs">
             {article.status && <Badge size="sm" variant="dot" color={getStatusColor(article.status)}>{formatStatus(article.status)}</Badge>}
             {article.status === "error" && <Button onClick={onRetry} variant="light">retry</Button>}
           </Flex>
           {article.status !== "error" && (
             <>
-              <Button
+              {/* <Button
                 component={Link}
                 prefetch={false}
                 href={href}
@@ -168,7 +161,22 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
                 }}
               >
                 <IconEye size={18} />
-              </Button>
+              </Button> */}
+              {/* <Button
+                component={Link}
+                prefetch={false}
+                href={href}
+                variant="outline"
+                // onClick={(e) => { e.stopPropagation() }}
+                size="compact-md"
+                style={{
+                  // padding: '0 2.5px',
+                  marginLeft: 5,
+                  marginRight: 5
+                }}
+              >
+                view
+              </Button> */}
               <Button
                 variant="transparent"
                 onClick={(e) => {
@@ -201,8 +209,8 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
             <IconTrash size={18} />
           </Button>
         </Flex>
-      </Flex>
-    </>
+      </Grid.Col>
+    </Grid>
   )
 }
 

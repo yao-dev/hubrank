@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import styles from './style.module.css';
 import { Button, Flex, Text, Badge, Skeleton } from '@mantine/core';
 import { IconCheck, IconEye, IconPencil, IconTrash, IconX } from '@tabler/icons-react';

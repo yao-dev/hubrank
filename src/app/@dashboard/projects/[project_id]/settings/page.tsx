@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import AddCompetitorsForm from "@/components/AddCompetitorsForm/AddCompetitorsForm";
 import HtmlHeadTagsForm from "@/components/HtmlHeadTagsForm/HtmlHeadTagsForm";
 import MetatagsPreview from "@/components/MetatagsPreview/MetatagsPreview";
