@@ -1,21 +1,25 @@
-'use client';;
-import { Button, Flex, Text, Badge, Skeleton, Grid } from '@mantine/core';
-import { IconCheck, IconPencil, IconTrash, IconX } from '@tabler/icons-react';
+'use client';
+import { Button, Flex, Text, Badge, Grid } from '@mantine/core';
+import { IconCheck, IconTrash, IconX } from '@tabler/icons-react';
 import { notifications } from "@mantine/notifications";
-import Link from "next/link";
 import { modals } from '@mantine/modals';
 import { contentTypes, purposes } from '../WriteArticleModal/options';
 import { useMemo } from 'react';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import supabase from '@/helpers/supabase';
+import { useRouter } from 'next/navigation';
+import { getUserId } from '@/helpers/user';
+import { useQueryClient } from "@tanstack/react-query";
 
 type ArticleRowProps = {
-  id: number;
+  data: any;
 }
 
-const ArticleRow = ({ id }: ArticleRowProps) => {
+const ArticleRow = ({ data }: ArticleRowProps) => {
   const articles = useBlogPosts();
-  const { data: article, isLoading } = articles.getOne(id);
+  // const { data: article } = articles.getOne(data.id);
+  const router = useRouter();
+  const queryClient = useQueryClient();
   // const articleSettings = useArticleSettings({ article })
 
   const onDeleteArticle = (articleId: number) => {
@@ -30,7 +34,7 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
         try {
           notifications.show({
             id: 'delete_article',
-            message: 'Deleting article.',
+            message: 'Deleting data.',
             loading: true,
             withCloseButton: false,
             autoClose: false,
@@ -58,17 +62,29 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
         color: 'red'
       },
       children: (
-        <Text size="sm">Are you sure you want to delete <b>{article.headline}</b>?</Text>
+        <Text size="sm">Are you sure you want to delete <b>{data?.headline || data.headline}</b>?</Text>
       )
     })
+  }
+
+  const onCreateEdit = (e: any) => {
+    e.stopPropagation();
+    // articleSettings.open();
+    router.push(`?tab=articles&mode=create&article=${data.id}`)
+  }
+
+  const onViewEdit = () => {
+    if (data?.markdown) {
+      router.push(`?tab=articles&mode=edit&article=${data.id}`)
+    }
   }
 
   const formatStatus = (status: string) => {
     return `${status[0].toUpperCase()}${status.replaceAll('_', ' ').slice(1).toLowerCase()}`
   }
 
-  const purpose = useMemo(() => purposes.find((i: any) => i.value === article?.purpose)?.label, [article])
-  const contentType = useMemo(() => contentTypes.find((i: any) => i.value === article?.content_type)?.label, [article])
+  const purpose = useMemo(() => purposes.find((i: any) => i.value === data?.purpose)?.label, [data])
+  const contentType = useMemo(() => contentTypes.find((i: any) => i.value === data?.content_type)?.label, [data])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,11 +94,15 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
         return 'orange';
       case 'writing':
         return 'blue';
+      case 'saved_for_later':
+        return 'orange';
       case 'draft':
         return 'dark';
       case 'error':
         return 'red';
+      case 'ready_to_view':
       case 'complete':
+      case 'completed':
       case 'published':
         return 'green';
       default:
@@ -91,11 +111,15 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
   }
 
   const onRetry = async () => {
-    await supabase.from('blog_posts_headings').delete().eq("blog_post_id", article.id).throwOnError();
-    await supabase.from('blog_posts').update({ status: "writing" }).eq("id", article.id);
-    await supabase.from('blog_posts_headings').insert(article.headings.map((h: any, hIdx: any) => {
+    const user_id = await getUserId();
+    await supabase.from('blog_posts_headings').delete().eq("blog_post_id", data.id).throwOnError();
+    await supabase.from('blog_posts').update({ status: "writing" }).eq("id", data.id).throwOnError();
+    queryClient.invalidateQueries({
+      queryKey: ["blog_posts"],
+    });
+    await supabase.from('blog_posts_headings').insert(data.headings.map((h: any, hIdx: any) => {
       return {
-        blog_post_id: article.id,
+        blog_post_id: data.id,
         heading: h.heading,
         words_count: h.words_count,
         media: h.media,
@@ -104,100 +128,45 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
         keywords: h.keywords,
         external_links: h.external_links,
         order: hIdx,
+        user_id
       }
     }))
+      .throwOnError()
   }
 
-  if (isLoading) {
-    return (
-      <Skeleton height={52} mb={12} radius="sm" />
-    )
-  }
+  // if (isLoading) {
+  //   return (
+  //     <Skeleton height={52} mb={12} radius="sm" />
+  //   )
+  // }
 
-  const href = `${window.location.pathname}/${article.id}`
+  // const status = data?.status || data.status;
+  const status = data?.status
 
   return (
-    <Grid dir="row" mb="xs">
+    <Grid dir="row" mb="xs" onClick={onViewEdit} style={{ cursor: data?.markdown ? "pointer" : "not-allowed" }}>
       {/* {articleSettings.modal()} */}
       <Grid.Col span="auto">
-        <Link
-          prefetch={false}
-          href={href}
-          style={{
-            textDecoration: 'none',
-            color: 'black',
-            cursor: 'pointer'
-          }}
-        >
-          <Text size="sm" fw="">{article.headline}</Text>
-        </Link>
+        <Text size="sm" fw="">{data?.headline || data.headline}</Text>
       </Grid.Col>
       <Grid.Col span={4}>
         <Flex direction="row" gap="xs" mt="xs">
-          {article.content_type && contentType && <Badge variant="light" size="xs" color="violet">{contentType}</Badge>}
-          {article.purpose && purpose && <Badge variant="light" size="xs" color="pink">{purpose}</Badge>}
-          {article.topic && <Badge variant="light" size="xs" color="teal">{article.topic}</Badge>}
+          {data.content_type && contentType && <Badge variant="light" size="xs" color="violet">{contentType}</Badge>}
+          {data.purpose && purpose && <Badge variant="light" size="xs" color="pink">{purpose}</Badge>}
+          {data.topic && <Badge variant="light" size="xs" color="teal">{data.topic}</Badge>}
         </Flex>
       </Grid.Col>
-      <Grid.Col span={2}>
+      <Grid.Col span={3}>
         <Flex direction="row" align="center" justify="flex-end">
-          <Flex align="center" gap="xs">
-            {article.status && <Badge size="sm" variant="dot" color={getStatusColor(article.status)}>{formatStatus(article.status)}</Badge>}
-            {article.status === "error" && <Button onClick={onRetry} variant="light">retry</Button>}
-          </Flex>
-          {article.status !== "error" && (
-            <>
-              {/* <Button
-                component={Link}
-                prefetch={false}
-                href={href}
-                variant="transparent"
-                // onClick={(e) => { e.stopPropagation() }}
-                size="xs"
-                style={{
-                  padding: '0 2.5px',
-                  marginLeft: 5,
-                  marginRight: 5
-                }}
-              >
-                <IconEye size={18} />
-              </Button> */}
-              {/* <Button
-                component={Link}
-                prefetch={false}
-                href={href}
-                variant="outline"
-                // onClick={(e) => { e.stopPropagation() }}
-                size="compact-md"
-                style={{
-                  // padding: '0 2.5px',
-                  marginLeft: 5,
-                  marginRight: 5
-                }}
-              >
-                view
-              </Button> */}
-              <Button
-                variant="transparent"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // articleSettings.open();
-                }}
-                size="xs"
-                style={{
-                  padding: '0 2.5px',
-                  marginRight: 5
-                }}
-              >
-                <IconPencil size={18} />
-              </Button>
-            </>
-          )}
+          {status && <Badge size="sm" mr="sm" variant="dot" color={getStatusColor(status)}>{formatStatus(status)}</Badge>}
+          {status === "error" && <Button onClick={onRetry} color="red" variant="outline" size="compact-xs" mr="sm">retry</Button>}
+          <Button size="compact-xs" mr="sm" disabled={["error", "writing"].includes(data?.status) || data?.markdown} onClick={onCreateEdit}>edit</Button>
+          <Button size="compact-xs" mr="sm" disabled={!data?.markdown} onClick={onViewEdit}>view</Button>
           <Button
             variant="transparent"
             onClick={(e) => {
               e.stopPropagation()
-              onDeleteArticle(article.id)
+              onDeleteArticle(data.id)
             }}
             color="red"
             size="xs"
@@ -206,7 +175,7 @@ const ArticleRow = ({ id }: ArticleRowProps) => {
               padding: '0 2.5px',
             }}
           >
-            <IconTrash size={18} />
+            <IconTrash size={20} />
           </Button>
         </Flex>
       </Grid.Col>

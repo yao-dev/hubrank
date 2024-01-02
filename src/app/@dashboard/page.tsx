@@ -1,174 +1,151 @@
-'use client'
-
-import { useState } from "react";
-import { useDisclosure } from '@mantine/hooks';
-import { Modal, Group, Button, TextInput, Flex, Card, Text, LoadingOverlay, Alert, ActionIcon, Title, Textarea, Image, Grid } from '@mantine/core';
-import { IconAlertCircle, IconPlus, IconSettings } from '@tabler/icons-react';
-import { useRouter } from "next/navigation";
+'use client';;
+import ArticleDetail from "@/components/ArticleDetail";
+import BlogPostList from "@/components/BlogPostList/BlogPostList";
+import CompetitorList from "@/components/CompetitorList/CompetitorList";
+import NewProjectModal from "@/components/NewProjectModal";
+import ProjectForm from "@/components/ProjectForm/ProjectForm";
+import ProjectSelect from "@/components/ProjectSelect";
+import TargetAudienceList from "@/components/TargetAudienceList/TargetAudienceList";
+import TopicClusterList from "@/components/TopicClusterList/TopicClusterList";
+import useActiveProject from "@/hooks/useActiveProject";
+import useModal from "@/hooks/useModal";
 import useProjects from "@/hooks/useProjects";
-import Link from "next/link";
-import useProjectForm from "@/hooks/useProjectForm";
 
+import { Button, Flex, Grid, Image, Tabs, Text, Title } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import { IconPlus } from "@tabler/icons-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
-export default function ProjectList() {
+const Dashboard = () => {
+  const router = useRouter();
+  const params = useSearchParams();
+  const activeProject = useActiveProject();
+  const { getOne, getAll } = useProjects();
+  const { data: project, isLoading: isProjectLoading } = getOne(activeProject.id);
+  const { data: projects, isLoading: isProjectsLoading } = getAll();
+  const activeTab = params.get('tab');
+  const mode = params.get('mode');
+  const articleId = params.get('article');
   const [opened, { open: openCreateProject, close: closeCreateProject }] = useDisclosure(false);
-  const [loadingModal, { open: showLoadingModal, close: hideLoadingModal }] = useDisclosure(false);
-  const [error, setError] = useState(false);
-  const router = useRouter()
-  const projects = useProjects();
-  const {
-    data: projectList,
-    isLoading,
-    isError
-  } = projects.getAll();
-  const form = useProjectForm();
+  const modal = useModal();
 
-  const onCreateProject = form.onSubmit(async (values) => {
-    setError(false)
-    showLoadingModal()
-    try {
-      const { data: project } = await projects.create.mutateAsync(values);
-      router.push(`/projects/${project.id}`)
-    } catch {
-      hideLoadingModal()
-      setError(true)
+  useEffect(() => {
+    if (activeTab === "topics" && mode === "create") {
+      modal.open("create_topic");
     }
-  });
+    if (activeTab === "audiences" && mode === "create") {
+      modal.open("create_audience");
+    }
+    if (activeTab === "competitors" && mode === "create") {
+      modal.open("create_competitor");
+    }
+  }, [activeTab, mode]);
 
-
-  const onCloseNewProject = () => {
-    closeCreateProject()
-    setError(false)
-    form.reset();
-    hideLoadingModal()
-  }
-
-  if (isError) {
+  if (isProjectsLoading || isProjectLoading) {
     return null;
   }
 
-  if (isLoading) {
-    // TODO: show skeleton
-    return null;
+
+  if (!projects?.length) {
+    // show empty state
+    return (
+      <div>
+        <NewProjectModal opened={opened} onClose={closeCreateProject} />
+
+        <Flex direction="column" justify="center" align="center" gap="sm">
+          <Flex h="50vh" justify="center" align="center">
+            <Image
+              w={500}
+              src="/image-5.png"
+            />
+          </Flex>
+          <Button onClick={openCreateProject} rightSection={<IconPlus />}>New project</Button>
+        </Flex>
+      </div>
+    )
+  }
+
+  if (!project) {
+    // show select project
+    return (
+      <div>
+        <NewProjectModal opened={opened} onClose={closeCreateProject} />
+
+        <Flex direction="column" justify="center" align="center" gap="md">
+          <Flex h="50vh" justify="center" align="center">
+            <Image
+              w={500}
+              src="/image-5.png"
+            />
+          </Flex>
+          <ProjectSelect />
+          <Text fw="bold">or</Text>
+          <Button onClick={openCreateProject} rightSection={<IconPlus />}>New project</Button>
+        </Flex>
+      </div>
+    )
+  }
+
+  if (activeTab === "articles" && mode === "edit" && articleId) {
+    return <ArticleDetail id={articleId} />
   }
 
   return (
     <div>
-      {/* NEW PROJECT MODAL */}
-      <Modal opened={opened} onClose={onCloseNewProject} withCloseButton={false} trapFocus={false}>
-        <LoadingOverlay visible={loadingModal} overlayProps={{ blur: 2 }} />
-        <form onSubmit={onCreateProject}>
-          <Flex direction="column" gap="md">
-            <Text size="xl" fw="bold">New project</Text>
-            {error && (
-              <Alert icon={<IconAlertCircle size="1rem" />} title="Bummer!" color="red" variant="filled">
-                Something went wrong! Try again please.
-              </Alert>
-            )}
-            <TextInput
-              withAsterisk
-              label="Name"
-              placeholder="Name"
-              maxLength={50}
-              {...form.getInputProps('name')}
-            />
-            <TextInput
-              withAsterisk
-              label="Website"
-              placeholder="https://google.com"
-              maxLength={50}
-              {...form.getInputProps('website')}
-            />
-            {/* <Textarea
-              withAsterisk
-              label="Description"
-              placeholder="Description"
-              maxLength={500}
-              minRows={3}
-              maxRows={6}
-              {...form.getInputProps('description')}
-            /> */}
-            <Textarea
-              withAsterisk
-              label="Target audience"
-              placeholder="Who is your ideal customer"
-              maxLength={150}
-              minRows={2}
-              maxRows={4}
-              {...form.getInputProps('target_audience')}
-            />
+      <NewProjectModal opened={opened} onClose={closeCreateProject} />
 
-            <Group justify="flex-end" mt="md">
-              <Button type="submit">Create</Button>
-            </Group>
-          </Flex>
-        </form>
-      </Modal>
+      <Flex direction="row" justify="space-between" align="center" mb="xl">
+        <Title order={2}>{project.name}</Title>
+        <Button onClick={openCreateProject} rightSection={<IconPlus />}>New project</Button>
+      </Flex>
+      <Tabs
+        defaultValue="articles"
+        keepMounted
+        variant="pills"
+        value={activeTab as string}
+        onChange={(value) => router.push(`?tab=${value}`)}
+      >
+        <Tabs.List>
+          <Tabs.Tab value="articles">
+            Articles
+          </Tabs.Tab>
+          <Tabs.Tab value="topics">
+            Topics
+          </Tabs.Tab>
+          <Tabs.Tab value="audiences">
+            Target audiences
+          </Tabs.Tab>
+          <Tabs.Tab value="competitors">
+            Competitors
+          </Tabs.Tab>
+          <Tabs.Tab value="settings">
+            Settings
+          </Tabs.Tab>
+        </Tabs.List>
 
-      <div>
-        <Flex
-          // mih={50}
-          gap="md"
-          justify="space-between"
-          align="center"
-          direction="row"
-          // wrap="wrap"
-          mb="lg"
-        >
-          <Title order={2}>Projects</Title>
-          <Button onClick={openCreateProject} rightSection={<IconPlus size="1rem" />}>New project</Button>
-        </Flex>
-
-        <Grid>
-          {projectList?.map((project) => {
-            let description = project?.metatags?.description || "No description.";
-            description = description.length > 125 ? `${description.slice(0, 125)}...` : description
-
-            return (
-              <Grid.Col key={project.id} span={4}>
-                <Card
-                  component={Link}
-                  prefetch={false}
-                  href={`/projects/${project.id}`}
-                  shadow="sm"
-                  padding="lg"
-                  radius="md"
-                  withBorder
-                  mih={180}
-                  mah={180}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <Flex direction="row" justify="space-between">
-                    <Flex direction="row" gap="md" align="center" mb="md">
-                      <Image
-                        src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${project.website}&size=128`}
-                        width={128 / 3}
-                        height={128 / 3}
-                        alt={project.name}
-                      />
-                      <Text size="xl" fw={700}>{project.name}</Text>
-                    </Flex>
-
-                    <ActionIcon
-                      component={Link}
-                      prefetch={false}
-                      href={`/projects/${project.id}/settings`}
-                      variant="transparent"
-                      color="dark"
-                    >
-                      <IconSettings size="1.5rem" />
-                    </ActionIcon>
-                  </Flex>
-
-                  <Text size="sm" color="dimmed">
-                    {description}
-                  </Text>
-                </Card>
-              </Grid.Col>
-            )
-          })}
-        </Grid>
-      </div>
+        <Tabs.Panel value="articles" pt="lg">
+          <BlogPostList />
+        </Tabs.Panel>
+        <Tabs.Panel value="topics" pt="lg">
+          <TopicClusterList />
+        </Tabs.Panel>
+        <Tabs.Panel value="audiences" pt="lg">
+          <TargetAudienceList />
+        </Tabs.Panel>
+        <Tabs.Panel value="competitors" pt="lg">
+          <CompetitorList />
+        </Tabs.Panel>
+        <Tabs.Panel value="settings" pt="lg">
+          <Grid>
+            <Grid.Col span={6}>
+              <ProjectForm />
+            </Grid.Col>
+          </Grid>
+        </Tabs.Panel>
+      </Tabs>
     </div>
-  );
+  )
 }
+
+export default Dashboard

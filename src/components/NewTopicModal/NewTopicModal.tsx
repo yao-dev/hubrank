@@ -1,53 +1,75 @@
-import { Modal, Group, Button, TextInput, LoadingOverlay, Select, Flex, Text } from '@mantine/core';
-import { UseFormReturnType } from '@mantine/form';
-import useProjects from "@/hooks/useProjects";
-import useProjectId from "@/hooks/useProjectId";
+import { Modal, Group, Button, TextInput, LoadingOverlay, Flex, Text } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import useTopicClusters from '@/hooks/useTopicClusters';
+import useModal from '@/hooks/useModal';
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-type NewTopicModalProps = {
-  opened: boolean;
-  isLoading: boolean;
-  error: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-  form: UseFormReturnType<{
-    project_id: number;
-    name: string;
-  }, (values: {
-    project_id: number;
-    name: string;
-  }) => {
-    project_id: number;
-    name: string;
-  }>
-}
+const NewTopicModal = () => {
+  const modal = useModal();
+  const topicClusters = useTopicClusters();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter()
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-const NewTopicModal = ({
-  opened,
-  onClose,
-  isLoading,
-  onSubmit,
-  form
-}: NewTopicModalProps) => {
-  const projectId = useProjectId()
-  const { data: projects } = useProjects().getAll({ enabled: opened });
+  const onClose = () => {
+    const params = new URLSearchParams(searchParams)
+    if (params.get("tab") === "topics") {
+      params.delete("mode");
+    }
+    router.push(`${pathname}?${params.toString()}`)
+    modal.close("create_topic");
+    setIsLoading(false);
+    form?.reset?.()
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams)
+    if (!params.has("mode")) {
+      onClose()
+    }
+  }, [searchParams])
+
+  const form = useForm({
+    initialValues: {
+      name: '',
+    },
+    validate: {
+      name: (value: string) => !value || value.trim().length > 50 ? 'Name must be 50 characters or less' : null,
+    }
+  });
+
+  const onCreateTopic = form.onSubmit(async (values: any) => {
+    setIsLoading(true)
+    try {
+      await topicClusters.create.mutateAsync(values.name);
+      onClose();
+    } catch {
+      setIsLoading(false)
+      return;
+    }
+  })
+
+
 
   return (
-    <Modal opened={opened} onClose={isLoading ? () => { } : onClose} withCloseButton={false} trapFocus={false}>
+    <Modal opened={modal.create_topic} onClose={isLoading ? () => { } : onClose} withCloseButton={false} trapFocus={false}>
       <LoadingOverlay visible={isLoading} overlayProps={{ blur: 2 }} />
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onCreateTopic}>
         <Flex direction="column" gap="md">
           <Text size="xl" fw="bold">New topic cluster</Text>
-          <Select
+          {/* <Select
             label="Project"
             placeholder="Select a project"
             withAsterisk
-            disabled={!!projectId}
+            disabled={!!activeProjectId}
             data={projects?.map((project) => ({
               label: project.name,
               value: project.id.toString()
             })) || []}
             {...form.getInputProps('project_id')}
-          />
+          /> */}
           <TextInput
             label="Name"
             placeholder="Name"
@@ -55,7 +77,7 @@ const NewTopicModal = ({
             {...form.getInputProps('name')}
           />
           <Group justify="flex-end" mt="md">
-            <Button type="submit">Save</Button>
+            <Button type="submit" loading={isLoading}>Save</Button>
           </Group>
         </Flex>
       </form>

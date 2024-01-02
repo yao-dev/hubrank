@@ -418,3 +418,9 @@ export const headingsCount = [
     "label": "10",
   },
 ]
+
+export const creativities = [
+  { value: 0, label: 'low' },
+  { value: 0.4, label: 'normal' },
+  { value: 0.5, label: 'high' },
+]

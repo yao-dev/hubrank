@@ -4,9 +4,10 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
 import { isNaN } from "lodash";
+import useActiveProject from "./useActiveProject";
 
 const getOne = async (id: number) => {
-  return supabase.from('blog_posts').select('*').eq('id', id).single().throwOnError();
+  return supabase.from('blog_posts').select('*').eq('id', id).single();
 }
 
 const useGetOne = (id: number) => {
@@ -27,13 +28,25 @@ type Filters = {
   query?: string;
   status?: string;
   page?: number
+  topic?: number
+  project_id: number;
 }
 
 const getAll = async (filters: Filters) => {
-  let query = supabase.from('blog_posts').select('id', { count: 'exact', head: false }).eq("user_id", await getUserId())
+  let query = supabase.from('blog_posts')
+    .select('*', { count: 'exact', head: false })
+    .match({
+      "user_id": await getUserId(),
+      "project_id": filters.project_id
+    });
 
   if (filters.status) {
     query = query.eq("status", filters.status)
+  }
+  if (filters.topic) {
+    const { data: selectedTopic } = await supabase.from('topic_clusters')
+      .select('name').eq("id", +filters.topic).limit(1).single();
+    query = query.eq("topic", selectedTopic?.name)
   }
   if (filters.query) {
     query = query.textSearch(
@@ -49,9 +62,12 @@ const getAll = async (filters: Filters) => {
   return query.order("created_at", { ascending: false }).range((filters.page - 1) * 25, (filters.page * 25) - 1).throwOnError();
 }
 
-const useGetAll = (filters: Filters) => {
-  const tmpFilters = { ...filters, page: filters?.page || 1 }
+const useGetAll = (filters: Omit<Filters, "project_id">) => {
+  const activeProjectId = useActiveProject().id;
+  const tmpFilters = { ...filters, page: filters?.page || 1, project_id: activeProjectId }
+
   return useQuery({
+    enabled: activeProjectId !== null,
     queryKey: queryKeys.blogPosts(tmpFilters),
     queryFn: () => getAll(tmpFilters),
     onError: (error) => {
@@ -116,13 +132,41 @@ const useDelete = () => {
   })
 }
 
+const update = async ({ id, ...data }: any) => {
+  return supabase
+    .from('blog_posts')
+    .update(data)
+    .eq('id', id)
+    .throwOnError()
+}
+
+const useUpdate = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: update,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.blogPost(variables.id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["blog_posts"],
+      });
+    },
+    onError: (error, variables) => {
+      console.log('blogPosts.useUpdate', { error, variables })
+    },
+  })
+}
+
+
 const useBlogPosts = () => {
   return {
     getOne: useGetOne,
     getAll: useGetAll,
     count: useCount,
     getAllSeedKeywords: useGetAllSeedKeywords,
-    delete: useDelete()
+    delete: useDelete(),
+    update: useUpdate()
   }
 }
 

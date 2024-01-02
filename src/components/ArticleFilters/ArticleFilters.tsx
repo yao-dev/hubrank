@@ -1,8 +1,10 @@
 'use client';
-import { useEffect, useMemo, useState } from "react";
 import { TextInput, Flex, Select } from '@mantine/core';
-import { useRouter } from "next/navigation";
-import { useDebouncedState } from "@mantine/hooks";
+import { useRouter, useSearchParams } from "next/navigation";
+import useTopicClusters from "@/hooks/useTopicClusters";
+import useActiveProject from "@/hooks/useActiveProject";
+import { useEffect } from 'react';
+import { debounce } from 'lodash';
 
 // case 'waiting_to_be_written':
 //   return 'dark';
@@ -63,6 +65,7 @@ const statuses = [
 type Filters = {
   query: string;
   status: string;
+  topic: string;
 }
 
 type Props = {
@@ -70,50 +73,65 @@ type Props = {
 }
 
 const ArticleFilters = ({ onChange }: Props) => {
-  const urlParams = useMemo(() => new URLSearchParams(window?.location?.search || ""), [window?.location])
-  const [query, setQuery] = useDebouncedState(urlParams.get('query') ?? '', 400);
-  const [status, setStatus] = useState(urlParams.get('status') ?? '');
+  const activeProjectId = useActiveProject().id
+  const { data } = useTopicClusters().getAll({ project_id: activeProjectId, page: 1 });
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const query = searchParams.get('query') ?? '';
+  const status = searchParams.get('status') ?? '';
+  const topic = searchParams.get('topic') ?? '';
 
   useEffect(() => {
-    const url = new URL(window.location.href);
-
-    if (!query) {
-      url.searchParams.delete('query')
-    } else {
-      url.searchParams.set("query", query);
-    }
-
-    if (!status) {
-      url.searchParams.delete("status");
-    } else {
-      url.searchParams.set("status", status);
-    }
-
-    router.replace(url.href, { scroll: false });
     onChange({
-      query: query || '',
-      status: status || '',
+      query,
+      status,
+      topic,
     })
-  }, [onChange, query, status]);
+  }, [onChange, query, status, topic]);
+
+  const onChangeFilter = (name: string, value: string | null) => {
+    const url = new URL(window.location.href);
+    if (!value) {
+      url.searchParams.delete(name)
+    } else {
+      url.searchParams.set(name, value);
+    }
+    router.replace(url.href, { scroll: false });
+  }
+
+  const debouncedOnChangeFilter = debounce(onChangeFilter, 400)
 
   return (
     <Flex direction="row" gap="sm">
       <TextInput
-        placeholder="Search article"
+        placeholder="Search articles"
         defaultValue={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => debouncedOnChangeFilter("query", e.target.value)}
         w={225}
       />
       <Select
         placeholder="Status"
         clearable
+        defaultValue={status}
+        value={status}
         data={statuses?.map(({ label, value }) => ({
           label,
           value
         })) || []}
-        onChange={(value) => setStatus(value || '')}
+        onChange={(value) => onChangeFilter("status", value)}
         searchable
+      />
+      <Select
+        placeholder="Topic"
+        clearable
+        defaultValue={topic}
+        value={topic}
+        data={data?.data?.map(({ name, id }) => ({
+          label: name,
+          value: id.toString()
+        })) || []}
+        onChange={(value) => onChangeFilter("topic", value)}
       />
     </Flex>
   )

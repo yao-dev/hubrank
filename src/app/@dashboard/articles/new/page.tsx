@@ -188,7 +188,8 @@ const NewArticle = () => {
             topic_keywords,
           })
           .select()
-          .single();
+          .single()
+          .throwOnError();
 
         setBlogPostId(newBlogPost.id)
 
@@ -246,7 +247,8 @@ const NewArticle = () => {
         status: 'saved_for_later'
       })
       .select()
-      .single();
+      .single()
+      .throwOnError();
 
     setSavedHeadlines(prev => [
       ...prev, {
@@ -310,7 +312,8 @@ const NewArticle = () => {
             external_links: item.external_links,
           }
         })
-      );
+      )
+        .throwOnError();
 
       notifications.show({
         message: "You'll receive a notification when the article is ready",
@@ -802,7 +805,7 @@ const NewArticle = () => {
                                     heading: item.heading,
                                     query: 'Select 20 of the most suitable keyword for this blog section'
                                   })
-                                  console.log('foundKeywordsSuggestion', response.data.keywords)
+
                                   form.setFieldValue(`headings.${headingIndex}.keywords`, response.data.keywords.map(i => i.keyword))
                                 } catch (e) {
                                   console.error(e)

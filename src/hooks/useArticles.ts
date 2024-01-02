@@ -92,7 +92,7 @@ const useCreate = () => {
     onSuccess: (_data, variables) => {
       setTimeout(() => {
         queryClient.invalidateQueries({
-          queryKey: queryKeys.articles(), // TODO: add project_id
+          queryKey: ["articles"], // TODO: add project_id
         });
       }, 2000)
     },

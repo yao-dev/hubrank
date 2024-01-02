@@ -4,7 +4,8 @@ const queryKeys = {
   topicCluster: (topic_cluster_id?: number) => ["topic_clusters", topic_cluster_id] as const,
   topicClusters: (filters: {
     project_id?: number;
-    page: number
+    page: number;
+    query?: string;
   }) => ["topic_clusters", filters] as const,
   topicClustersCount: (project_id: number) => ["topic_clusters", "topic_clusters_count", project_id] as const,
   article: (article_id: number) => ["articles", article_id] as const,
@@ -23,9 +24,15 @@ const queryKeys = {
   blogPosts: (filters: {
     query?: string;
     status?: string;
+    project_id: number
   }) => ["blog_posts", filters] as const,
   blogPostsCount: () => ["blog_posts", "blog_posts_count"] as const,
   getAllSeedKeywords: () => ["get_all_seed_keywords"] as const,
+  targetAudiences: (filters: {
+    query?: string;
+    page: number;
+    project_id: number
+  }) => ["target_audiences", filters] as const,
 };
 
 export default queryKeys;

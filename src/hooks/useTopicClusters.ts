@@ -4,6 +4,7 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
 import axios from "axios";
+import useActiveProject from "./useActiveProject";
 
 
 const getOne = async (topic_cluster_id?: number) => {
@@ -53,7 +54,8 @@ const getAll = async (filters: Filters) => {
 }
 
 const useGetAll = (filters: Filters) => {
-  const tmpFilters = { ...filters, page: filters?.page || 1 }
+  const activeProjectId = useActiveProject().id;
+  const tmpFilters = { ...filters, page: filters?.page || 1, project_id: activeProjectId }
   return useQuery({
     queryKey: queryKeys.topicClusters(tmpFilters),
     queryFn: () => getAll(tmpFilters),
@@ -84,9 +86,10 @@ const create = async (data: Create) => {
 }
 
 const useCreate = () => {
+  const project_id = useActiveProject().id;
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: create,
+    mutationFn: (name: string) => create({ name, project_id }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         // queryKey: queryKeys.topicClusters(variables.project_id),

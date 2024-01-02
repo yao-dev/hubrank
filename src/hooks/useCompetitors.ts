@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
+import useActiveProject from "./useActiveProject";
+import { getUserId } from "@/helpers/user";
 
 const getAll = async (project_id: number) => {
   return supabase.from('competitors').select('*').eq('project_id', project_id).order('created_at', { ascending: true }).throwOnError();
@@ -54,6 +56,7 @@ const addCompetitors = async ({ competitors, projectId }: { competitors: string[
     throw new Error('no project id')
   }
 
+  const user_id = await getUserId();
   const { data: competitorsFound } = await supabase.from('competitors').select().eq('project_id', projectId)
   const competitorsToDelete = competitorsFound?.filter((cf) => !competitors.find(url => cf.url === url));
   const competitorsToAdd = competitors?.filter((url) => !competitorsFound?.find(cf => url === cf.url));
@@ -76,7 +79,8 @@ const addCompetitors = async ({ competitors, projectId }: { competitors: string[
         .from('competitors')
         .insert(competitorsToAdd.map((url) => ({
           url,
-          project_id: +projectId
+          project_id: +projectId,
+          user_id
         })))
         .throwOnError()
     )
@@ -100,9 +104,10 @@ const useAddCompetitors = (projectId?: number) => {
   })
 }
 
-const useCompetitors = (projectId: number) => {
+const useCompetitors = () => {
+  const projectId = useActiveProject().id
   return {
-    getCompetitors: () => useGetAll(projectId),
+    getAll: () => useGetAll(projectId),
     updateCompetitors: useUpdate(projectId),
     addCompetitors: useAddCompetitors(projectId),
   }

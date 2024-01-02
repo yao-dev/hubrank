@@ -1,13 +1,11 @@
 'use client';
 import { useCallback, useState } from "react";
-import { Button, Flex, Skeleton, Pagination } from '@mantine/core';
+import { Flex, Skeleton, Pagination } from '@mantine/core';
 import ArticleRow from "../ArticleRow/ArticleRow";
 import ArticleFilters from "../ArticleFilters/ArticleFilters";
 import useArticles from "@/hooks/useArticles";
 import useProjectId from "@/hooks/useProjectId";
 import useActiveTopicId from "@/hooks/useActiveTopicId";
-import { IconPlus } from "@tabler/icons-react";
-import { useRouter } from "next/navigation";
 
 const defaultFilters = {
   query: '',
@@ -21,7 +19,6 @@ export default function ArticleList() {
   const { data, isLoading, isError } = useArticles().getAll({ ...filters, project_id: projectId, topic_cluster_id: topicId });
   // const articleSettings = useArticleSettings()
   // const createBulkArticles = useCreateBulkArticles()
-  const router = useRouter()
 
   const renderPagination = useCallback(() => {
     return (
@@ -45,10 +42,6 @@ export default function ArticleList() {
         mb="xl"
       >
         <ArticleFilters onChange={setFilters} onClear={() => setFilters(defaultFilters)} />
-        <Flex gap="md">
-          {/* <Button variant="default" onClick={createBulkArticles.open}>Bulk mode</Button> */}
-          <Button onClick={() => router.push(`${window.location.pathname}/new-articles`)} leftSection={<IconPlus />}>New articles</Button>
-        </Flex>
       </Flex>
 
       {isLoading ? [...Array(10).keys()].map((_, index) => {

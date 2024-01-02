@@ -1,6 +1,7 @@
-import { Tabs, Flex, MultiSelect, TextInput, Text } from "@mantine/core";
-import { useState } from "react";
-
+import SeoTagsContext from "@/context/SeoTagsContext";
+import useHtmlTagsForm from "@/hooks/useHtmlTagsForm";
+import { Flex, MultiSelect, TextInput, Fieldset, Text } from "@mantine/core";
+import { useState, useContext } from "react";
 
 const robotOptions = [
   // 'all',
@@ -23,7 +24,7 @@ const robotOptions = [
   { value: i, label: i }
 ))
 
-const HtmlHeadTagsForm = ({ form }) => {
+const HtmlHeadTagsForm = () => {
   const [checked, setChecked] = useState({
     title: true,
     description: true,
@@ -56,45 +57,14 @@ const HtmlHeadTagsForm = ({ form }) => {
     twitter_app_name_googleplay: true,
     twitter_app_url_googleplay: true,
   });
+  const defaultForm = useHtmlTagsForm();
+  const seoTagsContext = useContext(SeoTagsContext);
+  const form = seoTagsContext.form || defaultForm;
 
   return (
-    <Tabs
-      defaultValue="meta"
-      // onChange={(value) => setHash(value)}
-      // variant="pills"
-      // style={{ marginTop: 32 }}
-      keepMounted={false}
-    // mt="xl"
-    >
-      <Tabs.List>
-        <Tabs.Tab
-          value="meta"
-        // leftSection={<IconCursorText />}
-        >
-          Meta tags
-        </Tabs.Tab>
-        <Tabs.Tab
-          value="google"
-        // leftSection={<IconSettings />}
-        >
-          Google
-        </Tabs.Tab>
-        <Tabs.Tab
-          value="social-media"
-        // leftSection={<IconSettings />}
-        >
-          Social media
-        </Tabs.Tab>
-        <Tabs.Tab
-          value="app"
-        // leftSection={<IconDownload />}
-        >
-          App
-        </Tabs.Tab>
-      </Tabs.List>
-
-      <Tabs.Panel value="meta">
-        <Flex direction="column" gap="md" p="md">
+    <Flex direction="column" gap="md">
+      <Fieldset legend={<Text fw="bold">Defaults</Text>}>
+        <Flex direction="column" gap="xs">
           <TextInput
             label="Title"
             disabled={!checked.title}
@@ -127,9 +97,10 @@ const HtmlHeadTagsForm = ({ form }) => {
             {...form.getInputProps('http_equiv_content')}
           />
         </Flex>
-      </Tabs.Panel>
-      <Tabs.Panel value="google">
-        <Flex direction="column" gap="md" p="md">
+      </Fieldset>
+
+      <Fieldset legend={<Text fw="bold">Google</Text>}>
+        <Flex direction="column" gap="xs">
           <TextInput
             label="Name"
             {...form.getInputProps('itemprop_name')}
@@ -144,11 +115,11 @@ const HtmlHeadTagsForm = ({ form }) => {
           />
           <MultiSelect
             data={robotOptions}
-            placeholder="Robots"
-            {...form.getInputProps('robots')}
+            label="Robots"
+          // {...form.getInputProps('robots')}
           />
           <TextInput
-            placeholder="Link Canonical"
+            label="Link Canonical"
             {...form.getInputProps('link_canonical')}
           />
           <TextInput
@@ -156,103 +127,94 @@ const HtmlHeadTagsForm = ({ form }) => {
             {...form.getInputProps('google_site_verification')}
           />
         </Flex>
-      </Tabs.Panel>
-      <Tabs.Panel value="social-media">
-        <Flex direction="column" gap="md">
-          <Flex direction="column" gap="md" p="md">
-            <Text fw="bold">Facebook</Text>
-            {/* FACEBOOK */}
-            <TextInput
-              label="URL"
-              disabled={!checked.og_url}
-              {...form.getInputProps('og_url')}
-            />
-            <TextInput
-              label="Type"
-              {...form.getInputProps('og_type')}
+      </Fieldset>
 
-            />
-            <TextInput
-              label="Title"
-              {...form.getInputProps('og_title')}
-            />
-            <TextInput
-              label="Description"
-              {...form.getInputProps('og_description')}
-            />
-            <TextInput
-              label="Image"
-              {...form.getInputProps('og_image')}
-            />
-          </Flex>
-          <Flex direction="column" gap="md" p="md">
-            <Text fw="bold">Twitter</Text>
+      <Fieldset legend={<Text fw="bold">Facebook</Text>}>
+        <Flex direction="column" gap="xs">
+          <TextInput
+            label="URL"
+            disabled={!checked.og_url}
+            {...form.getInputProps('og_url')}
+          />
+          <TextInput
+            label="Type"
+            {...form.getInputProps('og_type')}
 
-            {/* TWITTER */}
-            <TextInput
-              label="Title"
-              {...form.getInputProps('twitter_title')}
-            />
-            <TextInput
-              label="Image"
-              {...form.getInputProps('twitter_image')}
-            />
-            <TextInput
-              label="Description"
-              {...form.getInputProps('twitter_description')}
-            />
-            <TextInput
-              label="Creator"
-              {...form.getInputProps('twitter_creator')}
-            />
-            <TextInput
-              label="Site"
-              {...form.getInputProps('twitter_site')}
-            />
-          </Flex>
+          />
+          <TextInput
+            label="Title"
+            {...form.getInputProps('og_title')}
+          />
+          <TextInput
+            label="Description"
+            {...form.getInputProps('og_description')}
+          />
+          <TextInput
+            label="Image"
+            {...form.getInputProps('og_image')}
+          />
         </Flex>
-      </Tabs.Panel>
+      </Fieldset>
 
-      <Tabs.Panel value="app">
-        <Flex direction="column" gap="md">
-          <Flex direction="column" gap="md" p="md">
-            <Text fw="bold">iOS</Text>
-            <TextInput
-              label="App ID"
-              {...form.getInputProps('twitter_app_id_iphone')}
-            />
-
-            <TextInput
-              label="App Name"
-              {...form.getInputProps('twitter_app_name_iphone')}
-            />
-
-            <TextInput
-              label="App URL"
-              {...form.getInputProps('twitter_app_url_iphone')}
-            />
-          </Flex>
-
-          <Flex direction="column" gap="md" p="md">
-            <Text fw="bold">Google Play</Text>
-            <TextInput
-              label="App ID"
-              {...form.getInputProps('twitter_app_id_googleplay')}
-            />
-
-            <TextInput
-              label="App Name"
-              {...form.getInputProps('twitter_app_name_googleplay')}
-            />
-
-            <TextInput
-              label="App URL"
-              {...form.getInputProps('twitter_app_url_googleplay')}
-            />
-          </Flex>
+      <Fieldset legend={<Text fw="bold">Twitter</Text>}>
+        <Flex direction="column" gap="xs">
+          <TextInput
+            label="Title"
+            {...form.getInputProps('twitter_title')}
+          />
+          <TextInput
+            label="Image"
+            {...form.getInputProps('twitter_image')}
+          />
+          <TextInput
+            label="Description"
+            {...form.getInputProps('twitter_description')}
+          />
+          <TextInput
+            label="Creator"
+            {...form.getInputProps('twitter_creator')}
+          />
+          <TextInput
+            label="Site"
+            {...form.getInputProps('twitter_site')}
+          />
         </Flex>
-      </Tabs.Panel>
-    </Tabs>
+      </Fieldset>
+
+      <Fieldset legend={<Text fw="bold">iOS</Text>}>
+        <Flex direction="column" gap="xs">
+          <TextInput
+            label="App ID"
+            {...form.getInputProps('twitter_app_id_iphone')}
+          />
+          <TextInput
+            label="App Name"
+            {...form.getInputProps('twitter_app_name_iphone')}
+          />
+          <TextInput
+            label="App URL"
+            {...form.getInputProps('twitter_app_url_iphone')}
+          />
+        </Flex>
+      </Fieldset>
+
+      <Fieldset legend={<Text fw="bold">Google Play</Text>}>
+        <Flex direction="column" gap="xs">
+          <TextInput
+            label="App ID"
+            {...form.getInputProps('twitter_app_id_googleplay')}
+          />
+          <TextInput
+            label="App Name"
+            {...form.getInputProps('twitter_app_name_googleplay')}
+          />
+          <TextInput
+            label="App URL"
+            {...form.getInputProps('twitter_app_url_googleplay')}
+          />
+        </Flex>
+      </Fieldset>
+    </Flex>
   )
 }
 

@@ -1,8 +1,10 @@
-import { useParams } from "next/navigation";
+// const useProjectId = () => {
+//   const params = useParams();
+//   return +(params.project_id as string)
+// }
 
 const useProjectId = () => {
-  const params = useParams();
-  return +(params.project_id as string)
+  return 4
 }
 
 export default useProjectId

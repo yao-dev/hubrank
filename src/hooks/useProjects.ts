@@ -3,29 +3,34 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
-import { isNaN } from "lodash";
+import { fetchWebsiteMetadata } from "@/helpers/metadata";
 
 const getOne = async (project_id: number) => {
-  return supabase.from('projects').select('*').eq('id', project_id).single().throwOnError();
+  // if (!project_id) return;
+  return supabase.from('projects').select('*').eq('id', project_id).single()
 }
 
 const useGetOne = (project_id: number) => {
   return useQuery({
-    enabled: project_id !== undefined && !isNaN(project_id),
+    // enabled: project_id !== undefined && !isNaN(project_id),
+    // enabled: project_id > 0,
     queryKey: queryKeys.projects(project_id),
     queryFn: () => getOne(project_id),
-    select: ({ data }) => {
-      return data;
+    select: (res) => {
+      return res?.data || null
     },
     cacheTime: 0,
+    retry: false,
     onError: (error) => {
       console.error('projects.useGetOne', error)
     },
+    keepPreviousData: true
   });
 };
 
 const getAll = async () => {
-  return supabase.from('projects').select('*, topic_clusters(count), articles(count)').order("created_at", { ascending: false }).throwOnError();
+  // return supabase.from('projects').select('*, topic_clusters(count), articles(count)').order("created_at", { ascending: false }).throwOnError();
+  return supabase.from('projects').select('*').order("created_at", { ascending: true })
 }
 
 type UseGetAll = {
@@ -44,14 +49,14 @@ const useGetAll = ({ enabled }: UseGetAll = {}) => {
       console.error('projects.useGetAll', error)
     },
     cacheTime: 1000 * 60 * 10,
-    refetchOnWindowFocus: true
+    // refetchOnWindowFocus: true
   });
 };
 
 type Create = {
   name: string;
   // description: string;
-  target_audience: string;
+  // target_audience: string;
   website: string;
 }
 
@@ -60,6 +65,7 @@ const create = async (data: Create) => {
     .from('projects')
     .insert({
       ...data,
+      metadata: await fetchWebsiteMetadata(data.website),
       user_id: await getUserId()
     })
     .select()
@@ -138,7 +144,7 @@ const useDelete = () => {
   })
 }
 
-const useProjects = (projectId?: number) => {
+const useProjects = () => {
   return {
     getOne: useGetOne,
     getAll: useGetAll,

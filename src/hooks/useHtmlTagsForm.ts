@@ -1,11 +1,19 @@
+import { useEffect } from "react";
 import { useForm } from "@mantine/form";
+import useActiveProject from "./useActiveProject";
+import useProjects from "./useProjects";
+import { parseString } from "@/helpers/string";
 
 // https://developers.google.com/search/docs/crawling-indexing/special-tags
 // https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag#directives
 // https://gist.github.com/whitingx/3840905
 const useHtmlTagsForm = () => {
-  return useForm({
+  const activeProjectId = useActiveProject().id;
+  const { data: project } = useProjects().getOne(activeProjectId)
+
+  const form = useForm({
     initialValues: {
+      html: '',
       title: '',
       description: '',
       keywords: '',
@@ -85,7 +93,30 @@ const useHtmlTagsForm = () => {
       twitter_app_name_googleplay: (value) => !value ? 'Please enter a Twitter app name for Google Play' : null,
       twitter_app_url_googleplay: (value) => !value ? 'Please enter a Twitter app URL for Google Play' : null,
     },
-  })
+  });
+
+  useEffect(() => {
+    if (project.metatags) {
+      const { title, description, html, ...metatags } = project.metatags
+      form.setValues({
+        ...metatags,
+        robots: project.metatags?.robots?.split(",")
+      })
+    }
+  }, [project]);
+
+  useEffect(() => {
+    const url = `${project.website}/blog/${parseString(form.values.title)}`
+
+    form.setValues({
+      og_url: url,
+      twitter_site: url,
+      og_title: form.values.title,
+      twitter_title: form.values.title,
+    })
+  }, [project, form.values.title])
+
+  return form;
 }
 
 export default useHtmlTagsForm

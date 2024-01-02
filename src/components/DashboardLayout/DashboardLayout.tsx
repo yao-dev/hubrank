@@ -1,24 +1,16 @@
 'use client';
 import styles from './style.module.css';
 import { MouseEvent, useEffect, useState } from 'react';
-import { AppShell, Divider, ScrollArea, Title } from '@mantine/core';
+import { AppShell, Burger, Chip, Flex, Group, ScrollArea, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import {
-  IconSettings,
-  IconLogout,
-  IconStack2,
-  IconUsers,
-  IconApps,
-  IconPlug,
-  IconCreditCard,
-  IconSitemap,
-  IconVersions,
-} from '@tabler/icons-react';
+import { IconSettings, IconLogout, IconPlug, IconCreditCard, IconStack2 } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { Notifications } from '@mantine/notifications';
 import Link from 'next/link';
 import cx from 'clsx';
 import { usePathname } from 'next/navigation';
+import useProjects from '@/hooks/useProjects';
+import ProjectSelect from '../ProjectSelect';
 
 // const useStyles = createStyles((theme) => ({
 //   header: {
@@ -75,11 +67,12 @@ import { usePathname } from 'next/navigation';
 // }));
 
 const data = [
-  { id: "project", link: '/', label: 'Projects', icon: IconStack2 },
-  { id: "topic", link: '/topics', label: 'Topics', icon: IconSitemap },
-  { id: "article", link: '/articles', label: 'Articles', icon: IconVersions },
-  { id: "target-audience", link: '/target-audiences', label: 'Target audiences', icon: IconUsers },
-  { id: "competitor", link: '/competitors', label: 'Competitors', icon: IconApps },
+  { id: "project", link: '/?tab=articles', label: 'Project', icon: IconStack2 },
+  // { id: "project", link: '/', label: 'Home', icon: IconStack2 },
+  // { id: "topic", link: '/topics', label: 'Topics', icon: IconSitemap },
+  // { id: "article", link: '/articles', label: 'Articles', icon: IconVersions },
+  // { id: "target-audience", link: '/target-audiences', label: 'Target audiences', icon: IconUsers },
+  // { id: "competitor", link: '/competitors', label: 'Competitors', icon: IconApps },
   { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
@@ -90,15 +83,16 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [active, setActive] = useState('Projects');
-  const [opened] = useDisclosure();
+  const [active, setActive] = useState('Project');
+  const [opened, { toggle }] = useDisclosure();
   const pathname = usePathname();
+  const { data: projects } = useProjects().getAll();
 
   useEffect(() => {
     if (pathname === '/' || pathname === "") {
-      setActive('Projects');
+      setActive('Project');
     } else {
-      const item = data.find(i => pathname.startsWith(i.link));
+      const item = data.slice(1).find(i => pathname.startsWith(i.link));
       if (item) {
         setActive(item.label);
       }
@@ -122,70 +116,53 @@ export default function DashboardLayout({
           color: 'black',
         }}
       >
-        <item.icon className={styles.linkIcon} stroke={1.5} />
-        <span>{item.label}</span>
+        <Flex justify="space-between" align="center" gap="md">
+          <Flex align="center">
+            <item.icon className={styles.linkIcon} stroke={1.5} />
+            <span>{item.label}</span>
+          </Flex>
+          {item.id === "integration" && <Chip color="blue" variant="outline" size="xs">coming soon</Chip>}
+        </Flex>
       </Link>
     )
   });
 
+  const hasProjects = projects?.length > 0
+
   return (
     <AppShell
+      header={{ height: 50 }}
+      // navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      navbar={{
+        width: 300, breakpoint: 'sm', collapsed: { mobile: !opened }
+      }}
       padding="md"
       transitionDuration={500}
       transitionTimingFunction="ease"
-      // header={{
-      //   height: { base: 50, md: 60 }
-      // }}
-      navbar={{
-        width: {
-          sm: 250
-        },
-        breakpoint: 'sm',
-        // collapsed: { mobile: !opened }
-      }}
-      className={styles.appShell}
+    // className={styles.appShell}
     >
-      {/* <AppShell.Header p="md">
-        <Flex direction="row" align="center" justify="space-between" h="100%">
+      <AppShell.Header>
+        <Group h="100%" px="md" w={250}>
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-
-          <Flex direction="row" align="center" justify="space-between" w="100%">
-            <Title order={2}>Hubrank</Title>
-            <Tooltip
-              label={`${colorScheme === 'dark' ? 'Light' : 'Dark'} theme`}
-            >
-              <ActionIcon
-                variant="outline"
-                color="dark"
-                // color={theme.colorScheme === 'dark' ? 'yellow' : 'blue'}
-                // onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
-                onClick={() => toggleColorScheme()}
-                size="lg"
-              >
-                {colorScheme === 'dark' ? <IconSun size="1.1rem" /> : <IconMoonStars size="1.1rem" />}
-              </ActionIcon>
-            </Tooltip>
-          </Flex>
-        </Flex>
-      </AppShell.Header> */}
-
-      <AppShell.Navbar p="md" hidden={!opened}>
-        <Title order={2}>Hubrank</Title>
-
-        <Divider size="xs" my="sm" />
-
-        <AppShell.Section grow component={ScrollArea}>
+          <Title order={2}>Hubrank</Title>
+        </Group>
+      </AppShell.Header>
+      <AppShell.Navbar p="md">
+        {hasProjects && (
+          <AppShell.Section>
+            <ProjectSelect />
+          </AppShell.Section>
+        )}
+        <AppShell.Section grow mt={hasProjects ? "md" : undefined} mb="md" component={ScrollArea}>
           {links}
         </AppShell.Section>
-
-        <AppShell.Section className={styles.footer}>
+        <AppShell.Section>
           <a href="#" className={styles.link} onClick={onLogout}>
             <IconLogout className={styles.linkIcon} stroke={1.5} />
             <span>Logout</span>
           </a>
         </AppShell.Section>
       </AppShell.Navbar>
-
       <AppShell.Main>
         <Notifications limit={5} position="top-center" />
         {children}

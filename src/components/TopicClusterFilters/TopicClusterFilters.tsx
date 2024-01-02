@@ -1,13 +1,11 @@
 'use client';
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { TextInput, Flex } from '@mantine/core';
-import { useRouter } from "next/navigation";
-import { useDebouncedState } from "@mantine/hooks";
-import useProjectId from "@/hooks/useProjectId";
+import { useRouter, useSearchParams } from "next/navigation";
+import { debounce } from "lodash";
 
 type Filters = {
   query: string;
-  project_id: number;
 }
 
 type Props = {
@@ -15,31 +13,33 @@ type Props = {
   onClear: () => void;
 }
 
-const TopicClusterFilters = ({ onChange, onClear }: Props) => {
-  const urlParams = useMemo(() => new URLSearchParams(window?.location?.search || ""), [window?.location])
-  const [query, setQuery] = useDebouncedState(urlParams.get('query') ?? '', 400);
+const TopicClusterFilters = ({ onChange }: Props) => {
   const router = useRouter();
-  const activeProjectId = useProjectId();
+  const searchParams = useSearchParams();
+  const query = searchParams.get('query') ?? '';
 
   useEffect(() => {
+    onChange({ query })
+  }, [onChange, query]);
+
+  const onChangeFilter = (name: string, value: string | null) => {
     const url = new URL(window.location.href);
-
-    if (!query) {
-      url.searchParams.delete('query')
+    if (!value) {
+      url.searchParams.delete(name)
     } else {
-      url.searchParams.set("query", query);
+      url.searchParams.set(name, value);
     }
-
     router.replace(url.href, { scroll: false });
-    onChange({ query: query || '', project_id: activeProjectId });
-  }, [onChange, query])
+  }
+
+  const debouncedOnChangeFilter = debounce(onChangeFilter, 400)
 
   return (
     <Flex direction="row" gap="sm">
       <TextInput
-        placeholder="Search topic cluster"
+        placeholder="Search topics"
         defaultValue={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => debouncedOnChangeFilter("query", e.target.value)}
         w={225}
       />
     </Flex>
