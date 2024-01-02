@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Inter } from 'next/font/google';
 import SessionProvider from '@/provider/SessionProvider';
 import { MantineProvider, ColorSchemeScript, createTheme } from '@mantine/core';
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 const inter = Inter({ subsets: ['latin'] })
 const queryClient = new QueryClient({
@@ -58,13 +59,15 @@ export default function RootLayout({
           defaultColorScheme="light"
           theme={theme}
         >
-          <QueryClientProvider client={queryClient}>
-            <SessionProvider>
-              {(session) => {
-                return session ? dashboard : login
-              }}
-            </SessionProvider>
-          </QueryClientProvider>
+          <AntdRegistry>
+            <QueryClientProvider client={queryClient}>
+              <SessionProvider>
+                {(session) => {
+                  return session ? dashboard : login
+                }}
+              </SessionProvider>
+            </QueryClientProvider>
+          </AntdRegistry>
         </MantineProvider>
       </body>
     </html>
