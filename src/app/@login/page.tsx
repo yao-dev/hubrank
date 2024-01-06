@@ -1,20 +1,20 @@
-'use client'
-import { Paper, Title, Text, TextInput, Button, Container, Group, Alert, Flex } from '@mantine/core';
-import { IconAlertCircle, IconLock, IconMail } from '@tabler/icons-react';
-import classes from './styles.module.css';
+'use client';;
+import { Text } from '@mantine/core';
+import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
-import { ResendParams, VerifyEmailOtpParams } from '@supabase/supabase-js';
-import { useForm } from '@mantine/form';
+import { VerifyEmailOtpParams } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
+import { Form, Alert, Input, Button, Card, Flex, Typography } from 'antd';
 
 export default function AuthPage() {
   const [type, toggleMode] = useToggle(['email', 'otp']);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
-  const [otpParams, setOtpParams] = useState<ResendParams | null>(null);
   const [count, setCount] = useState(60);
   const interval = useInterval(() => setCount((c) => c - 1), 1000);
   const [error, setError] = useState(false);
+  const [form] = Form.useForm();
+  const email = Form.useWatch('email', form);
 
   useEffect(() => {
     if (count === 0) {
@@ -23,18 +23,8 @@ export default function AuthPage() {
     }
   }, [count])
 
-  const form = useForm({
-    initialValues: {
-      email: '',
-      otp: ''
-    },
-    validate: {
-      email: (value: string) => (/^\S+@\S+$/.test(value) ? null : 'Please enter a valid email'),
-      otp: (value: string) => type === 'email' || value?.length === 6 ? null : 'One-time login code is invalid or expired',
-    }
-  });
 
-  const onSubmit = form.onSubmit(async (values) => {
+  const onSubmit = async (values: any) => {
     setError(false);
     if (type === 'email') {
       setIsAuthLoading(true);
@@ -58,7 +48,7 @@ export default function AuthPage() {
     } else {
       setIsAuthLoading(true);
       const { error } = await supabase.auth.verifyOtp({
-        email: form.values.email,
+        email: values.email,
         token: values.otp,
         type: 'email'
       } as VerifyEmailOtpParams)
@@ -68,7 +58,7 @@ export default function AuthPage() {
         setIsAuthLoading(false);
       }
     }
-  })
+  }
 
   const resendOtp = async () => {
     if (interval.active) {
@@ -79,7 +69,7 @@ export default function AuthPage() {
 
     try {
       const { error } = await supabase.auth.signInWithOtp({
-        email: form.values.email
+        email: form.getFieldValue("email")
       });
 
       if (error) {
@@ -98,65 +88,67 @@ export default function AuthPage() {
   }
 
   return (
-    <Container size={460} my={30}>
-      <Title className={classes.title} ta="center">
+    <Flex vertical align="center" justify="center" style={{ height: '100dvh' }}>
+      <Typography.Title level={2} style={{ fontWeight: 700, margin: 0 }}>
         Welcome back!
-      </Title>
-      <Text c="dimmed" fz="sm" ta="center">
+      </Typography.Title>
+      <Typography.Text style={{ marginTop: 6 }}>
         Enter your email to get a login code
-      </Text>
+      </Typography.Text>
 
-      <Paper withBorder shadow="md" p={30} radius="md" mt="xl">
-        <form onSubmit={onSubmit}>
-          <Flex direction="column" gap="md">
-            {error && (
-              <Alert icon={<IconAlertCircle size="1rem" />} title="Bummer!" color="red" variant="filled">
-                Something went wrong! Try again please.
-              </Alert>
-            )}
-            <TextInput
-              withAsterisk
-              label="Email"
-              placeholder="me@gmail.com"
-              leftSection={<IconMail />}
-              size="md"
-              autoComplete="email"
-              required
-              {...form.getInputProps('email')}
-            />
+      <Card style={{ width: '25%', borderRadius: 10, marginTop: 32 }}>
+        <Form
+          form={form}
+          onFinish={onSubmit}
+          layout="vertical"
+          initialValues={{
+            email: "",
+            otp: ""
+          }}
+          autoComplete='off'
+        >
+          {error && (
+            <Alert type="error" message="Something went wrong! Try again please." showIcon />
+          )}
 
-            {type === 'otp' && (
-              <>
-                <TextInput
-                  withAsterisk
-                  label="One-time login code"
-                  placeholder="Enter your login code"
-                  leftSection={<IconLock />}
-                  size="md"
-                  {...form.getInputProps('otp')}
-                />
-                <Group justify="center">
-                  <Text size="sm" onClick={resendOtp} style={{ cursor: 'pointer' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Text>
-                </Group>
-              </>
-            )}
+          <Form.Item name="email" label="Email" validateTrigger="onBlur" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
+            <Input size="large" placeholder="me@gmail.com" prefix={<IconMail stroke={1.5} />} />
+          </Form.Item>
 
-            {/* <Group justify="space-between" mt="lg" className={classes.controls}>
-          <Anchor c="dimmed" size="sm" className={classes.control}>
-            <Center inline>
-              <IconArrowLeft style={{ width: rem(12), height: rem(12) }} stroke={1.5} />
-              <Box ml={5}>Back to the login page</Box>
-            </Center>
-          </Anchor>
-          <Button className={classes.control}>Reset password</Button>
-        </Group> */}
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => {
+              return prevValues.email !== currentValues.email
+            }}
 
-            <Group justify="center" mt="md">
-              <Button className={classes.control} size="md" loading={isAuthLoading} fullWidth type="submit">Continue</Button>
-            </Group>
-          </Flex>
-        </form>
-      </Paper>
-    </Container>
+          >
+            {() => {
+              return type === "otp" ? (
+                <>
+                  <Form.Item
+                    name="otp"
+                    label="One-time login code"
+                    validateTrigger="onBlur"
+                    rules={[{ required: true, message: 'One-time login code is invalid or expired', len: 6 }]}
+                  >
+                    <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.5} />} />
+                  </Form.Item>
+
+                  <Text onClick={resendOtp} style={{ cursor: 'pointer', textAlign: 'center' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Text>
+
+                </>
+              ) : null
+
+            }}
+          </Form.Item>
+
+          <Form.Item style={{ margin: 0, marginTop: 24 }}>
+            <Button size="large" block type="primary" htmlType="submit" loading={isAuthLoading}>
+              Continue
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+    </Flex>
   );
 }

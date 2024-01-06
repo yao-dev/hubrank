@@ -25,7 +25,7 @@ const NewArticleButton = ({ withTooltip }: { withTooltip?: boolean }) => {
   // }
 
   return (
-    <Button onClick={() => router.push("?tab=articles&mode=create")} rightSection={<IconPlus />}>New article</Button>
+    <Button onClick={() => router.push("project/4/articles/new")} rightSection={<IconPlus />}>New article</Button>
   )
 }
 

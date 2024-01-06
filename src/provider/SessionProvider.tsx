@@ -2,11 +2,13 @@ import SessionContext from "@/context/SessionContext";
 import supabase from "@/helpers/supabase";
 import useResetApp from "@/hooks/useResetApp";
 import useSession from "@/hooks/useSession";
+import { useRouter } from "next/navigation";
 import React, { ReactNode, useState } from "react";
 
 const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) => {
   const sessionStore = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const resetApp = useResetApp();
 
   React.useEffect(() => {
@@ -16,6 +18,7 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
         sessionStore.setSession(session);
         if (!session) {
           resetApp();
+          router.replace('/')
         }
       })
       .finally(() => {
@@ -30,6 +33,7 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
       sessionStore.setSession(session);
       if (!session) {
         resetApp();
+        router.replace('/')
       }
     })
 

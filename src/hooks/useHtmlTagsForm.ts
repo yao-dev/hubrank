@@ -96,7 +96,7 @@ const useHtmlTagsForm = () => {
   });
 
   useEffect(() => {
-    if (project.metatags) {
+    if (project?.metatags) {
       const { title, description, html, ...metatags } = project.metatags
       form.setValues({
         ...metatags,
@@ -106,14 +106,16 @@ const useHtmlTagsForm = () => {
   }, [project]);
 
   useEffect(() => {
-    const url = `${project.website}/blog/${parseString(form.values.title)}`
+    if (project) {
+      const url = `${project.website}/blog/${parseString(form.values.title)}`
 
-    form.setValues({
-      og_url: url,
-      twitter_site: url,
-      og_title: form.values.title,
-      twitter_title: form.values.title,
-    })
+      form.setValues({
+        og_url: url,
+        twitter_site: url,
+        og_title: form.values.title,
+        twitter_title: form.values.title,
+      })
+    }
   }, [project, form.values.title])
 
   return form;

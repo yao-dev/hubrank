@@ -17,7 +17,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
   const router = useRouter();
 
 
-  const onCreateProject = form.onSubmit(async (values) => {
+  const onCreateProject = form.onSubmit(async (values: any) => {
     setError(false)
     showLoadingModal()
     try {

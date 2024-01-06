@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
-import { fetchWebsiteMetadata } from "@/helpers/metadata";
+import axios from "axios";
+import { getRelatedKeywords } from "@/helpers/seo";
 
 const getOne = async (project_id: number) => {
   // if (!project_id) return;
@@ -48,24 +49,42 @@ const useGetAll = ({ enabled }: UseGetAll = {}) => {
     onError: (error) => {
       console.error('projects.useGetAll', error)
     },
-    cacheTime: 1000 * 60 * 10,
-    // refetchOnWindowFocus: true
+    // cacheTime: 1000 * 60 * 10,
+    refetchOnWindowFocus: true,
+    keepPreviousData: true
   });
 };
 
 type Create = {
   name: string;
-  // description: string;
-  // target_audience: string;
+  description?: string;
+  target_audience?: string;
   website: string;
+  seed_keyword: string;
 }
 
 const create = async (data: Create) => {
+  let metatags = null;
+  let keywords = null;
+
+  try {
+    const [websiteTagsResponse, keywordsResponse] = await Promise.all([
+      axios.post("/api/get-website-meta", { website: data.website }),
+      getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
+    ])
+    metatags = websiteTagsResponse.data;
+    keywords = {
+      result: keywordsResponse.data.tasks[0].result,
+      result_count: keywordsResponse.data.tasks[0].result_count,
+    }
+  } catch { }
+
   return supabase
     .from('projects')
     .insert({
       ...data,
-      metadata: await fetchWebsiteMetadata(data.website),
+      metatags,
+      keywords,
       user_id: await getUserId()
     })
     .select()
@@ -93,9 +112,9 @@ const useCreate = () => {
 type Update = {
   project_id: number;
   name?: string;
-  // description: string;
+  description?: string;
   target_audience?: string;
-  training?: string;
+  seed_keyword?: string;
 }
 
 const update = async ({ project_id, ...data }: Update) => {

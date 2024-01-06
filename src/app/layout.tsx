@@ -11,8 +11,12 @@ import './globals.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Inter } from 'next/font/google';
 import SessionProvider from '@/provider/SessionProvider';
-import { MantineProvider, ColorSchemeScript, createTheme } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider, createTheme } from '@mantine/core';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
+import { ConfigProvider, theme } from 'antd';
+import enUS from 'antd/locale/en_US';
+import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
+import { App } from 'antd';
 
 const inter = Inter({ subsets: ['latin'] })
 const queryClient = new QueryClient({
@@ -27,7 +31,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const theme = createTheme({
+const mantineTheme = createTheme({
   /** Put your mantine theme override here */
   primaryColor: 'dark',
   black: '#000',
@@ -57,16 +61,41 @@ export default function RootLayout({
       <body className={inter.className}>
         <MantineProvider
           defaultColorScheme="light"
-          theme={theme}
+          theme={mantineTheme}
         >
           <AntdRegistry>
-            <QueryClientProvider client={queryClient}>
-              <SessionProvider>
-                {(session) => {
-                  return session ? dashboard : login
-                }}
-              </SessionProvider>
-            </QueryClientProvider>
+            <ConfigProvider
+              // https://ant.design/docs/react/i18n
+              locale={enUS}
+              theme={{
+                // 1. Use dark algorithm
+                // algorithm: theme.darkAlgorithm,
+                // algorithm: theme.compactAlgorithm,
+                algorithm: theme.defaultAlgorithm,
+
+                // 2. Combine dark algorithm and compact algorithm
+                // algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
+                token: {
+                  "colorPrimary": "#232323",
+                  "colorInfo": "#232323",
+                  "wireframe": false
+                }
+              }}
+            >
+              <App>
+                <QueryClientProvider client={queryClient}>
+                  <SessionProvider>
+                    {(session) => {
+                      return (
+                        <RealtimeWrapper>
+                          {session ? dashboard : login}
+                        </RealtimeWrapper>
+                      )
+                    }}
+                  </SessionProvider>
+                </QueryClientProvider>
+              </App>
+            </ConfigProvider>
           </AntdRegistry>
         </MantineProvider>
       </body>

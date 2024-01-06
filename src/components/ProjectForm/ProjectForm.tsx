@@ -1,23 +1,23 @@
-import { Affix, Box, Button, Flex, Text, TextInput } from "@mantine/core";
+import { Text } from "@mantine/core";
 import useProjects from "@/hooks/useProjects";
-import useProjectForm from "@/hooks/useProjectForm";
 import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
-import useActiveProject from "@/hooks/useActiveProject";
-import HtmlHeadTagsForm from "../HtmlHeadTagsForm/HtmlHeadTagsForm";
-import { useSearchParams } from "next/navigation";
+import useProjectId from "@/hooks/useProjectId";
+import { Button, Form, Input } from "antd";
 
 const ProjectForm = () => {
-  const activeProject = useActiveProject();
-  const projectId = activeProject.id as number;
+  const projectId = useProjectId();
   const { getOne, update, delete: deleteProject } = useProjects()
   const { data: project } = getOne(projectId)
-  const form = useProjectForm(project);
-  const params = useSearchParams();
-  const tab = params.get("tab")
+  // const form = useProjectForm(project);
+  const [form] = Form.useForm();
 
-  if (projectId === null || tab !== "settings") {
+  // if (projectId === null || tab !== "settings") {
+  //   return null;
+  // }
+
+  if (!project) {
     return null;
   }
 
@@ -48,7 +48,7 @@ const ProjectForm = () => {
     })
   }
 
-  const onSubmit = form.onSubmit(async (values) => {
+  const onSubmit = async (values) => {
     try {
       await update.mutateAsync({
         ...values,
@@ -68,99 +68,66 @@ const ProjectForm = () => {
         icon: <IconX size="1rem" />
       })
     }
-  });
-
-  const onTrain = () => {
-    update.mutate({
-      project_id: projectId,
-      training: status === 'trained' ? 're-training' : 'training'
-    });
-    // setTimeout(() => {
-    //   update.mutate({
-    //     project_id: projectId,
-    //     training: 'trained'
-    //   });
-    // }, 5000)
-    // setTimeout(() => {
-    //   update.mutate({
-    //     project_id: projectId,
-    //     training: null
-    //   });
-    // }, 10000)
   }
 
-  const isTraining = ['re-training', 'training'].includes(project?.training || "")
 
   return (
-    <form onSubmit={onSubmit}>
-      <Box pb={72}>
-        <Flex direction="column" gap="lg">
-          <Flex direction="column" gap="md" mb="lg">
-            <TextInput
-              withAsterisk
-              label="Name"
-              placeholder="Name"
-              maxLength={50}
-              disabled={isTraining}
-              {...form.getInputProps('name')}
-            />
-            <Flex direction="row" align="end" gap="md">
-              <TextInput
-                withAsterisk
-                label="Website"
-                placeholder="https://google.com"
-                maxLength={50}
-                disabled={isTraining}
-                style={{ flex: 1 }}
-                {...form.getInputProps('website')}
-              />
-              {/* <TrainButton
-              display={project?.website === form.values.website}
-              status={project?.training}
-              onClick={() => isTraining ? undefined : onTrain()}
-            /> */}
-            </Flex>
-            {/* <Textarea
-        withAsterisk
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={() => { }}
+      labelCol={{ span: 8 }}
+      wrapperCol={{ span: 20 }}
+      style={{ maxWidth: 600 }}
+      initialValues={{
+        name: project.name,
+        website: project.website,
+        description: project.description,
+        seed_keyword: project.seed_keyword,
+      }}
+    >
+      <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+        <Input placeholder="Name" count={{ show: true, max: 50 }} />
+      </Form.Item>
+      <Form.Item name="seed_keyword" label="Seed keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a seed keyword" }]} hasFeedback>
+        <Input placeholder="Seed keyword" count={{ show: true, max: 75 }} />
+      </Form.Item>
+      <Form.Item
+        name="website"
+        label="Website"
+        validateTrigger="onBlur"
+        rules={[{
+          required: true,
+          type: "url",
+          message: "Enter a valid url",
+          transform: (url: any) => {
+            if (!url?.startsWith('https://')) {
+              url = `https://${url}`
+            }
+            return new URL(url).origin
+          }
+        }]}
+        hasFeedback
+      >
+        <Input placeholder="https://google.com" />
+      </Form.Item>
+      <Form.Item
+        name="description"
         label="Description"
-        placeholder="Description"
-        maxLength={500}
-        minRows={3}
-        maxRows={6}
-        {...form.getInputProps('description')}
-      /> */}
-            {/* <Textarea
-            withAsterisk
-            label="Target audience"
-            placeholder="Who is your ideal customer"
-            maxLength={150}
-            minRows={2}
-            maxRows={4}
-            disabled={isTraining}
-            {...form.getInputProps('target_audience')}
-          /> */}
-          </Flex>
-        </Flex>
+        rules={[{ required: false, type: "string", max: 200 }]}
+        hasFeedback
+      >
+        <Input placeholder="Description" count={{ show: true, max: 200 }} />
+      </Form.Item>
 
-        <HtmlHeadTagsForm />
-      </Box>
+      <Form.Item />
 
-      <Affix position={{ right: 0, bottom: 0, left: 300 }} style={{ background: "#FFF", borderTop: '1px solid #dee2e6' }}>
-        <Flex
-          align="center"
-          justify="end"
-          p="md"
-          gap="md"
-        >
-          <Button variant='outline' color='red' onClick={onDeleteProject}>
-            Delete
-          </Button>
-          <Button type="submit" disabled={isTraining}>
-            Save
-          </Button>
-        </Flex>
-      </Affix>
-    </form>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Update
+        </Button>
+      </Form.Item>
+    </Form>
   );
 
 }

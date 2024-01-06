@@ -1,13 +1,14 @@
 'use client';
 import { useCallback, useState } from "react";
-import { Flex, Skeleton, Pagination, Text, Image, Affix, Box } from '@mantine/core';
+import { Flex, Skeleton, Pagination, Text, Image, Box, Button } from '@mantine/core';
 import ArticleRow from "../ArticleRow/ArticleRow";
 import ArticleFilters from "../ArticleFilters/ArticleFilters";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import NewArticleForm from "../NewArticleForm";
 import EditNewArticleForm from "../EditNewArticleForm";
 import NewArticleButton from "../NewArticleButton";
+import { IconPlus } from "@tabler/icons-react";
 
 const defaultFilters = {
   query: '',
@@ -20,7 +21,8 @@ export default function BlogPostList() {
   const params = useSearchParams();
   const tab = params.get("tab")
   const mode = params.get("mode")
-  const article = params.get("article")
+  const article = params.get("article");
+  const router = useRouter();
 
   const renderPagination = useCallback(() => {
     return (
@@ -40,7 +42,7 @@ export default function BlogPostList() {
     )
   }
 
-  if (tab !== "articles") return null;
+  // if (tab !== "articles") return null;
 
   if (tab === "articles" && mode === "create" && !article) {
     return <NewArticleForm />
@@ -65,7 +67,9 @@ export default function BlogPostList() {
         <ArticleFilters onChange={setFilters} onClear={() => setFilters(defaultFilters)} />
         {!!data?.data?.length && (
           <Flex gap="md" ml="sm">
-            <NewArticleButton withTooltip />
+            {/* <NewArticleButton withTooltip /> */}
+            <Button onClick={() => router.push(`project/${active}/new-article`)} rightSection={<IconPlus />}>New article</Button>
+
           </Flex>
         )}
       </Flex>
@@ -88,7 +92,7 @@ export default function BlogPostList() {
         </Box>
       ) : null}
 
-      {!!data?.data?.length && (
+      {/* {!!data?.data?.length && (
         <Affix position={{ right: 0, bottom: 0, left: 300 }} style={{ background: "#FFF", borderTop: '1px solid #dee2e6' }}>
           <Flex
             justify="end"
@@ -97,7 +101,7 @@ export default function BlogPostList() {
             {renderPagination()}
           </Flex>
         </Affix>
-      )}
+      )} */}
     </div>
   )
 }
