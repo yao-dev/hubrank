@@ -17,6 +17,7 @@ import { ConfigProvider, theme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
 import { App } from 'antd';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 const inter = Inter({ subsets: ['latin'] })
 const queryClient = new QueryClient({
@@ -95,7 +96,11 @@ export default function RootLayout({
                     {(session) => {
                       return (
                         <RealtimeWrapper>
-                          {session ? dashboard : login}
+                          {session ? (
+                            <DashboardLayout>
+                              {dashboard}
+                            </DashboardLayout>
+                          ) : login}
                         </RealtimeWrapper>
                       )
                     }}
