@@ -44,7 +44,7 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
             )
           }
           return (
-            <Image src={language.image} width={25} height={25} />
+            <Image src={language.image} width={25} height={25} preview={false} />
           )
         },
       },
