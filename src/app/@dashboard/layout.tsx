@@ -1,5 +1,5 @@
 'use client';;
-import { Layout, Typography, Menu, Button, theme, Flex, Divider } from 'antd';
+import { Layout, Typography, Menu, Button, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
@@ -7,6 +7,7 @@ import ProjectSelect from '@/components/ProjectSelect';
 import { IconSettings, IconPlug, IconCreditCard, IconStack2, IconLogout } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname, useRouter } from 'next/navigation';
+import useResetApp from '@/hooks/useResetApp';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -46,12 +47,19 @@ export default function DashboardLayout({
   } = theme.useToken();
   const router = useRouter()
   const pathname = usePathname();
+  const resetApp = useResetApp();
 
   useEffect(() => {
     if (pathname === '/') {
       router.replace('/projects');
     }
-  }, [pathname])
+  }, [pathname]);
+
+  const logout = () => {
+    supabase.auth.signOut();
+    router.replace("/");
+    resetApp()
+  }
 
   const topItems = data.map((item) => {
     return {
@@ -79,7 +87,7 @@ export default function DashboardLayout({
       key: 'logout',
       icon: <IconLogout />,
       label: (
-        <p onClick={() => supabase.auth.signOut()} style={{ color: '#fff' }}>Logout</p>
+        <p onClick={logout} style={{ color: '#fff' }}>Logout</p>
       )
     }
   ]
@@ -94,19 +102,23 @@ export default function DashboardLayout({
       >
         <Flex vertical justify='space-between' style={{ height: '100%' }}>
           <div>
-            <Flex align='center' style={{ height: 64, borderBottom: '1px solid white', marginBottom: 12 }}>
-              <Typography.Title level={4} style={{ padding: 0, paddingLeft: 24, margin: 0, color: '#fff' }}>Hubrank</Typography.Title>
+            <Flex align='center' style={{ height: 64, padding: 16, marginBottom: 12 }}>
+              <Link href="/projects">
+                <Image
+                  src="/brand-logo-white.png"
+                  preview={false}
+                />
+              </Link>
             </Flex>
             <Menu
               theme="dark"
               mode="inline"
               defaultSelectedKeys={['project']}
               items={topItems}
-              style={{ height: '100%' }}
+              style={{ height: '100%', padding: "0 6px" }}
             />
           </div>
           <div style={{ marginBottom: 12 }}>
-            <Divider style={{ background: '#fff', marginBottom: 6 }} />
             <Menu
               theme="dark"
               mode="inline"

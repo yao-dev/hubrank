@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { IconTrash } from '@tabler/icons-react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
+import { PlusOutlined } from '@ant-design/icons';
 
 type Props = {
   setModalOpen: (open: boolean) => void
@@ -131,6 +132,8 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
             type="primary"
             onClick={() => setModalOpen(true)}
             style={{ marginTop: 12 }}
+            icon={<PlusOutlined />}
+
           >
             Add writing style
           </Button>

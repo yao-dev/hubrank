@@ -3,6 +3,8 @@ import ProjectForm from "@/components/ProjectForm/ProjectForm";
 import ProjectMetaForm from "@/components/ProjectMetaForm/ProjectMetaForm";
 import WritingStyleForm from "@/components/WritingStyleForm/WritingStyleForm";
 import WritingStylesTable from "@/components/WritingStylesTable/WritingStylesTable";
+import { IconPlus } from "@tabler/icons-react";
+import { PlusOutlined } from '@ant-design/icons';
 
 import { Button, Tabs, TabsProps } from "antd";
 import { useState } from "react";
@@ -43,7 +45,13 @@ export default function ProjectSettings({
         onChange={setActiveKey}
         tabBarExtraContent={{
           right: activeKey === "writing-style" && (
-            <Button type="primary" onClick={() => setIsWritingStyleModalOpened(true)}>Add writing style</Button>
+            <Button
+              type="primary"
+              onClick={() => setIsWritingStyleModalOpened(true)}
+              icon={<PlusOutlined />}
+            >
+              Add writing style
+            </Button>
           )
         }}
       />

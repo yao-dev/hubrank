@@ -1,13 +1,13 @@
-'use client';;
+'use client';
 import { Text } from '@mantine/core';
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { VerifyEmailOtpParams } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
-import { Form, Alert, Input, Button, Card, Flex, Typography } from 'antd';
+import { Form, Alert, Input, Button, Card, Flex, Typography, Image } from 'antd';
 
-export default function AuthPage() {
+export default function Login() {
   const [type, toggleMode] = useToggle(['email', 'otp']);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [count, setCount] = useState(60);
@@ -89,8 +89,14 @@ export default function AuthPage() {
 
   return (
     <Flex vertical align="center" justify="center" style={{ height: '100dvh' }}>
+      <Image
+        src="/brand-logo-black.png"
+        width={300}
+        preview={false}
+        style={{ marginBottom: 24 }}
+      />
       <Typography.Title level={2} style={{ fontWeight: 700, margin: 0 }}>
-        Welcome back!
+        Sign in to your account
       </Typography.Title>
       <Typography.Text style={{ marginTop: 6 }}>
         Enter your email to get a login code

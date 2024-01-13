@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { useState } from "react";
 import { IconPlus, IconSettings, IconTrash } from '@tabler/icons-react';
 import { useRouter } from "next/navigation";
@@ -19,6 +19,9 @@ import {
   Select,
   Space,
 } from "antd";
+import {
+  PlusOutlined
+} from '@ant-design/icons';
 import Link from "next/link";
 import useLanguages from "@/hooks/useLanguages";
 
@@ -183,7 +186,7 @@ export default function ProjectList() {
           style={{ marginBottom: 24 }}
         >
           <Typography.Title level={2} style={{ margin: 0 }}>Projects</Typography.Title>
-          <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<IconPlus size="1rem" />} style={{ display: 'flex', alignItems: 'center' }}>New project</Button>
+          <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<PlusOutlined />}>New project</Button>
         </Flex>
 
         <Row gutter={16}>
