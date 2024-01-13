@@ -21,11 +21,12 @@ const queryKeys = {
   getAllKeywordsInTopic: (topic_id: number) => ["get_all_topic_keywords", topic_id] as const,
 
   blogPost: (id: number) => ["blog_posts", id] as const,
-  blogPosts: (filters: {
-    query?: string;
-    status?: string;
-    project_id: number
-  }) => ["blog_posts", filters] as const,
+  // blogPosts: (filters: {
+  //   query?: string;
+  //   status?: string;
+  //   project_id: number
+  // }) => ["blog_posts", filters] as const,
+  blogPosts: (project_id: number, queue?: boolean) => ["blog_posts", { project_id, queue }] as const,
   blogPostsCount: () => ["blog_posts", "blog_posts_count"] as const,
   getAllSeedKeywords: () => ["get_all_seed_keywords"] as const,
   targetAudiences: (filters: {
@@ -33,6 +34,8 @@ const queryKeys = {
     page: number;
     project_id: number
   }) => ["target_audiences", filters] as const,
+  writingStyles: (project_id: number) => ["writing_styles", project_id] as const,
+  languages: (id?: number) => ["languages", id] as const,
 };
 
 export default queryKeys;

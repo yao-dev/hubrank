@@ -1,16 +1,17 @@
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { IconSettings, IconTrash } from "@tabler/icons-react";
-import { Flex, Popconfirm, Select } from "antd";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Button, Flex, Select } from "antd";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
-
+import { SettingOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+{/* <ArrowLeftOutlined /> */ }
 const ProjectSelect = () => {
   const projectId = useProjectId();
-  const { getAll, delete: deleteProject } = useProjects()
+  const { getAll } = useProjects()
   const { data: projects } = getAll();
   const router = useRouter();
+  const pathname = usePathname();
+  const isSettingsPage = pathname.includes("/settings")
 
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
@@ -49,27 +50,11 @@ const ProjectSelect = () => {
           }
         })}
       />
-      {projectId ? (
-        <Flex gap="small" align="center">
-          <Link href={`/projects/${projectId}/settings`} style={{ display: "flex", color: 'black' }}>
-            <IconSettings size="1.4rem" stroke={1.5} />
-          </Link>
-          <Popconfirm
-            title="Delete project"
-            description={`Are you sure to delete ${selectedProject?.label || "this project"}?`}
-            onConfirm={(e) => {
-              e?.preventDefault()
-              deleteProject.mutate(projectId)
-            }}
-            onCancel={(e) => {
-              e?.preventDefault()
-            }}
-            okText="Yes"
-            cancelText="No"
-          >
-            <IconTrash style={{ cursor: "pointer" }} onClick={(e) => e.preventDefault()} size="1.4rem" stroke={1.5} />
-          </Popconfirm>
-        </Flex>
+      {projectId && !isSettingsPage ? (
+        <Button icon={<SettingOutlined />} onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
+      ) : null}
+      {projectId && isSettingsPage ? (
+        <Button icon={<ArrowLeftOutlined />} onClick={() => router.back()}>Back to project</Button>
       ) : null}
     </Flex>
   )

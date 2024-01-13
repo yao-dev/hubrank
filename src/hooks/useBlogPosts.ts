@@ -2,9 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
-import { getUserId } from "@/helpers/user";
 import { isNaN } from "lodash";
-import useActiveProject from "./useActiveProject";
+import useProjectId from "./useProjectId";
 
 const getOne = async (id: number) => {
   return supabase.from('blog_posts').select('*').eq('id', id).single();
@@ -18,94 +17,32 @@ const useGetOne = (id: number) => {
     select: ({ data }) => {
       return data;
     },
-    onError: (error) => {
-      console.error('blogPosts.useGetOne', error)
-    },
+    onError: console.error,
   });
 };
 
-type Filters = {
-  query?: string;
-  status?: string;
-  page?: number
-  topic?: number
-  project_id: number;
-}
-
-const getAll = async (filters: Filters) => {
+const getAll = async (project_id: number, queue?: boolean) => {
   let query = supabase.from('blog_posts')
-    .select('*', { count: 'exact', head: false })
-    .match({
-      "user_id": await getUserId(),
-      "project_id": filters.project_id
-    });
+    .select('*')
+    .eq("project_id", project_id)
 
-  if (filters.status) {
-    query = query.eq("status", filters.status)
-  }
-  if (filters.topic) {
-    const { data: selectedTopic } = await supabase.from('topic_clusters')
-      .select('name').eq("id", +filters.topic).limit(1).single();
-    query = query.eq("topic", selectedTopic?.name)
-  }
-  if (filters.query) {
-    query = query.textSearch(
-      'headline',
-      filters.query,
-      {
-        type: "websearch",
-        config: "english",
-      },
-    )
+  if (queue) {
+    query = query.in("status", ["queue", "ready_to_view", "error", "writing"])
   }
 
-  return query.order("created_at", { ascending: false }).range((filters.page - 1) * 25, (filters.page * 25) - 1).throwOnError();
+  return query.order("created_at", { ascending: false }).throwOnError();
 }
 
-const useGetAll = (filters: Omit<Filters, "project_id">) => {
-  const activeProjectId = useActiveProject().id;
-  const tmpFilters = { ...filters, page: filters?.page || 1, project_id: activeProjectId }
+const useGetAll = ({ queue }: { queue?: boolean }) => {
+  const projectId = useProjectId();
 
   return useQuery({
-    enabled: activeProjectId !== null,
-    queryKey: queryKeys.blogPosts(tmpFilters),
-    queryFn: () => getAll(tmpFilters),
-    onError: (error) => {
-      console.error('blogPosts.useGetAll', error)
-    },
+    enabled: projectId !== null || projectId !== 0,
+    queryKey: queryKeys.blogPosts(projectId, queue),
+    queryFn: () => getAll(projectId, queue),
+    onError: console.error,
     keepPreviousData: true,
     refetchOnWindowFocus: true
-  });
-};
-
-const count = async () => {
-  return supabase.from('blog_posts').select('*', { count: 'exact', head: true }).eq('user_id', await getUserId()).throwOnError()
-}
-
-const useCount = () => {
-  return useQuery({
-    queryKey: queryKeys.blogPostsCount(),
-    queryFn: () => count(),
-    onError: (error) => {
-      console.error('blogPosts.useCount', error)
-    },
-  });
-}
-
-const getAllSeedKeywords = async () => {
-  return supabase.from('blog_posts').select('keyword').eq('user_id', await getUserId()).limit(500).throwOnError()
-}
-
-const useGetAllSeedKeywords = () => {
-  return useQuery({
-    queryKey: queryKeys.getAllSeedKeywords(),
-    queryFn: () => getAllSeedKeywords(),
-    select: ({ data }) => {
-      return data?.map((i) => i.keyword);
-    },
-    onError: (error) => {
-      console.error('blogPosts.useGetAllSeedKeywords', error)
-    },
   });
 };
 
@@ -126,9 +63,7 @@ const useDelete = () => {
         queryKey: ['blog_posts'],
       });
     },
-    onError: (error, variables) => {
-      console.log('blogPosts.useDelete', { error, variables })
-    },
+    onError: console.error,
   })
 }
 
@@ -152,9 +87,7 @@ const useUpdate = () => {
         queryKey: ["blog_posts"],
       });
     },
-    onError: (error, variables) => {
-      console.log('blogPosts.useUpdate', { error, variables })
-    },
+    onError: console.error,
   })
 }
 
@@ -163,8 +96,6 @@ const useBlogPosts = () => {
   return {
     getOne: useGetOne,
     getAll: useGetAll,
-    count: useCount,
-    getAllSeedKeywords: useGetAllSeedKeywords,
     delete: useDelete(),
     update: useUpdate()
   }

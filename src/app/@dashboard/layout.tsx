@@ -12,7 +12,7 @@ const { Header, Sider, Content, Footer } = Layout;
 const { Title } = Typography;
 
 const data = [
-  { id: "project", link: '/projects', label: 'Project', icon: IconStack2 },
+  { id: "project", link: '/projects', label: 'Projects', icon: IconStack2 },
   { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },

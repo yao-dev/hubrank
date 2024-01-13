@@ -76,8 +76,8 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
         layout="vertical"
         onFinish={onFinish}
       >
-        <Form.Item name="seed_keyword" label="Seed Keyword" help="" rules={[{ required: true, type: "string", max: 30, message: "Type a seed keyword" }]} hasFeedback>
-          <Input placeholder="Seed" />
+        <Form.Item name="seed_keyword" label="Main Keyword" help="" rules={[{ required: true, type: "string", max: 30, message: "Type a main keyword" }]} hasFeedback>
+          <Input placeholder="Main" />
         </Form.Item>
 
         <Form.Item name="title" label="Title" help="Leave blank to let the AI write the title" rules={[{ type: "string", max: 50 }]} hasFeedback>

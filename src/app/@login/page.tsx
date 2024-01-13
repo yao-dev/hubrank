@@ -144,7 +144,7 @@ export default function AuthPage() {
 
           <Form.Item style={{ margin: 0, marginTop: 24 }}>
             <Button size="large" block type="primary" htmlType="submit" loading={isAuthLoading}>
-              Continue
+              {type === "otp" ? "Login" : "Continue"}
             </Button>
           </Form.Item>
         </Form>

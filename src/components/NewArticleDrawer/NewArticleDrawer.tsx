@@ -1,44 +1,70 @@
-'use client';
+'use client';;
 import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
+import useWritingStyles from "@/hooks/useWritingStyles";
 import { contentTypes, purposes, tones } from "@/options";
-import { IconCircleMinus } from "@tabler/icons-react";
-import { App, Button, Drawer, Flex, Form, Input, Segmented, Select, Space, Switch } from "antd";
+import {
+  StarOutlined
+} from '@ant-design/icons';
+import { App, Button, Drawer, Flex, Form, Input, Segmented, Select, Switch } from "antd";
 import axios from "axios";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  selectedKeyword?: string;
 }
 
-const NewArticleDrawer = ({ open, onClose }: Props) => {
+const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
   const { message, notification } = App.useApp();
   const [form] = Form.useForm();
   const projectId = useProjectId();
   const { data: project, isLoading } = useProjects().getOne(projectId)
   const [submitLoading, setSubmitLoading] = useState(false);
+  const { data: writingStyles } = useWritingStyles().getAll();
 
   const keywords = useMemo(() => {
-    if (!project) return [];
+    if (!project || !project?.keywords?.length) return [];
 
-    return project.keywords?.result?.map((item: any) => {
+    return project.keywords.map((item: any) => {
       return {
-        cpc: item.cpc || "N/A",
-        keyword: item.keyword,
-        value: item.keyword,
-        competition: item.competition || "N/A",
-        search_volume: item.search_volume || "N/A",
+        cpc: item?.keyword_data?.keyword_info.cpc || "N/A",
+        keyword: item?.keyword_data?.keyword || "N/A",
+        value: item?.keyword_data?.keyword || "N/A",
+        competition: item?.keyword_data?.keyword_info.competition || "N/A",
+        search_volume: item?.keyword_data?.keyword_info.search_volume || "N/A",
       }
     })
-  }, [project])
+  }, [project]);
+
+  useEffect(() => {
+    form.setFieldValue("seed_keyword", selectedKeyword ? selectedKeyword : [])
+  }, [selectedKeyword])
+
+  useEffect(() => {
+    if (!!writingStyles?.data && writingStyles.data.length > 0) {
+      form.setFieldValue("writing_style_id", writingStyles.data.find((i) => !!i.default).id)
+    }
+  }, [writingStyles])
 
   const onFinish = async (values: any) => {
     try {
-      setSubmitLoading(true)
-      const { data } = await axios.post("/api/article-queue", {
+      setSubmitLoading(true);
+      let title = "";
+
+      if (values.title_mode === "Custom") {
+        title = values.custom_title;
+      }
+      if (values.title_mode === "Inspo") {
+        title = values.inspo_title;
+      }
+
+      const { data } = await axios.post("/api/queue", {
         ...values,
+        title,
+        writing_style_id: values.writing_style_id ? +values.writing_style_id : null,
         user_id: await getUserId(),
         project_id: projectId
       });
@@ -48,12 +74,10 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
       }
 
       onClose()
-      form.resetFields();
       message.success('Article added in the queue!');
     } catch (e) {
-      console.error(e);
       notification.error({
-        message: "We had an issue adding your article to the queue please try again",
+        message: "We had an issue adding your article in the queue please try again",
         placement: "bottomRight",
         role: "alert",
         duration: 5,
@@ -69,7 +93,10 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
     <Drawer
       title="New article"
       width={600}
-      onClose={onClose}
+      onClose={() => {
+        onClose();
+        form.resetFields()
+      }}
       open={open}
       closable={!submitLoading}
       styles={{
@@ -87,7 +114,7 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
       // }
       footer={
         <Flex justify="end" align="center" gap="middle">
-          <Button onClick={onClose}>Cancel</Button>
+          <Button disabled={submitLoading} onClick={onClose}>Cancel</Button>
           <Button onClick={() => form.submit()} type="primary" loading={submitLoading}>
             Write article
           </Button>
@@ -97,23 +124,24 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
       <Form
         form={form}
         name="article"
+        disabled={submitLoading}
         initialValues={{
-          seed_keyword: [],
-          write_own_title: false,
-          title: "",
+          seed_keyword: "",
+          title_mode: "Custom",
+          custom_title: "",
+          inspo_title: "",
           content_type: "",
           purpose: "",
+          writing_mode: "Custom",
+          writing_style_id: null,
           tones: [],
           clickbait: false,
+          perspective: "",
           words_count: 1500,
           additional_information: "",
           sitemap: "",
-          external_sources: [
-            {
-              url: "",
-              objective: "",
-            }
-          ],
+          external_sources: "",
+          external_sources_objective: "",
           with_featured_image: true,
           with_table_of_content: false,
           with_introduction: true,
@@ -129,44 +157,58 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
         layout="vertical"
         onFinish={onFinish}
       >
-        <Form.Item name="seed_keyword" label="Seed Keyword" help="Type or select one keyword" rules={[{ required: true, type: "array", len: 1, message: "Add a seed keyword" }]} hasFeedback>
-          <Select
-            mode="tags"
-            showSearch
-            placeholder="Seed keyword"
-            allowClear
-            optionLabelProp="keyword"
-            options={keywords}
-            optionRender={(option) => (
-              <Space>
-                <span><b>{option.data.keyword}</b> |</span>
-                <span>competition: {option.data.competition} |</span>
-                <span>volume: {option.data.search_volume}</span>
-              </Space>
-            )}
-          />
+        <Form.Item name="seed_keyword" label="Main Keyword" help="Type your main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+          <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
         </Form.Item>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-          <Form.Item name="write_own_title" style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>Write my own title</span>
-        </Flex>
+        <Form.Item
+          name="title_mode"
+          label="Title mode"
+          rules={[{ required: true }]}
+          style={{ marginTop: 42 }}
+        >
+          <Segmented defaultValue={"Custom"} options={["Custom", "Inspo", "AI"]} style={{ width: "fit-content" }} />
+        </Form.Item>
 
         <Form.Item
           noStyle
-          shouldUpdate={(prevValues, currentValues) => prevValues.write_own_title !== currentValues.write_own_title}
+          shouldUpdate={(prevValues, currentValues) => prevValues.title_mode !== currentValues.title_mode}
         >
           {({ getFieldValue }) => {
-            return !!getFieldValue('write_own_title') ? (
-              <>
-                <Form.Item name="title" label="Title" help="Leave blank to let the AI write the title" rules={[{ type: "string", max: 75 }]} hasFeedback>
-                  <Input placeholder="Title" count={{ show: true, max: 75 }} />
+            if (getFieldValue('title_mode') === "Custom") {
+              return (
+                <Form.Item name="custom_title" label="Custom title" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
+                  <Input placeholder="Custom title" count={{ show: true, max: 75 }} />
                 </Form.Item>
-              </>
-            ) : null
+              )
+            }
 
+            if (getFieldValue('title_mode') === "Inspo") {
+              return (
+                <>
+                  <Form.Item name="inspo_title" label="Inspo title" help="" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
+                    <Input placeholder="Inspo title" count={{ show: true, max: 75 }} />
+                  </Form.Item>
+                  <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
+                    <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
+                      <Switch />
+                    </Form.Item>
+                    <span>Clickbait title</span>
+                  </Flex>
+                </>
+              )
+            }
+
+            if (getFieldValue('title_mode') === "AI") {
+              return (
+                <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
+                  <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
+                    <Switch />
+                  </Form.Item>
+                  <span>Clickbait title</span>
+                </Flex>
+              )
+            }
           }}
         </Form.Item>
 
@@ -186,24 +228,76 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
           />
         </Form.Item>
 
-        <Form.Item name="tones" label="Tones" rules={[{ required: true, type: "array", message: "Select at least a tone" }]} hasFeedback>
-          <Select
-            showSearch
-            mode="multiple"
-            allowClear
-            placeholder="Select at least a tone"
-            options={tones}
-            maxTagCount="responsive"
-            maxLength={5}
-          />
+        <Form.Item
+          name="writing_mode"
+          label="Writing style"
+          rules={[{ required: true }]}
+        >
+          <Segmented defaultValue={"custom"} options={["custom", "tones"]} style={{ width: "fit-content" }} />
         </Form.Item>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-          <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>Clickbait</span>
-        </Flex>
+        <Form.Item
+          noStyle
+          shouldUpdate={(prevValues, currentValues) => prevValues.writing_mode !== currentValues.writing_mode}
+        >
+          {({ getFieldValue }) => {
+            return getFieldValue('writing_mode') === "custom" ? (
+              <Form.Item name="writing_style_id" validateTrigger="onBlur" rules={[{ required: true, type: "string", message: "Select a writing style" }]} hasFeedback>
+                <Select
+                  placeholder="Select a writing style"
+                  options={writingStyles?.data?.map(i => ({
+                    value: i.id,
+                    label: i.name,
+                  }))}
+                  maxTagCount="responsive"
+                  maxLength={5}
+                />
+              </Form.Item>
+
+            ) : (
+              <Form.Item name="tones" validateTrigger="onBlur" rules={[{ required: true, type: "array", message: "Select at least a tone" }]} hasFeedback>
+                <Select
+                  showSearch
+                  mode="multiple"
+                  allowClear
+                  placeholder="Select at least a tone"
+                  options={tones}
+                  maxTagCount="responsive"
+                  maxLength={5}
+                />
+              </Form.Item>
+            )
+          }}
+        </Form.Item>
+
+        <Form.Item
+          name="perspective"
+          label="Perspective"
+          rules={[{ required: true }]}
+          hasFeedback
+        >
+          <Segmented
+            options={[
+              {
+                label: "1st person singular",
+                value: "first_person_singular"
+              },
+              {
+                label: "1st person plural",
+                value: "first_person_plural"
+              },
+              {
+                label: "2nd person",
+                value: "second_person"
+              },
+              {
+                label: "3rd person",
+                value: "third_person"
+              },
+            ]}
+            style={{ width: "fit-content" }}
+          />
+        </Form.Item>
 
         <Flex vertical gap="small" style={{ marginBottom: 24 }}>
           <Form.Item
@@ -253,65 +347,48 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
             <Input placeholder="Sitemap url" />
           </Form.Item>
 
-          <Form.List name="external_sources">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map((field, index) => (
-                  <Form.Item
-                    key={field.key}
-                    label={index === 0 ? 'External sources' : ''}
-                    tooltip={index === 0 ? "Add sources to help the AI write content with real time data that it might not have knowledge of (sources with empty objective will be ignored)" : ''}
-                  >
-                    <Flex align="center" gap="small">
-                      <Form.Item
-                        {...field}
-                        name={[field.name, 'url']}
-                        validateTrigger="onBlur"
-                        rules={[{
-                          required: false,
-                          type: "url",
-                          message: "Enter a valid url",
-                          transform: (url: any) => {
-                            if (!url?.startsWith('https://')) {
-                              url = `https://${url}`
-                            }
-                            return new URL(url).origin
-                          }
-                        }]}
-                        noStyle
-                        hasFeedback
-                      >
-                        <Input placeholder="Url" />
-                      </Form.Item>
+          <Form.Item
+            name="external_sources"
+            label="External source"
+            rules={[{ type: "string" }]}
+            help="Add a source to help the AI write content with real time data that it might not have knowledge of (invalid links will be ignored)"
+          >
+            <Input.TextArea
+              placeholder={`reddit.com\nquora.com`}
+              autoSize={{ minRows: 3, maxRows: 5 }}
+            // count={{
+            //   show: true,
+            //   max: 150,
+            // }}
+            />
+          </Form.Item>
 
-                      <Form.Item
-                        {...field}
-                        name={[field.name, 'objective']}
-                        validateTrigger="onBlur"
-                        rules={[{ required: false, message: 'Add an objective to the url', type: "string", max: 75 }]}
-                        noStyle
-                        hasFeedback
-                      >
-                        <Input placeholder="Objective" count={{ show: true, max: 75 }} />
-                      </Form.Item>
+          <Form.Item
+            noStyle
+            shouldUpdate={(prevValues, currentValues) => prevValues.external_sources !== currentValues.external_sources}
+          >
+            {({ getFieldValue }) => {
+              return getFieldValue('external_sources')?.length > 3 ? (
+                <Form.Item
+                  name="external_sources_objective"
+                  label="External sources objective"
+                  rules={[{ required: true, type: "string", max: 500 }]}
+                  help="Simply describe what you want to do with the content we scrape"
+                  hasFeedback
+                >
+                  <Input.TextArea
+                    placeholder="Type here"
+                    autoSize={{ minRows: 3, maxRows: 5 }}
+                    count={{
+                      show: true,
+                      max: 150,
+                    }}
+                  />
+                </Form.Item>
+              ) : null
 
-                      {fields.length > 1 ? (
-                        <IconCircleMinus size={24} onClick={() => remove(field.name)} style={{ cursor: 'pointer' }} />
-                      ) : null}
-
-                    </Flex>
-                  </Form.Item>
-                ))}
-                {fields.length < 3 && (
-                  <Form.Item>
-                    <Button type="dashed" onClick={() => add()} block>
-                      + Add url
-                    </Button>
-                  </Form.Item>
-                )}
-              </>
-            )}
-          </Form.List>
+            }}
+          </Form.Item>
         </Flex>
 
         <Flex vertical>
@@ -380,7 +457,7 @@ const NewArticleDrawer = ({ open, onClose }: Props) => {
                   </Form.Item>
 
                   <Form.Item name="image_source" label="Image source" rules={[]}>
-                    <Segmented options={['Unsplash', 'Pexels', 'AI']} style={{ width: "fit-content" }} />
+                    <Segmented options={['Unsplash', 'Pexels', { label: 'iStock Photo', value: "istock", icon: <StarOutlined twoToneColor="#ffec3d" /> }]} style={{ width: "fit-content" }} />
                   </Form.Item>
                 </>
               ) : null

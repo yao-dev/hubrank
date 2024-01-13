@@ -79,6 +79,13 @@ export default function RootLayout({
                   "colorPrimary": "#232323",
                   "colorInfo": "#232323",
                   "wireframe": false
+                },
+                components: {
+                  Alert: {
+                    colorInfo: "#1677FF",
+                    colorInfoBg: "#E6F4FF",
+                    colorInfoBorder: "#91CAFF"
+                  }
                 }
               }}
             >

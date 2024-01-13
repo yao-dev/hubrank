@@ -9,7 +9,7 @@ const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "")
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const seedKeyword = body.seed_keyword[0];
+  const seedKeyword = body.seed_keyword;
 
   const [{ data: relatedKeywords }, { data: serpDataForSeedKeyword }] = await Promise.all([
     getRelatedKeywords({ keyword: seedKeyword, depth: 2, limit: 50 }),
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "error fetching related keywords" }, { status: 500 })
   }
   if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
-    return NextResponse.json({ message: "error fetching competitors ranking for seed keyword" }, { status: 500 })
+    return NextResponse.json({ message: "error fetching competitors ranking for main keyword" }, { status: 500 })
   }
 
   try {
@@ -115,12 +115,12 @@ export async function POST(request: Request) {
     });
 
     // result = result.replace("```json", "").replace("```", "");
-    result = result.slice(7, -3)
+    result = result.slice(7, -3); // remove the following prefix and suffix ```json ```
     result = JSON.parse(result);
 
     const images = [];
 
-    const { data: featuredImages } = await getImage("unsplash", result?.featured_image_query || "")
+    const featuredImages = await getImage("unsplash", result?.featured_image_query || "")
 
     for (const outline of result.outlines) {
       if (outline.image_queries) {

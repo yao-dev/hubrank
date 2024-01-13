@@ -157,43 +157,43 @@ export const contentTypes = [
     "value": "interviews",
     "label": "Interviews",
     "description": "Conversations with individuals, experts, or influencers in a particular field, providing insights and diverse perspectives.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "research_papers_whitepapers",
     "label": "Research Papers/Whitepapers",
     "description": "Detailed, well-researched documents that explore a specific topic, often backed by data, statistics, and references.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "infographics",
     "label": "Infographics",
     "description": "Visual representations of information, data, or concepts, designed to convey complex ideas in an easily digestible format.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "videos",
     "label": "Videos",
     "description": "Visual content in video format, which can include tutorials, vlogs, animations, interviews, documentaries, and more.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "podcasts",
     "label": "Podcasts",
     "description": "Audio content in episodic format, where hosts or guests discuss various topics, often offering insights and expertise.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "ebooks_guides",
     "label": "Ebooks/Guides",
     "description": "Comprehensive and longer-form content that provides an in-depth exploration of a particular topic. Ebooks are often downloadable and can serve as lead magnets.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "quizzes_polls",
     "label": "Quizzes and Polls",
     "description": "Interactive content that engages users by testing their knowledge or gathering their opinions on specific subjects.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "case_stories_testimonials",
@@ -208,16 +208,22 @@ export const contentTypes = [
     enabled: true,
   },
   {
+    "value": "product_comparison",
+    "label": "Product Comparison",
+    "description": "Detailed comparisons of two or more products, services, concepts, or ideas, helping readers make informed decisions.",
+    enabled: true,
+  },
+  {
     "value": "personal_stories_memoirs",
     "label": "Personal Stories/Memoirs",
     "description": "Narrative-driven content that shares personal experiences, often used to create connections and evoke emotions.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "faqs_guides",
     "label": "FAQs and Guides",
     "description": "Frequently asked questions and detailed guides that address common concerns and provide comprehensive answers.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "roundup_posts",
@@ -229,13 +235,13 @@ export const contentTypes = [
     "value": "comparative_analysis",
     "label": "Comparative Analysis",
     "description": "Detailed comparisons of two or more products, services, concepts, or ideas, helping readers make informed decisions.",
-    enabled: true,
+    enabled: false,
   },
   {
     "value": "guest_posts",
     "label": "Guest Posts",
     "description": "Content contributed by guest writers who are experts or influencers in a particular field, offering fresh perspectives and insights.",
-    enabled: true,
+    enabled: false,
   }
 ].filter(i => i.enabled);
 
@@ -275,34 +281,40 @@ export const tones = [
 
 export const languages = [
   {
-    "value": "english",
-    "label": "English",
-    "language_code": "en",
+    "name": "american",
+    "label": "English (us)",
+    "value": "en",
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/US.svg"
   },
   {
-    "value": "spanish",
+    "name": "english",
+    "label": "English (uk)",
+    "value": "gb", // gb
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/GB.svg",
+  },
+  {
+    "name": "spanish",
     "label": "Spanish",
-    "language_code": "es",
+    "value": "es",
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/ES.svg"
   },
   {
-    "value": "portuguese",
+    "name": "portuguese",
     "label": "Portuguese",
-    "language_code": "pt",
+    "value": "pt",
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/PT.svg"
   },
   {
-    "value": "german",
-    "label": "German",
-    "language_code": "de",
-  },
-  {
-    "value": "french",
+    "name": "french",
     "label": "French",
-    "language_code": "fr",
+    "value": "fr",
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/FR.svg"
   },
   {
-    "value": "italian",
+    "name": "italian",
     "label": "Italian",
-    "language_code": "it",
+    "value": "it",
+    "image": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/IT.svg"
   },
 ];
 

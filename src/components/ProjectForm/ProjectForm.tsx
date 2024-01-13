@@ -4,7 +4,8 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useProjectId from "@/hooks/useProjectId";
-import { Button, Form, Input } from "antd";
+import { Button, Flex, Form, Input, Popconfirm } from "antd";
+import { useRouter } from "next/navigation";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -12,6 +13,7 @@ const ProjectForm = () => {
   const { data: project } = getOne(projectId)
   // const form = useProjectForm(project);
   const [form] = Form.useForm();
+  const router = useRouter()
 
   // if (projectId === null || tab !== "settings") {
   //   return null;
@@ -89,8 +91,8 @@ const ProjectForm = () => {
       <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
         <Input placeholder="Name" count={{ show: true, max: 50 }} />
       </Form.Item>
-      <Form.Item name="seed_keyword" label="Seed keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a seed keyword" }]} hasFeedback>
-        <Input placeholder="Seed keyword" count={{ show: true, max: 75 }} />
+      <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+        <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
       </Form.Item>
       <Form.Item
         name="website"
@@ -123,9 +125,30 @@ const ProjectForm = () => {
       <Form.Item />
 
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Update
-        </Button>
+        <Flex justify="space-between">
+          <Popconfirm
+            title="Delete project"
+            description={`Are you sure to delete this project?`}
+            onConfirm={(e) => {
+              e?.preventDefault()
+              deleteProject.mutate(projectId)
+              router.replace("/projects?tab=articles")
+            }}
+            onCancel={(e) => {
+              e?.preventDefault()
+            }}
+            okText="Yes"
+            cancelText="No"
+            okButtonProps={{
+              danger: true
+            }}
+          >
+            <Button danger>Delete project</Button>
+          </Popconfirm>
+          <Button type="primary" htmlType="submit">
+            Update
+          </Button>
+        </Flex>
       </Form.Item>
     </Form>
   );

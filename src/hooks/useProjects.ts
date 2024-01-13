@@ -4,11 +4,9 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
 import axios from "axios";
-import { getRelatedKeywords } from "@/helpers/seo";
 
 const getOne = async (project_id: number) => {
-  // if (!project_id) return;
-  return supabase.from('projects').select('*').eq('id', project_id).single()
+  return supabase.from('projects').select('*').eq('id', project_id).limit(1).single()
 }
 
 const useGetOne = (project_id: number) => {
@@ -57,26 +55,23 @@ const useGetAll = ({ enabled }: UseGetAll = {}) => {
 
 type Create = {
   name: string;
-  description?: string;
+  // description?: string;
   target_audience?: string;
   website: string;
-  seed_keyword: string;
+  // seed_keyword: string;
 }
 
 const create = async (data: Create) => {
   let metatags = null;
-  let keywords = null;
+  // let keywords = null;
 
   try {
-    const [websiteTagsResponse, keywordsResponse] = await Promise.all([
+    const [websiteTagsResponse] = await Promise.all([
       axios.post("/api/get-website-meta", { website: data.website }),
-      getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
+      // getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
     ])
     metatags = websiteTagsResponse.data;
-    keywords = {
-      result: keywordsResponse.data.tasks[0].result,
-      result_count: keywordsResponse.data.tasks[0].result_count,
-    }
+    // keywords = keywordsResponse;
   } catch { }
 
   return supabase
@@ -84,10 +79,11 @@ const create = async (data: Create) => {
     .insert({
       ...data,
       metatags,
-      keywords,
+      // keywords,
       user_id: await getUserId()
     })
     .select()
+    .limit(1)
     .single()
     .throwOnError()
 }
@@ -97,11 +93,9 @@ const useCreate = () => {
   return useMutation({
     mutationFn: create,
     onSuccess: () => {
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.projects(),
-        });
-      }, 2000)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.projects(),
+      });
     },
     onError: (error, variables) => {
       console.log('projects.useCreate', { error, variables })
