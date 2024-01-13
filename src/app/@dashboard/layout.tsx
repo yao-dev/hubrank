@@ -57,7 +57,6 @@ export default function DashboardLayout({
 
   const logout = () => {
     supabase.auth.signOut();
-    router.replace("/");
     resetApp()
   }
 

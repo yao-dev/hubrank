@@ -3,16 +3,14 @@ import supabase from "@/helpers/supabase";
 import useResetApp from "@/hooks/useResetApp";
 import useSession from "@/hooks/useSession";
 import { useRouter } from "next/navigation";
-import React, { ReactNode, useState } from "react";
+import React, { ReactNode } from "react";
 
 const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) => {
   const sessionStore = useSession();
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const resetApp = useResetApp();
 
   React.useEffect(() => {
-    setIsLoading(true)
     supabase.auth.getSession()
       .then(({ data: { session }, error }) => {
         sessionStore.setSession(session);
@@ -20,9 +18,6 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
           resetApp();
           router.replace('/')
         }
-      })
-      .finally(() => {
-        setIsLoading(false)
       })
   }, [])
 
@@ -41,10 +36,6 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
       subscription?.unsubscribe();
     };
   }, []);
-
-  if (isLoading) {
-    return null;
-  }
 
   return (
     <SessionContext.Provider value={{ session: sessionStore.session }}>
