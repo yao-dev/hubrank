@@ -1,7 +1,7 @@
 'use client';;
 import { Layout, Typography, Menu, Button, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import ProjectSelect from '@/components/ProjectSelect';
 import { IconSettings, IconPlug, IconCreditCard, IconStack2, IconLogout } from '@tabler/icons-react';
@@ -49,11 +49,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const resetApp = useResetApp();
 
-  useEffect(() => {
-    if (pathname === '/') {
-      router.replace('/projects');
-    }
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (pathname === '/') {
+  //     router.replace('/projects');
+  //   }
+  // }, [pathname]);
 
   const logout = () => {
     supabase.auth.signOut();
