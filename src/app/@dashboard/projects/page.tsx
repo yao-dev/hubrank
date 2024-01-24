@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { IconPlus, IconSettings, IconTrash } from '@tabler/icons-react';
+import { IconSettings, IconTrash } from '@tabler/icons-react';
 import { useRouter } from "next/navigation";
 import useProjects from "@/hooks/useProjects";
 import {
@@ -224,6 +224,9 @@ export default function ProjectList() {
                           }}
                           okText="Yes"
                           cancelText="No"
+                          okButtonProps={{
+                            danger: true
+                          }}
                         >
                           <IconTrash onClick={(e) => e.preventDefault()} size="1.4rem" stroke={1.5} />
                         </Popconfirm>
