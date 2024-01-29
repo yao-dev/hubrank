@@ -3,51 +3,80 @@ import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
 import useWritingStyles from "@/hooks/useWritingStyles";
-import { contentTypes, purposes, tones } from "@/options";
-import {
-  StarOutlined
-} from '@ant-design/icons';
-import { App, Button, Drawer, Flex, Form, Input, Segmented, Select, Switch } from "antd";
+import { App, Button, Drawer, Flex, Form, Steps } from "antd";
 import axios from "axios";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import SettingsForm from "./SettingsForm";
+import HeadlineForm from "./HeadlineForm";
+import OutlineForm from "./OutlineForm";
+
+const steps = [
+  {
+    title: 'Article settings',
+  },
+  {
+    title: 'Select headline',
+  },
+  {
+    title: 'Select outline',
+  },
+]
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  selectedKeyword?: string;
+  selectedKeyword?: any;
 }
 
 const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
   const { message, notification } = App.useApp();
-  const [form] = Form.useForm();
   const projectId = useProjectId();
   const { data: project, isLoading } = useProjects().getOne(projectId)
   const [submitLoading, setSubmitLoading] = useState(false);
   const { data: writingStyles } = useWritingStyles().getAll();
+  const [headlines, setHeadlines] = useState([]);
 
-  const keywords = useMemo(() => {
-    if (!project || !project?.keywords?.length) return [];
+  const [currentStep, setCurrentStep] = useState(0);
+  const [lockedStep, setLockedStep] = useState<number | void>();
+  const [submittingStep, setSubmittingStep] = useState<number | void>();
+  const [settingsForm] = Form.useForm();
+  const [headlineForm] = Form.useForm();
+  const [outlineForm] = Form.useForm();
 
-    return project.keywords.map((item: any) => {
-      return {
-        cpc: item?.keyword_data?.keyword_info.cpc || "N/A",
-        keyword: item?.keyword_data?.keyword || "N/A",
-        value: item?.keyword_data?.keyword || "N/A",
-        competition: item?.keyword_data?.keyword_info.competition || "N/A",
-        search_volume: item?.keyword_data?.keyword_info.search_volume || "N/A",
-      }
-    })
-  }, [project]);
+  const prev = () => {
+    if (settingsForm.getFieldValue("title_mode") === "custom") {
+      setCurrentStep(0);
+      return;
+    }
+    setCurrentStep(currentStep - 1);
+  };
+
+  // const keywords = useMemo(() => {
+  //   if (!project || !project?.keywords?.length) return [];
+
+  //   return project.keywords.map((item: any) => {
+  //     return {
+  //       cpc: item?.keyword_data?.keyword_info.cpc || "N/A",
+  //       keyword: item?.keyword_data?.keyword || "N/A",
+  //       value: item?.keyword_data?.keyword || "N/A",
+  //       competition: item?.keyword_data?.keyword_info.competition || "N/A",
+  //       search_volume: item?.keyword_data?.keyword_info.search_volume || "N/A",
+  //     }
+  //   })
+  // }, [project]);
 
   useEffect(() => {
-    form.setFieldValue("seed_keyword", selectedKeyword ? selectedKeyword : [])
-  }, [selectedKeyword])
+    if (project && open) {
+      settingsForm.setFieldValue("language_id", selectedKeyword ? +selectedKeyword.language_id : +project.language_id)
+      settingsForm.setFieldValue("seed_keyword", selectedKeyword?.keyword || "")
+    }
+  }, [project, open, selectedKeyword])
 
   useEffect(() => {
     if (!!writingStyles?.data && writingStyles.data.length > 0) {
-      form.setFieldValue("writing_style_id", writingStyles.data.find((i) => !!i.default).id)
+      settingsForm.setFieldValue("writing_style_id", writingStyles.data.find((i) => !!i.default).id)
     }
-  }, [writingStyles])
+  }, [writingStyles]);
 
   const onFinish = async (values: any) => {
     try {
@@ -66,7 +95,8 @@ const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
         title,
         writing_style_id: values.writing_style_id ? +values.writing_style_id : null,
         user_id: await getUserId(),
-        project_id: projectId
+        project_id: projectId,
+        language_id: +values.language_id
       });
 
       if (data?.error) {
@@ -85,9 +115,10 @@ const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
     } finally {
       setSubmitLoading(false)
     }
+
   };
 
-  if (isLoading) return null
+  if (isLoading) return null;
 
   return (
     <Drawer
@@ -95,385 +126,96 @@ const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
       width={600}
       onClose={() => {
         onClose();
-        form.resetFields()
+        settingsForm.resetFields()
+        headlineForm.resetFields()
+        outlineForm.resetFields()
       }}
       open={open}
-      closable={!submitLoading}
+      destroyOnClose
+      closable={submittingStep === undefined}
       styles={{
         body: {
           paddingBottom: 80,
         },
       }}
-      // extra={
-      //   <Space>
-      //     <Button onClick={onClose}>Cancel</Button>
-      //     <Button onClick={() => form.submit()} type="primary">
-      //       Write article
-      //     </Button>
-      //   </Space>
-      // }
       footer={
-        <Flex justify="end" align="center" gap="middle">
-          <Button disabled={submitLoading} onClick={onClose}>Cancel</Button>
-          <Button onClick={() => form.submit()} type="primary" loading={submitLoading}>
-            Write article
-          </Button>
+        <Flex justify="space-between">
+          <Button disabled={submittingStep !== undefined} onClick={onClose}>Cancel</Button>
+          <Flex justify="end" align="center" gap="middle">
+            {currentStep > 0 && (
+              <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
+                Previous
+              </Button>
+            )}
+
+            {currentStep === 0 && (
+              <Button onClick={() => settingsForm.submit()} type="primary" loading={submittingStep === 0}>
+                Next
+              </Button>
+            )}
+            {currentStep === 1 && (
+              <Button onClick={() => headlineForm.submit()} type="primary" loading={submittingStep === 1}>
+                Next
+              </Button>
+            )}
+            {currentStep === 2 && (
+              <Button onClick={() => outlineForm.submit()} type="primary" loading={submittingStep === 2}>
+                Write article
+              </Button>
+            )}
+          </Flex>
         </Flex>
       }
     >
-      <Form
-        form={form}
-        name="article"
-        disabled={submitLoading}
-        initialValues={{
-          seed_keyword: "",
-          title_mode: "Custom",
-          custom_title: "",
-          inspo_title: "",
-          content_type: "",
-          purpose: "",
-          writing_mode: "Custom",
-          writing_style_id: null,
-          tones: [],
-          clickbait: false,
-          perspective: "",
-          words_count: 1500,
-          additional_information: "",
-          sitemap: "",
-          external_sources: "",
-          external_sources_objective: "",
-          with_featured_image: true,
-          with_table_of_content: false,
-          with_introduction: true,
-          with_conclusion: true,
-          with_key_takeways: false,
-          with_faq: false,
-          with_sections_image: false,
-          with_sections_image_mode: 'Auto',
-          image_source: 'Unsplash',
-          with_seo: true,
-        }}
-        autoComplete="off"
-        layout="vertical"
-        onFinish={onFinish}
-      >
-        <Form.Item name="seed_keyword" label="Main Keyword" help="Type your main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
-          <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
-        </Form.Item>
+      <Flex vertical gap="large">
+        <Steps
+          size="small"
+          current={currentStep}
+          items={steps}
+        />
 
-        <Form.Item
-          name="title_mode"
-          label="Title mode"
-          rules={[{ required: true }]}
-          style={{ marginTop: 42 }}
-        >
-          <Segmented defaultValue={"Custom"} options={["Custom", "Inspo", "AI"]} style={{ width: "fit-content" }} />
-        </Form.Item>
-
-        <Form.Item
-          noStyle
-          shouldUpdate={(prevValues, currentValues) => prevValues.title_mode !== currentValues.title_mode}
-        >
-          {({ getFieldValue }) => {
-            if (getFieldValue('title_mode') === "Custom") {
-              return (
-                <Form.Item name="custom_title" label="Custom title" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
-                  <Input placeholder="Custom title" count={{ show: true, max: 75 }} />
-                </Form.Item>
-              )
-            }
-
-            if (getFieldValue('title_mode') === "Inspo") {
-              return (
-                <>
-                  <Form.Item name="inspo_title" label="Inspo title" help="" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
-                    <Input placeholder="Inspo title" count={{ show: true, max: 75 }} />
-                  </Form.Item>
-                  <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
-                    <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
-                      <Switch />
-                    </Form.Item>
-                    <span>Clickbait title</span>
-                  </Flex>
-                </>
-              )
-            }
-
-            if (getFieldValue('title_mode') === "AI") {
-              return (
-                <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
-                  <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
-                    <Switch />
-                  </Form.Item>
-                  <span>Clickbait title</span>
-                </Flex>
-              )
-            }
-          }}
-        </Form.Item>
-
-        <Form.Item name="content_type" label="Content type" rules={[{ required: true, type: "string", message: "Select a content type" }]} hasFeedback>
-          <Select
-            showSearch
-            placeholder="Select a content type"
-            options={contentTypes}
+        {currentStep === 0 && (
+          <SettingsForm
+            form={settingsForm}
+            isLocked={lockedStep !== undefined && lockedStep >= 0}
+            setLockedStep={setLockedStep}
+            submittingStep={submittingStep}
+            setCurrentStep={setCurrentStep}
+            setHeadlines={setHeadlines}
+            setSubmittingStep={setSubmittingStep}
           />
-        </Form.Item>
+        )}
 
-        <Form.Item name="purpose" label="Purpose" rules={[{ required: true, type: "string", message: "Select a purpose" }]} hasFeedback>
-          <Select
-            showSearch
-            placeholder="Select a purpose"
-            options={purposes}
+        {currentStep === 1 && (
+          <HeadlineForm
+            form={headlineForm}
+            isLocked={lockedStep !== undefined && lockedStep >= 1}
+            setLockedStep={setLockedStep}
+            submittingStep={submittingStep}
+            setCurrentStep={setCurrentStep}
+            headlines={headlines}
           />
-        </Form.Item>
+        )}
 
-        <Form.Item
-          name="writing_mode"
-          label="Writing style"
-          rules={[{ required: true }]}
-        >
-          <Segmented defaultValue={"custom"} options={["custom", "tones"]} style={{ width: "fit-content" }} />
-        </Form.Item>
-
-        <Form.Item
-          noStyle
-          shouldUpdate={(prevValues, currentValues) => prevValues.writing_mode !== currentValues.writing_mode}
-        >
-          {({ getFieldValue }) => {
-            return getFieldValue('writing_mode') === "custom" ? (
-              <Form.Item name="writing_style_id" validateTrigger="onBlur" rules={[{ required: true, type: "string", message: "Select a writing style" }]} hasFeedback>
-                <Select
-                  placeholder="Select a writing style"
-                  options={writingStyles?.data?.map(i => ({
-                    value: i.id,
-                    label: i.name,
-                  }))}
-                  maxTagCount="responsive"
-                  maxLength={5}
-                />
-              </Form.Item>
-
-            ) : (
-              <Form.Item name="tones" validateTrigger="onBlur" rules={[{ required: true, type: "array", message: "Select at least a tone" }]} hasFeedback>
-                <Select
-                  showSearch
-                  mode="multiple"
-                  allowClear
-                  placeholder="Select at least a tone"
-                  options={tones}
-                  maxTagCount="responsive"
-                  maxLength={5}
-                />
-              </Form.Item>
-            )
-          }}
-        </Form.Item>
-
-        <Form.Item
-          name="perspective"
-          label="Perspective"
-          rules={[{ required: true }]}
-          hasFeedback
-        >
-          <Segmented
-            options={[
-              {
-                label: "1st person singular",
-                value: "first_person_singular"
-              },
-              {
-                label: "1st person plural",
-                value: "first_person_plural"
-              },
-              {
-                label: "2nd person",
-                value: "second_person"
-              },
-              {
-                label: "3rd person",
-                value: "third_person"
-              },
-            ]}
-            style={{ width: "fit-content" }}
-          />
-        </Form.Item>
-
-        <Flex vertical gap="small" style={{ marginBottom: 24 }}>
-          <Form.Item
-            name="words_count"
-            label="Words count"
-            rules={[]}
-            hasFeedback
-            help="More or less the amount of words the article will contains"
-          >
-            <Segmented defaultValue={1500} options={[750, 1500, 2500, 3500]} style={{ width: "fit-content" }} />
-          </Form.Item>
-
-          <Form.Item
-            name="additional_information"
-            label="Additional information"
-            rules={[{ type: "string", max: 150 }]}
-            help="Provide any context or information we should consider while writing your article"
-            hasFeedback
-          >
-            <Input.TextArea
-              placeholder="Additional information"
-              autoSize={{ minRows: 3, maxRows: 5 }}
-              count={{
-                show: true,
-                max: 150,
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="sitemap"
-            label="Sitemap"
-            rules={[{
-              required: false,
-              type: "url",
-              message: "Enter a valid url",
-              transform: (url: any) => {
-                if (!url?.startsWith('https://')) {
-                  url = `https://${url}`
-                }
-                return new URL(url).origin
-              }
-            }]}
-            help="We'll use this sitemap to include internal links in the article"
-            hasFeedback
-          >
-            <Input placeholder="Sitemap url" />
-          </Form.Item>
-
-          <Form.Item
-            name="external_sources"
-            label="External source"
-            rules={[{ type: "string" }]}
-            help="Add a source to help the AI write content with real time data that it might not have knowledge of (invalid links will be ignored)"
-          >
-            <Input.TextArea
-              placeholder={`reddit.com\nquora.com`}
-              autoSize={{ minRows: 3, maxRows: 5 }}
-            // count={{
-            //   show: true,
-            //   max: 150,
-            // }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.external_sources !== currentValues.external_sources}
-          >
-            {({ getFieldValue }) => {
-              return getFieldValue('external_sources')?.length > 3 ? (
-                <Form.Item
-                  name="external_sources_objective"
-                  label="External sources objective"
-                  rules={[{ required: true, type: "string", max: 500 }]}
-                  help="Simply describe what you want to do with the content we scrape"
-                  hasFeedback
-                >
-                  <Input.TextArea
-                    placeholder="Type here"
-                    autoSize={{ minRows: 3, maxRows: 5 }}
-                    count={{
-                      show: true,
-                      max: 150,
-                    }}
-                  />
-                </Form.Item>
-              ) : null
-
+        {currentStep === 2 && (
+          <OutlineForm
+            form={outlineForm}
+            values={{
+              title: settingsForm.getFieldValue("title_mode") === "custom" ? settingsForm.getFieldValue("custom_title") : headlineForm.getFieldValue("title"),
+              seed_keyword: settingsForm.getFieldValue("seed_keyword"),
+              language_id: settingsForm.getFieldValue("language_id"),
+              word_count: settingsForm.getFieldValue("word_count"),
+              project_id: projectId,
             }}
-          </Form.Item>
-        </Flex>
-
-        <Flex vertical>
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Featured image</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_table_of_content" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Table of content</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Introduction</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Conclusion</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Key takeways</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>FAQ</span>
-          </Flex>
-
-          <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-            <Form.Item name="with_sections_image" style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>Include sections image</span>
-          </Flex>
-
-          <Form.Item
-            noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.with_sections_image !== currentValues.with_sections_image}
-          >
-            {({ getFieldValue }) => {
-              return !!getFieldValue('with_sections_image') ? (
-                <>
-                  <Form.Item
-                    name="with_sections_image_mode"
-                    label="Sections with image" rules={[]}
-                    tooltip='Select "Auto" to let the AI decide where it makes sense to include images in the content'
-                  >
-                    <Segmented defaultValue="Auto" options={['Auto', 'All sections (h2)']} style={{ width: "fit-content" }} />
-                  </Form.Item>
-
-                  <Form.Item name="image_source" label="Image source" rules={[]}>
-                    <Segmented options={['Unsplash', 'Pexels', { label: 'iStock Photo', value: "istock", icon: <StarOutlined twoToneColor="#ffec3d" /> }]} style={{ width: "fit-content" }} />
-                  </Form.Item>
-                </>
-              ) : null
-
-            }}
-          </Form.Item>
-
-          <Flex gap="small" align="center">
-            <Form.Item name="with_seo" rules={[]} style={{ margin: 0 }}>
-              <Switch />
-            </Form.Item>
-            <span>SEO tags & Schema markups</span>
-          </Flex>
-        </Flex>
-      </Form>
-    </Drawer >
+            isLocked={lockedStep !== undefined && lockedStep >= 2}
+            setLockedStep={setLockedStep}
+            submittingStep={submittingStep}
+            setSubmittingStep={setSubmittingStep}
+            setCurrentStep={setCurrentStep}
+          />
+        )}
+      </Flex>
+    </Drawer>
   )
 }
 

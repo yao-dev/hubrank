@@ -6,16 +6,12 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
   SyncOutlined,
-  EyeOutlined,
-  EditOutlined,
   PlusOutlined,
-  DeleteOutlined
+  DeleteTwoTone,
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
-import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
-import useLanguages from '@/hooks/useLanguages';
 
 type Props = {
   setSelectedKeyword: (k: string) => void;
@@ -28,8 +24,6 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
   const [htmlPreview, setHtmlPreview] = useState("");
   const router = useRouter();
   const projectId = useProjectId();
-  const { data: project } = useProjects().getOne(projectId);
-  const { data: language } = useLanguages().getOne(project?.language_id);
 
   const columns = useMemo(() => {
     return [
@@ -37,14 +31,14 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
         dataIndex: 'language',
         key: 'language',
         width: 50,
-        render: () => {
-          if (!language) {
+        render: (_value: any, record: any) => {
+          if (!record?.languages?.image) {
             return (
               <span>-</span>
             )
           }
           return (
-            <Image src={language.image} width={25} height={25} preview={false} />
+            <Image src={record.languages.image} width={25} height={25} preview={false} />
           )
         },
       },
@@ -52,7 +46,7 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
         title: 'Title',
         dataIndex: 'title',
         key: 'title',
-        width: 700,
+        width: 750,
         render: (value: any) => {
           return (
             <span>
@@ -65,7 +59,7 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
         title: 'Keyword',
         dataIndex: 'seed_keyword',
         key: 'seed_keyword',
-        width: 300,
+        width: 350,
         render: (value: any) => {
           return (
             <span>
@@ -128,7 +122,7 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
         title: 'Action',
         dataIndex: 'action',
         key: 'action',
-        render: (_, record: any) => (
+        render: (_: any, record: any) => (
           <Space size="small" align='center'>
             {/* <Button
               onClick={() => {
@@ -138,12 +132,12 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
             >
               use keyword
             </Button> */}
-            <Button icon={<EyeOutlined />} onClick={() => setHtmlPreview(record.html)}>
+            <Button onClick={() => setHtmlPreview(record.html)}>
               Preview
             </Button>
-            <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
+            {/* <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
               Edit
-            </Button>
+            </Button> */}
             <Popconfirm
               title="Delete article"
               description="Are you sure to delete this article?"
@@ -161,13 +155,13 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
               }}
               style={{ cursor: "pointer" }}
             >
-              <Button icon={<DeleteOutlined twoToneColor="#ff4d4f" />} />
+              <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} />
             </Popconfirm>
           </Space>
         ),
       },
     ]
-  }, [language]);
+  }, []);
 
   if (!isLoading && isFetched && !articles?.data?.length) {
     return (
@@ -219,7 +213,20 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
           ${htmlPreview}
         ` }} />
       </Drawer>
-      <Table size="small" dataSource={articles?.data} columns={columns} loading={isLoading} />
+      <Table
+        size="small"
+        dataSource={articles?.data}
+        columns={columns}
+        loading={isLoading}
+        onRow={(record) => {
+          return {
+            onClick: (event) => {
+              // console.log(event)
+              router.push(`/projects/${projectId}/articles/${record.id}`)
+            },
+          };
+        }}
+      />
     </>
   )
 }

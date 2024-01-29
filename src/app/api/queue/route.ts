@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
-import { Client } from "@upstash/qstash";
+// import { Client } from "@upstash/qstash";
 import { getRelatedKeywords, getSerpData } from "@/helpers/seo";
 import { supabaseAdmin } from "@/helpers/supabase";
 import { compact } from "lodash";
+import { marked } from "marked";
+import { AI } from "../AI";
+import { getSummary } from 'readability-cyr';
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
-const client = new Client({
-  token: process.env.NEXT_PUBLIC_QSTASH_TOKEN || "",
-  retry: {
-    retries: 0,
-    backoff: () => 0
-  }
-});
+// const client = new Client({
+//   token: process.env.NEXT_PUBLIC_QSTASH_TOKEN || "",
+//   retry: {
+//     retries: 0,
+//     backoff: () => 0
+//   }
+// });
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -56,111 +59,176 @@ export async function POST(request: Request) {
 
     keywords = Object.keys(keywords).slice(0, 20);
 
-    const descriptions: string[] = [];
+    // const descriptions: string[] = [];
     const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
       .map((item: any) => {
         return item?.items
           .filter((subItem: any) => subItem.type === "organic")
           .map((subItem: any) => {
-            descriptions.push(subItem.description)
+            // descriptions.push(subItem.description)
             return subItem.title
           })
       })
       .flat(Infinity)
 
-    const prompt = `
+    const context = `
     Project name: ${project.name || "N/A"}
     Website: ${project.website || "N/A"}
     Description: ${project.metatags?.description || project?.description || "N/A"}
-    Language: ${language.label || "English (us)"}
+    Language: ${language.label || "English (us)"}`
 
-    Seed keyword: ${seedKeyword}
-    Related keywords: ${keywords.join(',')}
-    Ranking competitors headline: ${competitorsHeadlines.join(',')}
-    Ranking competitors headline description:
-    ${descriptions.slice(0, 5).join('\n')}
 
-    Title: ${body.title_mode === "Custom" ? body.title : "N/A"}
-    Inspo Title: ${body.title_mode === "Inspo" ? body.title : "N/A"}
-    Content type: ${body.content_type.replaceAll("_", " ")}
-    Purpose: ${body.purpose.replaceAll("_", " ")}
-    Tones: ${body.tones.join(",")}
-    Clickbait: ${!!body.clickbait}
-    Words count: ${body.words_count}
-    Perspective: ${body.perspective}
+    const start = performance.now();
 
-    Include featured image: ${!!body.with_featured_image}
-    Include introduction: ${!!body.with_introduction}
-    Include conclusion: ${!!body.with_conclusion}
-    Include key takeways: ${!!body.with_key_takeways}
-    Include faq: ${!!body.with_faq}
-    Add sections images: ${body.with_sections_image ? body.with_sections_image_mode : false}
-    Image source: ${body.with_sections_image ? body.image_source : "N/A"}
+    const ai = new AI(context);
 
-    Additional information: ${body.additional_information}
+    let title = await ai.title({
+      competitorsHeadlines,
+      seedKeyword,
+      purpose: body.purpose.replaceAll("_", " "),
+      tone: body.tones.join(","),
+      contentType: body.content_type.replaceAll("_", " "),
+      clickbait: !!body.clickbait
+    });
 
-    type Article = {
-      ${body.title_mode !== "Custom" ? "title: string; // 60 characters maximum" : ""}
-      meta_description: string; // between 50 and 160 characters
-      featured_image_query?: string; // search query to find the article featured image from pexels or unsplash
-      outlines: {
-        type: "introduction" | "key_takeways" | "content_section" | "conclusion" | "faq";
-        heading: string; // section title
-        content_description: string; // a description of what the section content should contains
-        words_count: number; // introduction is less than 150 words, conlusion is less than 250 words
-        keywords: string[]; // list of related keywords to include in the content
-        image_queries?: string[]; // list of search queries to find image(s) to include in the content from pexels or unsplash
-        youtube_queries?: string[]; // list of search queries to find video(s) to include in the content youtube
-      }[];
-    }
+    title = title.trim().startsWith("#") ? title.trim() : `# ${title.trim()}`
 
-    Sort the outlines in an order that makes sense.
-    Your content is high in burstiness, low in complexitiy and highly readable.
+    ai.addArticleContent(title)
 
-    Write an article outline of type Article in JSON wrapped in \`\`\`json\`\`\`.`
+    const outline = await ai.outline({
+      title,
+      word_count: body.words_count,
+      keywords: keywords.join(','),
+      introduction: body.with_introduction,
+      conclusion: body.with_conclusion,
+      key_takeways: body.with_key_takeways,
+      faq: body.with_faq,
+    });
+    console.log(outline)
+    let outlineStr = "";
 
-    const { data: queuedArticle } = await supabase.from("blog_posts")
-      .insert({
-        ...body,
-        seed_keyword: seedKeyword,
-        status: "queue",
-        keywords,
-        prompt
-      })
-      .select("id")
-      .single()
-      .throwOnError();
-
-    if (!queuedArticle) {
-      return NextResponse.json({ message: "Article creation failed" }, { status: 500 });
-
-    }
-
-    const response = await client.publishJSON({
-      url: process.env.NEXT_PUBLIC_API_PING || "",
-      body: {
-        payload: body,
-        prompt,
-        article: {
-          id: queuedArticle.id,
-          keywords,
-        },
-        project: {
-          id: project.id,
-          name: project.name,
-          description: project?.metatags?.description || project?.description || "N/A",
-          language
-        }
+    outline.sections.forEach((section: any) => {
+      outlineStr += `${section.title}\n`;
+      if (section.sub_sections) {
+        section.sub_sections.forEach((subSection: any) => {
+          outlineStr += ` ${subSection.title}\n`;
+        })
       }
     });
 
-    await supabase.from("blog_posts")
-      .update({ message_id: response.messageId })
-      .eq("id", queuedArticle.id)
-      .throwOnError()
+    console.log(outlineStr)
 
-    return NextResponse.json(response, { status: 200 });
+    for (const section of outline.sections) {
+      ai.resetPrompt()
+
+      let sectionWithSubWordCount = section.word_count;
+
+      if (section.sub_sections) {
+        let subSectionsTotalWordCount = section.sub_sections.reduce((a: any, b: any) => a.word_count + b.word_count);
+        sectionWithSubWordCount = subSectionsTotalWordCount >= sectionWithSubWordCount ? 150 : sectionWithSubWordCount
+      }
+
+      let content = await ai.write({
+        heading_prefix: "##",
+        title,
+        heading: section.title,
+        word_count: section.sub_sections ? sectionWithSubWordCount : section.word_count,
+        outline: outlineStr,
+        perspective: body.perspective
+      });
+
+      // content = content.startsWith("## ") ? content : content.replace("##", "## ")
+
+      let stats = getSummary(content)
+
+      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+        content = await ai.rephrase(content);
+      }
+
+      ai.addArticleContent(content);
+
+      if (section.sub_sections) {
+        for (const subSection of section.sub_sections) {
+          content = await ai.write({
+            heading_prefix: "###",
+            title,
+            heading: subSection.title,
+            word_count: subSection.word_count,
+            outline: outlineStr,
+            perspective: body.perspective
+          });
+
+          stats = getSummary(content)
+
+          if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+            content = await ai.rephrase(content);
+          }
+
+          ai.addArticleContent(content);
+        }
+      }
+
+      // if (section.type === "section" || section.type === "sub_section") {
+      //   content = await ai.expand(content);
+      // }
+      // content = await ai.rephrase(content);
+      // content = await ai.paraphrase(content, `Living your best (off-the-shelf) life
+      // The secret to a great healthy eating plan is balance. It’s also the most difficult thing to get right consistently over a period of time. You might have limited options to get great fresh food near where you live. Or you might not have the time during one week to brainstorm bundles of innovative healthy meal plans. Life can get in the way when you’re trying to get healthy.`);
+      // ai.addArticleContent(content);
+    }
+
+    const end = performance.now();
+
+    const { data: article } = await supabase.from("blog_posts")
+      .insert({
+        ...body,
+        seed_keyword: seedKeyword,
+        keywords,
+        // prompt
+        markdown: ai.article,
+        html: marked.parse(ai.article),
+        writing_time_sec: (end - start) / 1000,
+        title: title.replace("#", "").trim(),
+        status: 'ready_to_view',
+      })
+      .select("*")
+      .single()
+      .throwOnError();
+
+
+    if (!article) {
+      return NextResponse.json({ message: "Article creation failed" }, { status: 500 });
+    }
+
+    // const response = await client.publishJSON({
+    //   url: process.env.NEXT_PUBLIC_API_PING || "",
+    //   body: {
+    //     payload: body,
+    //     prompt,
+    //     article: {
+    //       id: queuedArticle.id,
+    //       keywords,
+    //     },
+    //     project: {
+    //       id: project.id,
+    //       name: project.name,
+    //       description: project?.metatags?.description || project?.description || "N/A",
+    //       language
+    //     }
+    //   }
+    // });
+
+    // await supabase.from("blog_posts")
+    //   .update({ message_id: response.messageId })
+    //   .eq("id", queuedArticle.id)
+    //   .throwOnError()
+
+    return NextResponse.json({
+      article,
+      stats: getSummary(ai.article),
+    }, { status: 200 });
   } catch (e) {
+    console.log(e)
     return NextResponse.json(e, { status: 500 })
   }
 }

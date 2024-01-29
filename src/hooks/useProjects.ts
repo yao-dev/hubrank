@@ -6,7 +6,7 @@ import { getUserId } from "@/helpers/user";
 import axios from "axios";
 
 const getOne = async (project_id: number) => {
-  return supabase.from('projects').select('*').eq('id', project_id).limit(1).single()
+  return supabase.from('projects').select('*, languages!language_id(*)').eq('id', project_id).limit(1).single()
 }
 
 const useGetOne = (project_id: number) => {
@@ -20,16 +20,14 @@ const useGetOne = (project_id: number) => {
     },
     cacheTime: 0,
     retry: false,
-    onError: (error) => {
-      console.error('projects.useGetOne', error)
-    },
+    onError: console.error,
     keepPreviousData: true
   });
 };
 
 const getAll = async () => {
   // return supabase.from('projects').select('*, topic_clusters(count), articles(count)').order("created_at", { ascending: false }).throwOnError();
-  return supabase.from('projects').select('*').order("created_at", { ascending: true })
+  return supabase.from('projects').select('*, languages!language_id(*)').order("created_at", { ascending: true })
 }
 
 type UseGetAll = {

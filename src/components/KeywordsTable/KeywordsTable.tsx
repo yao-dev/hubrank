@@ -1,18 +1,15 @@
 'use client';;
-import { App, Button, Col, Empty, Flex, Input, Row, Space, Table, Tag } from 'antd';
-import { useMemo, useState } from 'react';
+import { App, Button, Col, ConfigProvider, Empty, Flex, Form, Image, Input, Row, Select, Space, Table, Tag } from 'antd';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getRelatedKeywords } from '@/helpers/seo';
 import useLanguages from '@/hooks/useLanguages';
-import {
-  SearchOutlined,
-  StarOutlined,
-  DeleteOutlined
-} from '@ant-design/icons';
+import { SearchOutlined, DeleteTwoTone } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
 import { getUserId } from '@/helpers/user';
+import { IconStar, IconStarFilled } from '@tabler/icons-react';
 
 const competitionOrder: any = {
   "low": 0,
@@ -26,26 +23,38 @@ type Props = {
   setArticleDrawerOpen: (value: boolean) => void;
 }
 
-// getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
-
 const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: Props) => {
   const projectId = useProjectId();
   const { data: project, isLoading, isFetched } = useProjects().getOne(projectId);
-  const { data: language } = useLanguages().getOne(project?.language_id);
+  const { getAll } = useLanguages();
+  const { data: languages } = getAll();
   const [search, setSearch] = useState("");
+  const [activeLanguage, setActiveLanguage] = useState();
   const queryClient = useQueryClient();
   const { notification } = App.useApp();
+  const { theme } = useContext(ConfigProvider.ConfigContext);
+
+  const [form] = Form.useForm();
 
   const { data: keywords, refetch, isFetching } = useQuery({
     enabled: false,
     queryKey: ["keywords", search],
     keepPreviousData: true,
-    queryFn: () => getRelatedKeywords({ keyword: search, depth: 4, limit: 1000, lang: language?.code, location_code: language?.location_code }),
+    cacheTime: 1000 * 60 * 60 * 24 * 30, // 30 days
+    queryFn: () => {
+      const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"))
+      return getRelatedKeywords({ keyword: form.getFieldValue("search"), depth: 4, limit: 1000, lang: selectedLanguage.code, location_code: selectedLanguage.location_code })
+    },
+    onSuccess() {
+      const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"))
+      setActiveLanguage(selectedLanguage)
+    },
     select: (data) => {
       // data.tasks[0].result[0].items[0].keyword_data.keyword
       // data.tasks[0].result[0].items_count
       return data?.map((item: any) => {
         return {
+          language_id: form.getFieldValue("language_id"),
           keyword: item.keyword_data.keyword,
           search_volume: item.keyword_data.keyword_info.search_volume,
           competition_level: item.keyword_data.keyword_info.competition_level || "",
@@ -58,11 +67,11 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
   });
 
   const { data: savedKeywords } = useQuery({
-    enabled: !!editMode,
+    // enabled: !!editMode,
     queryKey: ["saved_keywords", { projectId }],
     keepPreviousData: true,
     queryFn: () => {
-      return supabase.from("saved_keywords").select("*").eq("project_id", projectId)
+      return supabase.from("saved_keywords").select("*, languages!language_id(*)").eq("project_id", projectId)
     },
     select: ({ data }: any) => {
       return data || [];
@@ -93,6 +102,12 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
     }
   })
 
+  useEffect(() => {
+    if (project?.language_id) {
+      form.setFieldValue("language_id", project.language_id)
+    }
+  }, [project])
+
   // const keywords = useMemo(() => {
   //   if (!project || !project?.keywords?.length) return [];
 
@@ -111,10 +126,25 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
   const columns = useMemo(() => {
     return [
       {
+        dataIndex: 'language',
+        key: 'language',
+        width: 50,
+        render: (_value: any, record: any) => {
+          if (editMode && !record?.languages?.image || !editMode && !activeLanguage?.image) {
+            return (
+              <span>-</span>
+            )
+          }
+          return (
+            <Image src={editMode ? record.languages.image : activeLanguage.image} width={25} height={25} preview={false} />
+          )
+        },
+      },
+      {
         title: 'Keyword',
         dataIndex: 'keyword',
         key: 'keyword',
-        width: 500,
+        width: 520,
       },
       {
         title: 'Search volume',
@@ -219,33 +249,84 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
         title: 'Action',
         dataIndex: 'action',
         key: 'action',
-        render: (_, record: any) => (
-          <Space size="small" align='center'>
-            <Button
-              onClick={() => {
-                setSelectedKeyword(record.keyword);
-                setArticleDrawerOpen(true)
-              }}
-            >
-              use keyword
-            </Button>
-            {editMode ? (
-              <Button icon={<DeleteOutlined twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
-            ) : (
-              <Button icon={<StarOutlined twoToneColor={savedKeywordsString?.includes(record.keyword) ? "#ffec3d" : undefined} />} onClick={() => toggleSaveKeyword.mutate(record)} />
-            )}
-          </Space>
-        ),
+        render: (_: any, record: any) => {
+          const StarComponent = savedKeywordsString?.includes(record.keyword) ? IconStarFilled : IconStar;
+          return (
+            <Space size="small" align='center'>
+              <Button
+                onClick={() => {
+                  setSelectedKeyword(record);
+                  setArticleDrawerOpen(true)
+                }}
+              >
+                use keyword
+              </Button>
+              {editMode ? (
+                <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
+              ) : (
+                <Button
+                  icon={(
+                    <StarComponent
+                      size={16}
+                      style={{ color: savedKeywordsString?.includes(record.keyword) ? "#fadb14" : undefined }}
+                    />
+                  )}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+                  onClick={() => toggleSaveKeyword.mutate(record)}
+                />
+              )}
+            </Space>
+          )
+        },
       },
     ]
-  }, []);
+  }, [editMode, activeLanguage, savedKeywords, savedKeywordsString, theme]);
 
   const renderSearchBar = () => {
     return (
-      <Flex gap="middle">
-        <Input placeholder='Search keywords' value={search} onChange={e => setSearch(e.target.value)} allowClear />
-        <Button icon={<SearchOutlined />} type="primary" loading={isFetching} onClick={() => refetch()}>Search</Button>
-      </Flex>
+      <Form
+        form={form}
+        initialValues={{
+          search: "",
+          language_id: null
+        }}
+        onFinish={(values) => {
+          refetch()
+        }}
+      >
+        <Flex gap="middle">
+          <Form.Item noStyle name="search" required>
+            <Input placeholder='Search keywords' value={search} onChange={e => setSearch(e.target.value)} allowClear />
+          </Form.Item>
+          <Form.Item noStyle name="language_id" required>
+            <Select
+              placeholder="Country"
+              optionLabelProp="label"
+              options={languages?.map((p) => {
+                return {
+                  ...p,
+                  label: p.label,
+                  value: p.id
+                }
+              })}
+              optionRender={(option: any) => {
+                return (
+                  <Space>
+                    <Image
+                      src={option.data.image}
+                      width={25}
+                      height={25}
+                      preview={false}
+                    />
+                    {/* {option.label} */}
+                  </Space>
+                )
+              }}
+            />
+          </Form.Item>
+          <Button disabled={!form.getFieldValue("search") || !form.getFieldValue("language_id")} icon={<SearchOutlined />} type="primary" htmlType="submit" loading={isFetching}>Search</Button>
+        </Flex>
+      </Form>
     )
   }
 

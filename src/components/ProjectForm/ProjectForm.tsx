@@ -4,8 +4,9 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { modals } from "@mantine/modals";
 import useProjectId from "@/hooks/useProjectId";
-import { Button, Flex, Form, Input, Popconfirm } from "antd";
+import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space } from "antd";
 import { useRouter } from "next/navigation";
+import useLanguages from "@/hooks/useLanguages";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -14,6 +15,7 @@ const ProjectForm = () => {
   // const form = useProjectForm(project);
   const [form] = Form.useForm();
   const router = useRouter()
+  const { data: languages } = useLanguages().getAll()
 
   // if (projectId === null || tab !== "settings") {
   //   return null;
@@ -86,8 +88,46 @@ const ProjectForm = () => {
         website: project.website,
         description: project.description,
         seed_keyword: project.seed_keyword,
+        language_id: project.language_id,
       }}
     >
+
+      <Form.Item
+        name="language_id"
+        label="Language"
+        rules={[{
+          required: true,
+          type: "number",
+          message: "Select a language"
+        }]}
+        hasFeedback
+      >
+        <Select
+          placeholder="Language"
+          optionLabelProp="label"
+          options={languages?.map((p) => {
+            return {
+              ...p,
+              label: p.label,
+              value: p.id
+            }
+          })}
+          optionRender={(option: any) => {
+            return (
+              <Space>
+                <Image
+                  src={option.data.image}
+                  width={25}
+                  height={25}
+                  preview={false}
+                />
+                {option.label}
+              </Space>
+            )
+          }}
+        />
+      </Form.Item>
+
       <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
         <Input placeholder="Name" count={{ show: true, max: 50 }} />
       </Form.Item>

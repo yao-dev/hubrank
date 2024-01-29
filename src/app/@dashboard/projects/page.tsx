@@ -85,8 +85,8 @@ export default function ProjectList() {
             name: "",
             website: "",
             // description: "",
-            seed_keyword: "",
-            target_audience: "",
+            // seed_keyword: "",
+            // target_audience: "",
             language_id: null
           }}
         >
@@ -133,10 +133,10 @@ export default function ProjectList() {
               }}
             />
           </Form.Item>
-
+          {/*
           <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
             <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item
             name="website"
@@ -153,6 +153,7 @@ export default function ProjectList() {
                 return new URL(url).origin
               }
             }]}
+            style={{ marginTop: 42 }}
             hasFeedback
           >
             <Input placeholder="https://google.com" />
@@ -170,10 +171,11 @@ export default function ProjectList() {
           >
             <Input placeholder="Description" count={{ show: true, max: 200 }} />
           </Form.Item> */}
-
+          {/*
           <Form.Item name="target_audience" label="Target audience" rules={[{ required: true, type: "string", max: 150 }]}>
             <Input placeholder="Target audience" count={{ show: true, max: 150 }} />
-          </Form.Item>
+          </Form.Item> */}
+
           <Form.Item />
         </Form>
       </Modal>

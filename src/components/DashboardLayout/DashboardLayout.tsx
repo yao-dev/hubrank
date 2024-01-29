@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import ProjectSelect from '@/components/ProjectSelect';
-import { IconSettings, IconPlug, IconCreditCard, IconStack2, IconLogout } from '@tabler/icons-react';
+import { IconSettings, IconPlug, IconCreditCard, IconStack2, IconLogout, IconBulb } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname, useRouter } from 'next/navigation';
 import useResetApp from '@/hooks/useResetApp';
+import Emojicon from '../Emojicon/Emojicon';
 
 const { Header, Sider, Content, Footer } = Layout;
 const { Title } = Typography;
@@ -17,6 +18,7 @@ const data = [
   { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
+  { id: "feedback", link: '/feedback', label: 'Feature Request', icon: IconBulb },
 ];
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -64,6 +66,7 @@ export default function DashboardLayout({
     return {
       key: item.id,
       icon: <item.icon />,
+      style: { paddingLeft: 12 },
       label: (
         <Link
           prefetch={false}
@@ -85,74 +88,91 @@ export default function DashboardLayout({
     {
       key: 'logout',
       icon: <IconLogout />,
-      label: (
-        <p onClick={logout} style={{ color: '#fff' }}>Logout</p>
-      )
+      onclick: logout,
+      label: "Logout",
     }
   ]
 
   return (
-    <Layout hasSider style={styles.mainLayout}>
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        style={{ ...styles.sider }}
-      >
-        <Flex vertical justify='space-between' style={{ height: '100%' }}>
-          <div>
-            <Flex align='center' style={{ height: 64, padding: 16, marginBottom: 12 }}>
-              <Link href="/projects">
-                <Image
-                  src="/brand-logo-white.png"
-                  preview={false}
-                />
-              </Link>
-            </Flex>
-            <Menu
-              theme="dark"
-              mode="inline"
-              defaultSelectedKeys={['project']}
-              items={topItems}
-              style={{ height: '100%', padding: "0 6px" }}
-            />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <Menu
-              theme="dark"
-              mode="inline"
-              items={bottomItems}
-            />
-          </div>
-        </Flex>
-      </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>
-        <Header style={{ ...styles.header, background: colorBgContainer }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
-          />
-          <ProjectSelect />
-        </Header>
-        <Content
-          style={{
-            margin: '24px 16px',
-            padding: 24,
-            // minHeight: "100%",
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
-          }}
+    <>
+      {/* <Featurebase /> */}
+      <Emojicon />
+      <Layout hasSider style={styles.mainLayout}>
+        <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          style={{ ...styles.sider }}
         >
-          {children}
-        </Content>
-        {/* <Footer style={{ ...styles.footer, background: colorBgContainer }}>Test</Footer> */}
+          <Flex vertical justify='space-between' style={{ height: '100%' }}>
+            <div>
+              <Flex align='center' style={{ height: 64, padding: 16, marginBottom: 12 }}>
+                <Link href="/projects">
+                  <Image
+                    src="/brand-logo-white.png"
+                    preview={false}
+                  />
+                </Link>
+              </Flex>
+              <Menu
+                theme="dark"
+                mode="inline"
+                defaultSelectedKeys={['project']}
+                items={[
+                  ...topItems,
+                  // {
+                  //   key: "feature-request",
+                  //   style: { paddingLeft: 12 },
+                  //   label: (
+                  //     <Button icon={<IconRocket />} data-featurebase-feedback-portal type="link" style={{ display: "flex", flexDirection: "row", alignItems: "center", color: "inherit", padding: 0 }}>
+                  //       Feature Request
+                  //     </Button>
+
+                  //   )
+                  // }
+                ]}
+                style={{ height: '100%', padding: "0 3px" }}
+              />
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <Menu
+                theme="dark"
+                mode="inline"
+                items={bottomItems}
+              />
+            </div>
+          </Flex>
+        </Sider>
+        <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>
+          {pathname.startsWith("/projects/") && (
+            <Header style={{ ...styles.header, background: colorBgContainer }}>
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  fontSize: '16px',
+                  width: 64,
+                  height: 64,
+                }}
+              />
+              <ProjectSelect />
+            </Header>
+          )}
+          <Content
+            style={{
+              margin: '24px 16px',
+              padding: 24,
+              // minHeight: "100%",
+              background: colorBgContainer,
+              borderRadius: borderRadiusLG,
+            }}
+          >
+            {children}
+          </Content>
+          {/* <Footer style={{ ...styles.footer, background: colorBgContainer }}>Test</Footer> */}
+        </Layout>
       </Layout>
-    </Layout>
+    </>
   )
 }

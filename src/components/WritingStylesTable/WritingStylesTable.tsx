@@ -1,10 +1,9 @@
 'use client';
 import { Alert, App, Button, Empty, Flex, Popconfirm, Space, Table, Tag } from 'antd';
 import { useMemo } from 'react';
-import { IconTrash } from '@tabler/icons-react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteTwoTone } from '@ant-design/icons';
 
 type Props = {
   setModalOpen: (open: boolean) => void
@@ -22,7 +21,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        width: 300,
+        width: 220,
         render: (value: any, record: any) => {
           if (record.default) {
             return (
@@ -55,10 +54,10 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
       //   },
       // },
       {
-        title: 'Source value',
+        title: 'Text',
         dataIndex: 'source_value',
         key: 'source_value',
-        width: 700,
+        width: 850,
         ellipsis: true,
         render: (value: any) => {
           return (
@@ -72,9 +71,9 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Action',
         dataIndex: 'action',
         key: 'action',
-        width: 200,
+        width: 160,
         render: (_: any, record: any) => (
-          <Space size="middle" align='center'>
+          <Space size="small" align='center'>
             <Popconfirm
               disabled={record.default}
               title="Set default"
@@ -112,7 +111,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
               cancelText="No"
               style={{ cursor: "pointer" }}
             >
-              <IconTrash stroke={1.5} />
+              <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} />
             </Popconfirm>
           </Space>
         ),
@@ -150,7 +149,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         {!hasDefault && (
           <Alert message="You don't have a writing style set by default." type="info" showIcon />
         )}
-        <Table dataSource={data?.data} columns={columns} loading={false} />
+        <Table size="small" dataSource={data?.data} columns={columns} loading={false} />
       </Flex>
     )
   }

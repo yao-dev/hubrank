@@ -7,6 +7,8 @@ import NewArticleDrawer from '@/components/NewArticleDrawer/NewArticleDrawer';
 import KeywordsTable from '@/components/KeywordsTable/KeywordsTable';
 import ArticlesTable from '@/components/ArticlesTable/ArticlesTable';
 import { PlusOutlined } from '@ant-design/icons';
+import WritingStyleForm from '@/components/WritingStyleForm/WritingStyleForm';
+import WritingStylesTable from '@/components/WritingStylesTable/WritingStylesTable';
 
 export default function ProjectDetail({
   params,
@@ -14,11 +16,12 @@ export default function ProjectDetail({
   params: { project_id: number }
 }) {
   const [articleDrawerOpen, setArticleDrawerOpen] = useState(false);
-  const [selectedKeyword, setSelectedKeyword] = useState("");
+  const [selectedKeyword, setSelectedKeyword] = useState(null);
   const { data: project, isFetched } = useProjects().getOne(+params.project_id);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || undefined)
+  const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
 
   useEffect(() => {
     if (isFetched) {
@@ -32,7 +35,7 @@ export default function ProjectDetail({
 
   useEffect(() => {
     if (!articleDrawerOpen) {
-      setSelectedKeyword("")
+      setSelectedKeyword(null)
     }
   }, [articleDrawerOpen])
 
@@ -67,7 +70,37 @@ export default function ProjectDetail({
         <KeywordsTable editMode setArticleDrawerOpen={setArticleDrawerOpen} setSelectedKeyword={setSelectedKeyword} />
       ),
     },
+    {
+      key: 'writing-styles',
+      label: 'Writing style',
+      children: <WritingStylesTable setModalOpen={setIsWritingStyleModalOpened} />,
+    },
   ];
+
+  const getTabBarExtraContent = () => {
+    switch (activeTab) {
+      case "writing-styles":
+        return (
+          <Button
+            type="primary"
+            onClick={() => setIsWritingStyleModalOpened(true)}
+            icon={<PlusOutlined />}
+          >
+            Add writing style
+          </Button>
+        )
+      case "articles":
+        return (
+          <Button
+            type="primary"
+            onClick={() => setArticleDrawerOpen(true)}
+            icon={<PlusOutlined />}
+          >
+            Create article
+          </Button>
+        )
+    }
+  }
 
   return (
     <div
@@ -78,6 +111,7 @@ export default function ProjectDetail({
       }}
     >
       <NewArticleDrawer selectedKeyword={selectedKeyword} open={articleDrawerOpen} onClose={() => setArticleDrawerOpen(false)} />
+      <WritingStyleForm opened={isWritingStyleModalOpened} setModalOpen={setIsWritingStyleModalOpened} />
 
       <Tabs
         defaultActiveKey="1"
@@ -85,15 +119,7 @@ export default function ProjectDetail({
         onChange={onChange}
         items={items}
         tabBarExtraContent={{
-          right: (
-            <Button
-              type="primary"
-              onClick={() => setArticleDrawerOpen(true)}
-              icon={<PlusOutlined />}
-            >
-              Create article
-            </Button>
-          )
+          right: getTabBarExtraContent()
         }}
       />
     </div>

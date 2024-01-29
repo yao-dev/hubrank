@@ -23,7 +23,7 @@ const useGetOne = (id: number) => {
 
 const getAll = async (project_id: number, queue?: boolean) => {
   let query = supabase.from('blog_posts')
-    .select('*')
+    .select('*, languages!language_id(*)')
     .eq("project_id", project_id)
 
   if (queue) {

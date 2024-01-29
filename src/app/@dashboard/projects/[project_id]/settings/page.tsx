@@ -24,11 +24,6 @@ export default function ProjectSettings({
       children: <ProjectForm />,
     },
     {
-      key: 'writing-style',
-      label: 'Writing style',
-      children: <WritingStylesTable setModalOpen={setIsWritingStyleModalOpened} />,
-    },
-    {
       key: 'seo-meta',
       label: 'SEO Meta',
       children: <ProjectMetaForm />,
