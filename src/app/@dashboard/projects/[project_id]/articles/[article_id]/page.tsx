@@ -100,7 +100,6 @@ const Article = ({
           }}
           initialValue={article.html}
           onEditorChange={(content) => {
-            console.log(content)
             html.current = content
             setIsSaved(editorRef.current?.editor?.isNotDirty)
             setStats(getSummary(editorRef.current?.editor?.contentAreaContainer?.innerText || ""))

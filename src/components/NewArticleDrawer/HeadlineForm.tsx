@@ -38,6 +38,7 @@ const HeadlineForm = ({
       autoComplete="off"
       layout="vertical"
       onFinish={onFinish}
+      onSubmitCapture={e => e.preventDefault()}
     >
       <Form.Item name="title" required rules={[{ required: true, type: "string", message: "Select a title" }]}>
         <Radio.Group style={styles.radioGroup}>
@@ -49,7 +50,7 @@ const HeadlineForm = ({
                   style={styles.card}
                   bodyStyle={styles.bodyStyle}
                 >
-                  <Radio value={item.id}>{item.headline}</Radio>
+                  <Radio value={item.headline}>{item.headline}</Radio>
                 </Card>
               )
             })}

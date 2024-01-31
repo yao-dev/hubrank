@@ -82,18 +82,38 @@ export class AI {
     return this.parse(completion.content[0].text, opts.type)
   }
 
-  headlinesTemplate({ competitorsHeadlines, seedKeyword, tone, contentType, purpose, clickbait }: any) {
-    return `List of competitors headline ranking in the SERP for the keyword "${seedKeyword}":
-    ${competitorsHeadlines.join('\n- ')}
+  headlinesTemplate(values: any) {
+    // Write the headlines wrapped within triple @@@.
 
-    Give me 10 unique and SEO friendly headlines made for the search intent "${seedKeyword}"
-    - your tone is ${tone}
-    - your purpose is ${purpose}
-    - the content type is "${contentType}"
-    ${clickbait ? "- make it clickbait" : ""}
+    const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the SERP for the keyword "${values.seedKeyword}":
+    ${values.competitorsHeadlines.join('\n- ')}`
+
+    if (values.writingStyle) {
+      return `${prefix}
+
+      Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
+      - your purpose is ${values.purpose}
+      - the content type is "${values.contentType}"
+      ${values.clickbait ? "- make it clickbait" : ""}
+      - one headline per line
+      - do not add any text formatting
+
+      Copy the tone and writing style of this text: ${values.writingStyle}
+
+      Start and end your writing with triple @@@.
+      `
+    }
+
+    return `${prefix}
+
+    Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
+    - your tone is ${values.tone}
+    - your purpose is ${values.purpose}
+    - the content type is "${values.contentType}"
+    ${values.clickbait ? "- make it clickbait" : ""}
     - one headline per line
 
-    Write the headlines wrapped within triple @@@.
+    Start and end your writing with triple @@@.
     `
   }
 

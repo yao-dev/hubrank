@@ -15,12 +15,13 @@ export default function ProjectDetail({
 }: {
   params: { project_id: number }
 }) {
+  const projectId = +params.project_id;
   const [articleDrawerOpen, setArticleDrawerOpen] = useState(false);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
-  const { data: project, isFetched } = useProjects().getOne(+params.project_id);
+  const { data: project, isFetched } = useProjects().getOne(projectId);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || undefined)
+  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "articles")
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
 
   useEffect(() => {
@@ -93,10 +94,11 @@ export default function ProjectDetail({
         return (
           <Button
             type="primary"
-            onClick={() => setArticleDrawerOpen(true)}
+            // onClick={() => setArticleDrawerOpen(true)}
+            onClick={() => router.push(`/projects/${projectId}/articles/new`)}
             icon={<PlusOutlined />}
           >
-            Create article
+            New article
           </Button>
         )
     }
@@ -114,7 +116,7 @@ export default function ProjectDetail({
       <WritingStyleForm opened={isWritingStyleModalOpened} setModalOpen={setIsWritingStyleModalOpened} />
 
       <Tabs
-        defaultActiveKey="1"
+        defaultActiveKey="articles"
         activeKey={activeTab}
         onChange={onChange}
         items={items}

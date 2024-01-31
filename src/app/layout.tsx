@@ -74,19 +74,20 @@ export default function RootLayout({
                 // algorithm: theme.compactAlgorithm,
                 algorithm: theme.defaultAlgorithm,
 
+
                 // 2. Combine dark algorithm and compact algorithm
                 // algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
                 token: {
                   "colorPrimary": "#5D5FEF",
                   "colorInfo": "#232323",
-                  "wireframe": false
+                  "wireframe": false,
                 },
                 components: {
                   Alert: {
                     colorInfo: "#1677FF",
                     colorInfoBg: "#E6F4FF",
                     colorInfoBorder: "#91CAFF"
-                  }
+                  },
                 }
               }}
             >

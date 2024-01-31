@@ -80,13 +80,13 @@ const ProjectForm = () => {
       form={form}
       layout="vertical"
       onFinish={() => { }}
-      labelCol={{ span: 8 }}
-      wrapperCol={{ span: 20 }}
-      style={{ maxWidth: 600 }}
+      // labelCol={{ span: 8 }}
+      // wrapperCol={{ span: 20 }}
+      // style={{ maxWidth: 600 }}
       initialValues={{
         name: project.name,
         website: project.website,
-        description: project.description,
+        description: project.description?.slice?.(0, 250) || project.metatags.description?.slice?.(0, 250),
         seed_keyword: project.seed_keyword,
         language_id: project.language_id,
       }}
@@ -131,9 +131,7 @@ const ProjectForm = () => {
       <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
         <Input placeholder="Name" count={{ show: true, max: 50 }} />
       </Form.Item>
-      <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
-        <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
-      </Form.Item>
+
       <Form.Item
         name="website"
         label="Website"
@@ -156,15 +154,20 @@ const ProjectForm = () => {
       <Form.Item
         name="description"
         label="Description"
-        rules={[{ required: false, type: "string", max: 200 }]}
+        rules={[{ required: false, type: "string", max: 250 }]}
         hasFeedback
       >
-        <Input placeholder="Description" count={{ show: true, max: 200 }} />
+        <Input.TextArea
+          placeholder="Description"
+          autoSize={{ minRows: 3, maxRows: 5 }}
+          count={{
+            show: true,
+            max: 250,
+          }}
+        />
       </Form.Item>
 
-      <Form.Item />
-
-      <Form.Item>
+      <Form.Item style={{ marginTop: 42 }}>
         <Flex justify="space-between">
           <Popconfirm
             title="Delete project"

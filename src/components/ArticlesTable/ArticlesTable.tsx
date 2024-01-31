@@ -174,10 +174,11 @@ const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setArticleDrawerOpen(true)}
+            // onClick={() => setArticleDrawerOpen(true)}
+            onClick={() => router.push(`/projects/${projectId}/articles/new`)}
             style={{ marginTop: 12 }}
           >
-            Create article
+            New article
           </Button>
         </Empty>
       </Flex>

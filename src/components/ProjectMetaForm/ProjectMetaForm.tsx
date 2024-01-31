@@ -70,9 +70,9 @@ const ProjectMetaForm = () => {
       form={form}
       layout="vertical"
       onFinish={() => { }}
-      labelCol={{ span: 8 }}
-      wrapperCol={{ span: 20 }}
-      style={{ maxWidth: 600 }}
+      // labelCol={{ span: 8 }}
+      // wrapperCol={{ span: 20 }}
+      // style={{ maxWidth: 600 }}
       initialValues={{
         html: '',
         title: project?.metatags?.title || "",

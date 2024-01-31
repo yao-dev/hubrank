@@ -1,5 +1,4 @@
-'use client';
-import { Text } from '@mantine/core';
+'use client';;
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { VerifyEmailOtpParams } from '@supabase/supabase-js';
@@ -140,7 +139,7 @@ export default function Login() {
                     <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.5} />} />
                   </Form.Item>
 
-                  <Text onClick={resendOtp} style={{ cursor: 'pointer', textAlign: 'center' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Text>
+                  <Typography.Text onClick={resendOtp} style={{ cursor: 'pointer', textAlign: 'center' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>
 
                 </>
               ) : null

@@ -1,94 +1,147 @@
 'use client';
 import { useState } from "react";
-import { useDisclosure } from '@mantine/hooks';
-import { Modal, Group, Button, TextInput, Flex, Text, LoadingOverlay, Alert } from '@mantine/core';
-import { IconAlertCircle } from '@tabler/icons-react';
-import useProjects from "@/hooks/useProjects";
-import useProjectForm from "@/hooks/useProjectForm";
-import useActiveProject from "@/hooks/useActiveProject";
 import { useRouter } from "next/navigation";
+import useProjects from "@/hooks/useProjects";
+import { Image, Form, Input, Modal, Alert, Select, Space } from "antd";
+import useLanguages from "@/hooks/useLanguages";
+
 
 const NewProjectModal = ({ opened, onClose }: any) => {
-  const [loadingModal, { open: showLoadingModal, close: hideLoadingModal }] = useDisclosure(false);
   const [error, setError] = useState(false);
+  const router = useRouter()
   const projects = useProjects();
-  const form = useProjectForm();
-  const activeProject = useActiveProject();
-  const router = useRouter();
 
+  const [form] = Form.useForm();
+  const { data: languages } = useLanguages().getAll()
 
-  const onCreateProject = form.onSubmit(async (values: any) => {
-    setError(false)
-    showLoadingModal()
+  const onCreateProject = async (values: any) => {
     try {
-      const { data: project } = await projects.create.mutateAsync(values);
-      activeProject.setProjectId(project.id);
-      router.push(`?tab=articles`);
-      setTimeout(() => {
-        onCloseNewProject()
-      }, 2000);
-    } catch {
-      hideLoadingModal()
+      setError(false)
+      const { data: project } = await projects.create.mutateAsync({
+        ...values,
+        language_id: +values.language_id
+      });
+      router.push(`/projects/${project.id}`)
+    } catch (e) {
+      console.error(e)
       setError(true)
     }
-  });
+  }
 
-  const onCloseNewProject = () => {
-    onClose()
-    setError(false)
-    form.reset();
-    hideLoadingModal()
+  const onCloseCreateProject = () => {
+    onClose(false);
+    form.resetFields();
   }
 
   return (
-    <Modal opened={opened} onClose={onCloseNewProject} withCloseButton={false} trapFocus={false}>
-      <LoadingOverlay visible={loadingModal} overlayProps={{ blur: 2 }} />
-      <form onSubmit={onCreateProject}>
-        <Flex direction="column" gap="md">
-          <Text size="xl" fw="bold">New project</Text>
-          {error && (
-            <Alert icon={<IconAlertCircle size="1rem" />} title="Bummer!" color="red" variant="filled">
-              Something went wrong! Try again please.
-            </Alert>
-          )}
-          <TextInput
-            withAsterisk
-            label="Name"
-            placeholder="Name"
-            maxLength={50}
-            {...form.getInputProps('name')}
-          />
-          <TextInput
-            withAsterisk
-            label="Website"
-            placeholder="https://google.com"
-            maxLength={50}
-            {...form.getInputProps('website')}
-          />
-          {/* <Textarea
-            withAsterisk
-            label="Description"
-            placeholder="Description"
-            maxLength={500}
-            minRows={3}
-            maxRows={6}
-            {...form.getInputProps('description')}
-          /> */}
-          {/* <Textarea
-            withAsterisk
-            label="Target audience"
-            placeholder="Who is your ideal customer"
-            maxLength={150}
-            minRows={2}
-            maxRows={4}
-            {...form.getInputProps('target_audience')}
-          /> */}
+    <Modal
+      title="New project"
+      open={opened}
+      onCancel={() => onCloseCreateProject()}
+      onOk={() => form.submit()}
+      okText="Create"
+      confirmLoading={projects.create.isLoading}
+      closable={!projects.create.isLoading}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onCreateProject}
+        initialValues={{
+          name: "",
+          website: "",
+          // description: "",
+          // seed_keyword: "",
+          // target_audience: "",
+          language_id: null
+        }}
+      >
+        {error && (
+          <Alert message="Something went wrong! Try again please." type="error" showIcon style={{ marginBottom: 12 }} />
+        )}
+        <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+          <Input placeholder="Name" count={{ show: true, max: 50 }} />
+        </Form.Item>
 
-          <Group justify="flex-end" mt="md">
-            <Button type="submit">Create</Button>
-          </Group>
-        </Flex>
-      </form>
+        <Form.Item
+          name="language_id"
+          label="Language"
+          rules={[{
+            required: true,
+            type: "number",
+            message: "Select a language"
+          }]}
+          hasFeedback
+          help="It can't be changed later"
+        >
+          <Select
+            placeholder="Language"
+            optionLabelProp="label"
+            options={languages?.map((p) => {
+              return {
+                ...p,
+                label: p.label,
+                value: p.id
+              }
+            })}
+            optionRender={(option: any) => {
+              return (
+                <Space>
+                  <Image
+                    src={option.data.image}
+                    width={25}
+                    height={25}
+                    preview={false}
+                  />
+                  {option.label}
+                </Space>
+              )
+            }}
+          />
+        </Form.Item>
+        {/*
+      <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+        <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
+      </Form.Item> */}
+
+        <Form.Item
+          name="website"
+          label="Website"
+          validateTrigger="onBlur"
+          rules={[{
+            required: true,
+            type: "url",
+            message: "Enter a valid url",
+            transform: (url: any) => {
+              if (!url?.startsWith('https://')) {
+                url = `https://${url}`
+              }
+              return new URL(url).origin
+            }
+          }]}
+          style={{ marginTop: 42 }}
+          hasFeedback
+        >
+          <Input placeholder="https://google.com" />
+        </Form.Item>
+        {/* <Form.Item
+        name="description"
+        label="Description"
+        help="We'll try to get the value from the meta description of your website"
+        rules={[{
+          required: false,
+          type: "string",
+          max: 200,
+        }]}
+        hasFeedback
+      >
+        <Input placeholder="Description" count={{ show: true, max: 200 }} />
+      </Form.Item> */}
+        {/*
+      <Form.Item name="target_audience" label="Target audience" rules={[{ required: true, type: "string", max: 150 }]}>
+        <Input placeholder="Target audience" count={{ show: true, max: 150 }} />
+      </Form.Item> */}
+      </Form>
     </Modal>
   )
 }

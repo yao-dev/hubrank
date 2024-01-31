@@ -1,17 +1,24 @@
 'use client';;
-import { Layout, Typography, Menu, Button, theme, Flex, Image } from 'antd';
+import { Layout, Menu, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
 import { useState } from 'react';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import ProjectSelect from '@/components/ProjectSelect';
-import { IconSettings, IconPlug, IconCreditCard, IconStack2, IconLogout, IconBulb } from '@tabler/icons-react';
+import {
+  IconSettings,
+  IconPlug,
+  IconCreditCard,
+  IconStack2,
+  IconLogout,
+  IconBulb,
+  IconPigMoney,
+} from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import useResetApp from '@/hooks/useResetApp';
 import Emojicon from '../Emojicon/Emojicon';
+import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 
-const { Header, Sider, Content, Footer } = Layout;
-const { Title } = Typography;
+const { Header, Sider, Content } = Layout;
 
 const data = [
   { id: "project", link: '/projects', label: 'Projects', icon: IconStack2 },
@@ -19,6 +26,7 @@ const data = [
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
   { id: "feedback", link: '/feedback', label: 'Feature Request', icon: IconBulb },
+  { id: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: IconPigMoney },
 ];
 
 const styles: { [key: string]: React.CSSProperties } = {
@@ -34,7 +42,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column',
     justifyContent: 'space-between',
   },
-  header: { padding: 0, position: 'sticky', top: 0, width: '100%', zIndex: 1, display: "flex" },
+  header: { padding: 0, paddingLeft: 16, position: 'sticky', top: 0, width: '100%', zIndex: 1, display: "flex" },
   footer: { position: 'sticky', bottom: 0, width: '100%', zIndex: 1 }
 }
 
@@ -47,15 +55,8 @@ export default function DashboardLayout({
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const router = useRouter()
   const pathname = usePathname();
   const resetApp = useResetApp();
-
-  // useEffect(() => {
-  //   if (pathname === '/') {
-  //     router.replace('/projects');
-  //   }
-  // }, [pathname]);
 
   const logout = () => {
     supabase.auth.signOut();
@@ -69,14 +70,11 @@ export default function DashboardLayout({
       style: { paddingLeft: 12 },
       label: (
         <Link
+          {...item}
           prefetch={false}
-          // className={cx(styles.link, active === item.label && styles.linkActive)}
           href={item.link}
           key={item.label}
-          style={{
-            textDecoration: 'none',
-            // color: 'black',
-          }}
+          style={{ textDecoration: 'none' }}
         >
           {item.label}
         </Link>
@@ -93,6 +91,8 @@ export default function DashboardLayout({
     }
   ]
 
+
+
   return (
     <>
       {/* <Featurebase /> */}
@@ -100,17 +100,19 @@ export default function DashboardLayout({
       <Layout hasSider style={styles.mainLayout}>
         <Sider
           trigger={null}
-          collapsible
-          collapsed={collapsed}
+          collapsible={false}
+          zeroWidthTriggerStyle={{ display: "none", overflow: "hidden" }}
+          width={250}
           style={{ ...styles.sider }}
         >
           <Flex vertical justify='space-between' style={{ height: '100%' }}>
             <div>
-              <Flex align='center' style={{ height: 64, padding: 16, marginBottom: 12 }}>
+              <Flex align='center' style={{ height: 58, padding: 16, marginBottom: 12 }}>
                 <Link href="/projects">
                   <Image
                     src="/brand-logo-white.png"
                     preview={false}
+                    width={150}
                   />
                 </Link>
               </Flex>
@@ -118,19 +120,8 @@ export default function DashboardLayout({
                 theme="dark"
                 mode="inline"
                 defaultSelectedKeys={['project']}
-                items={[
-                  ...topItems,
-                  // {
-                  //   key: "feature-request",
-                  //   style: { paddingLeft: 12 },
-                  //   label: (
-                  //     <Button icon={<IconRocket />} data-featurebase-feedback-portal type="link" style={{ display: "flex", flexDirection: "row", alignItems: "center", color: "inherit", padding: 0 }}>
-                  //       Feature Request
-                  //     </Button>
-
-                  //   )
-                  // }
-                ]}
+                selectedKeys={[data.find(i => pathname.startsWith(i.link))?.id]}
+                items={topItems}
                 style={{ height: '100%', padding: "0 3px" }}
               />
             </div>
@@ -143,26 +134,19 @@ export default function DashboardLayout({
             </div>
           </Flex>
         </Sider>
-        <Layout style={{ marginLeft: collapsed ? 80 : 200 }}>
-          {pathname.startsWith("/projects/") && (
+        <Layout hasSider={false} style={{ marginLeft: 250 }}>
+          {/* {pathname.startsWith("/projects/") && (
             <Header style={{ ...styles.header, background: colorBgContainer }}>
-              <Button
-                type="text"
-                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                onClick={() => setCollapsed(!collapsed)}
-                style={{
-                  fontSize: '16px',
-                  width: 64,
-                  height: 64,
-                }}
-              />
               <ProjectSelect />
             </Header>
-          )}
+          )} */}
+
+          <CustomBreadcrumb />
+
           <Content
             style={{
-              margin: '24px 16px',
-              padding: 24,
+              margin: 16,
+              padding: '16px 24px',
               // minHeight: "100%",
               background: colorBgContainer,
               borderRadius: borderRadiusLG,

@@ -38,16 +38,26 @@ export async function POST(request: Request) {
   Project name: ${project.name || "N/A"}
   Website: ${project.website || "N/A"}
   Description: ${project.metatags?.description || project?.description || "N/A"}
-  Language: ${language.label || "English (us)"}`
+  Language: ${language.label || "English (us)"}`;
+
+    let writingStyle;
+
+    if (body.writing_mode === "custom") {
+      const { data: selectedWritingStyle } = await supabase.from("writing_styles").select("*").eq("id", body.writing_style_id).single();
+      writingStyle = selectedWritingStyle.source_value;
+    }
 
     const ai = new AI(context);
     const response = await ai.headlines({
       competitorsHeadlines,
       seedKeyword,
-      purpose: body.purpose.replaceAll("_", " "),
-      tone: body.tones.join(","),
-      contentType: body.content_type.replaceAll("_", " "),
-      clickbait: !!body.clickbait
+      purpose: body.purpose,
+      tone: body.tones,
+      contentType: body.content_type,
+      clickbait: body.clickbait,
+      writingStyle,
+      isInspo: body.title_mode === "inspo",
+      inspoTitle: body.title_mode === "inspo" && body.inspo_title,
     });
 
     const headlines = compact(response.split("\n"))

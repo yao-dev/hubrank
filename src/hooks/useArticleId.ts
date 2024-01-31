@@ -1,8 +1,8 @@
 import { useParams } from "next/navigation";
 
-const useActiveArticleId = () => {
+const useArticleId = () => {
   const params = useParams();
   return +(params.article_id as string)
 }
 
-export default useActiveArticleId
+export default useArticleId

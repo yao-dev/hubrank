@@ -43,7 +43,6 @@ export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {
 });
 
 export function SortableItem(props: any) {
-  const [value, setValue] = useState(props.name || "");
   const {
     attributes,
     listeners,
@@ -71,7 +70,7 @@ export function SortableItem(props: any) {
         <CloseOutlined onClick={props.onRemoveHeading} />
       )}
     >
-      <input placeholder="Heading name" value={value} onChange={e => setValue(e.target.value)} style={{ border: 0, outline: 0, width: '100%' }} />
+      <input placeholder="Heading name" value={props.name} onChange={e => props.onChange(e.target.value)} style={{ border: 0, outline: 0, width: '100%' }} />
     </Item>
   );
 }
@@ -135,16 +134,24 @@ const OutlineForm = ({
     }
   }
 
-  const onFinish = async (values: any) => {
-    if (isLocked) {
-      return setCurrentStep(2)
-    }
-    setSubmittingStep(2);
-    setTimeout(() => {
-      setCurrentStep(3)
-      setLockedStep(2);
-      setSubmittingStep(undefined);
-    }, 4000)
+  const onFinish = async (formValues: any) => {
+    await axios.post('/api/write', {
+      ...values,
+      ...formValues,
+      outline: items,
+      purpose: values.purpose.replaceAll("_", " "),
+      tone: values.tones?.join?.(","),
+      contentType: values.content_type.replaceAll("_", " "),
+      clickbait: !!values.clickbait
+    })
+
+
+    // setSubmittingStep(2);
+    // setTimeout(() => {
+    //   setCurrentStep(3)
+    //   setLockedStep(2);
+    //   setSubmittingStep(undefined);
+    // }, 4000)
   };
 
   const onAddHeading = () => {
@@ -160,6 +167,20 @@ const OutlineForm = ({
 
   const onRemoveHeading = (id: any) => {
     setItems(items.filter(i => i.id !== id))
+  }
+
+  const onUpdateOutlineName = (name, id) => {
+    const tmpItems = items.map((i) => {
+      if (i.id === id) {
+        return {
+          ...i,
+          name,
+        }
+      }
+      return i
+    });
+
+    setItems(tmpItems);
   }
 
   function handleDragStart(event: any) {
@@ -183,78 +204,79 @@ const OutlineForm = ({
   }
 
   return (
-    <Form
-      form={form}
-      name="outline-form"
-      disabled={submittingStep !== undefined || getOutline.isLoading}
-      initialValues={{
-        title: values.title,
-        heading_count: 5,
-        with_introduction: true,
-        with_conclusion: true,
-        with_key_takeways: false,
-        with_faq: false,
-      }}
-      autoComplete="off"
-      layout="vertical"
-      onFinish={onFinish}
-    >
-      <Form.Item name="title" label="Article title" rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
-        <Input placeholder="Article title" />
-      </Form.Item>
-
-      <Form.Item name="heading_count" label="How many headings?" help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
-        <Slider
-          marks={{
-            4: "4",
-            5: "5",
-            6: "6",
-            7: "7",
-            8: "8",
-          }}
-          step={null}
-          min={4}
-          max={8}
-        />
-      </Form.Item>
-
-      <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
-        <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
-          <Switch />
+    <Spin spinning={getOutline.isLoading} tip="We are generating a new outline">
+      <Form
+        form={form}
+        name="outline"
+        disabled={submittingStep !== undefined || getOutline.isLoading}
+        initialValues={{
+          title: values.title,
+          heading_count: 5,
+          with_introduction: true,
+          with_conclusion: true,
+          with_key_takeways: false,
+          with_faq: false,
+        }}
+        autoComplete="off"
+        layout="vertical"
+        onFinish={onFinish}
+        onSubmitCapture={e => e.preventDefault()}
+      >
+        <Form.Item name="title" label="Article title" rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
+          <Input placeholder="Article title" />
         </Form.Item>
-        <span>Introduction</span>
-      </Flex>
 
-      <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-        <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
-          <Switch />
+        <Form.Item name="heading_count" label="How many headings?" help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
+          <Slider
+            marks={{
+              4: "4",
+              5: "5",
+              6: "6",
+              7: "7",
+              8: "8",
+            }}
+            step={null}
+            min={4}
+            max={8}
+          />
         </Form.Item>
-        <span>Conclusion</span>
-      </Flex>
 
-      <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-        <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
-          <Switch />
-        </Form.Item>
-        <span>Key takeways</span>
-      </Flex>
-
-      <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-        <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
-          <Switch />
-        </Form.Item>
-        <span>FAQ</span>
-      </Flex>
-
-      <Form.Item>
-        <Flex justify="end">
-          <Button icon={<SyncOutlined />} onClick={onGenerateOutline} loading={getOutline.isLoading}>
-            Generate new outline
-          </Button>
+        <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
+          <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
+            <Switch />
+          </Form.Item>
+          <span>Introduction</span>
         </Flex>
-      </Form.Item>
 
-      <Spin loading={getOutline.isLoading}>
+        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+          <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
+            <Switch />
+          </Form.Item>
+          <span>Conclusion</span>
+        </Flex>
+
+        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+          <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
+            <Switch />
+          </Form.Item>
+          <span>Key takeways</span>
+        </Flex>
+
+        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+          <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
+            <Switch />
+          </Form.Item>
+          <span>FAQ</span>
+        </Flex>
+
+        <Form.Item>
+          <Flex justify="end">
+            <Button htmlType="button" icon={<SyncOutlined />} onClick={onGenerateOutline} loading={getOutline.isLoading}>
+              Generate new outline
+            </Button>
+          </Flex>
+        </Form.Item>
+
         <Form.Item>
           <DndContext
             sensors={sensors}
@@ -273,6 +295,7 @@ const OutlineForm = ({
                     isActive={item.id === activeItem?.id}
                     name={item.name}
                     onRemoveHeading={() => onRemoveHeading(item.id)}
+                    onChange={(value) => onUpdateOutlineName(value, item.id)}
                   />
                 ))}
               </SortableContext>
@@ -300,10 +323,8 @@ const OutlineForm = ({
             </Flex>
           </Form.Item>
         )}
-      </Spin>
-
-
-    </Form>
+      </Form>
+    </Spin>
   )
 }
 

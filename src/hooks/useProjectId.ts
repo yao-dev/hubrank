@@ -13,6 +13,7 @@ const useProjectId = () => {
   if (isNaN(+projectId)) {
     return 0
   }
+
   return +projectId
 }
 
