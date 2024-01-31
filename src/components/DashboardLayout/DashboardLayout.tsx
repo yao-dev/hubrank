@@ -2,7 +2,6 @@
 import { Layout, Menu, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
 import { useState } from 'react';
-import ProjectSelect from '@/components/ProjectSelect';
 import {
   IconSettings,
   IconPlug,
@@ -15,8 +14,8 @@ import {
 import supabase from '@/helpers/supabase';
 import { usePathname } from 'next/navigation';
 import useResetApp from '@/hooks/useResetApp';
-import Emojicon from '../Emojicon/Emojicon';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
+import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 
 const { Header, Sider, Content } = Layout;
 
@@ -91,12 +90,10 @@ export default function DashboardLayout({
     }
   ]
 
-
-
   return (
     <>
       {/* <Featurebase /> */}
-      <Emojicon />
+      <InitClarityTracking />
       <Layout hasSider style={styles.mainLayout}>
         <Sider
           trigger={null}
