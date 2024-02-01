@@ -4,6 +4,8 @@ import { getSerpData } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
 
+export const maxDuration = 45;
+
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(request: Request) {

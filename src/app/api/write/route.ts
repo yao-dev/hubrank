@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { AI } from "../AI";
 import { getSummary } from 'readability-cyr';
 
+export const maxDuration = 300;
+
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(request: Request) {
