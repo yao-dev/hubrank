@@ -5,6 +5,8 @@ import { VerifyEmailOtpParams } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
 import { Form, Alert, Input, Button, Card, Flex, Typography, Image } from 'antd';
+import { useRouter } from 'next/navigation';
+import useSession from '@/hooks/useSession';
 
 export default function Login() {
   const [type, toggleMode] = useToggle(['email', 'otp']);
@@ -14,13 +16,21 @@ export default function Login() {
   const [error, setError] = useState(false);
   const [form] = Form.useForm();
   const email = Form.useWatch('email', form);
+  const router = useRouter();
+  const { session } = useSession();
+
+  useEffect(() => {
+    if (!session) {
+      router.replace('/');
+    }
+  }, [session])
 
   useEffect(() => {
     if (count === 0) {
       interval.stop();
       setCount(60)
     }
-  }, [count])
+  }, [count]);
 
 
   const onSubmit = async (values: any) => {

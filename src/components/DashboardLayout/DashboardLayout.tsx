@@ -2,28 +2,19 @@
 import { Layout, Menu, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
 import { useState } from 'react';
-import {
-  IconSettings,
-  IconPlug,
-  IconCreditCard,
-  IconStack2,
-  IconLogout,
-  IconBulb,
-  IconPigMoney,
-} from '@tabler/icons-react';
+import { IconCreditCard, IconStack2, IconLogout, IconBulb, IconPigMoney } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname } from 'next/navigation';
-import useResetApp from '@/hooks/useResetApp';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 
-const { Header, Sider, Content } = Layout;
+const { Sider, Content } = Layout;
 
 const data = [
   { id: "project", link: '/projects', label: 'Projects', icon: IconStack2 },
-  { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
+  // { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
-  { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
+  // { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
   { id: "feedback", link: '/feedback', label: 'Feature Request', icon: IconBulb },
   { id: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: IconPigMoney },
 ];
@@ -55,12 +46,6 @@ export default function DashboardLayout({
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const pathname = usePathname();
-  const resetApp = useResetApp();
-
-  const logout = () => {
-    supabase.auth.signOut();
-    resetApp()
-  }
 
   const topItems = data.map((item) => {
     return {
@@ -85,7 +70,6 @@ export default function DashboardLayout({
     {
       key: 'logout',
       icon: <IconLogout />,
-      onclick: logout,
       label: "Logout",
     }
   ]
@@ -127,6 +111,7 @@ export default function DashboardLayout({
                 theme="dark"
                 mode="inline"
                 items={bottomItems}
+                onClick={() => supabase.auth.signOut()}
               />
             </div>
           </Flex>
