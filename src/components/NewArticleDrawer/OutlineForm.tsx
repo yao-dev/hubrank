@@ -18,7 +18,7 @@ import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 
-export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }, ref) => {
+export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }: any, ref: any) => {
   let customStyle = {
     ...style,
     transition: '0.2s'
@@ -78,13 +78,9 @@ export function SortableItem(props: any) {
 const OutlineForm = ({
   form,
   values,
-  setLockedStep,
   submittingStep,
-  setSubmittingStep,
-  setCurrentStep,
-  isLocked,
   prev
-}) => {
+}: any) => {
   const [activeItem, setActiveItem] = useState(null);
   const [items, setItems] = useState([]);
   const sensors = useSensors(
@@ -95,7 +91,7 @@ const OutlineForm = ({
   );
 
   useEffect(() => {
-    const outlineForm = document.getElementById("outline-form");
+    const outlineForm: any = document.getElementById("outline-form");
     outlineForm.addEventListener('submit', (e) => e.preventDefault());
   }, [])
 
@@ -341,7 +337,7 @@ const OutlineForm = ({
             </Button>
 
             <Button disabled={!items.length} onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 2}>
-              Next
+              Write article
             </Button>
           </Flex>
         </Form.Item>

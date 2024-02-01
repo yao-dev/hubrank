@@ -30,7 +30,8 @@ const SettingsForm = ({
   setCurrentStep,
   isLocked,
   setHeadlines,
-  setSubmittingStep
+  setSubmittingStep,
+  lockedStep
 }) => {
   const { data: writingStyles } = useWritingStyles().getAll();
   const { data: languages } = useLanguages().getAll();
@@ -464,7 +465,7 @@ const SettingsForm = ({
 
           <Form.Item>
             <Flex justify="end" align="center" gap="middle">
-              <Button type="primary" onClick={() => form.submit()} loading={submittingStep === 0}>
+              <Button disabled={submittingStep === 0 || lockedStep === 0} type="primary" onClick={() => form.submit()} loading={submittingStep === 0}>
                 Next
               </Button>
             </Flex>

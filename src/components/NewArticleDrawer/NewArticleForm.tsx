@@ -3,7 +3,7 @@ import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
 import useWritingStyles from "@/hooks/useWritingStyles";
-import { App, Button, Flex, Form, Steps, Typography } from "antd";
+import { App, Flex, Form, Steps, Typography } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import SettingsForm from "./SettingsForm";
@@ -135,6 +135,7 @@ const NewArticleForm = () => {
           setCurrentStep={setCurrentStep}
           setHeadlines={setHeadlines}
           setSubmittingStep={setSubmittingStep}
+          lockedStep={lockedStep}
         />
       )}
 
