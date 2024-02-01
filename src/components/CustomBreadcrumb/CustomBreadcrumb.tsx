@@ -19,9 +19,9 @@ const CustomBreadcrumb = () => {
 
   const withSettingsButton = (component: any) => {
     return (
-      <Flex gap="middle" align="center">
+      <Flex gap="middle" align="center" justify='space-between' style={{ paddingRight: 16 }}>
         {component}
-        <Button icon={<SettingOutlined />} size="small" onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
+        <Button style={{ marginTop: 12 }} icon={<SettingOutlined />} onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
       </Flex>
     )
   }
@@ -29,7 +29,7 @@ const CustomBreadcrumb = () => {
   if (pathname === "/" || pathname === "/projects") return null;
 
   if (pathname.includes('/articles/new')) {
-    return (
+    return withSettingsButton(
       <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
         <Breadcrumb.Item>
           <Link
