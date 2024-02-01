@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "src/app/**/*": {
+      "memory": "3000",
+      "maxDuration": 45
+    }
+  }
+}
