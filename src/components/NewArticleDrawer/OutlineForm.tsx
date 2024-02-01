@@ -1,6 +1,6 @@
 'use client';;
 import { IconGripVertical } from "@tabler/icons-react";
-import { Button, Card, Flex, Form, Input, Slider, Spin, Switch } from "antd";
+import { App, Button, Card, Flex, Form, Input, Slider, Spin, Switch } from "antd";
 import {
   DndContext,
   KeyboardSensor,
@@ -81,6 +81,7 @@ const OutlineForm = ({
   submittingStep,
   prev
 }: any) => {
+  const { message, notification } = App.useApp();
   const [activeItem, setActiveItem] = useState(null);
   const [items, setItems] = useState([]);
   const sensors = useSensors(
@@ -137,15 +138,34 @@ const OutlineForm = ({
   }
 
   const onFinish = async (formValues: any) => {
-    axios.post('/api/write', {
-      ...values,
-      ...formValues,
-      outline: items.map(i => i.name),
-      purpose: values.purpose.replaceAll("_", " "),
-      tone: values.tones?.join?.(","),
-      contentType: values.content_type.replaceAll("_", " "),
-      clickbait: !!values.clickbait
-    })
+    try {
+
+      axios.post('/api/write', {
+        ...values,
+        ...formValues,
+        outline: items.map(i => i.name),
+        purpose: values.purpose.replaceAll("_", " "),
+        tone: values.tones?.join?.(","),
+        contentType: values.content_type.replaceAll("_", " "),
+        clickbait: !!values.clickbait
+      })
+
+      // message.success('Article added in the queue!');
+      notification.success({
+        message: "Article added in the queue!",
+        placement: "bottomRight",
+        role: "alert",
+        duration: 5,
+      })
+    } catch {
+      notification.error({
+        message: "We had an issue adding your article in the queue please try again",
+        placement: "bottomRight",
+        role: "alert",
+        duration: 5,
+      })
+    }
+
 
     // TODO: redirect to /articles
 

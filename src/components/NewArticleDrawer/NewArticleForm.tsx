@@ -37,6 +37,7 @@ const NewArticleForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [lockedStep, setLockedStep] = useState<number | void>();
   const [submittingStep, setSubmittingStep] = useState<number | void>();
+  const [relatedKeywords, setRelatedKeywords] = useState();
   const [settingsForm] = Form.useForm();
   const [headlineForm] = Form.useForm();
   const [outlineForm] = Form.useForm();
@@ -136,6 +137,7 @@ const NewArticleForm = () => {
           setHeadlines={setHeadlines}
           setSubmittingStep={setSubmittingStep}
           lockedStep={lockedStep}
+          setRelatedKeywords={setRelatedKeywords}
         />
       )}
 
@@ -179,6 +181,7 @@ const NewArticleForm = () => {
             writing_style_id: settingsForm.getFieldValue("writing_style_id"),
             additional_information: settingsForm.getFieldValue("additional_information"),
             word_count: settingsForm.getFieldValue("word_count"),
+            keywords: relatedKeywords
           }}
           isLocked={lockedStep !== undefined && lockedStep >= 2}
           setLockedStep={setLockedStep}

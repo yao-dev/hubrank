@@ -274,7 +274,17 @@ export class AI {
     \`\`\`
 
     This is an outline for an article of ${values.word_count} words.
-    Write the word count of each sections in an array  \`\`\`json\`\`\`.`
+    Write the word count of each sections alongside the keywords to include in that section in an array like the example below.
+
+    \`\`\`json
+    [
+      {
+        word_count: 300,
+        keywords: "keyword a, keyword b, etc.."
+      }
+    ]
+    \`\`\`
+    `
   }
 
   async sectionsWordCount(values: any) {

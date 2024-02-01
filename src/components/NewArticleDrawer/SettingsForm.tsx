@@ -31,7 +31,8 @@ const SettingsForm = ({
   isLocked,
   setHeadlines,
   setSubmittingStep,
-  lockedStep
+  lockedStep,
+  setRelatedKeywords
 }) => {
   const { data: writingStyles } = useWritingStyles().getAll();
   const { data: languages } = useLanguages().getAll();
@@ -81,6 +82,8 @@ const SettingsForm = ({
         contentType: values.content_type.replaceAll("_", " "),
         clickbait: !!values.clickbait
       })
+
+      setRelatedKeywords(data.keywords);
 
       setSubmittingStep(undefined);
       setCurrentStep(1)

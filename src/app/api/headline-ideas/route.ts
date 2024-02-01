@@ -1,6 +1,6 @@
 import { AI } from "../AI";
 import { supabaseAdmin } from "@/helpers/supabase";
-import { getSerpData } from "@/helpers/seo";
+import { getRelatedKeywords, getSerpData } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
 
@@ -13,17 +13,34 @@ export async function POST(request: Request) {
     const body = await request.json();
     const seedKeyword = body.seed_keyword;
 
-    const { data: project } = await supabase.from("projects").select("*").eq("id", body.project_id).limit(1).single();
+    const [
+      { data: project },
+      { data: language },
+    ] = await Promise.all([
+      supabase.from("projects").select("*").eq("id", body.project_id).single(),
+      supabase.from("languages").select("*").eq("id", body.language_id).single()
+    ])
 
     if (!project) {
-      return NextResponse.json({ message: "not project found" }, { status: 500 })
+      return NextResponse.json({ message: "project not found" }, { status: 500 })
     }
-
-    const { data: language } = await supabase.from("languages").select("*").eq("id", body.language_id).limit(1).single();
-    const { data: serpDataForSeedKeyword } = await getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code });
+    if (!language) {
+      return NextResponse.json({ message: "language not found" }, { status: 500 })
+    }
+    const [
+      { data: serpDataForSeedKeyword },
+      { data: relatedKeywords },
+    ] = await Promise.all([
+      getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code }),
+      getRelatedKeywords({ keyword: seedKeyword, depth: 2, limit: 50, api: true, lang: language.code, location_code: language.location_code })
+    ])
 
     if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
       return NextResponse.json({ message: "error fetching competitors ranking for main keyword" }, { status: 500 })
+    }
+
+    if (relatedKeywords?.tasks_error > 0 || !relatedKeywords) {
+      return NextResponse.json({ message: "error fetching related keywords" }, { status: 500 })
     }
 
     const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
@@ -34,7 +51,25 @@ export async function POST(request: Request) {
             return subItem.title
           })
       })
+      .flat(Infinity);
+
+    let keywords: any = {};
+
+    relatedKeywords?.tasks[0].result
+      .map((item: any) => {
+        return item?.items?.map((subItem: any) => {
+          return compact([
+            subItem?.keyword_data?.keyword,
+            subItem?.related_keywords,
+          ])
+        })
+      })
       .flat(Infinity)
+      .forEach((keyword: string) => {
+        keywords[keyword] = true;
+      });
+
+    keywords = [...new Set(Object.keys(keywords))].slice(0, 30);
 
     const context = `
   Project name: ${project.name || "N/A"}
@@ -64,7 +99,7 @@ export async function POST(request: Request) {
 
     const headlines = compact(response.split("\n"))
 
-    return NextResponse.json({ headlines }, { status: 200 });
+    return NextResponse.json({ headlines, keywords }, { status: 200 });
   } catch (e) {
     console.log(e)
     return NextResponse.json(e, { status: 500 })
