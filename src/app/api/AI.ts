@@ -14,7 +14,9 @@ export class AI {
     });
     this.system = `You are an expert SEO writer who writes using Hemingway principles and writes engaging content that speak to the right target audience.
 
-    ${context ? `Context:\n${context}` : ""}`
+    ${context ? `Context:\n${context}` : ""}`;
+
+    console.log(this.system)
   }
 
   resetPrompt() {
@@ -52,6 +54,8 @@ export class AI {
 
   async ask(prompt: any, opts: any = {}) {
     console.log(`[AI]: ${opts.mode || "ask"}`);
+
+    console.log(prompt)
 
     const start = performance.now();
     this.messages.push({
@@ -131,12 +135,11 @@ export class AI {
   }
 
   outlineIdeaTemplate(values: any) {
-    return `Write an article outline for: "${values.title}"
-    - the article must have ${values.heading_count} sections (excluding sub-sections)
-    - a sub-section is optional
-    - ${values.introduction ? "add an introduction (it never has sub-sections)" : "do not add an introduction"}
-    - ${values.conclusion ? "add a conclusion/summary (it never has sub-sections)" : "do not add a conclusion"}
-    - ${values.key_takeways ? "add a key takeways (it never has sub-sections)" : "do not add a key takeways"}
+    return `Write an outline for: "${values.title}"
+    - the outline must have ${values.heading_count} sections
+    - ${values.introduction ? "add an introduction" : "do not add an introduction"}
+    - ${values.conclusion ? "add a conclusion/summary" : "do not add a conclusion"}
+    - ${values.key_takeways ? "add a key takeways" : "do not add a key takeways"}
     - ${values.faq ? "add a FAQ" : "do not add a FAQ"}
     - list of keywords to choose from to include in the section titles: ${values.keywords}
     - Language: ${values.language}
@@ -144,27 +147,49 @@ export class AI {
     Wrap the outline in a well formated JSON array wrapped in \`\`\`json\`\`\` follow the structure shown below
     \`\`\`json
     [
-      {
-        name: "section name 1",
-        sub_sections: [
-          {
-            name: "sub-section name 1,
-          }
-          {
-            name: "sub-section name 2,
-          }
-        ]
-      },
-      {
-        name: "section name 2",
-      },
-      {
-        name: "section name 3",
-      },
+      "section name 1",
+      "section name 2",
+      "section name 3",
     ]
     \`\`\`
     `
   }
+
+  // outlineIdeaTemplate(values: any) {
+  //   return `Write an article outline for: "${values.title}"
+  //   - the article must have ${values.heading_count} sections (excluding sub-sections)
+  //   - a sub-section is optional
+  //   - ${values.introduction ? "add an introduction (it never has sub-sections)" : "do not add an introduction"}
+  //   - ${values.conclusion ? "add a conclusion/summary (it never has sub-sections)" : "do not add a conclusion"}
+  //   - ${values.key_takeways ? "add a key takeways (it never has sub-sections)" : "do not add a key takeways"}
+  //   - ${values.faq ? "add a FAQ" : "do not add a FAQ"}
+  //   - list of keywords to choose from to include in the section titles: ${values.keywords}
+  //   - Language: ${values.language}
+
+  //   Wrap the outline in a well formated JSON array wrapped in \`\`\`json\`\`\` follow the structure shown below
+  //   \`\`\`json
+  //   [
+  //     {
+  //       name: "section name 1",
+  //       sub_sections: [
+  //         {
+  //           name: "sub-section name 1,
+  //         }
+  //         {
+  //           name: "sub-section name 2,
+  //         }
+  //       ]
+  //     },
+  //     {
+  //       name: "section name 2",
+  //     },
+  //     {
+  //       name: "section name 3",
+  //     },
+  //   ]
+  //   \`\`\`
+  //   `
+  // }
 
   outlineTemplate(values: any) {
     return `Write an article outline for: "${values.title}"
@@ -240,6 +265,20 @@ export class AI {
     "${writingStyle}"
 
     Write in markdown wrapped in \`\`\`markdown\`\`\`.`
+  }
+
+  outlineWithWordCountTemplate(values: any) {
+    return `
+    \`\`\`json
+    ${values.outline}
+    \`\`\`
+
+    This is an outline for an article of ${values.word_count} words.
+    Write the word count of each sections in an array  \`\`\`json\`\`\`.`
+  }
+
+  async sectionsWordCount(values: any) {
+    return this.ask(this.outlineWithWordCountTemplate(values), { type: "json", mode: "sections-word-count", temperature: 0, model: "claude-1.2" });
   }
 
   async headlines(values: any) {

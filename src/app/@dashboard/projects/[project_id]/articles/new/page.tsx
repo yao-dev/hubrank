@@ -9,10 +9,10 @@ const NewArticle = () => {
 
   return (
     <Row>
-      <Col span={8}>
+      <Col span={7}>
         <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
       </Col>
-      <Col span={8}>
+      <Col span={9}>
         <NewArticleForm />
       </Col>
     </Row>

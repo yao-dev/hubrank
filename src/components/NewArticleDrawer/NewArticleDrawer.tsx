@@ -120,8 +120,6 @@ const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
 
   if (isLoading) return null;
 
-  console.log(settingsForm.getFieldsValue())
-
   return (
     <Drawer
       title="New article"

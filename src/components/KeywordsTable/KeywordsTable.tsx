@@ -10,6 +10,7 @@ import { SearchOutlined, DeleteTwoTone } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
 import { getUserId } from '@/helpers/user';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
+import { useRouter } from 'next/navigation';
 
 const competitionOrder: any = {
   "low": 0,
@@ -19,11 +20,9 @@ const competitionOrder: any = {
 
 type Props = {
   editMode?: boolean;
-  setSelectedKeyword: (k: string) => void;
-  setArticleDrawerOpen: (value: boolean) => void;
 }
 
-const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: Props) => {
+const KeywordsTable = ({ editMode }: Props) => {
   const projectId = useProjectId();
   const { data: project, isLoading, isFetched } = useProjects().getOne(projectId);
   const { getAll } = useLanguages();
@@ -33,6 +32,7 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
   const queryClient = useQueryClient();
   const { notification } = App.useApp();
   const { theme } = useContext(ConfigProvider.ConfigContext);
+  const router = useRouter();
 
   const [form] = Form.useForm();
 
@@ -255,8 +255,7 @@ const KeywordsTable = ({ editMode, setSelectedKeyword, setArticleDrawerOpen }: P
             <Space size="small" align='center'>
               <Button
                 onClick={() => {
-                  setSelectedKeyword(record);
-                  setArticleDrawerOpen(true)
+                  router.push(`/projects/${projectId}/articles/new?k=${record.keyword}&lid=${record.language_id || ""}`)
                 }}
               >
                 use keyword

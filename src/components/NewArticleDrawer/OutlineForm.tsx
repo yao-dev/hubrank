@@ -12,7 +12,7 @@ import {
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { forwardRef, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { PlusOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
@@ -82,7 +82,8 @@ const OutlineForm = ({
   submittingStep,
   setSubmittingStep,
   setCurrentStep,
-  isLocked
+  isLocked,
+  prev
 }) => {
   const [activeItem, setActiveItem] = useState(null);
   const [items, setItems] = useState([]);
@@ -92,6 +93,11 @@ const OutlineForm = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  useEffect(() => {
+    const outlineForm = document.getElementById("outline-form");
+    outlineForm.addEventListener('submit', (e) => e.preventDefault());
+  }, [])
 
   const getOutline = useMutation({
     mutationFn: async (data: any) => {
@@ -117,16 +123,16 @@ const OutlineForm = ({
         project_id: values.project_id,
         seed_keyword: values.seed_keyword,
       });
-      setItems(data.outline.map((section) => {
+      setItems(data.outline.map((sectionName) => {
         return {
-          id: uniqueId(section.name),
-          name: section.name,
-          sub_sections: section.sub_sections?.map((subSection) => {
-            return {
-              id: uniqueId(subSection.name),
-              name: subSection.name,
-            }
-          })
+          id: uniqueId(sectionName),
+          name: sectionName.startsWith("-") ? sectionName.slice(1).trim() : sectionName,
+          // sub_sections: section.sub_sections?.map((subSection) => {
+          //   return {
+          //     id: uniqueId(subSection.name),
+          //     name: subSection.name,
+          //   }
+          // })
         }
       }))
     } catch (e) {
@@ -135,15 +141,17 @@ const OutlineForm = ({
   }
 
   const onFinish = async (formValues: any) => {
-    await axios.post('/api/write', {
+    axios.post('/api/write', {
       ...values,
       ...formValues,
-      outline: items,
+      outline: items.map(i => i.name),
       purpose: values.purpose.replaceAll("_", " "),
       tone: values.tones?.join?.(","),
       contentType: values.content_type.replaceAll("_", " "),
       clickbait: !!values.clickbait
     })
+
+    // TODO: redirect to /articles
 
 
     // setSubmittingStep(2);
@@ -207,11 +215,11 @@ const OutlineForm = ({
     <Spin spinning={getOutline.isLoading} tip="We are generating a new outline">
       <Form
         form={form}
-        name="outline"
+        name="outline-form"
         disabled={submittingStep !== undefined || getOutline.isLoading}
         initialValues={{
           title: values.title,
-          heading_count: 5,
+          heading_count: 7,
           with_introduction: true,
           with_conclusion: true,
           with_key_takeways: false,
@@ -234,10 +242,12 @@ const OutlineForm = ({
               6: "6",
               7: "7",
               8: "8",
+              9: "9",
+              10: "10",
             }}
             step={null}
             min={4}
-            max={8}
+            max={10}
           />
         </Form.Item>
 
@@ -269,7 +279,7 @@ const OutlineForm = ({
           <span>FAQ</span>
         </Flex>
 
-        <Form.Item>
+        <Form.Item style={{ marginTop: 32 }}>
           <Flex justify="end">
             <Button htmlType="button" icon={<SyncOutlined />} onClick={onGenerateOutline} loading={getOutline.isLoading}>
               Generate new outline
@@ -323,6 +333,18 @@ const OutlineForm = ({
             </Flex>
           </Form.Item>
         )}
+
+        <Form.Item>
+          <Flex justify="end" align="center" gap="middle">
+            <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
+              Previous
+            </Button>
+
+            <Button disabled={!items.length} onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 2}>
+              Next
+            </Button>
+          </Flex>
+        </Form.Item>
       </Form>
     </Spin>
   )

@@ -90,11 +90,11 @@ export default function Login() {
     <Flex vertical align="center" justify="center" style={{ height: '100dvh' }}>
       <Image
         src="/brand-logo-black.png"
-        width={300}
+        width={250}
         preview={false}
-        style={{ marginBottom: 24 }}
+        style={{ marginBottom: 32 }}
       />
-      <Typography.Title level={2} style={{ fontWeight: 700, margin: 0 }}>
+      <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>
         Sign in to your account
       </Typography.Title>
       <Typography.Text style={{ marginTop: 6 }}>

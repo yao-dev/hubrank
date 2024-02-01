@@ -17,6 +17,30 @@ const CustomBreadcrumb = () => {
 
   if (pathname === "/" || pathname === "/projects") return null;
 
+  if (pathname.includes('/articles/new')) {
+    return (
+      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
+        <Breadcrumb.Item>
+          <Link
+            href="/projects"
+            style={{ textDecoration: 'none' }}
+          >
+            <IconStack2 size={20} style={{ margin: 0 }} />
+          </Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>
+          <Link
+            href={`/projects/${projectId}`}
+            style={{ textDecoration: 'none' }}
+          >
+            {project?.name}
+          </Link>
+        </Breadcrumb.Item>
+        <Breadcrumb.Item>New article</Breadcrumb.Item>
+      </Breadcrumb>
+    )
+  }
+
   if (pathname.includes('/articles/')) {
     return (
       <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>

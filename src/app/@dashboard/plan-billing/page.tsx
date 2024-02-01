@@ -1,18 +1,10 @@
 'use client';
-import { Flex, Title } from "@mantine/core";
+import { Typography } from "antd";
 
 export default function PlanAndBilling() {
   return (
     <div>
-      <Flex
-        gap="md"
-        justify="space-between"
-        align="center"
-        direction="row"
-        mb="xl"
-      >
-        <Title order={2}>Plan & Billing</Title>
-      </Flex>
+      <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Plan & Billing</Typography.Title>
     </div>
   )
 }

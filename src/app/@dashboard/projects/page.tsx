@@ -38,7 +38,7 @@ export default function Projects() {
           align="center"
           style={{ marginBottom: 24 }}
         >
-          <Typography.Title level={2} style={{ fontWeight: 800, margin: 0 }}>Projects</Typography.Title>
+          <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Projects</Typography.Title>
           <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<PlusOutlined />}>New project</Button>
         </Flex>
 

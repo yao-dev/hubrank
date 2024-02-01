@@ -7,9 +7,21 @@ import {
   StarOutlined
 } from '@ant-design/icons';
 import { useMutation } from "@tanstack/react-query";
-import { Flex, Form, Image, Input, Segmented, Select, Space, Spin, Switch } from "antd";
+import {
+  Button,
+  Flex,
+  Form,
+  Image,
+  Input,
+  Segmented,
+  Select,
+  Space,
+  Switch,
+  message,
+} from "antd";
 import axios from "axios";
 import { uniqueId } from "lodash";
+import { useEffect } from "react";
 
 const SettingsForm = ({
   form,
@@ -23,6 +35,12 @@ const SettingsForm = ({
   const { data: writingStyles } = useWritingStyles().getAll();
   const { data: languages } = useLanguages().getAll();
   const projectId = useProjectId();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  useEffect(() => {
+    const settingsForm = document.getElementById("settings-form");
+    settingsForm.addEventListener('submit', (e) => e.preventDefault());
+  }, [])
 
   const getHeadlines = useMutation({
     mutationFn: async (data: any) => {
@@ -33,7 +51,6 @@ const SettingsForm = ({
     //   notification.error({ message: "We couldn't save your change" })
     // }
   });
-
 
   const onFinish = async (values: any) => {
     const isCustomTitle = values.title_mode === "custom"
@@ -48,6 +65,12 @@ const SettingsForm = ({
     }
 
     try {
+      messageApi.open({
+        type: 'loading',
+        content: 'Getting headline ideas...',
+        duration: 0,
+      });
+
       setSubmittingStep(0)
       const { data } = await getHeadlines.mutateAsync({
         ...values,
@@ -69,14 +92,17 @@ const SettingsForm = ({
     } catch (e) {
       console.error(e)
       setSubmittingStep(undefined);
+    } finally {
+      messageApi.destroy();
     }
   };
 
   return (
-    <Spin spinning={getHeadlines.isLoading} tip="We are gathering headline ideas">
+    <>
+      {contextHolder}
       <Form
         form={form}
-        name="settings"
+        name="settings-form"
         disabled={submittingStep !== undefined || isLocked}
         initialValues={{
           seed_keyword: "",
@@ -435,9 +461,17 @@ const SettingsForm = ({
           </Form.Item>
           <span>SEO tags & Schema markups</span>
         </Flex> */}
+
+          <Form.Item>
+            <Flex justify="end" align="center" gap="middle">
+              <Button type="primary" onClick={() => form.submit()} loading={submittingStep === 0}>
+                Next
+              </Button>
+            </Flex>
+          </Form.Item>
         </Flex>
       </Form>
-    </Spin>
+    </>
   )
 }
 

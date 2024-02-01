@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import SettingsForm from "./SettingsForm";
 import HeadlineForm from "./HeadlineForm";
 import OutlineForm from "./OutlineForm";
+import { useSearchParams } from "next/navigation";
 
 const steps = [
   {
@@ -22,17 +23,16 @@ const steps = [
   },
 ]
 
-type Props = {
-  selectedKeyword?: any;
-}
-
-const NewArticleForm = ({ selectedKeyword }: Props) => {
+const NewArticleForm = () => {
   const { message, notification } = App.useApp();
   const projectId = useProjectId();
   const { data: project, isLoading } = useProjects().getOne(projectId)
   const [submitLoading, setSubmitLoading] = useState(false);
   const { data: writingStyles } = useWritingStyles().getAll();
   const [headlines, setHeadlines] = useState([]);
+  const params = useSearchParams();
+  const selectedKeyword = params.get("k");
+  const languageId = params.get("lid");
 
   const [currentStep, setCurrentStep] = useState(0);
   const [lockedStep, setLockedStep] = useState<number | void>();
@@ -65,8 +65,8 @@ const NewArticleForm = ({ selectedKeyword }: Props) => {
 
   useEffect(() => {
     if (project) {
-      settingsForm.setFieldValue("language_id", selectedKeyword ? +selectedKeyword.language_id : +project.language_id)
-      settingsForm.setFieldValue("seed_keyword", selectedKeyword?.keyword || "")
+      settingsForm.setFieldValue("language_id", languageId ? +languageId : +project.language_id)
+      settingsForm.setFieldValue("seed_keyword", selectedKeyword || "")
     }
   }, [project, selectedKeyword])
 
@@ -112,16 +112,13 @@ const NewArticleForm = ({ selectedKeyword }: Props) => {
     } finally {
       setSubmitLoading(false)
     }
-
   };
 
   if (isLoading) return null;
 
-  console.log(settingsForm.getFieldsValue())
-
   return (
     <Flex vertical gap="large">
-      <Typography.Title level={2} style={{ fontWeight: 800 }}>New article</Typography.Title>
+      <Typography.Title level={3} style={{ fontWeight: 700, marginTop: 0 }}>New article</Typography.Title>
 
       <Steps
         size="small"
@@ -149,6 +146,7 @@ const NewArticleForm = ({ selectedKeyword }: Props) => {
           submittingStep={submittingStep}
           setCurrentStep={setCurrentStep}
           headlines={headlines}
+          prev={prev}
         />
       )}
 
@@ -186,10 +184,11 @@ const NewArticleForm = ({ selectedKeyword }: Props) => {
           submittingStep={submittingStep}
           setSubmittingStep={setSubmittingStep}
           setCurrentStep={setCurrentStep}
+          prev={prev}
         />
       )}
 
-      <Flex justify="end" align="center" gap="middle">
+      {/* <Flex justify="end" align="center" gap="middle">
         {currentStep > 0 && (
           <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
             Previous
@@ -211,7 +210,7 @@ const NewArticleForm = ({ selectedKeyword }: Props) => {
             Write article
           </Button>
         )}
-      </Flex>
+      </Flex> */}
     </Flex>
   )
 }

@@ -13,12 +13,7 @@ import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
 
-type Props = {
-  setSelectedKeyword: (k: string) => void;
-  setArticleDrawerOpen: (value: boolean) => void;
-}
-
-const ArticlesTable = ({ setSelectedKeyword, setArticleDrawerOpen }: Props) => {
+const ArticlesTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isLoading, isFetched } = getAll({ queue: false });
   const [htmlPreview, setHtmlPreview] = useState("");

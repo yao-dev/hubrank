@@ -1,18 +1,10 @@
 'use client';
-import { Flex, Title } from "@mantine/core";
+import { Typography } from "antd";
 
 export default function Settings() {
   return (
     <div>
-      <Flex
-        gap="md"
-        justify="space-between"
-        align="center"
-        direction="row"
-        mb="xl"
-      >
-        <Title order={2}>Settings</Title>
-      </Flex>
+      <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Settings</Typography.Title>
     </div>
   )
 }

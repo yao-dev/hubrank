@@ -16,8 +16,6 @@ export default function ProjectDetail({
   params: { project_id: number }
 }) {
   const projectId = +params.project_id;
-  const [articleDrawerOpen, setArticleDrawerOpen] = useState(false);
-  const [selectedKeyword, setSelectedKeyword] = useState(null);
   const { data: project, isFetched } = useProjects().getOne(projectId);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -34,12 +32,6 @@ export default function ProjectDetail({
     }
   }, [project, isFetched]);
 
-  useEffect(() => {
-    if (!articleDrawerOpen) {
-      setSelectedKeyword(null)
-    }
-  }, [articleDrawerOpen])
-
   if (isFetched && !project) {
     return null;
   }
@@ -54,21 +46,21 @@ export default function ProjectDetail({
       key: 'articles',
       label: 'Articles',
       children: (
-        <ArticlesTable setArticleDrawerOpen={setArticleDrawerOpen} setSelectedKeyword={setSelectedKeyword} />
+        <ArticlesTable />
       ),
     },
     {
       key: 'keyword-ideas',
       label: 'Keyword ideas',
       children: (
-        <KeywordsTable setArticleDrawerOpen={setArticleDrawerOpen} setSelectedKeyword={setSelectedKeyword} />
+        <KeywordsTable />
       ),
     },
     {
       key: 'saved-keywords',
       label: 'Saved keywords',
       children: (
-        <KeywordsTable editMode setArticleDrawerOpen={setArticleDrawerOpen} setSelectedKeyword={setSelectedKeyword} />
+        <KeywordsTable editMode />
       ),
     },
     {
@@ -94,7 +86,6 @@ export default function ProjectDetail({
         return (
           <Button
             type="primary"
-            // onClick={() => setArticleDrawerOpen(true)}
             onClick={() => router.push(`/projects/${projectId}/articles/new`)}
             icon={<PlusOutlined />}
           >
@@ -112,7 +103,6 @@ export default function ProjectDetail({
         height: "100%",
       }}
     >
-      <NewArticleDrawer selectedKeyword={selectedKeyword} open={articleDrawerOpen} onClose={() => setArticleDrawerOpen(false)} />
       <WritingStyleForm opened={isWritingStyleModalOpened} setModalOpen={setIsWritingStyleModalOpened} />
 
       <Tabs

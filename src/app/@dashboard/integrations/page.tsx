@@ -1,25 +1,26 @@
 'use client';
-import { Flex, Image, Text, Title } from "@mantine/core";
+
+import { Flex, Image, Typography } from "antd";
 
 export default function Integrations() {
   return (
-    <div>
+    <Flex vertical style={{ height: "100%" }}>
       <Flex
         gap="md"
         justify="space-between"
         align="center"
-        direction="row"
-        mb="xl"
       >
-        <Title order={2}>Integrations</Title>
+        <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Integrations</Typography.Title>
+
       </Flex>
-      <Flex direction="column" h={460} justify="center" align="center" gap={50}>
+      <Flex vertical flex={1} justify="center" align="center" gap={50}>
         <Image
-          w={500}
+          preview={false}
           src="/image-4.png"
+          width={460}
         />
-        <Text size="md" fw="bold">This feature is coming soon</Text>
+        <Typography.Text>This feature is coming soon</Typography.Text>
       </Flex>
-    </div>
+    </Flex>
   )
 }
