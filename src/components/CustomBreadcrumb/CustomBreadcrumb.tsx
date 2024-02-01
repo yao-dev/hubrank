@@ -1,19 +1,30 @@
 'use client';
-import { Breadcrumb } from 'antd';
+import { Breadcrumb, Button, Flex } from 'antd';
 import Link from 'next/link';
 import { IconStack2 } from '@tabler/icons-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useArticleId from '@/hooks/useArticleId';
+import { SettingOutlined } from "@ant-design/icons";
 
 const CustomBreadcrumb = () => {
   const pathname = usePathname();
   const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId);
   const articleId = useArticleId()
-  const { data: article } = useBlogPosts().getOne(articleId)
+  const { data: article } = useBlogPosts().getOne(articleId);
+  const router = useRouter();
+
+  const withSettingsButton = (component: any) => {
+    return (
+      <Flex gap="middle" align="center">
+        {component}
+        <Button icon={<SettingOutlined />} size="small" onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
+      </Flex>
+    )
+  }
 
   if (pathname === "/" || pathname === "/projects") return null;
 
@@ -42,7 +53,7 @@ const CustomBreadcrumb = () => {
   }
 
   if (pathname.includes('/articles/')) {
-    return (
+    return withSettingsButton(
       <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
         <Breadcrumb.Item>
           <Link
@@ -90,7 +101,7 @@ const CustomBreadcrumb = () => {
   }
 
   if (pathname.includes('/projects')) {
-    return (
+    return withSettingsButton(
       <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
         <Breadcrumb.Item>
           <Link

@@ -3,6 +3,10 @@
     "src/app/**/*": {
       "memory": 3008,
       "maxDuration": 45
+    },
+    "src/app/api/write/**": {
+      "memory": 3008,
+      "maxDuration": 180
     }
   }
 }
