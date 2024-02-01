@@ -278,7 +278,7 @@ export class AI {
   }
 
   async sectionsWordCount(values: any) {
-    return this.ask(this.outlineWithWordCountTemplate(values), { type: "json", mode: "sections-word-count", temperature: 0, model: "claude-1.2" });
+    return this.ask(this.outlineWithWordCountTemplate(values), { type: "json", mode: "sections-word-count", temperature: 0, model: "claude-2.1" });
   }
 
   async headlines(values: any) {

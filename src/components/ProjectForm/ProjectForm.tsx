@@ -86,7 +86,7 @@ const ProjectForm = () => {
       initialValues={{
         name: project.name,
         website: project.website,
-        description: project.description?.slice?.(0, 250) || project.metatags.description?.slice?.(0, 250),
+        description: project?.description?.slice?.(0, 250) || project?.metatags?.description?.slice?.(0, 250),
         seed_keyword: project.seed_keyword,
         language_id: project.language_id,
       }}
