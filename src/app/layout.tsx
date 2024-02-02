@@ -95,15 +95,13 @@ export default function RootLayout({
                 <QueryClientProvider client={queryClient}>
                   <SessionProvider>
                     {(session) => {
-                      return (
+                      return session ? (
                         <RealtimeWrapper>
-                          {session ? (
-                            <DashboardLayout>
-                              {dashboard}
-                            </DashboardLayout>
-                          ) : login}
+                          <DashboardLayout>
+                            {dashboard}
+                          </DashboardLayout>
                         </RealtimeWrapper>
-                      )
+                      ) : login
                     }}
                   </SessionProvider>
                 </QueryClientProvider>
