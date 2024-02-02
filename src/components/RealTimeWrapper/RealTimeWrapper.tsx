@@ -17,15 +17,13 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 
 	React.useEffect(() => {
 		if (sessionStore.session?.user?.id) {
-			console.log(`user_id=eq.${sessionStore.session.user.id}&project_id=${projectId}`,)
 			channel = supabase
 				.channel('blog_posts')
 				.on('postgres_changes', {
 					event: 'UPDATE',
 					schema: 'public',
 					table: 'blog_posts',
-					// filter: `user_id=eq.${sessionStore.session.user.id}&project_id=${projectId}`,
-					// filter: `project_id=${projectId}`,
+					filter: `project_id=eq.${projectId}`,
 				}, (data) => {
 					if (data.eventType === 'UPDATE' && data.old.status !== data.new.status) {
 						queryClient.invalidateQueries({
@@ -37,7 +35,6 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 								message: <b>Article completed</b>,
 								description: <Typography.Text><b><Link href={new URL(`${window.location.origin}/projects/${data.new.project_id}/articles/${data.new.id}`)}>{data.new.title}</Link></b> is ready to view</Typography.Text>,
 								placement: 'bottomRight',
-								duration: 5000
 							});
 						}
 						if (data.new.status === "error") {
@@ -45,10 +42,19 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 								message: <b>Article error</b>,
 								description: <Typography.Text>An error occured while writing <b>{data.new.title}</b> please try again</Typography.Text>,
 								placement: 'bottomRight',
-								duration: 5000
 							});
 						}
 					}
+				})
+				.on('postgres_changes', {
+					event: "INSERT",
+					schema: 'public',
+					table: 'blog_posts',
+					filter: `project_id=eq.${projectId}`,
+				}, () => {
+					queryClient.invalidateQueries({
+						queryKey: ["blog_posts"],
+					});
 				})
 				.subscribe()
 

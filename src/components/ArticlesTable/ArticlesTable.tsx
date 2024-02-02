@@ -13,17 +13,23 @@ import {
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
+import axios from 'axios';
 
 const ArticlesTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isLoading, isFetched, refetch } = getAll({ queue: false });
   const [htmlPreview, setHtmlPreview] = useState("");
+  const [articleId, setArticleId] = useState(null);
   const router = useRouter();
   const projectId = useProjectId();
 
   const getIsDisabled = (status: string) => {
-    return ["queue"].includes(status)
+    return ["queue", "writing"].includes(status)
     // return ["error", "queue"].includes(status)
+  }
+
+  const rewrite = (article_id: number) => {
+    axios.post('/api/rewrite', { article_id })
   }
 
   const columns = useMemo(() => {
@@ -101,7 +107,7 @@ const ArticlesTable = () => {
             icon = <CheckCircleOutlined />;
           }
           if (valueLowercase === "writing") {
-            color = "processing";
+            color = "blue";
             icon = <SyncOutlined spin />;
           }
           if (valueLowercase === "error") {
@@ -111,7 +117,7 @@ const ArticlesTable = () => {
 
           return (
             <span>
-              <Tag color={color} icon={null}>
+              <Tag color={color} icon={valueLowercase === "writing" || valueLowercase === "queue" ? icon : null}>
                 {/* {value.toUpperCase()} */}
                 {value.replaceAll("_", " ").toUpperCase()}
               </Tag>
@@ -133,21 +139,32 @@ const ArticlesTable = () => {
             >
               use keyword
             </Button> */}
-            {record.status === "error" ? (
+            {record.status === "error" && record.retry_count < 2 ? (
               <Button
-                style={{ width: 90 }}
+                style={{ width: 100 }}
                 icon={<ReloadOutlined />}
+                onClick={() => rewrite(record.id)}
               >
                 Retry
               </Button>
-            ) : (
+            ) : null}
+            {record.status === "error" && record.retry_count > 1 && (
+              <Button
+                onClick={(e) => { e.preventDefault() }}
+                style={{ width: 100 }}
+              >
+                Contact us
+              </Button>
+            )}
+            {record.status !== "error" && (
               <Button
                 disabled={getIsDisabled(record.status)}
                 onClick={(e) => {
                   e.preventDefault();
+                  setArticleId(record.id)
                   setHtmlPreview(record.html)
                 }}
-                style={{ width: 90 }}
+                style={{ width: 100 }}
               >
                 Preview
               </Button>
@@ -171,8 +188,17 @@ const ArticlesTable = () => {
                 danger: true
               }}
               style={{ cursor: "pointer" }}
+              onPopupClick={e => e.preventDefault()}
             >
-              <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} />
+              <Button
+                onClick={(e) => e.preventDefault()}
+                icon={(
+                  <DeleteTwoTone
+                    onClick={(e) => e.preventDefault()}
+                    twoToneColor="#ff4d4f"
+                  />
+                )}
+              />
             </Popconfirm>
           </Space>
         ),
@@ -217,6 +243,13 @@ const ArticlesTable = () => {
         open={!!htmlPreview}
         width={800}
         onClose={() => setHtmlPreview("")}
+        extra={
+          <Space>
+            <Button style={{ width: 100 }} type="primary" onClick={() => router.push(`/projects/${projectId}/articles/${articleId}`)}>
+              Edit
+            </Button>
+          </Space>
+        }
       >
         <div dangerouslySetInnerHTML={{
           __html: `
@@ -242,14 +275,19 @@ const ArticlesTable = () => {
             pageSizeOptions: [10, 25, 50],
             pageSize: 25,
           }}
-          onRow={(record) => {
-            return {
-              "aria-disabled": getIsDisabled(record.status),
-              onClick: (event) => {
-                !getIsDisabled(record.status) && event?.target?.innerText !== "Preview" && router.push(`/projects/${projectId}/articles/${record.id}`)
-              },
-            };
-          }}
+        // onRow={(record) => {
+        //   return {
+        //     "aria-disabled": getIsDisabled(record.status),
+        //     onClick: (event) => {
+        //       console.log(event);
+        //       console.log(event.target);
+        //       console.log(event.target.id);
+        //       if (!getIsDisabled(record.status) && !["Retry", "Preview"].includes(event?.target?.innerText)) {
+        //         router.push(`/projects/${projectId}/articles/${record.id}`)
+        //       }
+        //     },
+        //   };
+        // }}
         />
       </Flex>
     </>

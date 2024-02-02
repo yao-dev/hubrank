@@ -18,6 +18,8 @@ import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { getUserId } from "@/helpers/user";
+import useProjectId from "@/hooks/useProjectId";
+import { useRouter } from "next/navigation";
 
 export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }: any, ref: any) => {
   let customStyle = {
@@ -91,6 +93,8 @@ const OutlineForm = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+  const projectId = useProjectId();
+  const router = useRouter();
 
   useEffect(() => {
     const outlineForm: any = document.getElementById("outline-form");
@@ -157,14 +161,14 @@ const OutlineForm = ({
         message: "Article added in the queue!",
         placement: "bottomRight",
         role: "alert",
-        duration: 5,
-      })
+      });
+
+      router.push(`/projects/${projectId}?tab=articles`)
     } catch {
       notification.error({
         message: "We had an issue adding your article in the queue please try again",
         placement: "bottomRight",
         role: "alert",
-        duration: 5,
       })
     }
 

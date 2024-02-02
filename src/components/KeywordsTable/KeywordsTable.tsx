@@ -33,25 +33,21 @@ const KeywordsTable = ({ editMode }: Props) => {
   const { notification } = App.useApp();
   const { theme } = useContext(ConfigProvider.ConfigContext);
   const router = useRouter();
-
   const [form] = Form.useForm();
+  const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"));
 
-  const { data: keywords, refetch, isFetching } = useQuery({
+  const { data: keywords, isFetching } = useQuery({
     enabled: false,
-    queryKey: ["keywords", search],
+    queryKey: ["keywords", { search: form.getFieldValue("search"), language_id: form.getFieldValue("language_id") }],
     keepPreviousData: true,
-    cacheTime: 1000 * 60 * 60 * 24 * 30, // 30 days
+    cacheTime: Infinity,
     queryFn: () => {
-      const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"))
       return getRelatedKeywords({ keyword: form.getFieldValue("search"), depth: 4, limit: 1000, lang: selectedLanguage.code, location_code: selectedLanguage.location_code })
     },
     onSuccess() {
-      const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"))
-      setActiveLanguage(selectedLanguage)
+      setActiveLanguage(selectedLanguage);
     },
     select: (data) => {
-      // data.tasks[0].result[0].items[0].keyword_data.keyword
-      // data.tasks[0].result[0].items_count
       return data?.map((item: any) => {
         return {
           language_id: form.getFieldValue("language_id"),
@@ -63,7 +59,7 @@ const KeywordsTable = ({ editMode }: Props) => {
           word_count: item.keyword_data.keyword.split(" ").length
         }
       })
-    }
+    },
   });
 
   const { data: savedKeywords } = useQuery({
@@ -290,7 +286,9 @@ const KeywordsTable = ({ editMode }: Props) => {
           language_id: null
         }}
         onFinish={(values) => {
-          refetch()
+          queryClient.prefetchQuery({
+            queryKey: ["keywords", { search, language_id: selectedLanguage?.id }]
+          })
         }}
       >
         <Flex gap="middle">

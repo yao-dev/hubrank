@@ -91,7 +91,7 @@ const SettingsForm = ({
 
       setHeadlines(data.headlines.map((h) => ({
         id: uniqueId(h),
-        headline: h
+        headline: h[0] === "-" ? h.slice(1).trim() : h.trim()
       })));
     } catch (e) {
       console.error(e)
@@ -416,7 +416,7 @@ const SettingsForm = ({
 
 
 
-        <Flex gap="small" align="center">
+        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
           <Form.Item name="with_hook" tooltip="Short sentence that comes before the introduction, its goal is to capture the reader's attention and encourage them to continue reading." rules={[]} style={{ margin: 0 }}>
             <Switch />
           </Form.Item>

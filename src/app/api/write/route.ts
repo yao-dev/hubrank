@@ -8,7 +8,6 @@ export const maxDuration = 300;
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
-
 export async function POST(request: Request) {
   const start = performance.now();
   const body = await request.json();
@@ -16,9 +15,38 @@ export async function POST(request: Request) {
   let articleId;
 
   try {
+    console.log({
+      title: body.title,
+      seed_keyword: body.seed_keyword,
+      status: "queue",
+      keywords: body.keywords,
+      user_id: body.userId,
+      project_id: body.project_id,
+      language_id: body.language_id,
+      title_mode: body.title_mode,
+      content_type: body.content_type,
+      purpose: body.purpose,
+      tones: body.tones,
+      perspective: body.perspective,
+      clickbait: body.clickbait,
+      sitemap: body.sitemap,
+      external_sources: body.external_sources,
+      external_sources_objective: body.external_sources_objective,
+      with_featured_image: body.with_featured_image,
+      with_table_of_content: body.with_table_of_content,
+      with_sections_image: body.with_sections_image,
+      with_sections_image_mode: body.with_sections_image_mode,
+      image_source: body.image_source,
+      with_seo: body.with_seo,
+      writing_mode: body.writing_mode,
+      writing_style_id: body.writing_style_id,
+      additional_information: body.additional_information,
+      word_count: body.word_count,
+      with_hook: body.with_hook,
+      outline: body.outline,
+    })
     const { data: queuedArticle } = await supabase.from("blog_posts")
       .insert({
-        // ...body,
         title: body.title,
         seed_keyword: body.seed_keyword,
         status: "queue",
@@ -26,12 +54,41 @@ export async function POST(request: Request) {
         user_id: body.userId,
         project_id: body.project_id,
         language_id: body.language_id,
+        title_mode: body.title_mode,
+        content_type: body.content_type,
+        purpose: body.purpose,
+        tones: body.tones,
+        perspective: body.perspective,
+        clickbait: body.clickbait,
+        sitemap: body.sitemap,
+        external_sources: body.external_sources,
+        external_sources_objective: body.external_sources_objective,
+        with_featured_image: body.with_featured_image,
+        with_table_of_content: body.with_table_of_content,
+        with_sections_image: body.with_sections_image,
+        with_sections_image_mode: body.with_sections_image_mode,
+        image_source: body.image_source,
+        with_seo: body.with_seo,
+        writing_mode: body.writing_mode,
+        writing_style_id: body.writing_style_id,
+        additional_information: body.additional_information,
+        word_count: body.word_count,
+        with_hook: body.with_hook,
+        outline: body.outline,
       })
       .select("id")
       .single()
       .throwOnError();
 
-    articleId = queuedArticle?.id
+    console.log("queuedArticle", queuedArticle)
+
+    articleId = queuedArticle?.id;
+
+    await supabase
+      .from('blog_posts')
+      .update({ status: "writing" })
+      .eq("id", articleId)
+      .throwOnError();
 
     const ai = new AI();
     const wordsCount = await ai.sectionsWordCount(body)
@@ -93,13 +150,10 @@ export async function POST(request: Request) {
     ai.article = ai.article.replaceAll("```markdown", "").replaceAll("```", "")
 
     console.log("AFTER", ai.article)
-
     console.log("parse markdown to html")
 
     const html = marked.parse(ai.article);
-
     console.log("parse markdown to html done")
-
 
     const end = performance.now();
     const writingTimeInSeconds = (end - start) / 1000;
@@ -113,9 +167,9 @@ export async function POST(request: Request) {
         status: 'ready_to_view',
         // meta_description: result?.meta_description,
         writing_time_sec: writingTimeInSeconds,
-        words_count: getSummary(ai.article).words
+        word_count: getSummary(ai.article).words
       })
-      .eq("id", queuedArticle?.id)
+      .eq("id", articleId)
       .throwOnError();
 
     return NextResponse.json({
@@ -125,6 +179,7 @@ export async function POST(request: Request) {
       stats: getSummary(ai.article)
     }, { status: 200 })
   } catch (e) {
+
     await supabase
       .from('blog_posts')
       .update({
