@@ -136,6 +136,7 @@ const SettingsForm = ({
           image_source: 'Unsplash',
           with_seo: true,
           language_id: null,
+          with_hook: false,
         }}
         autoComplete="off"
         layout="vertical"
@@ -411,6 +412,15 @@ const SettingsForm = ({
 
             }}
           </Form.Item>
+        </Flex>
+
+
+
+        <Flex gap="small" align="center">
+          <Form.Item name="with_hook" tooltip="Short sentence that comes before the introduction, its goal is to capture the reader's attention and encourage them to continue reading." rules={[]} style={{ margin: 0 }}>
+            <Switch />
+          </Form.Item>
+          <span>Hook</span>
         </Flex>
 
         <Flex vertical>

@@ -181,7 +181,8 @@ const NewArticleForm = () => {
             writing_style_id: settingsForm.getFieldValue("writing_style_id"),
             additional_information: settingsForm.getFieldValue("additional_information"),
             word_count: settingsForm.getFieldValue("word_count"),
-            keywords: relatedKeywords
+            keywords: relatedKeywords,
+            with_hook: settingsForm.getFieldValue("with_hook"),
           }}
           isLocked={lockedStep !== undefined && lockedStep >= 2}
           setLockedStep={setLockedStep}

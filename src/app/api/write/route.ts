@@ -2,20 +2,56 @@ import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
 import { AI } from "../AI";
 import { getSummary } from 'readability-cyr';
+import { marked } from "marked";
 
 export const maxDuration = 300;
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
+
 export async function POST(request: Request) {
+  const start = performance.now();
   const body = await request.json();
 
   try {
-    console.log(body);
+    const { data: queuedArticle } = await supabase.from("blog_posts")
+      .insert({
+        // ...body,
+        title: body.title,
+        seed_keyword: body.seed_keyword,
+        status: "queue",
+        keywords: body.keywords,
+        user_id: body.userId,
+        project_id: body.project_id,
+        language_id: body.language_id,
+      })
+      .select("id")
+      .single()
+      .throwOnError();
 
     const ai = new AI();
     const wordsCount = await ai.sectionsWordCount(body)
     const outline = body.outline.join(', ');
+
+    ai.article = `# ${body.title}\n`;
+
+    if (body.with_hook) {
+      let hook = await ai.hook({
+        title: body.title,
+        outline,
+        seed_keyword: body.seed_keyword,
+        keywords: body.keywords,
+        perspective: body.perspective,
+      });
+
+      let stats = getSummary(hook)
+
+      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+        hook = await ai.rephrase(hook);
+      }
+
+      ai.addArticleContent(hook);
+    }
 
     for (const [index, heading] of Object.entries(body.outline)) {
       let content = await ai.write({
@@ -23,8 +59,10 @@ export async function POST(request: Request) {
         title: body.title,
         heading,
         // word_count: section.sub_sections ? sectionWithSubWordCount : section.word_count,
-        word_count: wordsCount[index],
-        outline
+        word_count: wordsCount[index].word_count,
+        outline,
+        perspective: body.perspective,
+        keywords: wordsCount[index].word_count,
       });
 
       let stats = getSummary(content)
@@ -36,10 +74,34 @@ export async function POST(request: Request) {
       ai.addArticleContent(content);
     }
 
+    ai.article = ai.article.replaceAll("```markdown", "").replaceAll("```", "")
+
     console.log(ai.article)
 
+    const html = marked.parse(ai.article);
+
+    const end = performance.now();
+    const writingTimeInSeconds = (end - start) / 1000;
+    console.log("writing time in seconds", writingTimeInSeconds)
+
+    await supabase
+      .from('blog_posts')
+      .update({
+        markdown: ai.article,
+        html,
+        status: 'ready_to_view',
+        // meta_description: result?.meta_description,
+        writing_time_sec: writingTimeInSeconds,
+        words_count: getSummary(ai.article).words
+      })
+      .eq("id", queuedArticle?.id)
+      .throwOnError();
+
     return NextResponse.json({
-      article: ai.article
+      markdown: ai.article,
+      html,
+      writingTimeInSeconds,
+      stats: getSummary(ai.article)
     }, { status: 200 })
   } catch (e) {
     return NextResponse.json(e, { status: 500 })

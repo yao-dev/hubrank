@@ -25,8 +25,6 @@ export class AI {
   }
 
   parse(text: string, contentType: string = "") {
-    console.log("[AI]: parse", text);
-
     if (text.indexOf("@@@") !== -1) {
       return text.slice(text.indexOf("@@@") + 3, text.lastIndexOf("@@@"));
     }
@@ -55,13 +53,12 @@ export class AI {
   async ask(prompt: any, opts: any = {}) {
     console.log(`[AI]: ${opts.mode || "ask"}`);
 
-    console.log(prompt)
-
     const start = performance.now();
-    this.messages.push({
-      role: "user",
-      content: prompt
-    });
+
+    // this.messages.push({
+    //   role: "user",
+    //   content: prompt
+    // });
 
     const completion = await this.ai.beta.messages.create({
       // model: "claude-2.1",
@@ -69,7 +66,12 @@ export class AI {
       max_tokens: opts.word_count ? opts.word_count * 2 : 1000,
       temperature: opts.temperature || 0.7,
       system: this.system,
-      messages: this.messages,
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
       // top_k: 0,
       // metadata: {user_id: ""}
     });
@@ -78,10 +80,10 @@ export class AI {
 
     console.log(`[AI]: duration: ${(end - start) / 1000}`);
 
-    this.messages.push({
-      role: "assistant",
-      content: completion.content[0].text
-    });
+    // this.messages.push({
+    //   role: "assistant",
+    //   content: completion.content[0].text
+    // });
 
     return this.parse(completion.content[0].text, opts.type)
   }
@@ -121,6 +123,10 @@ export class AI {
     `
   }
 
+  async headlines(values: any) {
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: "claude-2.1" });
+  }
+
   titleTemplate({ competitorsHeadlines, seedKeyword, tone, contentType, purpose, clickbait }: any) {
     return `List of competitors headline ranking in the SERP for the keyword "${seedKeyword}"
     ${competitorsHeadlines.join('\n- ')}
@@ -132,6 +138,10 @@ export class AI {
     ${clickbait ? "- the headline is a clickbait" : ""}
     - write in markdown wrapped in \`\`\`markdown\`\`\`
     `
+  }
+
+  async title(values: any) {
+    return this.ask(this.titleTemplate(values), { type: "markdown", mode: "title", temperature: 0.5, model: "claude-2.1" });
   }
 
   outlineIdeaTemplate(values: any) {
@@ -153,6 +163,10 @@ export class AI {
     ]
     \`\`\`
     `
+  }
+
+  async outlines(values: any) {
+    return this.ask(this.outlineIdeaTemplate(values), { type: "json", mode: "outlines", temperature: 0.7, model: "claude-2.1" });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -224,20 +238,54 @@ export class AI {
     `
   }
 
+  async outline(values: any) {
+    return this.ask(this.outlineTemplate(values), { type: "yaml", mode: "outline", temperature: 0.7, model: "claude-2.1" });
+  }
+
+  hookTemplate(values: any) {
+    return `
+    Outline: ${values.outline}
+    Seed keyword: ${values.seed_keyword}
+    perspective: ${values.perspective}
+
+    Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values.title}"
+    write in markdown wrapped in \`\`\`markdown\`\`\`.`
+  }
+
+  async hook(values: any) {
+    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.6, model: "claude-2.1" })
+  }
+
   writeTemplate(values: any) {
     return `
     Headline: ${values.title}
     Section prefix: ${values.heading_prefix}
     Outline: ${values.outline}
     Perspective: ${values.perspective}
+    Related keywords: ${values.keywords}
 
+    wrap keywords semantically and topically relevant for internal/external link with %%
     Write the section "${values.heading}" with exactly ${values.word_count} words in markdown wrapped in \`\`\`markdown\`\`\` with Hemingway principles in mind.
     Leverage all markdown syntaxes to make your content more appealing and easier to read.
     `
   }
 
+  async write(values: any) {
+    return this.ask(`
+    ${this.writeTemplate(values)}
+  `, { type: "markdown", mode: "write", word_count: values.word_count });
+  }
+
   expandTemplate() {
     return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`.`
+  }
+
+  async expand(section: any) {
+    return this.ask(`
+    "${section}"
+
+    ${this.expandTemplate()}
+  `, { type: "markdown", mode: "expand", temperature: 0 });
   }
 
   rephraseTemplate(content: any) {
@@ -259,12 +307,28 @@ export class AI {
     Write in markdown wrapped in \`\`\`markdown\`\`\`.`
   }
 
+  async rephrase(section: any) {
+    return this.ask(`
+    "${section}"
+
+    ${this.rephraseTemplate(section)}
+  `, { type: "markdown", mode: "rephrase", temperature: 0.3 });
+  }
+
   paraphraseTemplate(writingStyle = "") {
     return `Paraphrase the above text using the style of the following text:
 
     "${writingStyle}"
 
     Write in markdown wrapped in \`\`\`markdown\`\`\`.`
+  }
+
+  async paraphrase(section: any, writingStyle: any) {
+    return this.ask(`
+    "${section}"
+
+    ${this.paraphraseTemplate(writingStyle)}
+  `, { type: "markdown", mode: "paraphrase" });
   }
 
   outlineWithWordCountTemplate(values: any) {
@@ -289,50 +353,5 @@ export class AI {
 
   async sectionsWordCount(values: any) {
     return this.ask(this.outlineWithWordCountTemplate(values), { type: "json", mode: "sections-word-count", temperature: 0, model: "claude-2.1" });
-  }
-
-  async headlines(values: any) {
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: "claude-2.1" });
-  }
-
-  async title(values: any) {
-    return this.ask(this.titleTemplate(values), { type: "markdown", mode: "title", temperature: 0.5, model: "claude-2.1" });
-  }
-
-  async outlines(values: any) {
-    return this.ask(this.outlineIdeaTemplate(values), { type: "json", mode: "outlines", temperature: 0.7, model: "claude-2.1" });
-  }
-  async outline(values: any) {
-    return this.ask(this.outlineTemplate(values), { type: "yaml", mode: "outline", temperature: 0.7, model: "claude-2.1" });
-  }
-
-  async write(values: any) {
-    return this.ask(`
-    ${this.writeTemplate(values)}
-  `, { type: "markdown", mode: "write", word_count: values.word_count });
-  }
-
-  async expand(section: any) {
-    return this.ask(`
-    "${section}"
-
-    ${this.expandTemplate()}
-  `, { type: "markdown", mode: "expand", temperature: 0 });
-  }
-
-  async rephrase(section: any) {
-    return this.ask(`
-    "${section}"
-
-    ${this.rephraseTemplate(section)}
-  `, { type: "markdown", mode: "rephrase", temperature: 0.3 });
-  }
-
-  async paraphrase(section: any, writingStyle: any) {
-    return this.ask(`
-    "${section}"
-
-    ${this.paraphraseTemplate(writingStyle)}
-  `, { type: "markdown", mode: "paraphrase" });
   }
 }

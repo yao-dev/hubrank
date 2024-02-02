@@ -17,6 +17,7 @@ import { PlusOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { getUserId } from "@/helpers/user";
 
 export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }: any, ref: any) => {
   let customStyle = {
@@ -147,7 +148,8 @@ const OutlineForm = ({
         purpose: values.purpose.replaceAll("_", " "),
         tone: values.tones?.join?.(","),
         contentType: values.content_type.replaceAll("_", " "),
-        clickbait: !!values.clickbait
+        clickbait: !!values.clickbait,
+        userId: await getUserId()
       })
 
       // message.success('Article added in the queue!');
