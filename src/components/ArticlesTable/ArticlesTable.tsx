@@ -8,6 +8,7 @@ import {
   SyncOutlined,
   PlusOutlined,
   DeleteTwoTone,
+  ReloadOutlined
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
@@ -15,10 +16,15 @@ import useProjectId from '@/hooks/useProjectId';
 
 const ArticlesTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
-  const { data: articles, isLoading, isFetched } = getAll({ queue: false });
+  const { data: articles, isLoading, isFetched, refetch } = getAll({ queue: false });
   const [htmlPreview, setHtmlPreview] = useState("");
   const router = useRouter();
   const projectId = useProjectId();
+
+  const getIsDisabled = (status: string) => {
+    return ["queue"].includes(status)
+    // return ["error", "queue"].includes(status)
+  }
 
   const columns = useMemo(() => {
     return [
@@ -127,9 +133,25 @@ const ArticlesTable = () => {
             >
               use keyword
             </Button> */}
-            <Button onClick={() => setHtmlPreview(record.html)}>
-              Preview
-            </Button>
+            {record.status === "error" ? (
+              <Button
+                style={{ width: 90 }}
+                icon={<ReloadOutlined />}
+              >
+                Retry
+              </Button>
+            ) : (
+              <Button
+                disabled={getIsDisabled(record.status)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setHtmlPreview(record.html)
+                }}
+                style={{ width: 90 }}
+              >
+                Preview
+              </Button>
+            )}
             {/* <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
               Edit
             </Button> */}
@@ -209,20 +231,27 @@ const ArticlesTable = () => {
           ${htmlPreview}
         ` }} />
       </Drawer>
-      <Table
-        size="small"
-        dataSource={articles?.data}
-        columns={columns}
-        loading={isLoading}
-        onRow={(record) => {
-          return {
-            onClick: (event) => {
-              // console.log(event)
-              router.push(`/projects/${projectId}/articles/${record.id}`)
-            },
-          };
-        }}
-      />
+      <Flex vertical gap="middle">
+        <Button style={{ width: 120 }} onClick={() => refetch()} icon={<ReloadOutlined />}>Refresh</Button>
+        <Table
+          size="small"
+          dataSource={articles?.data}
+          columns={columns}
+          loading={isLoading}
+          pagination={{
+            pageSizeOptions: [10, 25, 50],
+            pageSize: 25,
+          }}
+          onRow={(record) => {
+            return {
+              "aria-disabled": getIsDisabled(record.status),
+              onClick: (event) => {
+                !getIsDisabled(record.status) && event?.target?.innerText !== "Preview" && router.push(`/projects/${projectId}/articles/${record.id}`)
+              },
+            };
+          }}
+        />
+      </Flex>
     </>
   )
 }

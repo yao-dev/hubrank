@@ -42,7 +42,7 @@ const useGetAll = ({ queue }: { queue?: boolean }) => {
     queryFn: () => getAll(projectId, queue),
     onError: console.error,
     keepPreviousData: true,
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
   });
 };
 

@@ -1,9 +1,8 @@
-'use client';
+'use client';;
 import { Button, Tabs, TabsProps } from 'antd';
 import { useEffect, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import { useRouter, useSearchParams } from 'next/navigation';
-import NewArticleDrawer from '@/components/NewArticleDrawer/NewArticleDrawer';
 import KeywordsTable from '@/components/KeywordsTable/KeywordsTable';
 import ArticlesTable from '@/components/ArticlesTable/ArticlesTable';
 import { PlusOutlined } from '@ant-design/icons';

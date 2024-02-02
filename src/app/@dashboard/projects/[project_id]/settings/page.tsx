@@ -1,8 +1,10 @@
-'use client';;
+'use client';
 import ProjectForm from "@/components/ProjectForm/ProjectForm";
 import ProjectMetaForm from "@/components/ProjectMetaForm/ProjectMetaForm";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 
-import { Col, Row, Tabs, TabsProps } from "antd";
+import { Button, Col, Row, Tabs, TabsProps } from "antd";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function ProjectSettings({
@@ -10,42 +12,42 @@ export default function ProjectSettings({
 }: {
   params: { project_id: number }
 }) {
-  const [activeKey, setActiveKey] = useState("general")
+  const router = useRouter();
+  const [activeKey, setActiveKey] = useState("general");
 
   const items: TabsProps['items'] = [
     {
       key: 'general',
       label: 'General',
       children: (
-        <Row>
-          <Col offset={8} span={8}>
-            <ProjectForm />
-          </Col>
-        </Row>
+        <ProjectForm />
       ),
     },
     {
       key: 'seo-meta',
       label: 'SEO Meta',
       children: (
-        <Row>
-          <Col offset={8} span={8}>
-            <ProjectMetaForm />
-          </Col>
-        </Row>
+        <ProjectMetaForm />
       ),
     },
   ];
 
   return (
     <>
-      <Tabs
-        centered
-        defaultActiveKey="general"
-        items={items}
-        activeKey={activeKey}
-        onChange={setActiveKey}
-      />
+      <Row>
+        <Col span={8}>
+          <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
+        </Col>
+        <Col span={8}>
+          <Tabs
+            centered
+            defaultActiveKey="general"
+            items={items}
+            activeKey={activeKey}
+            onChange={setActiveKey}
+          />
+        </Col>
+      </Row>
     </>
   )
 }

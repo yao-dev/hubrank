@@ -13,6 +13,8 @@ export async function POST(request: Request) {
   const start = performance.now();
   const body = await request.json();
 
+  let articleId;
+
   try {
     const { data: queuedArticle } = await supabase.from("blog_posts")
       .insert({
@@ -28,6 +30,8 @@ export async function POST(request: Request) {
       .select("id")
       .single()
       .throwOnError();
+
+    articleId = queuedArticle?.id
 
     const ai = new AI();
     const wordsCount = await ai.sectionsWordCount(body)
@@ -50,6 +54,8 @@ export async function POST(request: Request) {
         hook = await ai.rephrase(hook);
       }
 
+      hook = ai.parse(hook, "markdown")
+
       ai.addArticleContent(hook);
     }
 
@@ -65,20 +71,35 @@ export async function POST(request: Request) {
         keywords: wordsCount[index].word_count,
       });
 
-      let stats = getSummary(content)
+      console.log("SUMMARISE", content)
+
+      let stats = getSummary(content);
+
+      console.log("SUMMARISE DONE", stats)
 
       if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+        console.log("REPHRASE")
         content = await ai.rephrase(content);
+        console.log("REPHRASE DONE", content)
       }
+
+      content = ai.parse(content, "markdown")
 
       ai.addArticleContent(content);
     }
 
+    console.log("BEFORE", ai.article)
+
     ai.article = ai.article.replaceAll("```markdown", "").replaceAll("```", "")
 
-    console.log(ai.article)
+    console.log("AFTER", ai.article)
+
+    console.log("parse markdown to html")
 
     const html = marked.parse(ai.article);
+
+    console.log("parse markdown to html done")
+
 
     const end = performance.now();
     const writingTimeInSeconds = (end - start) / 1000;
@@ -104,6 +125,15 @@ export async function POST(request: Request) {
       stats: getSummary(ai.article)
     }, { status: 200 })
   } catch (e) {
+    await supabase
+      .from('blog_posts')
+      .update({
+        status: 'error',
+        error: JSON.stringify(e)
+      })
+      .eq("id", articleId)
+      .throwOnError();
+
     return NextResponse.json(e, { status: 500 })
   }
 }

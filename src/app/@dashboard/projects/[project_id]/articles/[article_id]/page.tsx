@@ -116,7 +116,7 @@ const Article = ({
 
             <Flex vertical align='end' style={{ marginBottom: 16 }}>
               <Text style={{ fontSize: 16 }}>Readability</Text>
-              <Text style={{ fontSize: 22 }} strong>Grade {Math.round(stats.FleschKincaidGrade)}</Text>
+              <Text style={{ fontSize: 22 }} strong>Grade {Math.round(stats.FleschKincaidGrade) || ""}</Text>
             </Flex>
             <Text style={{ fontSize: 16 }}>Reading time: <Text strong>{stats.readingTime}</Text></Text>
             <Text style={{ fontSize: 16 }}>Words: <Text strong>{stats.words}</Text></Text>

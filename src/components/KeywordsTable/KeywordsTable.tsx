@@ -71,7 +71,7 @@ const KeywordsTable = ({ editMode }: Props) => {
     queryKey: ["saved_keywords", { projectId }],
     keepPreviousData: true,
     queryFn: () => {
-      return supabase.from("saved_keywords").select("*, languages!language_id(*)").eq("project_id", projectId)
+      return supabase.from("saved_keywords").select("*, languages!language_id(*)").eq("project_id", projectId).order("id", { ascending: false })
     },
     select: ({ data }: any) => {
       return data || [];
@@ -360,7 +360,15 @@ const KeywordsTable = ({ editMode }: Props) => {
           </Col>
         </Row>
       )}
-      <Table size="small" dataSource={!editMode ? keywords : savedKeywords} columns={columns} loading={isFetching} />
+      <Table
+        size="small"
+        dataSource={!editMode ? keywords : savedKeywords}
+        columns={columns}
+        loading={isFetching}
+        pagination={{
+          pageSize: 25
+        }}
+      />
     </Flex>
   )
 }
