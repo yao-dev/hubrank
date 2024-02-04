@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         word_count: wordsCount[index].word_count,
         outline,
         perspective: article.perspective,
-        keywords: wordsCount[index].word_count,
+        keywords: wordsCount[index].keywords,
       });
 
       console.log("SUMMARISE", content)

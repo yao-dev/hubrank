@@ -97,6 +97,7 @@ export async function POST(request: Request) {
     ai.article = `# ${body.title}\n`;
 
     if (body.with_hook) {
+      console.log(`[start]: hook`)
       let hook = await ai.hook({
         title: body.title,
         outline,
@@ -108,15 +109,18 @@ export async function POST(request: Request) {
       let stats = getSummary(hook)
 
       if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
-        hook = await ai.rephrase(hook);
+        console.log("- rephrase")
+        hook = await ai.rephrase(ai.parse(hook, "markdown"));
+        console.log("- rephrase done")
       }
 
-      hook = ai.parse(hook, "markdown")
-
-      ai.addArticleContent(hook);
+      console.log("- add hook to article")
+      ai.addArticleContent(ai.parse(hook, "markdown"));
+      console.log(`[end]: hook`)
     }
 
     for (const [index, heading] of Object.entries(body.outline)) {
+      console.log(`[start]: ${index}) ${heading}`)
       let content = await ai.write({
         heading_prefix: "##",
         title: body.title,
@@ -125,33 +129,25 @@ export async function POST(request: Request) {
         word_count: wordsCount[index].word_count,
         outline,
         perspective: body.perspective,
-        keywords: wordsCount[index].word_count,
+        keywords: wordsCount[index].keywords,
       });
-
-      console.log("SUMMARISE", content)
 
       let stats = getSummary(content);
 
-      console.log("SUMMARISE DONE", stats)
-
       if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
-        console.log("REPHRASE")
-        content = await ai.rephrase(content);
-        console.log("REPHRASE DONE", content)
+        console.log("- rephrase")
+        content = await ai.rephrase(ai.parse(content, "markdown"));
+        console.log("- rephrase done")
       }
 
-      content = ai.parse(content, "markdown")
-
-      ai.addArticleContent(content);
+      console.log("- add section to article")
+      ai.addArticleContent(ai.parse(content, "markdown"));
+      console.log(`[end]: ${index}) ${heading}`)
     }
-
-    console.log("BEFORE", ai.article)
 
     ai.article = ai.article.replaceAll("```markdown", "").replaceAll("```", "")
 
-    console.log("AFTER", ai.article)
     console.log("parse markdown to html")
-
     const html = marked.parse(ai.article);
     console.log("parse markdown to html done")
 
@@ -179,7 +175,6 @@ export async function POST(request: Request) {
       stats: getSummary(ai.article)
     }, { status: 200 })
   } catch (e) {
-
     await supabase
       .from('blog_posts')
       .update({

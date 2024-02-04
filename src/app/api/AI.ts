@@ -244,11 +244,11 @@ export class AI {
 
   hookTemplate(values: any) {
     return `
-    Outline: ${values.outline}
-    Seed keyword: ${values.seed_keyword}
-    perspective: ${values.perspective}
+    Outline: ${values?.outline}
+    Seed keyword: ${values?.seed_keyword}
+    perspective: ${values?.perspective}
 
-    Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values.title}"
+    Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values?.title}"
     write in markdown wrapped in \`\`\`markdown\`\`\`.`
   }
 
@@ -258,15 +258,16 @@ export class AI {
 
   writeTemplate(values: any) {
     return `
-    Headline: ${values.title}
-    Section prefix: ${values.heading_prefix}
-    Outline: ${values.outline}
-    Perspective: ${values.perspective}
-    Related keywords: ${values.keywords}
+    Headline: ${values?.title}
+    Section prefix: ${values?.heading_prefix}
+    Outline: ${values?.outline}
+    Perspective: ${values?.perspective}
+    Related keywords: ${values?.keywords}
 
     wrap keywords semantically and topically relevant for internal/external link with %%
-    Write the section "${values.heading}" with exactly ${values.word_count} words in markdown wrapped in \`\`\`markdown\`\`\` with Hemingway principles in mind.
-    Leverage all markdown syntaxes to make your content more appealing and easier to read.
+    Write the section "${values?.heading}" with exactly ${values?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\` with Hemingway principles in mind.
+    - Leverage all markdown syntaxes to make your content more appealing and easier to read (bold, list, quote, table, etc.).
+    - Add h3 sub-sections with ### if the content as more than 2 paragraphs
     `
   }
 

@@ -3,7 +3,11 @@ import { NextRequest, NextResponse } from "next/server"
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
 
-  if (request.nextUrl.pathname.startsWith("/api") || request.nextUrl.pathname.endsWith("5pgozwml3q-uc.a.run.app")) {
+  if (
+    request.nextUrl.pathname.startsWith("/api") ||
+    request.nextUrl.pathname.endsWith("5pgozwml3q-uc.a.run.app") ||
+    request.nextUrl.href.startsWith("https://api.notion.com")
+  ) {
     response.headers.append("Access-Control-Allow-Origin", "*")
   }
 

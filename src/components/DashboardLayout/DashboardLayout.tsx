@@ -2,7 +2,7 @@
 import { Layout, Menu, theme, Flex, Image } from 'antd';
 import Link from 'next/link';
 import { useState } from 'react';
-import { IconCreditCard, IconStack2, IconLogout, IconBulb, IconPigMoney } from '@tabler/icons-react';
+import { IconCreditCard, IconStack2, IconLogout, IconBulb, IconPigMoney, IconPlug } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname } from 'next/navigation';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
@@ -12,7 +12,7 @@ const { Sider, Content } = Layout;
 
 const data = [
   { id: "project", link: '/projects', label: 'Projects', icon: IconStack2 },
-  // { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
+  { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   // { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
   { id: "feedback", link: '/feedback', label: 'Feature Request', icon: IconBulb },
