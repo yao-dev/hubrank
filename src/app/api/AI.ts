@@ -249,7 +249,7 @@ export class AI {
     perspective: ${values?.perspective}
 
     Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values?.title}"
-    write in markdown wrapped in \`\`\`markdown\`\`\`.`
+    write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }
 
   async hook(values: any) {
@@ -278,7 +278,7 @@ export class AI {
   }
 
   expandTemplate() {
-    return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`.`
+    return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }
 
   async expand(section: any) {
@@ -305,7 +305,7 @@ export class AI {
     - Consider Sentence Variety
     - Check Readability
     - Remove Redundancy
-    Write in markdown wrapped in \`\`\`markdown\`\`\`.`
+    Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }
 
   async rephrase(section: any) {
@@ -321,7 +321,7 @@ export class AI {
 
     "${writingStyle}"
 
-    Write in markdown wrapped in \`\`\`markdown\`\`\`.`
+    Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }
 
   async paraphrase(section: any, writingStyle: any) {

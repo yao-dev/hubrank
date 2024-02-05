@@ -1,10 +1,12 @@
 import SessionContext from "@/context/SessionContext";
 import supabase from "@/helpers/supabase";
 import useSession from "@/hooks/useSession";
-import React, { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import React, { ReactNode, useEffect } from "react";
 
 const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) => {
   const sessionStore = useSession();
+  const router = useRouter();
 
   React.useEffect(() => {
     const {
@@ -23,7 +25,7 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
             .forEach(([key]) => {
               storage.removeItem(key)
             })
-        })
+        });
       } else {
         sessionStore.setSession(session);
       }
@@ -33,6 +35,12 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
       subscription?.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!sessionStore.session) {
+      router.replace('/');
+    }
+  }, [sessionStore.session])
 
   return (
     <SessionContext.Provider value={{ session: sessionStore.session }}>

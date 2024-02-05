@@ -12,7 +12,7 @@ const getOne = async (project_id: number) => {
 const useGetOne = (project_id: number) => {
   return useQuery({
     // enabled: project_id !== undefined && !isNaN(project_id),
-    // enabled: project_id > 0,
+    enabled: !!project_id,
     queryKey: queryKeys.projects(project_id),
     queryFn: () => getOne(project_id),
     select: (res) => {

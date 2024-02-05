@@ -1,7 +1,7 @@
 'use client';;
-import { Layout, Menu, theme, Flex, Image } from 'antd';
+import { Layout, Menu, theme, Flex, Image, Spin } from 'antd';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconCreditCard, IconStack2, IconLogout, IconBulb, IconPigMoney, IconPlug } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname } from 'next/navigation';
@@ -12,7 +12,7 @@ const { Sider, Content } = Layout;
 
 const data = [
   { id: "project", link: '/projects', label: 'Projects', icon: IconStack2 },
-  { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
+  // { id: "integration", link: '/integrations', label: 'Integrations', icon: IconPlug },
   { id: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: IconCreditCard },
   // { id: "setting", link: '/settings', label: 'Settings', icon: IconSettings },
   { id: "feedback", link: '/feedback', label: 'Feature Request', icon: IconBulb },
@@ -41,11 +41,18 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode,
 }) {
+  const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const pathname = usePathname();
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoading(false)
+    }, 2500);
+  }, []);
 
   const topItems = data.map((item) => {
     return {
