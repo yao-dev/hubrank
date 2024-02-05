@@ -113,9 +113,9 @@ export default function Login() {
           <p style={{ margin: 0, textAlign: "center" }}>
             <Image
               src="/brand-logo-black.png"
-              width={200}
+              width={175}
               preview={false}
-              style={{ marginBottom: 56 }}
+              style={{ marginBottom: 72 }}
             />
           </p>
 
