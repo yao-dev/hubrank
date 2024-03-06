@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Flex, Typography } from 'antd';
+import { Button, Flex, Grid, Typography } from 'antd';
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import WritingStyleForm from '@/components/WritingStyleForm/WritingStyleForm';
@@ -11,6 +11,7 @@ export default function ProjectDetail({
   params: { project_id: number }
 }) {
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
+  const screens = Grid.useBreakpoint();
 
   return (
     <Flex vertical gap="large">
@@ -21,13 +22,23 @@ export default function ProjectDetail({
         align="center"
       >
         <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Brand voices</Typography.Title>
-        <Button
-          type="primary"
-          onClick={() => setIsWritingStyleModalOpened(true)}
-          icon={<PlusOutlined />}
-        >
-          Add writing style
-        </Button>
+        {screens.xs ? (
+          <Button
+            type="primary"
+            onClick={() => setIsWritingStyleModalOpened(true)}
+            icon={<PlusOutlined />}
+          >
+            New
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            onClick={() => setIsWritingStyleModalOpened(true)}
+            icon={<PlusOutlined />}
+          >
+            Add writing style
+          </Button>
+        )}
       </Flex>
 
       <WritingStylesTable setModalOpen={setIsWritingStyleModalOpened} />

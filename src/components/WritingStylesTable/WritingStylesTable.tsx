@@ -1,9 +1,9 @@
 'use client';
-import { Alert, App, Button, Empty, Flex, Popconfirm, Space, Table, Tag } from 'antd';
+import { Alert, App, Button, Empty, Flex, Grid, Popconfirm, Space, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
-import { PlusOutlined, DeleteTwoTone } from '@ant-design/icons';
+import { DeleteTwoTone } from '@ant-design/icons';
 
 type Props = {
   setModalOpen: (open: boolean) => void
@@ -14,6 +14,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
   const { data, isPending, isFetched } = getAll();
   const projectId = useProjectId();
   const { message } = App.useApp();
+  const screens = Grid.useBreakpoint();
 
   const columns = useMemo(() => {
     return [
@@ -123,10 +124,10 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/image-1.png"
-          imageStyle={{ height: 200 }}
+          imageStyle={{ height: screens.xs ? 125 : 200 }}
           description="You have no articles yet"
-        >
-          <Button
+        />
+        {/* <Button
             type="primary"
             onClick={() => setModalOpen(true)}
             style={{ marginTop: 12 }}
@@ -134,8 +135,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
 
           >
             Add writing style
-          </Button>
-        </Empty>
+          </Button> */}
       </Flex>
     )
   }

@@ -3,7 +3,6 @@ import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer } from 'antd';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import {
-  IconCreditCard,
   IconLogout,
   IconBulb,
   IconPigMoney,
@@ -12,7 +11,6 @@ import {
   IconArticle,
   IconSeo,
   IconWriting,
-  IconSettings,
 } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname } from 'next/navigation';
@@ -118,7 +116,7 @@ export default function DashboardLayout({
         getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Brand voices', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({
         //   key: "project", label: 'Project', icon: <IconStack2 />, children: [
         //     getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle /> }),

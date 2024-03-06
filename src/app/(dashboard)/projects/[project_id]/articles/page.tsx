@@ -26,14 +26,13 @@ const Articles = ({
         <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Articles</Typography.Title>
         <Flex gap="small">
           {screens.xs ? (
-            <>
-              <Button loading={isRefetching} style={{ width: 120 }} onClick={() => refetchArticles()} icon={<ReloadOutlined />} />
-              <Button
-                type="primary"
-                onClick={() => router.push(`/projects/${projectId}/articles/new`)}
-                icon={<PlusOutlined />}
-              />
-            </>
+            <Button
+              type="primary"
+              onClick={() => router.push(`/projects/${projectId}/articles/new`)}
+              icon={<PlusOutlined />}
+            >
+              New
+            </Button>
           ) : (
             <>
               <Button loading={isRefetching} style={{ width: 120 }} onClick={() => refetchArticles()} icon={<ReloadOutlined />}>Refresh</Button>

@@ -6,9 +6,8 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
   SyncOutlined,
-  PlusOutlined,
   DeleteTwoTone,
-  ReloadOutlined
+  ReloadOutlined,
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
@@ -220,10 +219,10 @@ const ArticlesTable = () => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/image-1.png"
-          imageStyle={{ height: 200 }}
+          imageStyle={{ height: screens.xs ? 125 : 200 }}
           description="You have no articles yet"
-        >
-          <Button
+        />
+        {/* <Button
             type="primary"
             icon={<PlusOutlined />}
             // onClick={() => setArticleDrawerOpen(true)}
@@ -231,8 +230,7 @@ const ArticlesTable = () => {
             style={{ marginTop: 12 }}
           >
             New article
-          </Button>
-        </Empty>
+          </Button> */}
       </Flex>
     )
   }

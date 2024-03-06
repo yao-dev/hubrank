@@ -1,6 +1,6 @@
 'use client';;
 import IntegrationsTable from "@/components/IntegrationsTable/IntegrationsTable";
-import { Button, Card, Col, Flex, Image, Modal, Typography, Row } from 'antd';
+import { Button, Card, Col, Flex, Image, Modal, Typography, Row, Grid } from 'antd';
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { brandsLogo } from '@/brands-logo';
@@ -13,7 +13,7 @@ export default function Integrations() {
   const [selectedIntegration, setSelectedIntegration] = useState("")
   const router = useRouter();
   const zapier = useZapier()
-
+  const screens = Grid.useBreakpoint();
 
   const onAddIntegration = () => {
     switch (selectedIntegration) {
@@ -69,14 +69,25 @@ export default function Integrations() {
           align="center"
         >
           <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Integrations</Typography.Title>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsModalOpen(true)}
-            style={{ width: 150 }}
-          >
-            New integration
-          </Button>
+          {screens.xs ? (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalOpen(true)}
+              style={{ width: 150 }}
+            >
+              New
+            </Button>
+          ) : (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalOpen(true)}
+              style={{ width: 150 }}
+            >
+              New integration
+            </Button>
+          )}
         </Flex>
         <IntegrationsTable isLoading={zapier.isLoading} />
         {/* <Flex vertical flex={1} justify="center" align="center" gap={50}>

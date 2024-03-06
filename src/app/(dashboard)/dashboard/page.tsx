@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import useProjects from "@/hooks/useProjects";
-import { Typography, Button, Row, Col, Card, Image, Flex, Popconfirm, Spin, Empty } from "antd";
+import { Typography, Button, Row, Col, Card, Image, Flex, Popconfirm, Spin, Empty, Grid } from "antd";
 import {
   PlusOutlined
 } from '@ant-design/icons';
@@ -18,6 +18,7 @@ export default function Dashboard() {
     isFetched,
     isLoading,
   } = projects.getAll();
+  const screens = Grid.useBreakpoint();
 
   const [openedCreateProject, setOpenCreateProject] = useState(false);
 
@@ -40,7 +41,7 @@ export default function Dashboard() {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/image-1.png"
-          imageStyle={{ height: 200 }}
+          imageStyle={{ height: screens.xs ? 125 : 200 }}
           description="You have no projects yet"
         >
           <Button
@@ -70,7 +71,9 @@ export default function Dashboard() {
             style={{ marginBottom: 24 }}
           >
             <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Dashboard</Typography.Title>
-            <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<PlusOutlined />}>New project</Button>
+            <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<PlusOutlined />}>
+              {screens.xs ? "New" : "New project"}
+            </Button>
           </Flex>
 
           <Row gutter={16}>
