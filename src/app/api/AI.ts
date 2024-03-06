@@ -2,21 +2,29 @@ import Anthropic from "@anthropic-ai/sdk";
 import yaml from 'js-yaml';
 import { getSummary } from 'readability-cyr';
 
+type Opts = {
+  context?: string,
+  writing_style?: string
+}
+
 export class AI {
   messages: any = [];
   system = "";
   article = "";
   ai: any;
+  writing_style = "";
 
-  constructor(context?: any) {
+  constructor(opts: Opts = {}) {
     this.ai = new Anthropic({
       apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
     });
     this.system = `You are an expert SEO writer who writes using Hemingway principles and writes engaging content that speak to the right target audience.
 
-    ${context ? `Context:\n${context}` : ""}`;
+    ${opts.context ? `Product/Project information:\n${opts.context}\n====\n` : ""}`;
 
-    console.log(this.system)
+    this.writing_style = opts.writing_style ?? "";
+
+    console.log("[AI]: system", this.system)
   }
 
   resetPrompt() {
@@ -264,6 +272,7 @@ export class AI {
     Outline: ${values?.outline}
     Perspective: ${values?.perspective}
     Related keywords: ${values?.keywords}
+    ${this.writing_style && `Writing style: ${this.writing_style}`}
 
     wrap keywords semantically and topically relevant for internal/external link with %%
     Write the section "${values?.heading}" with exactly ${values?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
@@ -279,7 +288,10 @@ export class AI {
   }
 
   expandTemplate() {
-    return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
+    return `${this.writing_style && `Writing style: ${this.writing_style}`}
+
+    Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`.
+    (don't add any text before and after the markdown except the text I request you to write)`
   }
 
   async expand(section: any) {
@@ -294,6 +306,8 @@ export class AI {
     const stats = getSummary(content)
     return `There is ${stats.difficultWords} difficult words in this text and the Flesch Kincaid Grade is ${parseInt(stats.FleschKincaidGrade)}
 
+    ${this.writing_style && `Writing style: ${this.writing_style}`}
+
     Please rephrase the above text applying Hemingway principles
     - Prefer Active Voice
     - Reword adverbs as much as possible
@@ -305,6 +319,7 @@ export class AI {
     - Consider Sentence Variety
     - Readability Grade 9
     - Remove Redundancy
+
     Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }
 

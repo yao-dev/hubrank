@@ -84,7 +84,7 @@ export async function POST(request: Request) {
       writingStyle = selectedWritingStyle.source_value;
     }
 
-    const ai = new AI(context);
+    const ai = new AI({ context });
     const response = await ai.headlines({
       competitorsHeadlines,
       seedKeyword,

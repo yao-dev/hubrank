@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   Description: ${project.metatags?.description || project?.description || "N/A"}
   Language: ${project.languages.label || "English (us)"}`
 
-    const ai = new AI(context);
+    const ai = new AI({ context });
     const outline = await ai.outlines({
       seed_keyword: body.seed_keyword,
       title: body.title,

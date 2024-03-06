@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     const start = performance.now();
 
-    const ai = new AI(context);
+    const ai = new AI({ context });
 
     let title = await ai.title({
       competitorsHeadlines,

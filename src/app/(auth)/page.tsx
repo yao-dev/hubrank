@@ -14,7 +14,7 @@ export default function Login() {
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [count, setCount] = useState(60);
   const interval = useInterval(() => setCount((c) => c - 1), 1000);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<boolean | string>(false);
   const [form] = Form.useForm();
   const email = Form.useWatch('email', form);
   const router = useRouter();
@@ -54,8 +54,10 @@ export default function Login() {
       setIsAuthLoading(false);
 
       if (error) {
-        setError(true)
-        return;
+        if (error.status === 429) {
+          return setError("You've attempted login too many times, please try again later.")
+        }
+        return setError(true)
       }
 
       setIsAuthLoading(false);
@@ -70,7 +72,12 @@ export default function Login() {
       } as VerifyEmailOtpParams)
 
       if (error) {
-        setError(true)
+        console.log("error", error)
+        if (error.status === 429) {
+          setError("You've attempted login too many times, please try again later.")
+        } {
+          setError(true)
+        }
         setIsAuthLoading(false);
       }
     }
@@ -104,7 +111,7 @@ export default function Login() {
   }
 
   return (
-    <Flex vertical align="center" justify="center" style={{ height: '100dvh', background: "#F9FAFB" }}>
+    <Flex vertical align="center" justify="center" style={{ height: '100dvh' }}>
       {isLoading ? (
         <Spin />
       ) : (
@@ -113,14 +120,14 @@ export default function Login() {
             <Card bordered style={{ borderRadius: 10, marginTop: 32 }}>
               <p style={{ margin: 0, textAlign: "center" }}>
                 <Image
-                  src="/brand-logo-black.png"
-                  width={175}
+                  src="/brand-logo-short.png"
+                  width={35}
                   preview={false}
-                  style={{ marginBottom: 72 }}
+                  style={{ marginBottom: 24 }}
                 />
               </p>
 
-              <Typography.Title level={3} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
+              <Typography.Title level={4} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
                 Log in or sign up
               </Typography.Title>
               <Typography.Paragraph style={{ marginTop: 6, textAlign: "center", fontWeight: 400, marginBottom: 24 }}>
@@ -138,10 +145,15 @@ export default function Login() {
                 autoComplete='off'
               >
                 {error && (
-                  <Alert type="error" message="Something went wrong! Try again please." showIcon style={{ marginBottom: 12 }} />
+                  <Alert
+                    type="error"
+                    message={typeof error === "string" ? error : "Something went wrong! Try again please."}
+                    showIcon
+                    style={{ marginBottom: 12 }}
+                  />
                 )}
 
-                <Form.Item name="email" label="Email" validateTrigger="onBlur" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
+                <Form.Item name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
                   <Input size="large" placeholder="me@gmail.com" prefix={<IconMail stroke={1.5} />} />
                 </Form.Item>
 
@@ -157,14 +169,14 @@ export default function Login() {
                       <>
                         <Form.Item
                           name="otp"
-                          label="One-time login code"
-                          validateTrigger="onBlur"
+                          // label="One-time login code"
+                          validateTrigger="onSubmit"
                           rules={[{ required: true, message: 'One-time login code is invalid or expired', len: 6 }]}
                         >
                           <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.5} />} />
                         </Form.Item>
 
-                        <Typography.Text onClick={resendOtp} style={{ cursor: 'pointer', textAlign: 'center' }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>
+                        <Typography.Text onClick={resendOtp} style={{ cursor: !count ? 'pointer' : "default", textAlign: 'center', display: "inline-block", width: "100%" }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>
                       </>
                     ) : null
 

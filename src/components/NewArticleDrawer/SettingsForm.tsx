@@ -134,7 +134,7 @@ const SettingsForm = ({
           content_type: "",
           purpose: "",
           writing_mode: "tones",
-          writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default).id : null,
+          writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default)?.id : null,
           tones: [],
           clickbait: false,
           perspective: "first_person_singular",
