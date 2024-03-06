@@ -27,9 +27,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const persister = createSyncStoragePersister({
-  storage: window.localStorage,
-})
+let persister: any;
+
+if (window !== undefined) {
+  persister = createSyncStoragePersister({
+    storage: window.localStorage,
+  })
+}
+
 
 export default function RootLayout({
   children
@@ -77,7 +82,9 @@ export default function RootLayout({
             <App>
               <PersistQueryClientProvider
                 client={queryClient}
-                persistOptions={{ persister }}
+                persistOptions={{
+                  persister
+                }}
               >
                 <SessionProvider>
                   <RealtimeWrapper>
