@@ -1,7 +1,7 @@
 'use client';;
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { Flex, Form, Steps, Typography } from "antd";
+import { Flex, Form, Grid, Steps, Typography } from "antd";
 import { useEffect, useState } from "react";
 import SettingsForm from "./SettingsForm";
 import HeadlineForm from "./HeadlineForm";
@@ -35,6 +35,7 @@ const NewArticleForm = () => {
   const [settingsForm] = Form.useForm();
   const [headlineForm] = Form.useForm();
   const [outlineForm] = Form.useForm();
+  const screens = Grid.useBreakpoint();
 
   const prev = () => {
     if (settingsForm.getFieldValue("title_mode") === "custom") {
@@ -109,11 +110,13 @@ const NewArticleForm = () => {
     <Flex vertical gap="large" style={{ height: "100%" }}>
       <Typography.Title level={3} style={{ fontWeight: 700, marginTop: 0 }}>New article</Typography.Title>
 
-      <Steps
-        size="small"
-        current={currentStep}
-        items={steps}
-      />
+      {!screens.xs && (
+        <Steps
+          size="small"
+          current={currentStep}
+          items={steps}
+        />
+      )}
 
       {currentStep === 0 && (
         <SettingsForm

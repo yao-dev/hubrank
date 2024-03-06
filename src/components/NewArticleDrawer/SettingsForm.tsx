@@ -317,6 +317,7 @@ const SettingsForm = ({
           hasFeedback
         >
           <Segmented
+
             options={[
               {
                 label: "1st person singular",

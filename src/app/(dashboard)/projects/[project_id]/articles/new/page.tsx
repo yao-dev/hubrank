@@ -13,8 +13,11 @@ const NewArticle = () => {
         <NewArticleForm />
       </Col>
     </Row>
-  ) :
-    <NewArticleForm />
+  ) : (
+    <div style={{ overflow: "auto" }}>
+      <NewArticleForm />
+    </div>
+  )
 }
 
 export default NewArticle
