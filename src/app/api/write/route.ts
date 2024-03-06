@@ -108,7 +108,8 @@ export async function POST(request: Request) {
 
       let stats = getSummary(hook)
 
-      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      if (stats.FleschKincaidGrade > 12) {
         console.log("- rephrase")
         hook = await ai.rephrase(ai.parse(hook, "markdown"));
         console.log("- rephrase done")
@@ -134,7 +135,8 @@ export async function POST(request: Request) {
 
       let stats = getSummary(content);
 
-      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      if (stats.FleschKincaidGrade > 12) {
         console.log("- rephrase")
         content = await ai.rephrase(ai.parse(content, "markdown"));
         console.log("- rephrase done")
@@ -168,6 +170,8 @@ export async function POST(request: Request) {
       .eq("id", articleId)
       .throwOnError();
 
+    console.log("ERROR IN TRY?")
+
     return NextResponse.json({
       markdown: ai.article,
       html,
@@ -175,6 +179,7 @@ export async function POST(request: Request) {
       stats: getSummary(ai.article)
     }, { status: 200 })
   } catch (e) {
+    console.log("ERROR IN CATCH?", e)
     await supabase
       .from('blog_posts')
       .update({

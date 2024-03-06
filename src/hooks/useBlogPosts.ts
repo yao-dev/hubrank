@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
@@ -17,7 +17,6 @@ const useGetOne = (id: number) => {
     select: ({ data }) => {
       return data;
     },
-    onError: console.error,
   });
 };
 
@@ -40,8 +39,7 @@ const useGetAll = ({ queue }: { queue?: boolean }) => {
     enabled: projectId !== null || projectId !== 0,
     queryKey: queryKeys.blogPosts(projectId, queue),
     queryFn: () => getAll(projectId, queue),
-    onError: console.error,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: true,
   });
 };
@@ -63,7 +61,6 @@ const useDelete = () => {
         queryKey: ['blog_posts'],
       });
     },
-    onError: console.error,
   })
 }
 
@@ -87,7 +84,6 @@ const useUpdate = () => {
         queryKey: ["blog_posts"],
       });
     },
-    onError: console.error,
   })
 }
 

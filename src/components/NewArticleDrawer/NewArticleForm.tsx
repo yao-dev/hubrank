@@ -1,10 +1,7 @@
 'use client';;
-import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import useWritingStyles from "@/hooks/useWritingStyles";
-import { App, Flex, Form, Steps, Typography } from "antd";
-import axios from "axios";
+import { Flex, Form, Steps, Typography } from "antd";
 import { useEffect, useState } from "react";
 import SettingsForm from "./SettingsForm";
 import HeadlineForm from "./HeadlineForm";
@@ -24,11 +21,8 @@ const steps = [
 ]
 
 const NewArticleForm = () => {
-  const { message, notification } = App.useApp();
   const projectId = useProjectId();
-  const { data: project, isLoading } = useProjects().getOne(projectId)
-  const [submitLoading, setSubmitLoading] = useState(false);
-  const { data: writingStyles } = useWritingStyles().getAll();
+  const { data: project, isPending } = useProjects().getOne(projectId)
   const [headlines, setHeadlines] = useState([]);
   const params = useSearchParams();
   const selectedKeyword = params.get("k");
@@ -69,56 +63,50 @@ const NewArticleForm = () => {
       settingsForm.setFieldValue("language_id", languageId ? +languageId : +project.language_id)
       settingsForm.setFieldValue("seed_keyword", selectedKeyword || "")
     }
-  }, [project, selectedKeyword])
+  }, [project, selectedKeyword, settingsForm, languageId])
 
-  useEffect(() => {
-    if (!!writingStyles?.data && writingStyles.data.length > 0) {
-      settingsForm.setFieldValue("writing_style_id", writingStyles.data.find((i) => !!i.default).id)
-    }
-  }, [writingStyles]);
+  // const onFinish = async (values: any) => {
+  //   try {
+  //     setSubmitLoading(true);
+  //     let title = "";
 
-  const onFinish = async (values: any) => {
-    try {
-      setSubmitLoading(true);
-      let title = "";
+  //     if (values.title_mode === "Custom") {
+  //       title = values.custom_title;
+  //     }
+  //     if (values.title_mode === "Inspo") {
+  //       title = values.inspo_title;
+  //     }
 
-      if (values.title_mode === "Custom") {
-        title = values.custom_title;
-      }
-      if (values.title_mode === "Inspo") {
-        title = values.inspo_title;
-      }
+  //     const { data } = await axios.post("/api/queue", {
+  //       ...values,
+  //       title,
+  //       writing_style_id: values.writing_style_id ? +values.writing_style_id : null,
+  //       user_id: await getUserId(),
+  //       project_id: projectId,
+  //       language_id: +values.language_id
+  //     });
 
-      const { data } = await axios.post("/api/queue", {
-        ...values,
-        title,
-        writing_style_id: values.writing_style_id ? +values.writing_style_id : null,
-        user_id: await getUserId(),
-        project_id: projectId,
-        language_id: +values.language_id
-      });
+  //     if (data?.error) {
+  //       throw new Error("");
+  //     }
 
-      if (data?.error) {
-        throw new Error("");
-      }
+  //     message.success('Article added in the queue!');
+  //   } catch (e) {
+  //     notification.error({
+  //       message: "We had an issue adding your article in the queue please try again",
+  //       placement: "bottomRight",
+  //       role: "alert",
+  //       duration: 5,
+  //     })
+  //   } finally {
+  //     setSubmitLoading(false)
+  //   }
+  // };
 
-      message.success('Article added in the queue!');
-    } catch (e) {
-      notification.error({
-        message: "We had an issue adding your article in the queue please try again",
-        placement: "bottomRight",
-        role: "alert",
-        duration: 5,
-      })
-    } finally {
-      setSubmitLoading(false)
-    }
-  };
-
-  if (isLoading) return null;
+  if (isPending) return null;
 
   return (
-    <Flex vertical gap="large">
+    <Flex vertical gap="large" style={{ height: "100%" }}>
       <Typography.Title level={3} style={{ fontWeight: 700, marginTop: 0 }}>New article</Typography.Title>
 
       <Steps

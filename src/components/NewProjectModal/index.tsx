@@ -21,7 +21,8 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         ...values,
         language_id: +values.language_id
       });
-      router.push(`/projects/${project.id}`)
+      onCloseCreateProject()
+      router.push(`/projects/${project.id}/articles`)
     } catch (e) {
       console.error(e)
       setError(true)
@@ -40,8 +41,8 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       onCancel={() => onCloseCreateProject()}
       onOk={() => form.submit()}
       okText="Create"
-      confirmLoading={projects.create.isLoading}
-      closable={!projects.create.isLoading}
+      confirmLoading={projects.create.isPending}
+      closable={!projects.create.isPending}
     >
       <Form
         form={form}
@@ -72,7 +73,6 @@ const NewProjectModal = ({ opened, onClose }: any) => {
             message: "Select a language"
           }]}
           hasFeedback
-          help="It can't be changed later"
         >
           <Select
             placeholder="Language"
@@ -119,7 +119,6 @@ const NewProjectModal = ({ opened, onClose }: any) => {
               return new URL(url).origin
             }
           }]}
-          style={{ marginTop: 42 }}
           hasFeedback
         >
           <Input placeholder="https://google.com" />

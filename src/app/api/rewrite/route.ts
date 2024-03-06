@@ -55,7 +55,8 @@ export async function POST(request: Request) {
 
       let stats = getSummary(hook)
 
-      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      if (stats.FleschKincaidGrade > 12) {
         hook = await ai.rephrase(hook);
       }
 
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
 
       console.log("SUMMARISE DONE", stats)
 
-      if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
+      if (stats.FleschKincaidGrade > 12) {
         console.log("REPHRASE")
         content = await ai.rephrase(content);
         console.log("REPHRASE DONE", content)

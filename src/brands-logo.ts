@@ -6,5 +6,5 @@ export const brandsLogo = {
   // webflow: "/brands/webflow.png",
   // wix: "/brands/wix.png",
   // wordpress: "/brands/wordpress.png",
-  // zapier: "/brands/zapier.png",
+  zapier: "/brands/zapier.png",
 }

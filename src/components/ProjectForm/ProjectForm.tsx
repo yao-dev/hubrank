@@ -1,8 +1,4 @@
-import { Text } from "@mantine/core";
 import useProjects from "@/hooks/useProjects";
-import { notifications } from "@mantine/notifications";
-import { IconCheck, IconX } from "@tabler/icons-react";
-import { modals } from "@mantine/modals";
 import useProjectId from "@/hooks/useProjectId";
 import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space } from "antd";
 import { useRouter } from "next/navigation";
@@ -25,54 +21,54 @@ const ProjectForm = () => {
     return null;
   }
 
-  const onDeleteProject = () => {
-    modals.openConfirmModal({
-      title: <Text size="xl" fw="bold">Delete project</Text>,
-      withCloseButton: false,
-      labels: {
-        cancel: 'Cancel',
-        confirm: 'Confirm'
-      },
-      onConfirm() {
-        deleteProject.mutate(projectId);
-        notifications.show({
-          title: 'All good!',
-          message: 'Your project was deleted.',
-          color: 'green',
-          icon: <IconCheck size="1rem" />
-        })
-        // router.replace('/projects')
-      },
-      confirmProps: {
-        color: 'red'
-      },
-      children: (
-        <Text size="sm">Are you sure you want to delete <b>{project?.name}</b>?</Text>
-      )
-    })
-  }
+  // const onDeleteProject = () => {
+  //   modals.openConfirmModal({
+  //     title: <Text size="xl" fw="bold">Delete project</Text>,
+  //     withCloseButton: false,
+  //     labels: {
+  //       cancel: 'Cancel',
+  //       confirm: 'Confirm'
+  //     },
+  //     onConfirm() {
+  //       deleteProject.mutate(projectId);
+  //       notifications.show({
+  //         title: 'All good!',
+  //         message: 'Your project was deleted.',
+  //         color: 'green',
+  //         icon: <IconCheck size="1rem" />
+  //       })
+  //       // router.replace('/projects')
+  //     },
+  //     confirmProps: {
+  //       color: 'red'
+  //     },
+  //     children: (
+  //       <Text size="sm">Are you sure you want to delete <b>{project?.name}</b>?</Text>
+  //     )
+  //   })
+  // }
 
-  const onSubmit = async (values) => {
-    try {
-      await update.mutateAsync({
-        ...values,
-        project_id: projectId
-      })
-      notifications.show({
-        message: 'Project updated.',
-        color: 'green',
-        icon: <IconCheck size="1rem" />
-      })
+  // const onSubmit = async (values) => {
+  //   try {
+  //     await update.mutateAsync({
+  //       ...values,
+  //       project_id: projectId
+  //     })
+  //     notifications.show({
+  //       message: 'Project updated.',
+  //       color: 'green',
+  //       icon: <IconCheck size="1rem" />
+  //     })
 
-    } catch (e) {
-      console.error(e)
-      notifications.show({
-        message: 'Project not updated.',
-        color: 'red',
-        icon: <IconX size="1rem" />
-      })
-    }
-  }
+  //   } catch (e) {
+  //     console.error(e)
+  //     notifications.show({
+  //       message: 'Project not updated.',
+  //       color: 'red',
+  //       icon: <IconX size="1rem" />
+  //     })
+  //   }
+  // }
 
 
   return (
@@ -168,7 +164,7 @@ const ProjectForm = () => {
       </Form.Item>
 
       <Form.Item style={{ marginTop: 42 }}>
-        <Flex justify="space-between">
+        <Flex justify="end" gap="middle">
           <Popconfirm
             title="Delete project"
             description={`Are you sure to delete this project?`}
@@ -186,7 +182,7 @@ const ProjectForm = () => {
               danger: true
             }}
           >
-            <Button danger>Delete project</Button>
+            <Button danger type="text">Delete project</Button>
           </Popconfirm>
           <Button type="primary" htmlType="submit">
             Update

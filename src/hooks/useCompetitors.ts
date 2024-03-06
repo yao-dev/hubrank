@@ -16,10 +16,7 @@ const useGetAll = (project_id: number) => {
     select: ({ data }) => {
       return data;
     },
-    onError: (error) => {
-      console.error('competitors.useGetAll', error)
-    },
-    cacheTime: 1000 * 60 * 10
+    gcTime: 1000 * 60 * 10
   });
 };
 
@@ -44,9 +41,6 @@ const useUpdate = (projectId: number) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.competitors(projectId),
       });
-    },
-    onError: (error, variables) => {
-      console.log('competitors.useUpdate', { error, variables })
     },
   })
 }
@@ -97,9 +91,6 @@ const useAddCompetitors = (projectId?: number) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.competitors(projectId),
       });
-    },
-    onError: (error, variables) => {
-      console.error('competitors.useAddCompetitors', { error, variables })
     },
   })
 }

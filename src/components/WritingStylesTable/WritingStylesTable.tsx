@@ -11,7 +11,7 @@ type Props = {
 
 const WritingStylesTable = ({ setModalOpen }: Props) => {
   const { getAll, delete: deleteWritingStyle, markAsDefault } = useWritingStyles();
-  const { data, isLoading, isFetched } = getAll();
+  const { data, isPending, isFetched } = getAll();
   const projectId = useProjectId();
   const { message } = App.useApp();
 
@@ -21,7 +21,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        width: 220,
+        width: 350,
         render: (value: any, record: any) => {
           if (record.default) {
             return (
@@ -57,7 +57,6 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Text',
         dataIndex: 'source_value',
         key: 'source_value',
-        width: 850,
         ellipsis: true,
         render: (value: any) => {
           return (
@@ -68,7 +67,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         },
       },
       {
-        title: 'Action',
+        // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         width: 160,
@@ -119,7 +118,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
     ]
   }, []);
 
-  if (!isLoading && isFetched && !data?.data?.length) {
+  if (!isPending && isFetched && !data?.data?.length) {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
@@ -145,11 +144,17 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
     const hasDefault = data.data.some((i) => i.default);
 
     return (
-      <Flex vertical gap="large">
+      <Flex vertical gap="large" style={{ overflow: "auto" }}>
         {!hasDefault && (
           <Alert message="You don't have a writing style set by default." type="info" showIcon />
         )}
-        <Table size="small" dataSource={data?.data} columns={columns} loading={false} />
+        <Table
+          size="small"
+          dataSource={data?.data}
+          columns={columns}
+          loading={false}
+          style={{ minWidth: 900, overflow: "auto" }}
+        />
       </Flex>
     )
   }

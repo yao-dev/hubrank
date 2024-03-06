@@ -1,172 +1,52 @@
-'use client';
-import { Breadcrumb, Button, Flex } from 'antd';
-import Link from 'next/link';
-import { IconStack2 } from '@tabler/icons-react';
+'use client';;
+import { Button, Flex, Grid } from 'antd';
 import { usePathname, useRouter } from 'next/navigation';
 import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useArticleId from '@/hooks/useArticleId';
 import { SettingOutlined } from "@ant-design/icons";
+import ProjectSelect from '../ProjectSelect';
+import { ArrowLeftOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
-const CustomBreadcrumb = () => {
+const { useBreakpoint } = Grid;
+
+const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }) => {
   const pathname = usePathname();
   const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId);
   const articleId = useArticleId()
   const { data: article } = useBlogPosts().getOne(articleId);
   const router = useRouter();
+  const screens = useBreakpoint();
 
   const withSettingsButton = (component: any) => {
     return (
-      <Flex gap="middle" align="center" justify='space-between' style={{ paddingRight: 16 }}>
+      <Flex gap="middle" align="end" justify='space-between' style={{ paddingRight: 16 }}>
         {component}
         <Button style={{ marginTop: 12 }} icon={<SettingOutlined />} onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
       </Flex>
     )
   }
 
-  if (pathname === "/" || pathname === "/projects") return null;
+  // if (pathname === "/" || pathname === "/projects") return null;
 
-  if (pathname.includes('/articles/new')) {
-    return withSettingsButton(
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link
-            href={`/projects/${projectId}`}
-            style={{ textDecoration: 'none' }}
-          >
-            {project?.name}
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>New article</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
+  // if (!pathname.startsWith('/projects/')) return null;
 
-  if (pathname.includes('/articles/')) {
-    return withSettingsButton(
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link
-            href={`/projects/${projectId}`}
-            style={{ textDecoration: 'none' }}
-          >
-            {project?.name}
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>{article?.title?.length > 40 ? `${article?.title?.slice?.(0, 40)}...` : article?.title}</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
+  return (
+    <Flex gap="small" align="center" style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
+      {!screens.lg && (
+        <MenuUnfoldOutlined onClick={onOpenMobileMenu} style={{ fontSize: 20, padding: 6 }} />
+      )}
+      {screens.lg && pathname !== "/" && (
+        <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
+      )}
+      {pathname.startsWith("/projects") && (
+        <ProjectSelect />
+      )}
+    </Flex>
+  )
 
-  if (pathname.includes('/projects') && pathname.includes('/settings')) {
-    return (
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          <Link
-            href={`/projects/${projectId}`}
-            style={{ textDecoration: 'none' }}
-          >
-            {project?.name}
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Settings</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
-
-  if (pathname.includes('/projects')) {
-    return withSettingsButton(
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>
-          {project?.name}
-        </Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
-
-  if (pathname.includes('/integrations')) {
-    return (
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Integrations</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
-
-  if (pathname.includes('/plan-billing')) {
-    return (
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Plan & Billing</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
-
-  if (pathname.includes('/settings')) {
-    return (
-      <Breadcrumb style={{ margin: 16, marginBottom: 0 }}>
-        <Breadcrumb.Item>
-          <Link
-            href="/projects"
-            style={{ textDecoration: 'none' }}
-          >
-            <IconStack2 size={20} style={{ margin: 0 }} />
-          </Link>
-        </Breadcrumb.Item>
-        <Breadcrumb.Item>Settings</Breadcrumb.Item>
-      </Breadcrumb>
-    )
-  }
-
-  return null
 }
 
 export default CustomBreadcrumb

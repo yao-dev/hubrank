@@ -1,6 +1,5 @@
-'use client';
+'use client';;
 import { Button, Card, Flex, Form, Radio } from "antd";
-import { useEffect } from "react";
 
 const HeadlineForm = ({
   form,
@@ -10,12 +9,7 @@ const HeadlineForm = ({
   setCurrentStep,
   headlines,
   prev
-}) => {
-
-  useEffect(() => {
-    const headlineForm = document.getElementById("headline-form");
-    headlineForm.addEventListener('submit', (e) => e.preventDefault());
-  }, [])
+}: any) => {
 
   const onFinish = () => {
     setCurrentStep(2)
@@ -45,7 +39,12 @@ const HeadlineForm = ({
       autoComplete="off"
       layout="vertical"
       onFinish={onFinish}
-      onSubmitCapture={e => e.preventDefault()}
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        flexDirection: "column",
+        flex: 1,
+      }}
     >
       <Form.Item name="title" required rules={[{ required: true, type: "string", message: "Select a title" }]}>
         <Radio.Group style={styles.radioGroup}>
@@ -65,16 +64,17 @@ const HeadlineForm = ({
         </Radio.Group>
       </Form.Item>
 
-      <Form.Item>
+      <Form.Item style={{ marginBottom: 0 }}>
         <Flex justify="end" align="center" gap="middle">
-          <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
+          <Button disabled={submittingStep !== undefined || !submittingStep && isLocked && false} onClick={() => prev()}>
             Previous
           </Button>
 
-          <Button onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 1}>
+          <Button onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 1} disabled={isLocked ? false : undefined}>
             Next
           </Button>
         </Flex>
+        {/* <ShowCoinsForAction value="0.10" style={{ marginTop: 12 }} /> */}
       </Form.Item>
     </Form>
   )

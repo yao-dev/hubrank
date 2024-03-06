@@ -33,7 +33,7 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 						if (["completed", "ready_to_view"].includes(data.new.status)) {
 							notification.success({
 								message: <b>Article completed</b>,
-								description: <Typography.Text><b><Link href={new URL(`${window.location.origin}/projects/${data.new.project_id}/articles/${data.new.id}`)}>{data.new.title}</Link></b> is ready to view</Typography.Text>,
+								description: <Typography.Text><b><Link prefetch href={new URL(`${window.location.origin}/projects/${data.new.project_id}/articles/${data.new.id}`)}>{data.new.title}</Link></b> is ready to view</Typography.Text>,
 								placement: 'bottomRight',
 							});
 						}

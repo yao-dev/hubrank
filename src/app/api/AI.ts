@@ -62,7 +62,8 @@ export class AI {
 
     const completion = await this.ai.beta.messages.create({
       // model: "claude-2.1",
-      model: opts.model || "claude-instant-1.2",
+      // model: opts.model || "claude-3-sonnet-20",
+      model: "claude-3-sonnet-20240229",
       max_tokens: opts.word_count ? opts.word_count * 2 : 1000,
       temperature: opts.temperature || 0.7,
       system: this.system,
@@ -265,7 +266,7 @@ export class AI {
     Related keywords: ${values?.keywords}
 
     wrap keywords semantically and topically relevant for internal/external link with %%
-    Write the section "${values?.heading}" with exactly ${values?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\` with Hemingway principles in mind.
+    Write the section "${values?.heading}" with exactly ${values?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
     - Leverage all markdown syntaxes to make your content more appealing and easier to read (bold, list, quote, table, etc.).
     - Add h3 sub-sections with ### if the content as more than 2 paragraphs
     `
@@ -294,16 +295,15 @@ export class AI {
     return `There is ${stats.difficultWords} difficult words in this text and the Flesch Kincaid Grade is ${parseInt(stats.FleschKincaidGrade)}
 
     Please rephrase the above text applying Hemingway principles
-    - Use Short Sentences
     - Prefer Active Voice
     - Reword adverbs as much as possible
-    - No more than 1 adverb
+    - No adverbs at all
     - Simplify Words
     - Check for Hard-to-Read Phrases
     - Limit the Use of Passive Voice
     - Address Complex Sentences
     - Consider Sentence Variety
-    - Check Readability
+    - Readability Grade 9
     - Remove Redundancy
     Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
   }

@@ -12,7 +12,7 @@ import {
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useState } from "react";
 import { PlusOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
 import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
@@ -96,19 +96,10 @@ const OutlineForm = ({
   const projectId = useProjectId();
   const router = useRouter();
 
-  useEffect(() => {
-    const outlineForm: any = document.getElementById("outline-form");
-    outlineForm.addEventListener('submit', (e) => e.preventDefault());
-  }, [])
-
   const getOutline = useMutation({
     mutationFn: async (data: any) => {
       return axios.post("/api/outline-ideas", data)
     },
-    // onSuccess: () => {},
-    // onError: () => {
-    //   notification.error({ message: "We couldn't save your change" })
-    // }
   });
 
   const onGenerateOutline = async () => {
@@ -137,13 +128,21 @@ const OutlineForm = ({
           // })
         }
       }))
-    } catch (e) {
-      console.error(e)
+    } catch {
+      notification.error({ message: "Something went wrong, please try again." })
     }
   }
 
   const onFinish = async (formValues: any) => {
     try {
+      router.push(`/projects/${projectId}?tab=articles`)
+
+      message.success('Article added in the queue!');
+      // notification.success({
+      //   message: "Article added in the queue!",
+      //   placement: "bottomRight",
+      //   role: "alert",
+      // });
 
       axios.post('/api/write', {
         ...values,
@@ -155,15 +154,6 @@ const OutlineForm = ({
         clickbait: !!values.clickbait,
         userId: await getUserId()
       })
-
-      // message.success('Article added in the queue!');
-      notification.success({
-        message: "Article added in the queue!",
-        placement: "bottomRight",
-        role: "alert",
-      });
-
-      router.push(`/projects/${projectId}?tab=articles`)
     } catch {
       notification.error({
         message: "We had an issue adding your article in the queue please try again",
@@ -234,141 +224,151 @@ const OutlineForm = ({
   }
 
   return (
-    <Spin spinning={getOutline.isLoading} tip="We are generating a new outline">
-      <Form
-        form={form}
-        name="outline-form"
-        disabled={submittingStep !== undefined || getOutline.isLoading}
-        initialValues={{
-          title: values.title,
-          heading_count: 7,
-          with_introduction: true,
-          with_conclusion: true,
-          with_key_takeways: false,
-          with_faq: false,
-        }}
-        autoComplete="off"
-        layout="vertical"
-        onFinish={onFinish}
-        onSubmitCapture={e => e.preventDefault()}
-      >
-        <Form.Item name="title" label="Article title" rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
-          <Input placeholder="Article title" />
-        </Form.Item>
+    <Flex vertical style={{ height: "100%" }}>
+      <Spin spinning={getOutline.isPending} tip="We are generating a new outline" style={{ height: "inherit" }}>
+        <Form
+          form={form}
+          name="outline-form"
+          disabled={submittingStep !== undefined || getOutline.isPending}
+          initialValues={{
+            title: values.title,
+            heading_count: 7,
+            with_introduction: true,
+            with_conclusion: true,
+            with_key_takeways: false,
+            with_faq: false,
+          }}
+          autoComplete="off"
+          layout="vertical"
+          onFinish={onFinish}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
+          <div>
+            <Form.Item name="title" label="Article title" rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
+              <Input placeholder="Article title" />
+            </Form.Item>
 
-        <Form.Item name="heading_count" label="How many headings?" help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
-          <Slider
-            marks={{
-              4: "4",
-              5: "5",
-              6: "6",
-              7: "7",
-              8: "8",
-              9: "9",
-              10: "10",
-            }}
-            step={null}
-            min={4}
-            max={10}
-          />
-        </Form.Item>
+            <Form.Item name="heading_count" label="How many headings?" help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
+              <Slider
+                marks={{
+                  4: "4",
+                  5: "5",
+                  6: "6",
+                  7: "7",
+                  8: "8",
+                  9: "9",
+                  10: "10",
+                }}
+                step={null}
+                min={4}
+                max={10}
+              />
+            </Form.Item>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
-          <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>Introduction</span>
-        </Flex>
+            <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
+              <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
+                <Switch />
+              </Form.Item>
+              <span>Introduction</span>
+            </Flex>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-          <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>Conclusion</span>
-        </Flex>
+            <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+              <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
+                <Switch />
+              </Form.Item>
+              <span>Conclusion</span>
+            </Flex>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-          <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>Key takeways</span>
-        </Flex>
+            <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+              <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
+                <Switch />
+              </Form.Item>
+              <span>Key takeways</span>
+            </Flex>
 
-        <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
-          <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
-            <Switch />
-          </Form.Item>
-          <span>FAQ</span>
-        </Flex>
+            <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
+              <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
+                <Switch />
+              </Form.Item>
+              <span>FAQ</span>
+            </Flex>
 
-        <Form.Item style={{ marginTop: 32 }}>
-          <Flex justify="end">
-            <Button htmlType="button" icon={<SyncOutlined />} onClick={onGenerateOutline} loading={getOutline.isLoading}>
-              Generate new outline
-            </Button>
-          </Flex>
-        </Form.Item>
+            <Form.Item style={{ marginTop: 32 }}>
+              <Flex justify="end">
+                <Button htmlType="button" icon={<SyncOutlined />} onClick={onGenerateOutline} loading={getOutline.isPending}>
+                  Generate new outline (3 credits)
+                </Button>
+              </Flex>
+            </Form.Item>
 
-        <Form.Item>
-          <DndContext
-            sensors={sensors}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <Flex vertical gap="small">
-              <SortableContext
-                items={items}
-                strategy={verticalListSortingStrategy}
+            <Form.Item>
+              <DndContext
+                sensors={sensors}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
               >
-                {items.map(item => (
-                  <SortableItem
-                    key={item.id}
-                    id={item.id}
-                    isActive={item.id === activeItem?.id}
-                    name={item.name}
-                    onRemoveHeading={() => onRemoveHeading(item.id)}
-                    onChange={(value) => onUpdateOutlineName(value, item.id)}
-                  />
-                ))}
-              </SortableContext>
-              <DragOverlay>
-                {activeItem ? (
-                  <Item
-                    draggingHandle={(
-                      <IconGripVertical size={18} />
-                    )}
-                    style={{ width: "fit-content" }}
+                <Flex vertical gap="small">
+                  <SortableContext
+                    items={items}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <span>{activeItem?.name}</span>
-                  </Item>
-                ) : null}
-              </DragOverlay>
-            </Flex>
-          </DndContext>
+                    {items.map(item => (
+                      <SortableItem
+                        key={item.id}
+                        id={item.id}
+                        isActive={item.id === activeItem?.id}
+                        name={item.name}
+                        onRemoveHeading={() => onRemoveHeading(item.id)}
+                        onChange={(value) => onUpdateOutlineName(value, item.id)}
+                      />
+                    ))}
+                  </SortableContext>
+                  <DragOverlay>
+                    {activeItem ? (
+                      <Item
+                        draggingHandle={(
+                          <IconGripVertical size={18} />
+                        )}
+                        style={{ width: "fit-content" }}
+                      >
+                        <span>{activeItem?.name}</span>
+                      </Item>
+                    ) : null}
+                  </DragOverlay>
+                </Flex>
+              </DndContext>
 
 
-        </Form.Item>
-        {items.length > 0 && items.length < 10 && (
-          <Form.Item>
-            <Flex justify="end">
-              <Button onClick={onAddHeading} icon={<PlusOutlined size={12} />} />
+            </Form.Item>
+            {items.length > 0 && items.length < 10 && (
+              <Form.Item>
+                <Flex justify="end">
+                  <Button onClick={onAddHeading} icon={<PlusOutlined size={12} />} />
+                </Flex>
+              </Form.Item>
+            )}
+          </div>
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Flex justify="end" align="center" gap="middle">
+              <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
+                Previous
+              </Button>
+
+              <Button disabled={!items.length} onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 2}>
+                Write article (10 credits)
+              </Button>
             </Flex>
+            {/* <ShowCoinsForAction value="1" style={{ marginTop: 12 }} /> */}
           </Form.Item>
-        )}
-
-        <Form.Item>
-          <Flex justify="end" align="center" gap="middle">
-            <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
-              Previous
-            </Button>
-
-            <Button disabled={!items.length} onClick={() => form.submit()} type="primary" htmlType="button" loading={submittingStep === 2}>
-              Write article
-            </Button>
-          </Flex>
-        </Form.Item>
-      </Form>
-    </Spin>
+        </Form>
+      </Spin>
+    </Flex>
   )
 }
 

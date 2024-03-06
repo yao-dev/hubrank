@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
@@ -18,10 +18,9 @@ const useGetOne = (project_id: number) => {
     select: (res) => {
       return res?.data || null
     },
-    cacheTime: 0,
+    gcTime: 0,
     retry: false,
-    onError: console.error,
-    keepPreviousData: true
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -38,16 +37,13 @@ const useGetAll = ({ enabled }: UseGetAll = {}) => {
   return useQuery({
     queryKey: queryKeys.projects(),
     queryFn: getAll,
-    enabled: typeof enabled !== 'boolean' ? true : enabled,
+    // enabled: typeof enabled !== 'boolean' ? true : enabled,
     select: ({ data }) => {
       return data;
     },
-    onError: (error) => {
-      console.error('projects.useGetAll', error)
-    },
-    // cacheTime: 1000 * 60 * 10,
+    // gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: true,
-    keepPreviousData: true
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -95,9 +91,6 @@ const useCreate = () => {
         queryKey: queryKeys.projects(),
       });
     },
-    onError: (error, variables) => {
-      console.log('projects.useCreate', { error, variables })
-    },
   })
 }
 
@@ -126,9 +119,6 @@ const useUpdate = () => {
         queryKey: queryKeys.projects(data.project_id),
       });
     },
-    onError: (error, variables) => {
-      console.log('projects.useUpdate', { error, variables })
-    },
   })
 }
 
@@ -148,9 +138,6 @@ const useDelete = () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),
       });
-    },
-    onError: (error, variables) => {
-      console.error('projects.useDelete', { error, variables })
     },
   })
 }

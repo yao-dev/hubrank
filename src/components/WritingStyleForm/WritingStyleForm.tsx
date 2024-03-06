@@ -62,11 +62,11 @@ const WritingStyleForm = ({ opened, setModalOpen }: Props) => {
       open={opened}
       onCancel={onClose}
       onOk={() => form.submit()}
-      confirmLoading={create.isLoading}
+      confirmLoading={create.isPending}
     >
       <Flex vertical gap="large">
         <Form
-          disabled={create.isLoading}
+          disabled={create.isPending}
           form={form}
           initialValues={{
             name: "",

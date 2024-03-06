@@ -31,7 +31,7 @@ type Props = {
 const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
   const { message, notification } = App.useApp();
   const projectId = useProjectId();
-  const { data: project, isLoading } = useProjects().getOne(projectId)
+  const { data: project, isPending } = useProjects().getOne(projectId)
   const [submitLoading, setSubmitLoading] = useState(false);
   const { data: writingStyles } = useWritingStyles().getAll();
   const [headlines, setHeadlines] = useState([]);
@@ -118,7 +118,7 @@ const NewArticleDrawer = ({ open, onClose, selectedKeyword }: Props) => {
 
   };
 
-  if (isLoading) return null;
+  if (isPending) return null;
 
   return (
     <Drawer

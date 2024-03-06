@@ -1,12 +1,10 @@
 import SessionContext from "@/context/SessionContext";
 import supabase from "@/helpers/supabase";
 import useSession from "@/hooks/useSession";
-import { useRouter } from "next/navigation";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode } from "react";
 
-const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) => {
+const SessionProvider = ({ children }: { children: ReactNode }) => {
   const sessionStore = useSession();
-  const router = useRouter();
 
   React.useEffect(() => {
     const {
@@ -36,15 +34,9 @@ const SessionProvider = ({ children }: { children: (value: any) => ReactNode }) 
     };
   }, []);
 
-  useEffect(() => {
-    if (!sessionStore.session) {
-      router.replace('/');
-    }
-  }, [sessionStore.session])
-
   return (
     <SessionContext.Provider value={{ session: sessionStore.session }}>
-      {children(sessionStore.session)}
+      {children}
     </SessionContext.Provider>
   );
 };

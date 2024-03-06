@@ -11,7 +11,7 @@ const KeywordExplorer = ({ query, onSubmit, selection = [], countryCode }: { que
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>(selection);
   const [page, setPage] = useState(0);
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     enabled: !!query?.length,
     queryKey: ["keywords", query],
     queryFn: () => axios.post('/api/keywords-research', { keyword: query, countryCode })
@@ -43,7 +43,7 @@ const KeywordExplorer = ({ query, onSubmit, selection = [], countryCode }: { que
       <Text size="sm" mt="sm" mb="xl">Select up to <b>{MAX_KEYWORDS} keywords</b>.</Text>
       <Text size="sm" mt="xl" mb="md">{`${keywords.length || 0} keywords found.`}</Text>
 
-      {isLoading ? [...Array(20).keys()].map((_, index) => {
+      {isPending ? [...Array(20).keys()].map((_, index) => {
         return <Skeleton key={index} height={25} mb={10} radius="sm" />
       })
         : (

@@ -11,7 +11,7 @@ const useProjectId = () => {
   const projectId = useMemo(() => pathname.split('/').slice(2, 3)?.[0], [pathname]);
 
   if (isNaN(+projectId)) {
-    return 0
+    return null
   }
 
   return +projectId

@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Drawer, Empty, Flex, Image, Popconfirm, Space, Table, Tag } from 'antd';
+import { Button, Drawer, Empty, Grid, Flex, Image, Popconfirm, Space, Table, Tag } from 'antd';
 import { useMemo, useState } from 'react';
 import {
   CheckCircleOutlined,
@@ -15,13 +15,17 @@ import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
 import axios from 'axios';
 
+const { useBreakpoint } = Grid
+
 const ArticlesTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
-  const { data: articles, isLoading, isFetched, refetch } = getAll({ queue: false });
+  const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
   const [htmlPreview, setHtmlPreview] = useState("");
   const [articleId, setArticleId] = useState(null);
   const router = useRouter();
   const projectId = useProjectId();
+  const screens = useBreakpoint();
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const getIsDisabled = (status: string) => {
     return ["queue", "writing"].includes(status)
@@ -29,6 +33,7 @@ const ArticlesTable = () => {
   }
 
   const rewrite = (article_id: number) => {
+    setIsRetrying(true)
     axios.post('/api/rewrite', { article_id })
   }
 
@@ -53,7 +58,7 @@ const ArticlesTable = () => {
         title: 'Title',
         dataIndex: 'title',
         key: 'title',
-        width: 750,
+        width: !screens.lg ? 800 : null,
         render: (value: any) => {
           return (
             <span>
@@ -126,7 +131,7 @@ const ArticlesTable = () => {
         },
       },
       {
-        title: 'Action',
+        // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => (
@@ -143,7 +148,11 @@ const ArticlesTable = () => {
               <Button
                 style={{ width: 100 }}
                 icon={<ReloadOutlined />}
-                onClick={() => rewrite(record.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  rewrite(record.id)
+                }}
+                loading={isRetrying}
               >
                 Retry
               </Button>
@@ -206,7 +215,7 @@ const ArticlesTable = () => {
     ]
   }, []);
 
-  if (!isLoading && isFetched && !articles?.data?.length) {
+  if (!isPending && isFetched && !articles?.data?.length) {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
@@ -264,17 +273,17 @@ const ArticlesTable = () => {
           ${htmlPreview}
         ` }} />
       </Drawer>
-      <Flex vertical gap="middle">
-        <Button style={{ width: 120 }} onClick={() => refetch()} icon={<ReloadOutlined />}>Refresh</Button>
+      <Flex vertical gap="middle" style={{ overflow: "auto" }}>
         <Table
           size="small"
           dataSource={articles?.data}
           columns={columns}
-          loading={isLoading}
+          loading={isPending}
           pagination={{
             pageSizeOptions: [10, 25, 50],
             pageSize: 25,
           }}
+          style={{ minWidth: 900, overflow: "auto" }}
         // onRow={(record) => {
         //   return {
         //     "aria-disabled": getIsDisabled(record.status),

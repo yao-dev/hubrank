@@ -1,16 +1,32 @@
 'use client';;
-import { App, Button, Col, ConfigProvider, Empty, Flex, Form, Image, Input, Row, Select, Space, Table, Tag } from 'antd';
+import {
+  App,
+  AutoComplete,
+  Button,
+  Col,
+  ConfigProvider,
+  Empty,
+  Flex,
+  Form,
+  Image,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from 'antd';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getRelatedKeywords } from '@/helpers/seo';
 import useLanguages from '@/hooks/useLanguages';
-import { SearchOutlined, DeleteTwoTone } from '@ant-design/icons';
+import { DeleteTwoTone } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
 import { getUserId } from '@/helpers/user';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
+import { isEmpty } from 'lodash';
 
 const competitionOrder: any = {
   "low": 0,
@@ -19,53 +35,70 @@ const competitionOrder: any = {
 }
 
 type Props = {
-  editMode?: boolean;
+  savedMode?: boolean;
 }
 
-const KeywordsTable = ({ editMode }: Props) => {
+const KeywordsTable = ({ savedMode }: Props) => {
   const projectId = useProjectId();
-  const { data: project, isLoading, isFetched } = useProjects().getOne(projectId);
+  const { data: project } = useProjects().getOne(projectId);
   const { getAll } = useLanguages();
   const { data: languages } = getAll();
-  const [search, setSearch] = useState("");
   const [activeLanguage, setActiveLanguage] = useState();
   const queryClient = useQueryClient();
   const { notification } = App.useApp();
   const { theme } = useContext(ConfigProvider.ConfigContext);
   const router = useRouter();
   const [form] = Form.useForm();
-  const selectedLanguage = languages?.find(l => l.id === form.getFieldValue("language_id"));
+  const search = Form.useWatch('search', form);
+  const language_id = Form.useWatch('language_id', form);
+  const selectedLanguage = languages?.find(l => l.id === language_id);
+  const [keywords, setKeywords] = useState([]);
+  const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
 
-  const { data: keywords, isFetching } = useQuery({
-    enabled: false,
-    queryKey: ["keywords", { search: form.getFieldValue("search"), language_id: form.getFieldValue("language_id") }],
-    keepPreviousData: true,
-    cacheTime: Infinity,
-    queryFn: () => {
-      return getRelatedKeywords({ keyword: form.getFieldValue("search"), depth: 4, limit: 1000, lang: selectedLanguage.code, location_code: selectedLanguage.location_code })
-    },
-    onSuccess() {
-      setActiveLanguage(selectedLanguage);
-    },
-    select: (data) => {
-      return data?.map((item: any) => {
-        return {
-          language_id: form.getFieldValue("language_id"),
-          keyword: item.keyword_data.keyword,
-          search_volume: item.keyword_data.keyword_info.search_volume,
-          competition_level: item.keyword_data.keyword_info.competition_level || "",
-          keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
-          search_intent: item.keyword_data.search_intent_info.main_intent || "",
-          word_count: item.keyword_data.keyword.split(" ").length
-        }
+  // const { data: keywords, isLoading: isSearchModeFetching, isFetching, isFetched: isfetched1 } = useQuery({
+  //   enabled: searchEnabled,
+  //   queryKey: ["keywords", search, language_id],
+  //   placeholderData: keepPreviousData,
+  //   gcTime: Infinity,
+  //   queryFn: () => {
+  //     return getRelatedKeywords({ keyword: search, depth: 4, limit: 1000, lang: selectedLanguage.code, location_code: selectedLanguage.location_code })
+  //   },
+  //   select: (data) => {
+  //     return data?.map((item: any) => {
+  //       return {
+  //         language_id: language_id,
+  //         keyword: item.keyword_data.keyword,
+  //         search_volume: item.keyword_data.keyword_info.search_volume,
+  //         competition_level: item.keyword_data.keyword_info.competition_level || "",
+  //         keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
+  //         search_intent: item.keyword_data.search_intent_info.main_intent || "",
+  //         word_count: item.keyword_data.keyword.split(" ").length
+  //       }
+  //     })
+  //   },
+  // });
+
+  const { data: searchedKeywords } = useQuery({
+    enabled: !!projectId,
+    queryKey: ["searched_keywords", { projectId }],
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      return supabase.from("searched_keywords").select("*").match({
+        project_id: projectId,
+        user_id: await getUserId()
       })
+    },
+    select: ({ data }) => {
+      return data?.map((item: any) => ({
+        value: item.keyword,
+        label: item.keyword,
+      }))
     },
   });
 
-  const { data: savedKeywords } = useQuery({
-    // enabled: !!editMode,
+  const { data: savedKeywords, isLoading: isSavedModeFetching } = useQuery({
     queryKey: ["saved_keywords", { projectId }],
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     queryFn: () => {
       return supabase.from("saved_keywords").select("*, languages!language_id(*)").eq("project_id", projectId).order("id", { ascending: false })
     },
@@ -102,7 +135,7 @@ const KeywordsTable = ({ editMode }: Props) => {
     if (project?.language_id) {
       form.setFieldValue("language_id", project.language_id)
     }
-  }, [project])
+  }, [project]);
 
   // const keywords = useMemo(() => {
   //   if (!project || !project?.keywords?.length) return [];
@@ -126,13 +159,13 @@ const KeywordsTable = ({ editMode }: Props) => {
         key: 'language',
         width: 50,
         render: (_value: any, record: any) => {
-          if (editMode && !record?.languages?.image || !editMode && !activeLanguage?.image) {
+          if (savedMode && !record?.languages?.image || !savedMode && !activeLanguage?.image) {
             return (
               <span>-</span>
             )
           }
           return (
-            <Image src={editMode ? record.languages.image : activeLanguage.image} width={25} height={25} preview={false} />
+            <Image src={savedMode ? record.languages.image : activeLanguage?.image} width={25} height={25} preview={false} />
           )
         },
       },
@@ -140,7 +173,7 @@ const KeywordsTable = ({ editMode }: Props) => {
         title: 'Keyword',
         dataIndex: 'keyword',
         key: 'keyword',
-        width: 520,
+        // width: 425,
       },
       {
         title: 'Search volume',
@@ -220,7 +253,7 @@ const KeywordsTable = ({ editMode }: Props) => {
           { text: 'Informational', value: 'informational' },
           { text: 'Commercial', value: 'commercial' },
         ],
-        onFilter: (value: string, record) => record.search_intent.toLowerCase().includes(value),
+        onFilter: (value: string, record: any) => record.search_intent.toLowerCase().includes(value),
         render: (value: any) => {
           return (
             <span>
@@ -242,7 +275,7 @@ const KeywordsTable = ({ editMode }: Props) => {
         sorter: (a: any, b: any) => a.word_count - b.word_count,
       },
       {
-        title: 'Action',
+        // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => {
@@ -256,14 +289,14 @@ const KeywordsTable = ({ editMode }: Props) => {
               >
                 use keyword
               </Button>
-              {editMode ? (
+              {savedMode ? (
                 <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
               ) : (
                 <Button
                   icon={(
                     <StarComponent
                       size={16}
-                      style={{ color: savedKeywordsString?.includes(record.keyword) ? "#fadb14" : undefined }}
+                      style={{ color: savedKeywordsString?.includes(record.keyword) ? "#5D5FEF" : undefined }}
                     />
                   )}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -275,7 +308,8 @@ const KeywordsTable = ({ editMode }: Props) => {
         },
       },
     ]
-  }, [editMode, activeLanguage, savedKeywords, savedKeywordsString, theme]);
+
+  }, [savedMode, activeLanguage, savedKeywords, savedKeywordsString, theme]);
 
   const renderSearchBar = () => {
     return (
@@ -283,17 +317,77 @@ const KeywordsTable = ({ editMode }: Props) => {
         form={form}
         initialValues={{
           search: "",
-          language_id: null
+          language_id: selectedLanguage?.id || project?.language_id
         }}
-        onFinish={(values) => {
-          queryClient.prefetchQuery({
-            queryKey: ["keywords", { search, language_id: selectedLanguage?.id }]
-          })
+        onFinish={async (values) => {
+          try {
+            setIsFetchingKeywords(true);
+            const searchTerm = values.search;
+
+            const language = languages?.find(l => l.id === values.language_id)
+            const keywordSearchKey = ["keywords", { search: searchTerm, languageId: values.language_id }];
+            const state = queryClient.getQueryState(keywordSearchKey);
+
+            const { data: isKeywordSearchBefore } = await supabase.from("searched_keywords").select("id").match({
+              keyword: searchTerm,
+              project_id: projectId
+            }).limit(1).single();
+
+            if (!isKeywordSearchBefore) {
+              await supabase.from("searched_keywords").insert({
+                keyword: searchTerm,
+                user_id: await getUserId(),
+                project_id: projectId
+              })
+            }
+
+            if (isEmpty(state?.data)) {
+              queryClient.invalidateQueries({
+                queryKey: ["searched_keywords", { projectId }]
+              });
+              let newKeywords = await getRelatedKeywords({ keyword: searchTerm, depth: 4, limit: 1000, lang: language.code, location_code: language.location_code })
+              newKeywords = newKeywords?.map((item: any) => {
+                return {
+                  language_id: values.language_id,
+                  keyword: item.keyword_data.keyword,
+                  search_volume: item.keyword_data.keyword_info.search_volume,
+                  competition_level: item.keyword_data.keyword_info.competition_level || "",
+                  keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
+                  search_intent: item.keyword_data.search_intent_info.main_intent || "",
+                  word_count: item.keyword_data.keyword.split(" ").length
+                }
+              })
+              queryClient.setQueryData(keywordSearchKey, newKeywords);
+              setKeywords(newKeywords)
+            } else {
+              setKeywords(state?.data || [])
+            }
+            setActiveLanguage(language)
+          } finally {
+            setIsFetchingKeywords(false)
+          }
         }}
       >
-        <Flex gap="middle">
+        <Flex gap="small">
           <Form.Item noStyle name="search" required>
-            <Input placeholder='Search keywords' value={search} onChange={e => setSearch(e.target.value)} allowClear />
+            {/* <Input placeholder='Search keywords' allowClear /> */}
+            {/* <Select
+              showSearch
+              mode="tags"
+              maxCount={1}
+              style={{ width: 200 }}
+              placeholder="Search keywords"
+              options={searchedKeywords}
+              allowClear
+            /> */}
+            <AutoComplete
+              options={searchedKeywords}
+              style={{ width: 200 }}
+              // onSelect={onSelect}
+              // onSearch={(text) => setOptions(getPanelValue(text))}
+              placeholder="Search keywords"
+              allowClear
+            />
           </Form.Item>
           <Form.Item noStyle name="language_id" required>
             <Select
@@ -321,15 +415,23 @@ const KeywordsTable = ({ editMode }: Props) => {
               }}
             />
           </Form.Item>
-          <Button disabled={!form.getFieldValue("search") || !form.getFieldValue("language_id")} icon={<SearchOutlined />} type="primary" htmlType="submit" loading={isFetching}>Search</Button>
+          <Button
+            disabled={!search || !language_id}
+            // icon={<SearchOutlined />}
+            type="primary"
+            htmlType="submit"
+            loading={isFetchingKeywords}
+          >
+            Search (1 credit)
+          </Button>
         </Flex>
       </Form>
     )
   }
 
   if (
-    !editMode && !isLoading && isFetched && !keywords?.length ||
-    editMode && !isLoading && isFetched && !savedKeywords?.length
+    !savedMode && !isSavedModeFetching && !keywords?.length
+    // savedMode && !isSearchModeFetching && !savedKeywords?.length
   ) {
     return (
       <Flex vertical gap="large">
@@ -340,7 +442,7 @@ const KeywordsTable = ({ editMode }: Props) => {
             description="No keywords"
           />
         </Flex>
-        {!editMode && (
+        {!savedMode && (
           <Flex vertical align='center' justify='center' >
             {renderSearchBar()}
           </Flex>
@@ -350,22 +452,23 @@ const KeywordsTable = ({ editMode }: Props) => {
   }
 
   return (
-    <Flex vertical gap="large">
-      {!editMode && (
+    <Flex vertical gap="large" style={{ overflow: "auto" }}>
+      {!savedMode && (
         <Row>
-          <Col span={9}>
+          <Col span={12}>
             {renderSearchBar()}
           </Col>
         </Row>
       )}
       <Table
         size="small"
-        dataSource={!editMode ? keywords : savedKeywords}
+        dataSource={!savedMode ? keywords : savedKeywords}
         columns={columns}
-        loading={isFetching}
+        loading={isFetchingKeywords}
         pagination={{
           pageSize: 25
         }}
+        style={{ minWidth: 900, overflow: "auto" }}
       />
     </Flex>
   )

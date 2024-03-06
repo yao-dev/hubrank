@@ -1,20 +1,13 @@
 'use client';;
-import { Button, Card, Col, Flex, Image, Modal, Popconfirm, Row, Space, Spin, Table } from 'antd';
-import { useMemo, useState } from 'react';
-import { DeleteTwoTone, PlusOutlined } from '@ant-design/icons';
+import { Button, Image, Popconfirm, Space, Spin, Table } from 'antd';
+import { useMemo } from 'react';
+import { DeleteTwoTone } from '@ant-design/icons';
 import { brandsLogo } from '@/brands-logo';
-import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import supabase from '@/helpers/supabase';
-import { useZapier } from '@/hooks/useZapier';
 
-const IntegrationsTable = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hover, setHover] = useState("")
-  const [selectedIntegration, setSelectedIntegration] = useState("")
-  const router = useRouter();
+const IntegrationsTable = ({ isLoading }: any) => {
   const queryClient = useQueryClient();
-  const zapier = useZapier()
 
   const { data: integrations } = useQuery({
     queryKey: ["integrations"],
@@ -37,15 +30,6 @@ const IntegrationsTable = () => {
       });
     }
   })
-
-  const onAddIntegration = () => {
-    switch (selectedIntegration) {
-      case "notion":
-        return router.push(process.env.NEXT_PUBLIC_NOTION_AUTH_URL || "");
-      case "zapier":
-        return zapier.login()
-    }
-  }
 
   const columns = useMemo(() => {
     return [
@@ -87,7 +71,7 @@ const IntegrationsTable = () => {
       //   },
       // },
       {
-        title: 'Action',
+        // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => (
@@ -148,53 +132,8 @@ const IntegrationsTable = () => {
 
 
   return (
-    <Spin spinning={zapier.isLoading}>
-      <Modal
-        title="New integration"
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        okText="Add integration"
-        okButtonProps={{
-          disabled: !selectedIntegration
-        }}
-        onOk={onAddIntegration}
-        style={{ top: 20 }}
-        width={700}
-      >
-        <Row>
-          {Object.keys(brandsLogo).map((brandName) => {
-            return (
-              <Col key={brandName} style={{ width: "31%", margin: 5, overflow: "hidden" }} onMouseEnter={() => setHover(brandName)} onMouseLeave={() => setHover("")}>
-                <Card
-                  style={{
-                    height: 125,
-                    display: "flex",
-                    borderColor: [hover, selectedIntegration].includes(brandName) ? "rgb(93 95 239)" : undefined,
-                    borderWidth: [hover, selectedIntegration].includes(brandName) ? 3 : 1,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer"
-                  }}
-                  onClick={() => setSelectedIntegration(brandName)}
-                >
-                  <Image width={100} src={brandsLogo[brandName]} preview={false} />
-                </Card>
-              </Col>
-            )
-          })}
-        </Row>
-      </Modal>
-      <Flex vertical gap="middle">
-        <Flex justify="end">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsModalOpen(true)}
-            style={{ width: 150 }}
-          >
-            New integration
-          </Button>
-        </Flex>
+    <Spin spinning={isLoading}>
+      <div style={{ overflow: "auto" }}>
         <Table
           size="small"
           // dataSource={articles?.data}
@@ -205,8 +144,9 @@ const IntegrationsTable = () => {
             pageSizeOptions: [10, 25, 50],
             pageSize: 25,
           }}
+          style={{ minWidth: 900, overflow: "auto" }}
         />
-      </Flex>
+      </div>
     </Spin>
   )
 }

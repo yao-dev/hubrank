@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
@@ -19,8 +19,7 @@ const useGetAll = () => {
     enabled: projectId !== null || projectId !== 0,
     queryKey: queryKeys.writingStyles(projectId),
     queryFn: () => getAll(projectId),
-    onError: console.error,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: true
   });
 };
@@ -49,7 +48,6 @@ const useDelete = () => {
         queryKey: queryKeys.writingStyles(projectId),
       });
     },
-    onError: console.error,
   })
 }
 
@@ -85,7 +83,6 @@ const useUpdate = () => {
         queryKey: queryKeys.writingStyles(projectId),
       });
     },
-    onError: console.error,
   })
 }
 
@@ -100,7 +97,6 @@ const useMarkAsDefault = () => {
         queryKey: queryKeys.writingStyles(projectId),
       });
     },
-    onError: console.error,
   })
 }
 
@@ -149,7 +145,6 @@ const useCreate = () => {
         queryKey: queryKeys.writingStyles(projectId),
       });
     },
-    onError: console.error,
   })
 }
 

@@ -1,4 +1,5 @@
 'use client';;
+import supabase from "@/helpers/supabase";
 import useLanguages from "@/hooks/useLanguages";
 import useProjectId from "@/hooks/useProjectId";
 import useWritingStyles from "@/hooks/useWritingStyles";
@@ -6,8 +7,9 @@ import { contentTypes, purposes, tones } from "@/options";
 import {
   StarOutlined
 } from '@ant-design/icons';
-import { useMutation } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
+  AutoComplete,
   Button,
   Flex,
   Form,
@@ -21,7 +23,6 @@ import {
 } from "antd";
 import axios from "axios";
 import { uniqueId } from "lodash";
-import { useEffect } from "react";
 
 const SettingsForm = ({
   form,
@@ -32,41 +33,53 @@ const SettingsForm = ({
   setHeadlines,
   setSubmittingStep,
   lockedStep,
-  setRelatedKeywords
-}) => {
+  setRelatedKeywords,
+}: any) => {
   const { data: writingStyles } = useWritingStyles().getAll();
   const { data: languages } = useLanguages().getAll();
   const projectId = useProjectId();
   const [messageApi, contextHolder] = message.useMessage();
 
-  useEffect(() => {
-    const settingsForm = document.getElementById("settings-form");
-    settingsForm.addEventListener('submit', (e) => e.preventDefault());
-  }, [])
+  const { data: savedKeywordsOptions = [] } = useQuery({
+    queryKey: ["saved_keywords", { projectId }],
+    placeholderData: keepPreviousData,
+    queryFn: () => {
+      return supabase.from("saved_keywords").select("*, languages!language_id(*)").eq("project_id", projectId).limit(1000).order("id", { ascending: false })
+    },
+    select: ({ data }: any) => {
+      return (data || []).map((i: any) => {
+        return {
+          label: i.keyword,
+          value: i.keyword,
+        }
+      });
+    }
+  });
 
   const getHeadlines = useMutation({
     mutationFn: async (data: any) => {
       return axios.post("/api/headline-ideas", data)
     },
-    // onSuccess: () => {},
-    // onError: () => {
-    //   notification.error({ message: "We couldn't save your change" })
-    // }
   });
 
   const onFinish = async (values: any) => {
+    console.log("step 1")
     const isCustomTitle = values.title_mode === "custom"
 
     if (isLocked) {
-      setCurrentStep(isCustomTitle ? 2 : 1)
+      console.log("step 2")
+      return setCurrentStep(isCustomTitle ? 2 : 1)
     }
 
     if (isCustomTitle) {
+      console.log("step 3")
       setLockedStep(0);
       return setCurrentStep(2);
     }
 
+    console.log("step 4")
     try {
+      console.log("step 5")
       messageApi.open({
         type: 'loading',
         content: 'Getting headline ideas...',
@@ -88,15 +101,20 @@ const SettingsForm = ({
       setSubmittingStep(undefined);
       setCurrentStep(1)
       setLockedStep(0);
+      console.log("step 6")
 
       setHeadlines(data.headlines.map((h) => ({
         id: uniqueId(h),
         headline: h[0] === "-" ? h.slice(1).trim() : h.trim()
       })));
+      console.log("step 7")
     } catch (e) {
+      console.log("step 8")
       console.error(e)
       setSubmittingStep(undefined);
+      console.log("step 9")
     } finally {
+      console.log("step 10")
       messageApi.destroy();
     }
   };
@@ -116,7 +134,7 @@ const SettingsForm = ({
           content_type: "",
           purpose: "",
           writing_mode: "tones",
-          writing_style_id: null,
+          writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default).id : null,
           tones: [],
           clickbait: false,
           perspective: "first_person_singular",
@@ -125,7 +143,7 @@ const SettingsForm = ({
           sitemap: "",
           external_sources: "",
           external_sources_objective: "",
-          with_featured_image: true,
+          with_featured_image: false,
           with_table_of_content: false,
           // with_introduction: true,
           // with_conclusion: true,
@@ -141,7 +159,6 @@ const SettingsForm = ({
         autoComplete="off"
         layout="vertical"
         onFinish={onFinish}
-        onSubmitCapture={e => e.preventDefault()}
       >
         <Form.Item
           name="language_id"
@@ -180,7 +197,9 @@ const SettingsForm = ({
         </Form.Item>
 
         <Form.Item name="seed_keyword" label="Main Keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
-          <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
+          <AutoComplete options={savedKeywordsOptions}>
+            <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
+          </AutoComplete>
         </Form.Item>
 
         <Form.Item
@@ -188,7 +207,7 @@ const SettingsForm = ({
           label="Title mode"
           rules={[{ required: true }]}
         >
-          <Segmented options={[{ label: "AI", value: "ai" }, { label: "Inspo", value: "inspo" }, { label: "Custom", value: "custom" }]} style={{ width: "fit-content" }} />
+          <Segmented options={[{ label: "AI", value: "ai" }, { label: "Inspo", value: "inspo" }, { label: "Custom title", value: "custom" }]} style={{ width: "fit-content" }} />
         </Form.Item>
 
         <Form.Item
@@ -420,7 +439,7 @@ const SettingsForm = ({
           <Form.Item name="with_hook" tooltip="Short sentence that comes before the introduction, its goal is to capture the reader's attention and encourage them to continue reading." rules={[]} style={{ margin: 0 }}>
             <Switch />
           </Form.Item>
-          <span>Hook</span>
+          <span>Include hook</span>
         </Flex>
 
         <Flex vertical>
@@ -428,7 +447,7 @@ const SettingsForm = ({
             <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
               <Switch />
             </Form.Item>
-            <span>Featured image</span>
+            <span>Include featured image</span>
           </Flex>
 
           {/* <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
@@ -476,10 +495,15 @@ const SettingsForm = ({
           <span>SEO tags & Schema markups</span>
         </Flex> */}
 
-          <Form.Item>
-            <Flex justify="end" align="center" gap="middle">
-              <Button disabled={submittingStep === 0 || lockedStep === 0} type="primary" onClick={() => form.submit()} loading={submittingStep === 0}>
-                Next
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Flex justify="end" align="end" gap="middle">
+              {/* <ShowCoinsForAction value="0.10" /> */}
+              <Button
+                disabled={submittingStep === 0 || !submittingStep && isLocked && false}
+                type="primary" onClick={() => form.submit()}
+                loading={submittingStep === 0}
+              >
+                {submittingStep === 0 || lockedStep === 0 ? "Next" : "Get headline ideas (3 credits)"}
               </Button>
             </Flex>
           </Form.Item>

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
@@ -15,10 +15,9 @@ const useGetOne = (id: number) => {
     select: (res) => {
       return res?.data || null
     },
-    cacheTime: 0,
+    gcTime: 0,
     retry: false,
-    onError: console.error,
-    keepPreviousData: true
+    placeholderData: keepPreviousData,
   });
 };
 
@@ -34,10 +33,9 @@ const useGetAll = () => {
     select: ({ data }) => {
       return data;
     },
-    onError: console.error,
-    // cacheTime: 1000 * 60 * 10,
+    // gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: true,
-    keepPreviousData: true
+    placeholderData: keepPreviousData,
   });
 };
 
