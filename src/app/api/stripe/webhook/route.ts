@@ -27,11 +27,12 @@ import Stripe from "stripe";
 // const endpointSecret = "whsec_e07823e4087de630456b0c3b3f787306e544c0236797f61c2db852095612f17a"; // http://localhost:3000
 // const endpointSecret = "whsec_YOr8AW25pMQMPw5kVqBQ9vZ5S2svjI4b"; // https://0d13-2a00-23c7-5c28-e301-e516-2d1a-759a-4249.ngrok-free.app/api/webhook
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// IMPORTANT, worked uncommented but fails with Vercel
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
