@@ -29,6 +29,7 @@ yarn-error.log*
 .env
 .env.development
 .env.production
+.env*
 
 # vercel
 .vercel
@@ -36,3 +37,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+src/app/api/notion-publish/
+src/app/api/notion-search/
+src/app/api/notion-token/
+src/app/api/shopify.ts
+src/app/api/shopify/
+src/app/api/zapier/
+src/components/ShowCoinsForActions/
+src/plan-billing/
+src/app/api/mistral/route.ts
+src/components/ProjectSelect\ copy/
+test.js

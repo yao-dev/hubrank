@@ -321,6 +321,14 @@ export const languages = [
 
 export const medias = [
   {
+    "value": "none",
+    "label": "None",
+  },
+  {
+    "value": "auto",
+    "label": "Auto",
+  },
+  {
     "value": "image",
     "label": "Image",
   },

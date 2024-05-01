@@ -8,6 +8,7 @@ import {
   Empty,
   Flex,
   Form,
+  Grid,
   Image,
   Row,
   Select,
@@ -21,7 +22,7 @@ import useProjectId from '@/hooks/useProjectId';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getRelatedKeywords } from '@/helpers/seo';
 import useLanguages from '@/hooks/useLanguages';
-import { DeleteTwoTone } from '@ant-design/icons';
+import { DeleteTwoTone, SearchOutlined } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
 import { getUserId } from '@/helpers/user';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
@@ -54,6 +55,7 @@ const KeywordsTable = ({ savedMode }: Props) => {
   const selectedLanguage = languages?.find(l => l.id === language_id);
   const [keywords, setKeywords] = useState([]);
   const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
+  const screens = Grid.useBreakpoint();
 
   // const { data: keywords, isLoading: isSearchModeFetching, isFetching, isFetched: isfetched1 } = useQuery({
   //   enabled: searchEnabled,
@@ -369,61 +371,70 @@ const KeywordsTable = ({ savedMode }: Props) => {
         }}
       >
         <Flex gap="small">
-          <Form.Item noStyle name="search" required>
-            {/* <Input placeholder='Search keywords' allowClear /> */}
-            {/* <Select
-              showSearch
-              mode="tags"
-              maxCount={1}
-              style={{ width: 200 }}
-              placeholder="Search keywords"
-              options={searchedKeywords}
-              allowClear
-            /> */}
-            <AutoComplete
-              options={searchedKeywords}
-              style={{ width: 200 }}
-              // onSelect={onSelect}
-              // onSearch={(text) => setOptions(getPanelValue(text))}
-              placeholder="Search keywords"
-              allowClear
-            />
-          </Form.Item>
-          <Form.Item noStyle name="language_id" required>
-            <Select
-              placeholder="Country"
-              optionLabelProp="label"
-              options={languages?.map((p) => {
-                return {
-                  ...p,
-                  label: p.label,
-                  value: p.id
-                }
-              })}
-              optionRender={(option: any) => {
-                return (
-                  <Space>
-                    <Image
-                      src={option.data.image}
-                      width={25}
-                      height={25}
-                      preview={false}
-                    />
-                    {/* {option.label} */}
-                  </Space>
-                )
-              }}
-            />
-          </Form.Item>
-          <Button
-            disabled={!search || !language_id}
-            // icon={<SearchOutlined />}
-            type="primary"
-            htmlType="submit"
-            loading={isFetchingKeywords}
-          >
-            Search (1 credit)
-          </Button>
+          <Row>
+            <Col xs={24} sm={8}>
+              {/* <Form.Item noStyle name="search" required>
+                <AutoComplete
+                  options={searchedKeywords}
+                  style={{ width: "100%", marginBottom: 8 }}
+                  // onSelect={onSelect}
+                  // onSearch={(text) => setOptions(getPanelValue(text))}
+                  placeholder="Search keywords"
+                  allowClear
+                />
+              </Form.Item> */}
+
+              <Space.Compact
+                style={{ width: "100%", marginBottom: 8 }}
+              >
+                <Select
+                  placeholder="Country"
+                  optionLabelProp="label"
+                  // style={{ width: "100%" }}
+                  options={languages?.map((p) => {
+                    return {
+                      ...p,
+                      label: p.label,
+                      value: p.id
+                    }
+                  })}
+                  optionRender={(option: any) => {
+                    return (
+                      <Space>
+                        <Image
+                          src={option.data.image}
+                          width={25}
+                          height={25}
+                          preview={false}
+                        />
+                        {/* {option.label} */}
+                      </Space>
+                    )
+                  }}
+                />
+                <AutoComplete
+                  options={searchedKeywords}
+                  // onSelect={onSelect}
+                  // onSearch={(text) => setOptions(getPanelValue(text))}
+                  placeholder="Search keywords"
+                  allowClear
+                  style={{ width: "100%" }}
+                />
+              </Space.Compact>
+            </Col>
+            <Col xs={24} sm={{ span: 8, offset: 1 }}>
+              <Button
+                disabled={!search || !language_id}
+                icon={screens.xs ? <SearchOutlined /> : null}
+                type="primary"
+                htmlType="submit"
+                loading={isFetchingKeywords}
+                style={{ width: "100%", marginBottom: 8 }}
+              >
+                {screens.xs ? "(1 credit)" : "Search (1 credit)"}
+              </Button>
+            </Col>
+          </Row>
         </Flex>
       </Form>
     )
@@ -438,7 +449,7 @@ const KeywordsTable = ({ savedMode }: Props) => {
         <Flex align='center' justify='center' style={{ marginTop: 96 }}>
           <Empty
             image="/image-1.png"
-            imageStyle={{ height: 200 }}
+            imageStyle={{ height: screens.xs ? 125 : 200 }}
             description="No keywords"
           />
         </Flex>

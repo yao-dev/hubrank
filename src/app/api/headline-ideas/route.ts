@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/helpers/supabase";
 import { getRelatedKeywords, getSerpData } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
+import { getProjectContext } from "../helpers";
 
 export const maxDuration = 45;
 
@@ -71,11 +72,12 @@ export async function POST(request: Request) {
 
     keywords = [...new Set(Object.keys(keywords))].slice(0, 30);
 
-    const context = `
-  Project name: ${project.name || "N/A"}
-  Website: ${project.website || "N/A"}
-  Description: ${project.metatags?.description || project?.description || "N/A"}
-  Language: ${language.label || "English (us)"}`;
+    const context = getProjectContext({
+      name: project.name,
+      website: project.website,
+      description: project.metatags?.description || project?.description,
+      lang: language.label,
+    })
 
     let writingStyle;
 

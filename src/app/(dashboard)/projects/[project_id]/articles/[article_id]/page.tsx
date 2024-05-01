@@ -2,31 +2,127 @@
 import { useRef, useState } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 import useBlogPosts from '@/hooks/useBlogPosts';
-import { App, Button, Col, Dropdown, Flex, Form, Input, Row, Spin, Typography } from 'antd';
+import {
+  App,
+  Button,
+  Col,
+  Dropdown,
+  Flex,
+  Form,
+  Image,
+  Input,
+  Row,
+  Spin,
+  Typography,
+} from 'antd';
 import { getSummary } from 'readability-cyr';
 import { useRouter } from 'next/navigation';
-import { CloudUploadOutlined, CopyOutlined } from '@ant-design/icons';
+import { CopyOutlined, SaveOutlined, CaretDownOutlined } from '@ant-design/icons';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 import "./styles.css";
-import { Metadata } from 'next';
+import Link from 'next/link';
+import useProjects from '@/hooks/useProjects';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+// import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import prettify from "pretty";
+import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
 
 const { Text } = Typography;
+
+const mock = {
+  url: "https://metatags.io/",
+  slug: "/fake-slug",
+  description: "With Meta Tags you can edit and experiment with your content then preview how your webpage will look on Google, Facebook, Twitter and more!",
+  og_image_url: "https://assets-global.website-files.com/647daf37f31ac13e5d14bb03/64fef99a4049a05b307b7400_Taplio%20open%20graph%20image.webp"
+}
+
+const styles = {
+  google: {
+    title: {
+      display: "block",
+      letterSpacing: "normal",
+      color: "#1a0dab",
+      cursor: "pointer",
+      fontSize: 18,
+      lineHeight: 1.2,
+      fontFamily: "Arial, sans-serif",
+      "-webkit-font-smoothing": "subpixel-antialiased",
+      // overflow: "hidden",
+      // textOverflow: "ellipsis",
+      // whiteSpace: "nowrap",
+    },
+    url: {
+      fontSize: 14,
+      letterSpacing: "normal",
+      color: "#006621",
+      marginRight: 4,
+      fontFamily: "Arial, sans-serif",
+      "-webkit-font-smoothing": "subpixel-antialiased",
+    },
+    arrow: {
+      color: "#006621",
+      margin: 0,
+      padding: 0
+    },
+    description: {
+      color: "#545454",
+      fontSize: 13,
+      lineHeight: 1.4,
+      wordWrap: "break-word",
+      fontFamily: "Arial, sans-serif",
+      "-webkit-font-smoothing": "subpixel-antialiased",
+    }
+  },
+  x: {
+    card: {
+      cursor: "pointer",
+      fontSize: 14,
+      fontFamily: "-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Ubuntu, Helvetica Neue, sans-serif",
+      "-webkit-font-smoothing": "antialiased",
+    },
+    title: {
+      // overflow: "hidden",
+      // textOverflow: "ellipsis",
+      // whiteSpace: "nowrap",
+      fontSize: "0.95em",
+      fontWeight: 700,
+      lineHeight: "1.3em",
+      // maxHeight: "1.3em",
+      marginBottom: 4
+    },
+    description: {
+      marginBottom: 4
+    },
+    url: {
+
+    }
+  }
+}
 
 const Article = ({
   params,
 }: {
-  params: { article_id: number }
+  params: { article_id: number, project_id: number }
 }) => {
   const articleId = +params.article_id;
+  const projectId = +params.project_id;
   const {
     data: article,
     isPending,
     isError
   } = useBlogPosts().getOne(articleId)
+  const { data: project } = useProjects().getOne(projectId);
   const [isSaved, setIsSaved] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
-  const { message } = App.useApp()
+  const { message } = App.useApp();
+  const [seoForm] = Form.useForm();
+  const articleTitle = Form.useWatch("title", seoForm);
+  const ogImageUrl = Form.useWatch("og_image_url", seoForm);
+  const slug = Form.useWatch("slug", seoForm);
+  const metaDescription = Form.useWatch("meta_description", seoForm);
+  const keywords = Form.useWatch("keywords", seoForm);
 
   const editorRef = useRef<any>(null);
   const html = useRef<any>(null);
@@ -59,9 +155,45 @@ const Article = ({
       return 'College'
     }
     if (readabilityScore >= 10) {
-      return 'College graduate'
+      return `College graduate (${readabilityScore})`
     }
     return 'Professional'
+  }
+
+  const getPreviewUrl = (prop: string) => {
+    if (!project) return "";
+    return new URL(slug, project.website)?.[prop]
+  }
+
+  const code = prettify(`
+  {/* <!-- HTML --> */}
+  <title>${articleTitle}</title>
+  <meta name="description" content="${metaDescription}">
+  <meta name="keywords" content="${keywords}" />
+  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+
+  {/* <!-- Facebook / Pinterest --> */}
+  <meta property="og:url" content="${getPreviewUrl("href")}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="${articleTitle}">
+  <meta property="og:description" content="${metaDescription}">
+  <meta property="og:image" content="${ogImageUrl}">
+  <meta property="og:site_name" content="${getPreviewUrl("host")}" />
+
+  {/* <!-- Twitter --> */}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta property="twitter:domain" content="${getPreviewUrl("host")}">
+  <meta property="twitter:url" content="${getPreviewUrl("href")}">
+  <meta name="twitter:title" content="${articleTitle}">
+  <meta name="twitter:description" content="${metaDescription}">
+  <meta name="twitter:image" content="${ogImageUrl}">
+
+  {/* <!-- Generated via https://usehubrank.com --> */}
+`)
+
+  const onCopyHTML = () => {
+    navigator.clipboard.writeText(code);
+    message.success("Copied to clipboard!");
   }
 
   if (isError) return null
@@ -69,8 +201,7 @@ const Article = ({
   return (
     <Spin spinning={isPending || !article}>
       <Row>
-        <Col xs={0} sm={6} md={0} lg={6} />
-        <Col xs={24} sm={11} md={16} lg={11}>
+        <Col xs={24} sm={11} md={{ span: 14 }} lg={12}>
           {article && (
             <Editor
               ref={editorRef}
@@ -134,11 +265,14 @@ const Article = ({
             />
           )}
         </Col>
-        <Col xs={0} sm={5} md={6} lg={{ span: 6, offset: 1 }} >
+        <Col xs={0} sm={5} md={{ span: 8, offset: 2 }} lg={{ span: 8, offset: 4 }} >
           {!!stats && (
-            <Flex vertical style={{ position: "sticky", top: 16 }}>
+            <Flex
+              vertical
+            // style={{ position: "sticky", top: 16 }}
+            >
               <Flex justify='end' style={{ marginBottom: 16 }} gap="small">
-                <Button icon={<CloudUploadOutlined />}>Export</Button>
+                {/* <Button icon={<CloudUploadOutlined />}>Export</Button> */}
                 <Dropdown
                   menu={{
                     items: [
@@ -172,21 +306,161 @@ const Article = ({
                 >
                   <Button icon={<CopyOutlined />}>Copy</Button>
                 </Dropdown>
+                <Button type="primary" icon={<SaveOutlined />}>Save</Button>
               </Flex>
 
-              <Form
-                autoComplete="off"
-                layout="vertical"
-              >
-                <Form.Item label="Slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
-                  <Input placeholder='Add a slug' />
-                </Form.Item>
-                <Form.Item label="Meta description" rules={[{ required: false, type: "string", max: 160, message: "Add a meta description" }]}>
-                  <Input placeholder='Add a meta description' count={{ show: true, max: 160 }} />
-                </Form.Item>
-              </Form>
+              {!!project && !!article && (
+                <Form
+                  form={seoForm}
+                  autoComplete="off"
+                  layout="vertical"
+                  initialValues={{
+                    title: article.title,
+                    slug: mock.slug, // TODO: must be generated
+                    meta_description: mock.description,
+                    keywords: article.keywords.slice(0, 9).join(','),
+                    og_image_url: mock.og_image_url, // TODO: must be generated
+                  }}
+                >
+                  <Form.Item style={{ marginBottom: 12 }} label="Title" name="title" rules={[{ required: true, type: "string", message: "Add a title", max: 60 }]}>
+                    <Input placeholder='Title' count={{ show: true, max: 60 }} />
+                  </Form.Item>
+                  <Form.Item style={{ marginBottom: 12 }} label="Slug" name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
+                    <Input placeholder='/article-slug-here' />
+                  </Form.Item>
+                  <Form.Item style={{ marginBottom: 12 }} label="Meta description" name="meta_description" rules={[{ required: false, type: "string", max: 160, message: "Add a meta description" }]}>
+                    <Input placeholder='Add a meta description' count={{ show: true, max: 160 }} />
+                  </Form.Item>
+                  <Form.Item style={{ marginBottom: 12 }} label="Keywords" name="keywords" tooltip="Separate the keywords with a comma" rules={[{ required: false, type: "string", message: "Add keywords" }]}>
+                    <Input placeholder='Add keywords' />
+                  </Form.Item>
 
-              <Text strong>Readability</Text>
+                  <Form.Item style={{ marginBottom: 12 }} label="Image" name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+                    <Input placeholder='https://google.com/image-url' />
+                  </Form.Item>
+
+                  <Form.Item style={{ marginBottom: 24 }}>
+                    <Flex vertical gap="small">
+                      <IconBrandGoogle />
+                      <div>
+                        <Link href="" style={styles.google.title}>
+                          {articleTitle}
+                        </Link>
+                        <Flex>
+                          <Text style={{ fontSize: 18 }} style={styles.google.url}>{getPreviewUrl("href")}</Text>
+                          <CaretDownOutlined style={styles.google.arrow} />
+                        </Flex>
+                        <Text style={styles.google.description}>{metaDescription}</Text>
+                      </div>
+                    </Flex>
+                  </Form.Item>
+
+                  <Form.Item style={{ marginBottom: 24 }}>
+                    <Flex vertical gap="small">
+                      <IconBrandX />
+                      <div style={{ position: "relative", cursor: "pointer" }}>
+                        <Image
+                          src={ogImageUrl}
+                          preview={false}
+                          style={{
+                            borderRadius: ".85714em",
+                          }}
+                        />
+
+                        <div
+                          style={{
+                            position: "absolute",
+                            left: 8, bottom: 8,
+                            backgroundColor: "rgb(0 0 0 / 0.4)",
+                            padding: "0px 4px",
+                            borderRadius: "0.25rem"
+                          }}
+                        >
+                          <Text
+                            style={{ fontSize: ".75rem", color: "white" }}
+                          >
+                            {getPreviewUrl("host")}
+                          </Text>
+                        </div>
+                      </div>
+                    </Flex>
+                  </Form.Item>
+
+                  <Form.Item style={{ marginBottom: 24 }}>
+                    <Flex vertical gap="small">
+                      <IconBrandFacebook />
+
+                      <div style={{ fontFamily: "Helvetica", cursor: "pointer", border: "1px solid rgb(229 231 235/1)" }}>
+                        <Image
+                          src={ogImageUrl}
+                          preview={false}
+                        />
+
+                        <Flex vertical style={{ padding: 12, background: "rgb(242 243 245 / 1)", borderTop: "1px solid rgb(229 231 235/1)" }}>
+                          <Text
+                            style={{ fontSize: 12, color: "rgb(96 103 112/1)", textTransform: "uppercase" }}
+                          >
+                            {getPreviewUrl("host")}
+                          </Text>
+                          <Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginTop: 2, fontSize: 16 }}>{articleTitle}</Text>
+                          <Text style={{ color: "rgb(96 103 112/1)", fontSize: 14, marginTop: 3 }}>{metaDescription}</Text>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  </Form.Item>
+
+                  <Form.Item style={{ marginBottom: 24 }}>
+                    <Flex vertical gap="small">
+                      <IconBrandLinkedin />
+                      <div style={{ fontFamily: "Helvetica", cursor: "pointer", borderRadius: 2, boxShadow: "0 0 #0000,0 0 #0000,0 0 #0000,0 0 #0000,0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)" }}>
+                        <Image
+                          src={ogImageUrl}
+                          preview={false}
+                          style={{ border: "1px solid rgb(229 231 235/1)" }}
+                        />
+
+                        <Flex vertical style={{ padding: 10, background: "white", borderTop: "1px solid rgb(229 231 235/1)" }}>
+                          <Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginBottom: 2, fontSize: 16 }}>{articleTitle}</Text>
+                          <Text
+                            style={{ fontSize: 12, color: "rgb(96 103 112/1)", textTransform: "uppercase" }}
+                          >
+                            {getPreviewUrl("host")}
+                          </Text>
+                        </Flex>
+                      </div>
+                    </Flex>
+                  </Form.Item>
+
+                  <Form.Item>
+                    <Flex vertical gap="small">
+                      <SyntaxHighlighter style={solarizedDark}>
+                        {code}
+                      </SyntaxHighlighter>
+                      <Button onClick={onCopyHTML} type="primary" size="large" style={{ width: "100%" }} icon={<CopyOutlined />}>Copy to clipboard</Button>
+                    </Flex>
+                  </Form.Item>
+
+                  {/* <Form.Item style={{ marginBottom: 12 }}>
+                    <Flex vertical gap="small">
+                      <Texty" style={{fontSize:184}}>X</Text>
+                      <div>
+                        <Card
+                          style={styles.x.card}
+                          cover={<img alt="example" src={ogImageUrl} />}
+                        >
+                          <Flex vertical>
+                            <Text style={styles.x.title}>{article.title}</Text>
+                            <Text style={styles.x.description}>{metaDescription}</Text>
+                            <Texty" style={{fontSize:184}} style={styles.x.url}>{getPreviewUrl()}</Text>
+                          </Flex>
+                        </Card>
+                      </div>
+                    </Flex>
+                  </Form.Item> */}
+                </Form>
+              )}
+
+              {/* <Text strong>Readability</Text>
               <Text style={{ marginBottom: 6 }}>{getReadabilityName(stats.FleschKincaidGrade)}</Text>
 
               <Text strong>Reading time</Text>
@@ -199,12 +473,9 @@ const Article = ({
               <Text style={{ marginBottom: 6 }}>{stats.sentences}</Text>
 
               <Text strong>Paragraphs</Text>
-              <Text style={{ marginBottom: 6 }}>{stats.paragraphs}</Text>
+              <Text style={{ marginBottom: 6 }}>{stats.paragraphs}</Text> */}
             </Flex>
           )}
-
-
-          <div id="emojicom-widget-inline" />
         </Col>
       </Row>
     </Spin>
@@ -281,3 +552,6 @@ const Article = ({
 }
 
 export default Article;
+
+
+

@@ -1,6 +1,48 @@
 import Anthropic from "@anthropic-ai/sdk";
 import yaml from 'js-yaml';
 import { getSummary } from 'readability-cyr';
+import { normalizePrompt } from "./helpers";
+import { countTokens } from '@anthropic-ai/tokenizer';
+import chalk from 'chalk';
+
+const costs = {
+  "claude-3-opus-20240229": {
+    input: 15,
+    output: 75,
+    calculation_based_on_token_count: 1000000,
+  },
+  "claude-3-sonnet-20240229": {
+    input: 3,
+    output: 15,
+    calculation_based_on_token_count: 1000000,
+  },
+  "claude-2.1": {
+    input: 8,
+    output: 24,
+    calculation_based_on_token_count: 1000000,
+  },
+  "claude-2.0": {
+    input: 8,
+    output: 24,
+    calculation_based_on_token_count: 1000000,
+  },
+  "claude-instant-1.2": {
+    input: 0.80,
+    output: 2.4,
+    calculation_based_on_token_count: 1000000,
+  }
+}
+
+const models = {
+  opus: "claude-3-opus-20240229",
+  sonnet: "claude-3-sonnet-20240229",
+}
+
+type TokenCountArgs = {
+  text: string,
+  model: "claude-3-opus-20240229" | "claude-3-sonnet-20240229" | "claude-2.1" | "claude-2.0" | "claude-instant-1.2",
+  mode: "input" | "output"
+}
 
 type Opts = {
   context?: string,
@@ -12,24 +54,60 @@ export class AI {
   system = "";
   article = "";
   ai: any;
-  writing_style = "";
+  cost: number = 0;
 
   constructor(opts: Opts = {}) {
     this.ai = new Anthropic({
+      baseURL: "https://anthropic.hconeai.com/",
       apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
+      defaultHeaders: {
+        "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+      },
     });
-    this.system = `You are an expert SEO writer who writes using Hemingway principles and writes engaging content that speak to the right target audience.
+    this.system = `You are an expert SEO writer who writes using Hemingway principles (grade 10) and writes engaging content that speak to the right target audience.
 
-    ${opts.context ? `Product/Project information:\n${opts.context}\n====\n` : ""}`;
+    ${opts.context ? `Product info:\n${opts.context}\n===\n` : ""}
 
-    this.writing_style = opts.writing_style ?? "";
+    ${opts.writing_style ? `Writing style to copy:\n${opts.writing_style}` : ""}
+    `
+      .trim()
+      .replaceAll("\n\n\n\n", "\n")
+      .replaceAll("\n\n\n", "\n")
 
-    console.log("[AI]: system", this.system)
+    console.log(chalk.blueBright("[AI]: system"), this.system)
   }
 
   resetPrompt() {
-    console.log("[AI]: reset prompt")
+    console.log(chalk.blueBright("[AI]: reset prompt"))
     this.messages = [];
+  }
+
+  getExtractionRegex(type: string) {
+    switch (type) {
+      case "json":
+        return /```json([\s\S]+?)```/i;
+      case "yaml":
+        return /```yaml([\s\S]+?)```/i;
+      case "yml":
+        return /```yml([\s\S]+?)```/i;
+      case "markdown":
+        return /```markdown([\s\S]+?)```/i;
+      default:
+        return
+    }
+  }
+
+  extractText(text: string, type: string) {
+    if (text.indexOf("@@@") !== -1) {
+      return text.slice(text.indexOf("@@@") + 3, text.lastIndexOf("@@@"));
+    }
+    const regex: any = this.getExtractionRegex(type);
+    const match = text.match(regex);
+
+    if (match && match.length >= 2) {
+      return match[1].trim();
+    }
+    return "";
   }
 
   parse(text: string, contentType: string = "") {
@@ -38,10 +116,11 @@ export class AI {
     }
 
     let content = text;
-    const marker = "```" + contentType;
+    // const marker = "```" + contentType;
 
     if (["json", "yml", "yaml"].includes(contentType)) {
-      content = text.slice(text.indexOf(marker) + marker.length, text.lastIndexOf("```"));
+      content = this.extractText(text, contentType) || content;
+      // content = text.slice(text.indexOf(marker) + marker.length, text.lastIndexOf("```"));
 
       if (contentType === "json") {
         return JSON.parse(content)
@@ -58,20 +137,27 @@ export class AI {
     this.article += `${content}\n`;
   }
 
+  addTokenCost({ text, model, mode }: TokenCountArgs) {
+    const modelCost = costs[model][mode];
+    const tokens = countTokens(text);
+    const modelCostPerToken = (modelCost / costs[model].calculation_based_on_token_count)
+    const totalCost = tokens * modelCostPerToken;
+
+    this.cost += totalCost;
+    console.log(chalk.blueBright(`[AI]: tokens: ${tokens} | cost: ${totalCost}`));
+  }
+
   async ask(prompt: any, opts: any = {}) {
-    console.log(`[AI]: ${opts.mode || "ask"}`);
+    prompt = normalizePrompt(prompt);
+    console.log(chalk.blueBright(`[AI]: ${opts.mode || "ask"}`));
+    console.log(chalk.yellow(`[AI]: prompt\n${prompt}`));
 
     const start = performance.now();
 
-    // this.messages.push({
-    //   role: "user",
-    //   content: prompt
-    // });
+    this.addTokenCost({ text: `${this.system} ${prompt}`, model: opts.model, mode: "input" });
 
     const completion = await this.ai.beta.messages.create({
-      // model: "claude-2.1",
-      // model: opts.model || "claude-3-sonnet-20",
-      model: "claude-3-sonnet-20240229",
+      model: opts.model || "claude-3-sonnet-20240229",
       max_tokens: opts.word_count ? opts.word_count * 2 : 1000,
       temperature: opts.temperature || 0.7,
       system: this.system,
@@ -85,14 +171,10 @@ export class AI {
       // metadata: {user_id: ""}
     });
 
+    this.addTokenCost({ text: completion.content[0].text, model: opts.model, mode: "output" });
+
     const end = performance.now();
-
-    console.log(`[AI]: duration: ${(end - start) / 1000}`);
-
-    // this.messages.push({
-    //   role: "assistant",
-    //   content: completion.content[0].text
-    // });
+    console.log(chalk.blueBright(`[AI]: duration: ${(end - start) / 1000}`));
 
     return this.parse(completion.content[0].text, opts.type)
   }
@@ -100,22 +182,22 @@ export class AI {
   headlinesTemplate(values: any) {
     // Write the headlines wrapped within triple @@@.
 
-    const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the SERP for the keyword "${values.seedKeyword}":
-    ${values.competitorsHeadlines.join('\n- ')}`
+    const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the 1st page of the SERP for the keyword "${values.seedKeyword}":
+- ${values.competitorsHeadlines.join('\n- ')}`
 
     if (values.writingStyle) {
       return `${prefix}
 
-      Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
-      - your purpose is ${values.purpose}
-      - the content type is "${values.contentType}"
-      ${values.clickbait ? "- make it clickbait" : ""}
-      - one headline per line
-      - do not add any text formatting
+Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
+- your purpose is ${values.purpose}
+- the content type is "${values.contentType}"
+- one headline per line
+- do not add any text formatting
+${values.clickbait ? "- make it clickbait" : ""}
 
-      Copy the tone and writing style of this text: ${values.writingStyle}
+Copy the tone and writing style of this text: ${values.writingStyle}
 
-      Start and end your writing with triple @@@.
+Start and end your writing with triple @@@.
       `
     }
 
@@ -133,12 +215,12 @@ export class AI {
   }
 
   async headlines(values: any) {
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: "claude-2.1" });
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: models.opus });
   }
 
   titleTemplate({ competitorsHeadlines, seedKeyword, tone, contentType, purpose, clickbait }: any) {
-    return `List of competitors headline ranking in the SERP for the keyword "${seedKeyword}"
-    ${competitorsHeadlines.join('\n- ')}
+    return `List of competitors headline ranking in the 1st page of the SERP for the keyword "${seedKeyword}"
+- ${competitorsHeadlines.join('\n- ')}
 
     Write a unique and SEO friendly headline made for the search intent "${seedKeyword}"
     - your tone is ${tone}
@@ -150,7 +232,7 @@ export class AI {
   }
 
   async title(values: any) {
-    return this.ask(this.titleTemplate(values), { type: "markdown", mode: "title", temperature: 0.5, model: "claude-2.1" });
+    return this.ask(this.titleTemplate(values), { type: "markdown", mode: "title", temperature: 0.5, model: models.opus });
   }
 
   outlineIdeaTemplate(values: any) {
@@ -160,7 +242,7 @@ export class AI {
     - ${values.conclusion ? "add a conclusion/summary" : "do not add a conclusion"}
     - ${values.key_takeways ? "add a key takeways" : "do not add a key takeways"}
     - ${values.faq ? "add a FAQ" : "do not add a FAQ"}
-    - list of keywords to choose from to include in the section titles: ${values.keywords}
+    - list of keywords to choose from to include in the section titles: ${values.keywords.join(',')}
     - Language: ${values.language}
 
     Wrap the outline in a well formated JSON array wrapped in \`\`\`json\`\`\` follow the structure shown below
@@ -175,44 +257,8 @@ export class AI {
   }
 
   async outlines(values: any) {
-    return this.ask(this.outlineIdeaTemplate(values), { type: "json", mode: "outlines", temperature: 0.7, model: "claude-2.1" });
+    return this.ask(this.outlineIdeaTemplate(values), { type: "json", mode: "outlines", temperature: 0.7, model: models.sonnet });
   }
-
-  // outlineIdeaTemplate(values: any) {
-  //   return `Write an article outline for: "${values.title}"
-  //   - the article must have ${values.heading_count} sections (excluding sub-sections)
-  //   - a sub-section is optional
-  //   - ${values.introduction ? "add an introduction (it never has sub-sections)" : "do not add an introduction"}
-  //   - ${values.conclusion ? "add a conclusion/summary (it never has sub-sections)" : "do not add a conclusion"}
-  //   - ${values.key_takeways ? "add a key takeways (it never has sub-sections)" : "do not add a key takeways"}
-  //   - ${values.faq ? "add a FAQ" : "do not add a FAQ"}
-  //   - list of keywords to choose from to include in the section titles: ${values.keywords}
-  //   - Language: ${values.language}
-
-  //   Wrap the outline in a well formated JSON array wrapped in \`\`\`json\`\`\` follow the structure shown below
-  //   \`\`\`json
-  //   [
-  //     {
-  //       name: "section name 1",
-  //       sub_sections: [
-  //         {
-  //           name: "sub-section name 1,
-  //         }
-  //         {
-  //           name: "sub-section name 2,
-  //         }
-  //       ]
-  //     },
-  //     {
-  //       name: "section name 2",
-  //     },
-  //     {
-  //       name: "section name 3",
-  //     },
-  //   ]
-  //   \`\`\`
-  //   `
-  // }
 
   outlineTemplate(values: any) {
     return `Write an article outline for: "${values.title}"
@@ -248,7 +294,7 @@ export class AI {
   }
 
   async outline(values: any) {
-    return this.ask(this.outlineTemplate(values), { type: "yaml", mode: "outline", temperature: 0.7, model: "claude-2.1" });
+    return this.ask(this.outlineTemplate(values), { type: "yaml", mode: "outline", temperature: 0.7, model: models.sonnet });
   }
 
   hookTemplate(values: any) {
@@ -258,40 +304,41 @@ export class AI {
     perspective: ${values?.perspective}
 
     Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values?.title}"
-    write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
+    write in markdown wrapped in \`\`\`markdown\`\`\`.`
   }
 
   async hook(values: any) {
-    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.6, model: "claude-2.1" })
+    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.4, model: models.sonnet })
   }
 
   writeTemplate(values: any) {
     return `
     Headline: ${values?.title}
-    Section prefix: ${values?.heading_prefix}
+    Section heading prefix: ${values?.section?.prefix}
     Outline: ${values?.outline}
-    Perspective: ${values?.perspective}
-    Related keywords: ${values?.keywords}
-    ${this.writing_style && `Writing style: ${this.writing_style}`}
+    Perspective: ${values?.section?.perspective}
+    Related keywords: ${values?.section?.keywords}
+    ${values?.section?.call_to_action ? `Call to action instructions:\n${values.section.call_to_action}` : ""}
+    ${values?.section?.call_to_action && values?.section?.call_to_action_example ? `Call to action example:\n${values.section.call_to_action_example}` : ""}
 
-    wrap keywords semantically and topically relevant for internal/external link with %%
-    Write the section "${values?.heading}" with exactly ${values?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
-    - Leverage all markdown syntaxes to make your content more appealing and easier to read (bold, list, quote, table, etc.).
-    - Add h3 sub-sections with ### if the content as more than 2 paragraphs
+    Primary instructions:
+    - Write the section "${values?.section?.name}" with exactly ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
+    - Leverage markdown syntaxes to make your content appealing and easier to read.
+    - Add h3 sub-sections with ### if the content as more than 2 paragraphs.
+    - Don't use h1 at all.
+    - You know how to transition from a section to another at the end of a section.
+    ${values?.section?.image?.alt && values?.section?.image?.href ? `- Include this image in the content: ![${values.section.image.alt}](${values.section.image.href})` : ""}
+
+    ${values?.section?.custom_prompt ? `Secondary instructions (does not override primary instructions):\n${values?.section?.custom_prompt}` : ""}
     `
   }
 
   async write(values: any) {
-    return this.ask(`
-    ${this.writeTemplate(values)}
-  `, { type: "markdown", mode: "write", word_count: values.word_count });
+    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.8, model: models.opus });
   }
 
   expandTemplate() {
-    return `${this.writing_style && `Writing style: ${this.writing_style}`}
-
-    Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`.
-    (don't add any text before and after the markdown except the text I request you to write)`
+    return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`..`
   }
 
   async expand(section: any) {
@@ -306,8 +353,6 @@ export class AI {
     const stats = getSummary(content)
     return `There is ${stats.difficultWords} difficult words in this text and the Flesch Kincaid Grade is ${parseInt(stats.FleschKincaidGrade)}
 
-    ${this.writing_style && `Writing style: ${this.writing_style}`}
-
     Please rephrase the above text applying Hemingway principles
     - Prefer Active Voice
     - Reword adverbs as much as possible
@@ -320,7 +365,7 @@ export class AI {
     - Readability Grade 9
     - Remove Redundancy
 
-    Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
+    Write in markdown wrapped in \`\`\`markdown\`\`\`.`
   }
 
   async rephrase(section: any) {
@@ -336,7 +381,7 @@ export class AI {
 
     "${writingStyle}"
 
-    Write in markdown wrapped in \`\`\`markdown\`\`\`. (don't add any text before and after the markdown except the text I request you to write)`
+    Write in markdown wrapped in \`\`\`markdown\`\`\`.`
   }
 
   async paraphrase(section: any, writingStyle: any) {
@@ -347,27 +392,34 @@ export class AI {
   `, { type: "markdown", mode: "paraphrase" });
   }
 
-  outlineWithWordCountTemplate(values: any) {
+  outlinePlanTemplate(values: any) {
     return `
-    \`\`\`json
-    ${values.outline}
+    Outline:
+    \`\`\`js
+    ${JSON.stringify(values.outline.map((i: any) => ({ name: i.name, media: i.media })), null, 2)}
     \`\`\`
 
-    This is an outline for an article of ${values.word_count} words.
-    Write the word count of each sections alongside the keywords to include in that section in an array like the example below.
+    Article word count: ${values.word_count}
+    List of keywords to include (avoid keywords stuffing): ${values.keywords}
 
-    \`\`\`json
-    [
-      {
-        word_count: 300,
-        keywords: "keyword a, keyword b, etc.."
-      }
-    ]
+    Write an object for each section containing the information below (follow the typescript structure), return a json array.
+    \`\`\`ts
+    type Sections = {
+      word_count: number;
+      keywords: string; // comma separated
+      image_search?: string; // search queries relevant to the heading to find stock photos
+      youtube_search?: string; // search queries relevant to the heading to find youtube videos
+    }[];
+    type Plan = {
+      meta_description: string;
+      sections: Sections;
+    }
     \`\`\`
+    Wrap your output in \`\`\`json\`\`\`
     `
   }
 
-  async sectionsWordCount(values: any) {
-    return this.ask(this.outlineWithWordCountTemplate(values), { type: "json", mode: "sections-word-count", temperature: 0, model: "claude-2.1" });
+  async outlinePlan(values: any) {
+    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models.opus });
   }
 }

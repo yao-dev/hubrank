@@ -258,6 +258,7 @@ export default function DashboardLayout({
               padding: 16,
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
+              overflow: "auto"
             }}
           >
             {children}

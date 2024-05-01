@@ -1,12 +1,24 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
 import { AI } from "../AI";
 import { getSummary } from 'readability-cyr';
-import { marked } from "marked";
+import {
+  cleanArticle,
+  convertMarkdownToHTML,
+  findImage,
+  getWritingStyle,
+  insertBlogPost,
+  markArticleAsFailure,
+  markArticleAsReadyToView,
+  saveWritingCost,
+  updateBlogPostStatus,
+  writeHook,
+  writeSection,
+} from "../helpers";
+import chalk from "chalk";
+import { format } from "date-fns";
+import { getImage } from "@/helpers/image";
 
-export const maxDuration = 300;
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+export const maxDuration = 400;
 
 export async function POST(request: Request) {
   const start = performance.now();
@@ -15,173 +27,150 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    try {
-      const { data: queuedArticle } = await supabase.from("blog_posts")
-        .insert({
-          title: body.title,
-          seed_keyword: body.seed_keyword,
-          status: "queue",
-          keywords: body.keywords,
-          user_id: body.userId,
-          project_id: body.project_id,
-          language_id: body.language_id,
-          title_mode: body.title_mode,
-          content_type: body.content_type,
-          purpose: body.purpose,
-          tones: body.tones,
-          perspective: body.perspective,
-          clickbait: body.clickbait,
-          sitemap: body.sitemap,
-          external_sources: body.external_sources,
-          external_sources_objective: body.external_sources_objective,
-          with_featured_image: body.with_featured_image,
-          with_table_of_content: body.with_table_of_content,
-          with_sections_image: body.with_sections_image,
-          with_sections_image_mode: body.with_sections_image_mode,
-          image_source: body.image_source,
-          with_seo: body.with_seo,
-          writing_mode: body.writing_mode,
-          writing_style_id: body.writing_style_id,
-          additional_information: body.additional_information,
-          word_count: body.word_count,
-          with_hook: body.with_hook,
-          outline: body.outline,
-        })
-        .select("id")
-        .single()
-        .throwOnError();
-      console.log("queuedArticle", queuedArticle);
-      articleId = queuedArticle?.id;
-    } catch (error) {
-      console.error("====== Error inserting blog post:", error);
-      throw error;
-    }
+    console.log(chalk.yellow(JSON.stringify(body, null, 2)));
 
-    try {
-      await supabase
-        .from('blog_posts')
-        .update({ status: "writing" })
-        .eq("id", articleId)
-        .throwOnError();
-    } catch (error) {
-      console.error("====== Error updating blog post status:", error);
-      throw error;
-    }
+    // CREATE NEW ARTICLE WITH QUEUE STATUS
+    articleId = await insertBlogPost(body)
 
-    let writing_style = "";
-    if (body.writing_style_id) {
-      try {
-        const { data: writingStyle } = await supabase.from("writing_styles").select("source_value").eq("id", body.writing_style_id).limit(1).single();
-        writing_style = writingStyle?.source_value ?? "";
-      } catch (error) {
-        console.error("====== Error fetching writing style:", error);
-        throw error;
-      }
-    }
+    // CHANGE STATUS TO WRITING
+    await updateBlogPostStatus(articleId, "writing")
 
-    const ai = new AI({ writing_style });
-    const wordsCount = await ai.sectionsWordCount(body);
-    const outline = body.outline.join(', ');
+    // FETCH WRITING STYLE IF IT EXISTS
+    const writingStyle = await getWritingStyle(body.writing_style_id)
+
+    const ai = new AI({ writing_style: writingStyle });
+
+    // GET HEADINGS AS A COMMA SEPARATED STRING
+    const outline = body.outline.map((i: any) => i.name).join(', ');
+
+    // GET THE WORD COUNT OF EACH SECTION OF THE OUTLINE
+    const outlinePlan = await ai.outlinePlan(body);
+
+    console.log(chalk.bgMagenta(JSON.stringify(outlinePlan, null, 2)))
+
+    // UPDATE WRITE COST
+    await saveWritingCost({ articleId, cost: ai.cost });
+
+    // ADD H1 TITLE TO THE ARTICLE
     ai.article = `# ${body.title}\n`;
 
+    let featuredImage = ""
+    if (body.with_featured_image) {
+      const featured_image = await findImage(body.title);
+      if (featured_image && featured_image.alt && featured_image.href) {
+        ai.article += `![${featured_image.alt}](${featured_image.href})\n`;
+        featuredImage = featured_image.href;
+      } else {
+        const unplashImg = await getImage("unsplash", body.title);
+        if (unplashImg) {
+          ai.article += `![${unplashImg.alt}](${unplashImg.href})\n`;
+          featuredImage = unplashImg.href;
+        }
+      }
+    }
+
     if (body.with_hook) {
-      console.log(`[start]: hook`);
-      try {
-        let hook = await ai.hook({
-          title: body.title,
-          outline,
-          seed_keyword: body.seed_keyword,
-          keywords: body.keywords,
-          perspective: body.perspective,
-        });
-        let stats = getSummary(hook);
-        if (stats.FleschKincaidGrade > 12) {
-          console.log("- rephrase");
-          hook = await ai.rephrase(ai.parse(hook, "markdown"));
-          console.log("- rephrase done");
-        }
-        console.log("- add hook to article");
-        ai.addArticleContent(ai.parse(hook, "markdown"));
-      } catch (error) {
-        console.error("====== Error generating hook:", error);
-        throw error;
-      }
-      console.log(`[end]: hook`);
+      await writeHook({
+        ai,
+        title: body.title,
+        outline,
+        seed_keyword: body.seed_keyword,
+        keywords: body.keywords, // TODO: make use of it in ai.hook
+        perspective: body.perspective,
+        article_id: articleId
+      })
     }
 
-    for (const [index, heading] of Object.entries(body.outline)) {
-      console.log(`[start]: ${index}) ${heading}`);
-      try {
-        let content = await ai.write({
-          heading_prefix: "##",
-          title: body.title,
-          heading,
-          word_count: wordsCount[index].word_count,
-          outline,
-          perspective: body.perspective,
-          keywords: wordsCount[index].keywords,
-        });
-        let stats = getSummary(content);
-        if (stats.FleschKincaidGrade > 12) {
-          console.log("- rephrase");
-          content = await ai.rephrase(ai.parse(content, "markdown"));
-          console.log("- rephrase done");
+    for (const [index, section] of Object.entries(body.outline) as any) {
+      // TODO: section.media
+      // TODO: section.external_source + section.instruction
+
+      const sectionPlan = outlinePlan.sections[index];
+      let image;
+      if (section.media === "image" && sectionPlan.image_search) {
+        // TODO: fetch image
+        image = await findImage(sectionPlan.image_search)
+        if (!image?.href) {
+          image = await getImage("unsplash", sectionPlan.image_search)
         }
-        console.log("- add section to article");
-        ai.addArticleContent(ai.parse(content, "markdown"));
-      } catch (error) {
-        console.error(`====== Error generating section ${index}:`, error);
-        throw error;
+        // image = await getImage("unsplash", sectionPlan.image_search)
       }
-      console.log(`[end]: ${index}) ${heading}`);
+
+      let youtubeVideo;
+      if (section.media === "youtube" && sectionPlan.youtube_search) {
+        // TODO: fetch video
+      }
+
+      // WRITE EACH SECTION
+      await writeSection({
+        ai,
+        index,
+        section: {
+          prefix: "##",
+          keywords: sectionPlan.keywords,
+          word_count: sectionPlan.word_count,
+          name: section.name,
+          call_to_action: section.call_to_action,
+          call_to_action_example: section.call_to_action_example,
+          custom_prompt: section.custom_prompt,
+          perspective: body.perspective,
+          image,
+          youtube_video: youtubeVideo
+        },
+        outline,
+        title: body.title,
+        articleId,
+      })
     }
 
-    ai.article = ai.article.replaceAll("```markdown", "").replaceAll("```", "");
-    console.log("parse markdown to html");
-    const html = marked.parse(ai.article);
-    console.log("parse markdown to html done");
+    // REMOVE UNWANTED CHARACTERS
+    ai.article = cleanArticle(ai.article);
+
+    // ADD ARTICLE METADATA COMMENT
+    ai.article = [
+      "---",
+      `title: ${body.title}`,
+      `description: ${outlinePlan.meta_description}`,
+      `image: ${featuredImage}`,
+      `keywords: ${body.keywords}`,
+      `date: ${format(new Date(), "YYYY-MM-dd")}`,
+      `modified: ${format(new Date(), "YYYY-MM-dd")}`,
+      "---",
+      ai.article,
+    ].join('\n')
+
+    // CONVERT MARKDOWN ARTICLE TO HTML
+    const html = convertMarkdownToHTML(ai.article);
+
+    // END PERFORMANCE CALCULATION
     const end = performance.now();
     const writingTimeInSeconds = (end - start) / 1000;
-    console.log("writing time in seconds", writingTimeInSeconds);
 
-    try {
-      await supabase
-        .from('blog_posts')
-        .update({
-          markdown: ai.article,
-          html,
-          status: 'ready_to_view',
-          writing_time_sec: writingTimeInSeconds,
-          word_count: getSummary(ai.article).words
-        })
-        .eq("id", articleId)
-        .throwOnError();
-    } catch (error) {
-      console.error("====== Error updating blog post:", error);
-      throw error;
-    }
+    // GET ARTICLE STATS
+    const articleStats = getSummary(ai.article);
 
-    console.log("ERROR IN TRY?");
+    // UPDATE ARTICLE STATUS TO READY TO VIEW
+    await markArticleAsReadyToView({
+      markdown: ai.article,
+      cost: ai.cost,
+      html,
+      writingTimeInSeconds,
+      articleId,
+      wordCount: articleStats.words,
+      featuredImage,
+      metaDescription: outlinePlan.meta_description,
+    })
+
     return NextResponse.json({
       markdown: ai.article,
       html,
       writingTimeInSeconds,
-      stats: getSummary(ai.article)
+      stats: articleStats,
+      featuredImage,
+      metaDescription: outlinePlan.meta_description,
     }, { status: 200 });
   } catch (error) {
-    console.error("====== ERROR IN CATCH?", error);
-    try {
-      await supabase
-        .from('blog_posts')
-        .update({
-          status: 'error',
-          error: JSON.stringify(error)
-        })
-        .eq("id", articleId)
-        .throwOnError();
-    } catch (updateError) {
-      console.error("====== Error updating blog post status to 'error':", updateError);
-    }
+    await markArticleAsFailure({ articleId, error })
     return NextResponse.json(error, { status: 500 });
   }
 }

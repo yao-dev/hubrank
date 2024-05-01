@@ -36,11 +36,11 @@ export async function POST(request: Request) {
       .throwOnError();
 
     const ai = new AI();
+    const outline = article.outline.map((i: any) => i.name).join(', ');
     const wordsCount = await ai.sectionsWordCount({
-      outline: article.outline,
+      outline,
       word_count: article.word_count,
     })
-    const outline = article.outline.join(', ');
 
     ai.article = `# ${article.title}\n`;
 
@@ -56,16 +56,18 @@ export async function POST(request: Request) {
       let stats = getSummary(hook)
 
       // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
-      if (stats.FleschKincaidGrade > 12) {
-        hook = await ai.rephrase(hook);
-      }
+      // if (stats.FleschKincaidGrade > 12) {
+      //   hook = await ai.rephrase(hook);
+      // }
 
       hook = ai.parse(hook, "markdown")
 
       ai.addArticleContent(hook);
     }
 
-    for (const [index, heading] of Object.entries(article.outline)) {
+    for (const [index, heading] of Object.entries(article.outline) as any) {
+      // TODO: heading.media
+      // TODO: heading.external_source + heading.instruction
       let content = await ai.write({
         heading_prefix: "##",
         title: article.title,
@@ -84,11 +86,11 @@ export async function POST(request: Request) {
       console.log("SUMMARISE DONE", stats)
 
       // if (stats.difficultWords >= 5 || stats.FleschKincaidGrade > 9) {
-      if (stats.FleschKincaidGrade > 12) {
-        console.log("REPHRASE")
-        content = await ai.rephrase(content);
-        console.log("REPHRASE DONE", content)
-      }
+      // if (stats.FleschKincaidGrade > 12) {
+      //   console.log("REPHRASE")
+      //   content = await ai.rephrase(content);
+      //   console.log("REPHRASE DONE", content)
+      // }
 
       content = ai.parse(content, "markdown")
 

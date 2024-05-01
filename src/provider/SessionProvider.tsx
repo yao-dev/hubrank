@@ -1,12 +1,12 @@
 import SessionContext from "@/context/SessionContext";
 import supabase from "@/helpers/supabase";
 import useSession from "@/hooks/useSession";
-import React, { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 
 const SessionProvider = ({ children }: { children: ReactNode }) => {
   const sessionStore = useSession();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {

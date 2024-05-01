@@ -172,6 +172,10 @@ const ArticlesTable = () => {
                   setArticleId(record.id)
                   setHtmlPreview(record.html)
                 }}
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   rewrite(record.id)
+                // }}
                 style={{ width: 100 }}
               >
                 Preview

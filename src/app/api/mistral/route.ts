@@ -6,6 +6,7 @@ import { compact } from "lodash";
 import { marked } from "marked";
 import { AI } from "../AI";
 import { getSummary } from 'readability-cyr';
+import { getProjectContext } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -63,12 +64,12 @@ export async function POST(request: Request) {
       })
       .flat(Infinity)
 
-    const context = `
-    Project name: ${project.name || "N/A"}
-    Website: ${project.website || "N/A"}
-    Description: ${project.metatags?.description || project?.description || "N/A"}
-    Language: ${language.label || "English (us)"}`
-
+    const context = getProjectContext({
+      name: project.name,
+      website: project.website,
+      description: project.metatags?.description || project?.description,
+      lang: language.label,
+    })
 
     const start = performance.now();
 

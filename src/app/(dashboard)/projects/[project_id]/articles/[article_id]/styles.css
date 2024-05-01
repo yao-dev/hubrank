@@ -1,3 +1,49 @@
 .mce-edit-focus {
   outline: none !important;
 }
+
+.mce-content-body {
+  font-size: 16px;
+}
+
+.mce-content-body h1 {
+  font-size: 2rem;
+  line-height: 47px;
+  color: rgb(16 24 40);
+  margin-top: 0px;
+}
+
+.mce-content-body a {
+  color: #5C5FEF;
+  text-decoration: underline;
+}
+
+.mce-content-body a:hover {
+  color: #484beb;
+}
+
+.mce-item-table,
+.mce-content-body image,
+.mce-content-body video {
+  width: 100%;
+}
+
+.mce-item-table {
+  border-collapse: collapse;
+  border: 1px solid;
+}
+
+.mce-item-table:not([border]),
+.mce-item-table:not([border]) * {
+  border: 1px solid #bbb !important;
+}
+
+.mce-item-table th,
+.mce-item-table td {
+  padding: 8px 12px;
+}
+
+pre {
+  border-radius: 9px !important;
+  padding: 24px !important;
+}

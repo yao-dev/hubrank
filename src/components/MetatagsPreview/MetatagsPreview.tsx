@@ -3,7 +3,6 @@ import { CodeHighlightTabs } from '@mantine/code-highlight';
 import { compact } from "lodash";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import { useSearchParams } from "next/navigation";
-import useHtmlTagsForm from '@/hooks/useHtmlTagsForm';
 import SeoTagsContext from '@/context/SeoTagsContext';
 import prettify from 'pretty';
 
@@ -11,9 +10,9 @@ const MetatagsPreview = () => {
   const searchParams = useSearchParams();
   const articleId = searchParams.get("article") || 0
   const { data: article } = useBlogPosts().getOne(+articleId);
-  const defaultForm = useHtmlTagsForm();
+  // const defaultForm = useHtmlTagsForm();
   const seoTagsContext = useContext(SeoTagsContext);
-  const form = seoTagsContext.form || defaultForm;
+  const form = seoTagsContext.form;
 
   const robots = form.values.robots?.join?.(',');
 

@@ -1,6 +1,7 @@
 import { AI } from "../AI";
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
+import { getProjectContext } from "../helpers";
 
 export const maxDuration = 60;
 
@@ -18,11 +19,12 @@ export async function POST(request: Request) {
 
     const { data: language } = await supabase.from("languages").select("*").eq("id", body.language_id).limit(1).single();
 
-    const context = `
-  Project name: ${project.name || "N/A"}
-  Website: ${project.website || "N/A"}
-  Description: ${project.metatags?.description || project?.description || "N/A"}
-  Language: ${project.languages.label || "English (us)"}`
+    const context = getProjectContext({
+      name: project.name,
+      website: project.website,
+      description: project.metatags?.description || project?.description,
+      lang: project.languages.label,
+    })
 
     const ai = new AI({ context });
     const outline = await ai.outlines({

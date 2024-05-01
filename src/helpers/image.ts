@@ -20,7 +20,7 @@ const getUnsplashImages = async (query: string) => {
 
   return {
     alt: firstImage.alt_description,
-    url: firstImage?.urls?.full || firstImage?.urls?.raw || firstImage?.urls?.regular
+    href: firstImage?.urls?.full || firstImage?.urls?.raw || firstImage?.urls?.regular
   }
 
   // const result = data.results.map((i: any) => ({
@@ -46,7 +46,7 @@ const getPexelsImages = async (query: string) => {
 
   return {
     alt: firstImage.alt,
-    url: firstImage?.src?.large2x || firstImage?.src?.large || firstImage?.src?.original || firstImage.url
+    href: firstImage?.src?.large2x || firstImage?.src?.large || firstImage?.src?.original || firstImage.url
   }
 }
 

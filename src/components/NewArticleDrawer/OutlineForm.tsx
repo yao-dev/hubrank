@@ -1,6 +1,6 @@
 'use client';;
 import { IconGripVertical } from "@tabler/icons-react";
-import { App, Button, Card, Flex, Form, Input, Slider, Spin, Switch } from "antd";
+import { App, Button, Card, Drawer, Flex, Form, Input, Select, Slider, Spin, Switch } from "antd";
 import {
   DndContext,
   KeyboardSensor,
@@ -12,14 +12,15 @@ import {
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { forwardRef, useState } from "react";
-import { PlusOutlined, CloseOutlined, SyncOutlined } from "@ant-design/icons";
+import { forwardRef, useEffect, useState } from "react";
+import { PlusOutlined, CloseOutlined, SyncOutlined, SettingOutlined } from "@ant-design/icons";
 import { uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import { useRouter } from "next/navigation";
+import { medias } from "@/options";
 
 export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }: any, ref: any) => {
   let customStyle = {
@@ -35,7 +36,7 @@ export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {
             {draggingHandle}
             {children}
           </Flex>
-          <Flex gap="small">
+          <Flex align="center" gap="small">
             {action}
             {closeIcon}
           </Flex>
@@ -69,6 +70,9 @@ export function SortableItem(props: any) {
           <IconGripVertical />
         </div>
       )}
+      action={(
+        <SettingOutlined onClick={props.onOpenSettings} />
+      )}
       closeIcon={(
         <CloseOutlined onClick={props.onRemoveHeading} />
       )}
@@ -86,6 +90,7 @@ const OutlineForm = ({
 }: any) => {
   const { message, notification } = App.useApp();
   const [activeItem, setActiveItem] = useState(null);
+  const [selectedHeading, setSelectedHeading] = useState<any>(null);
   const [items, setItems] = useState([]);
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -95,6 +100,7 @@ const OutlineForm = ({
   );
   const projectId = useProjectId();
   const router = useRouter();
+  const [headingSettingsForm] = Form.useForm();
 
   const getOutline = useMutation({
     mutationFn: async (data: any) => {
@@ -105,7 +111,7 @@ const OutlineForm = ({
   const onGenerateOutline = async () => {
     try {
       const { data } = await getOutline.mutateAsync({
-        title: values.title,
+        title: form.getFieldValue("title"),
         heading_count: form.getFieldValue("heading_count"),
         introduction: form.getFieldValue("with_introduction"),
         conclusion: form.getFieldValue("with_conclusion"),
@@ -115,6 +121,7 @@ const OutlineForm = ({
         language_id: values.language_id,
         project_id: values.project_id,
         seed_keyword: values.seed_keyword,
+        keywords: values.keywords,
       });
       setItems(data.outline.map((sectionName) => {
         return {
@@ -135,9 +142,9 @@ const OutlineForm = ({
 
   const onFinish = async (formValues: any) => {
     try {
-      router.push(`/projects/${projectId}?tab=articles`)
-
       message.success('Article added in the queue!');
+      router.replace(`/projects/${projectId}?tab=articles`)
+      // redirect(`/projects/${projectId}?tab=articles`)
       // notification.success({
       //   message: "Article added in the queue!",
       //   placement: "bottomRight",
@@ -147,10 +154,10 @@ const OutlineForm = ({
       axios.post('/api/write', {
         ...values,
         ...formValues,
-        outline: items.map(i => i.name),
+        outline: items,
         purpose: values.purpose.replaceAll("_", " "),
         tone: values.tones?.join?.(","),
-        contentType: values.content_type.replaceAll("_", " "),
+        content_type: values.content_type.replaceAll("_", " "),
         clickbait: !!values.clickbait,
         userId: await getUserId()
       })
@@ -222,6 +229,28 @@ const OutlineForm = ({
 
     setActiveItem(null);
   }
+
+  const onSaveHeadingSettings = async (values) => {
+    const updatedItems = items.map((i: any) => {
+      if (i.id === selectedHeading.id) {
+        return {
+          ...i,
+          ...values
+        }
+      }
+
+      return i
+    });
+    setItems(updatedItems);
+    setSelectedHeading(null)
+    message.success('Heading settings saved!');
+  }
+
+  useEffect(() => {
+    if (selectedHeading === null) {
+      headingSettingsForm.resetFields()
+    }
+  }, [selectedHeading])
 
   return (
     <Flex vertical style={{ height: "100%" }}>
@@ -325,6 +354,7 @@ const OutlineForm = ({
                         name={item.name}
                         onRemoveHeading={() => onRemoveHeading(item.id)}
                         onChange={(value) => onUpdateOutlineName(value, item.id)}
+                        onOpenSettings={() => setSelectedHeading(item)}
                       />
                     ))}
                   </SortableContext>
@@ -368,6 +398,179 @@ const OutlineForm = ({
           </Form.Item>
         </Form>
       </Spin>
+
+      <Drawer
+        title="Heading settings"
+        width={600}
+        onClose={() => setSelectedHeading(null)}
+        open={!!selectedHeading}
+        destroyOnClose
+        styles={{
+          body: {
+            paddingBottom: 80,
+          },
+        }}
+        // extra={
+        //   <Space>
+        //     <Button onClick={onClose}>Cancel</Button>
+        //     <Button onClick={() => form.submit()} type="primary">
+        //       Write article
+        //     </Button>
+        //   </Space>
+        // }
+        footer={
+          <Flex justify="end" align="center" gap="middle">
+            <Button onClick={() => setSelectedHeading(null)}>Cancel</Button>
+            <Button onClick={() => headingSettingsForm.submit()} type="primary">
+              Save
+            </Button>
+          </Flex>
+        }
+      >
+        {selectedHeading && (
+          <Form
+            form={headingSettingsForm}
+            initialValues={{
+              name: selectedHeading.name ?? "",
+              custom_prompt: selectedHeading.custom_prompt ?? "",
+              media: selectedHeading.media ?? "none",
+              external_source: selectedHeading.external_source ?? "",
+              external_source_instruction: selectedHeading.external_source_instruction ?? "",
+              call_to_action: selectedHeading.call_to_action ?? "",
+              call_to_action_example: selectedHeading.call_to_action_example ?? ""
+            }}
+            autoComplete="off"
+            layout="vertical"
+            onFinish={onSaveHeadingSettings}
+          >
+            <Form.Item
+              name="name"
+              label="Heading"
+              rules={[{ required: true, type: "string", max: 75, message: "Enter a heading name" }]}
+              hasFeedback
+            >
+              <Input
+                placeholder="Heading name"
+                count={{
+                  show: true,
+                  max: 75,
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="custom_prompt"
+              label="Custom prompt"
+              rules={[{ type: "string", max: 300 }]}
+              hasFeedback
+              help="Provide any context or information we should consider for writing this section"
+              style={{ marginBottom: 38 }}
+            >
+              <Input.TextArea
+                placeholder="Enter your prompt"
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                count={{
+                  show: true,
+                  max: 300,
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item name="media" label="Media" rules={[{ required: false, type: "string", message: "Select a media" }]} hasFeedback>
+              <Select
+                defaultActiveFirstOption
+                placeholder="Select a media"
+                options={medias}
+              />
+            </Form.Item>
+            {/*
+            <Form.Item
+              name="external_source"
+              label="External source"
+              rules={[{ type: "string", max: 300 }]}
+              hasFeedback
+              help="Provide one url only + explain what information you'd like to extract"
+              style={{ marginBottom: 38 }}
+            >
+              <Input.TextArea
+                placeholder="Add external source"
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                count={{
+                  show: true,
+                  max: 300,
+                }}
+              />
+            </Form.Item> */}
+
+            <Form.Item
+              name="external_source"
+              label="External source"
+              rules={[{ type: "url", max: 150, message: "Enter a valid url" }]}
+              help="Add a source to help the AI write content with real time data that it might not have knowledge of"
+              hasFeedback
+              validateTrigger="onBlur"
+              style={{ marginBottom: 48 }}
+            >
+              <Input
+                placeholder={"https://quora.com"}
+                count={{
+                  show: false,
+                  max: 150,
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="external_source_instruction"
+              label="External source instruction"
+              rules={[{ type: "string", max: 300, message: "Add instructions" }]}
+              help="Explain how to use the information found in the url you provided (external without instruction will be ignored)"
+              hasFeedback
+              style={{ marginBottom: 48 }}
+            >
+              <Input.TextArea
+                placeholder="Type here"
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                count={{
+                  show: true,
+                  max: 300,
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="call_to_action"
+              label="CTA"
+              rules={[{ type: "string", max: 300 }]}
+              hasFeedback
+            >
+              <Input.TextArea
+                placeholder="Describe your call to action"
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                count={{
+                  show: true,
+                  max: 300,
+                }}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="call_to_action_example"
+              label="CTA example"
+              rules={[{ type: "string", max: 300 }]}
+              hasFeedback
+            >
+              <Input.TextArea
+                autoSize={{ minRows: 1, maxRows: 5 }}
+                count={{
+                  show: true,
+                  max: 300,
+                }}
+              />
+            </Form.Item>
+          </Form>
+        )}
+      </Drawer>
     </Flex>
   )
 }

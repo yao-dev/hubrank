@@ -162,7 +162,6 @@ export default function Login() {
                   shouldUpdate={(prevValues, currentValues) => {
                     return prevValues.email !== currentValues.email
                   }}
-
                 >
                   {() => {
                     return type === "otp" ? (
