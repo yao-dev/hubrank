@@ -19,7 +19,7 @@ import axios from "axios";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
-export const maxDuration = 400;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const start = performance.now();

@@ -9,7 +9,6 @@ export async function POST(request: Request) {
   const body = await request.json();
   const ai = new AI()
 
-
   // CHANGE STATUS TO WRITING
   await updateBlogPostStatus(body.articleId, "writing")
 

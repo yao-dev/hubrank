@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { AI } from "../AI";
 import chalk from "chalk";
 import { createSchedule } from "@/helpers/qstash";
 import { insertBlogPost } from "../../helpers";
+import { AI } from "../../AI";
 
 export async function POST(request: Request) {
   const body = await request.json();
