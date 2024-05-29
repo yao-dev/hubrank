@@ -11,110 +11,110 @@ export const headlineCount = [
   { value: '10', label: '10' },
 ]
 
-export const purposes = [
-  {
-    "value": "defend",
-    "label": "Defend",
-    "description": "Argumentative Approach, Advocacy, Supportive Perspective, Justification.",
-    enabled: true
-  },
-  {
-    "value": "contest_contradict",
-    "label": "Contest / Contradict",
-    "description": "Critical Analysis, Counterargument, Rebuttal, Dispute.",
-    enabled: true
-  },
-  {
-    "value": "support_idea",
-    "label": "Support Idea",
-    "description": "Persuasive Writing, Endorsement, Backing, Affirmation.",
-    enabled: true
-  },
-  {
-    "value": "explore",
-    "label": "Explore",
-    "description": "Investigative Approach, Examination, Inquiry, Scrutiny.",
-    enabled: true
-  },
-  {
-    "value": "inform_educate",
-    "label": "Inform / Educate",
-    "description": "Expository Writing, Explanation, Informative Approach, Educational Perspective.",
-    enabled: true
-  },
-  {
-    "value": "entertain",
-    "label": "Entertain",
-    "description": "Narrative Approach, Storytelling, Creative Angle, Engaging Content.",
-    enabled: true
-  },
-  {
-    "value": "analyze",
-    "label": "Analyze",
-    "description": "Analytical Approach, Examination, Breakdown, Assessment.",
-    enabled: true
-  },
-  {
-    "value": "challenge",
-    "label": "Challenge",
-    "description": "Provocative Writing, Questioning Perspective, Inquiry, Debate.",
-    enabled: true
-  },
-  {
-    "value": "inspire_motivate",
-    "label": "Inspire / Motivate",
-    "description": "Inspirational Approach, Encouragement, Uplifting Perspective, Motivational Writing.",
-    enabled: true
-  },
-  {
-    "value": "reflect_introspect",
-    "label": "Reflect / Introspect",
-    "description": "Reflective Approach, Self-Analysis, Personal Insight, Thoughtful Perspective.",
-    enabled: true
-  },
-  {
-    "value": "compare_contrast",
-    "label": "Compare / Contrast",
-    "description": "Comparative Analysis, Distinction, Differentiation, Parallel Examination.",
-    enabled: true
-  },
-  {
-    "value": "predict_speculate",
-    "label": "Predict / Speculate",
-    "description": "Speculative Approach, Forecasting, Projection, Future-Thinking.",
-    enabled: true
-  },
-  {
-    "value": "recount_remember",
-    "label": "Recount / Remember",
-    "description": "Recollection, Memoir, Reminiscence, Narrative Approach.",
-    enabled: true
-  },
-  {
-    "value": "advise_recommend",
-    "label": "Advise / Recommend",
-    "description": "Advisory Perspective, Guidance, Suggestion, Counsel.",
-    enabled: true
-  },
-  {
-    "value": "explore_emotions",
-    "label": "Explore Emotions",
-    "description": "Emotional Angle, Sentimental Approach, Evocative Writing, Empathetic Perspective.",
-    enabled: true
-  },
-  {
-    "value": "problem_solve",
-    "label": "Problem-Solve",
-    "description": "Solution-Oriented Approach, Troubleshooting, Resolution, Remedial Perspective.",
-    enabled: true
-  },
-  {
-    "value": "document_chronicle",
-    "label": "Document / Chronicle",
-    "description": "Documentation, Chronicling, Record-Keeping, Diary-Like Approach.",
-    enabled: true
-  }
-].filter(i => i.enabled);
+// export const purposes = [
+//   {
+//     "value": "defend",
+//     "label": "Defend",
+//     "description": "Argumentative Approach, Advocacy, Supportive Perspective, Justification.",
+//     enabled: true
+//   },
+//   {
+//     "value": "contest_contradict",
+//     "label": "Contest / Contradict",
+//     "description": "Critical Analysis, Counterargument, Rebuttal, Dispute.",
+//     enabled: true
+//   },
+//   {
+//     "value": "support_idea",
+//     "label": "Support Idea",
+//     "description": "Persuasive Writing, Endorsement, Backing, Affirmation.",
+//     enabled: true
+//   },
+//   {
+//     "value": "explore",
+//     "label": "Explore",
+//     "description": "Investigative Approach, Examination, Inquiry, Scrutiny.",
+//     enabled: true
+//   },
+//   {
+//     "value": "inform_educate",
+//     "label": "Inform / Educate",
+//     "description": "Expository Writing, Explanation, Informative Approach, Educational Perspective.",
+//     enabled: true
+//   },
+//   {
+//     "value": "entertain",
+//     "label": "Entertain",
+//     "description": "Narrative Approach, Storytelling, Creative Angle, Engaging Content.",
+//     enabled: true
+//   },
+//   {
+//     "value": "analyze",
+//     "label": "Analyze",
+//     "description": "Analytical Approach, Examination, Breakdown, Assessment.",
+//     enabled: true
+//   },
+//   {
+//     "value": "challenge",
+//     "label": "Challenge",
+//     "description": "Provocative Writing, Questioning Perspective, Inquiry, Debate.",
+//     enabled: true
+//   },
+//   {
+//     "value": "inspire_motivate",
+//     "label": "Inspire / Motivate",
+//     "description": "Inspirational Approach, Encouragement, Uplifting Perspective, Motivational Writing.",
+//     enabled: true
+//   },
+//   {
+//     "value": "reflect_introspect",
+//     "label": "Reflect / Introspect",
+//     "description": "Reflective Approach, Self-Analysis, Personal Insight, Thoughtful Perspective.",
+//     enabled: true
+//   },
+//   {
+//     "value": "compare_contrast",
+//     "label": "Compare / Contrast",
+//     "description": "Comparative Analysis, Distinction, Differentiation, Parallel Examination.",
+//     enabled: true
+//   },
+//   {
+//     "value": "predict_speculate",
+//     "label": "Predict / Speculate",
+//     "description": "Speculative Approach, Forecasting, Projection, Future-Thinking.",
+//     enabled: true
+//   },
+//   {
+//     "value": "recount_remember",
+//     "label": "Recount / Remember",
+//     "description": "Recollection, Memoir, Reminiscence, Narrative Approach.",
+//     enabled: true
+//   },
+//   {
+//     "value": "advise_recommend",
+//     "label": "Advise / Recommend",
+//     "description": "Advisory Perspective, Guidance, Suggestion, Counsel.",
+//     enabled: true
+//   },
+//   {
+//     "value": "explore_emotions",
+//     "label": "Explore Emotions",
+//     "description": "Emotional Angle, Sentimental Approach, Evocative Writing, Empathetic Perspective.",
+//     enabled: true
+//   },
+//   {
+//     "value": "problem_solve",
+//     "label": "Problem-Solve",
+//     "description": "Solution-Oriented Approach, Troubleshooting, Resolution, Remedial Perspective.",
+//     enabled: true
+//   },
+//   {
+//     "value": "document_chronicle",
+//     "label": "Document / Chronicle",
+//     "description": "Documentation, Chronicling, Record-Keeping, Diary-Like Approach.",
+//     enabled: true
+//   }
+// ].filter(i => i.enabled);
 
 export const contentTypes = [
   {
@@ -242,6 +242,16 @@ export const contentTypes = [
     "label": "Guest Posts",
     "description": "Content contributed by guest writers who are experts or influencers in a particular field, offering fresh perspectives and insights.",
     enabled: false,
+  },
+  {
+    value: "question_answers",
+    label: "Question / Answer",
+    enabled: true
+  },
+  {
+    value: "glossary",
+    label: "Glossary",
+    enabled: true
   }
 ].filter(i => i.enabled);
 
@@ -443,4 +453,465 @@ export const creativities = [
   { value: 0, label: 'low' },
   { value: 0.4, label: 'normal' },
   { value: 0.5, label: 'high' },
+]
+
+export const SCHEMA_MARKUPS = {
+  // BreadcrumbList: {
+  //   "@context": "https://schema.org",
+  //   "@type": "BreadcrumbList",
+  //   "itemListElement":
+  //     [
+  //       {
+  //         "@type": "ListItem",
+  //         "position": 1,
+  //         "item":
+  //         {
+  //           "@id": "https://example.com/dresses",
+  //           "name": "Dresses"
+  //         }
+  //       },
+  //       {
+  //         "@type": "ListItem",
+  //         "position": 2,
+  //         "item":
+  //         {
+  //           "@id": "https://example.com/dresses/real",
+  //           "name": "Real Dresses"
+  //         }
+  //       }
+  //     ]
+  // },
+  VideoObject: {},
+  Recipe: {},
+  Article: {},
+  WebSite: {},
+  WebPage: {},
+  BlogPosting: {},
+  FAQPage: {},
+  Question: {},
+}
+
+export const emotions = [
+  {
+    label: "Joy",
+    value: "Joy",
+  },
+  {
+    label: "Sadness",
+    value: "Sadness",
+  },
+  {
+    label: "Anger",
+    value: "Anger",
+  },
+  {
+    label: "Fear",
+    value: "Fear",
+  },
+  {
+    label: "Surprise",
+    value: "Surprise",
+  },
+  {
+    label: "Disgust",
+    value: "Disgust",
+  },
+  {
+    label: "Anticipation",
+    value: "Anticipation",
+  },
+  {
+    label: "Trust",
+    value: "Trust",
+  },
+  {
+    label: "Love",
+    value: "Love",
+  },
+  {
+    label: "Frustration",
+    value: "Frustration",
+  },
+  {
+    label: "Empathy",
+    value: "Empathy",
+  },
+  {
+    label: "Optimism",
+    value: "Optimism",
+  },
+  {
+    label: "Nostalgia",
+    value: "Nostalgia",
+  },
+  {
+    label: "Excitement",
+    value: "Excitement",
+  },
+  {
+    label: "Anxiety",
+    value: "Anxiety"
+  },
+]
+
+export const purposes = [
+  {
+    label: "Informative",
+    value: "Informative",
+  },
+  {
+    label: "Persuasive",
+    value: "Persuasive",
+  },
+  {
+    label: "Entertaining",
+    value: "Entertaining",
+  },
+  {
+    label: "Descriptive",
+    value: "Descriptive",
+  },
+  {
+    label: "Narrative",
+    value: "Narrative",
+  },
+  {
+    label: "Explanatory",
+    value: "Explanatory",
+  },
+  {
+    label: "Reflective",
+    value: "Reflective",
+  },
+  {
+    label: "Instructive",
+    value: "Instructive",
+  },
+  {
+    label: "Expressive",
+    value: "Expressive",
+  },
+  {
+    label: "Analytical",
+    value: "Analytical",
+  },
+  {
+    label: "Critical",
+    value: "Critical",
+  },
+  {
+    label: "Motivational",
+    value: "Motivational",
+  },
+  {
+    label: "Evaluative",
+    value: "Evaluative",
+  },
+  {
+    label: "Speculative",
+    value: "Speculative",
+  },
+  {
+    label: "Satirical",
+    value: "Satirical",
+  },
+  {
+    label: "Defend",
+    value: "Defend",
+  },
+  {
+    label: "Contest / Contradict",
+    value: "Contest / Contradict",
+  },
+  {
+    label: "Support Idea",
+    value: "Support Idea",
+  },
+  {
+    label: "Explore",
+    value: "Explore",
+  },
+  {
+    label: "Analyze",
+    value: "Analyze",
+  },
+  {
+    label: "Challenge",
+    value: "Challenge",
+  },
+  {
+    label: "Inspire / Motivate",
+    value: "Inspire / Motivate",
+  },
+  {
+    label: "Compare / Contrast",
+    value: "Compare / Contrast",
+  },
+  {
+    label: "Advise / Recommend",
+    value: "Advise / Recommend",
+  },
+  {
+    label: "Problem-Solve",
+    value: "Problem-Solve",
+  },
+  {
+    label: "Document / Chronicle",
+    value: "Document / Chronicle",
+  },
+]
+
+export const vocabularies = [
+  {
+    label: "Technical",
+    value: "Technical",
+  },
+  {
+    label: "Colloquial",
+    value: "Colloquial",
+  },
+  {
+    label: "Formal",
+    value: "Formal",
+  },
+  {
+    label: "Informal",
+    value: "Informal",
+  },
+  {
+    label: "Jargon",
+    value: "Jargon",
+  },
+  {
+    label: "Slang",
+    value: "Slang",
+  },
+  {
+    label: "Idiomatic",
+    value: "Idiomatic",
+  },
+  {
+    label: "Descriptive",
+    value: "Descriptive",
+  },
+  {
+    label: "Abstract",
+    value: "Abstract",
+  },
+  {
+    label: "Concrete",
+    value: "Concrete",
+  },
+  {
+    label: "Emotional",
+    value: "Emotional",
+  },
+  {
+    label: "Neutral",
+    value: "Neutral",
+  },
+  {
+    label: "Positive",
+    value: "Positive",
+  },
+  {
+    label: "Negative",
+    value: "Negative",
+  },
+  {
+    label: "Figurative",
+    value: "Figurative"
+  },
+]
+
+export const sentenceStructures = [
+  {
+    label: "Simple sentences",
+    value: "Simple sentences",
+  },
+  {
+    label: "Compound sentences",
+    value: "Compound sentences",
+  },
+  {
+    label: "Complex sentences",
+    value: "Complex sentences",
+  },
+  {
+    label: "Compound-complex sentences",
+    value: "Compound-complex sentences",
+  },
+  {
+    label: "Declarative sentences",
+    value: "Declarative sentences",
+  },
+  {
+    label: "Interrogative sentences",
+    value: "Interrogative sentences",
+  },
+  {
+    label: "Exclamatory sentences",
+    value: "Exclamatory sentences",
+  },
+  {
+    label: "Imperative sentences",
+    value: "Imperative sentences",
+  },
+  {
+    label: "Parallel structure",
+    value: "Parallel structure",
+  },
+  {
+    label: "Parenthetical elements",
+    value: "Parenthetical elements",
+  },
+  {
+    label: "Lists and series",
+    value: "Lists and series",
+  },
+  {
+    label: "Rhetorical questions",
+    value: "Rhetorical questions",
+  },
+  {
+    label: "Short sentences for emphasis",
+    value: "Short sentences for emphasis",
+  },
+  {
+    label: "Long, descriptive sentences",
+    value: "Long, descriptive sentences",
+  },
+  {
+    label: "Inverted sentences (starting with a phrase or clause)",
+    value: "Inverted sentences (starting with a phrase or clause)"
+  },
+]
+
+export const perspectives = [
+  {
+    label: "First-person singular (I)",
+    value: "First-person singular (I)",
+  },
+  {
+    label: "First-person plural (we)",
+    value: "First-person plural (we)",
+  },
+  {
+    label: "Second-person singular (you)",
+    value: "Second-person singular (you)",
+  },
+  {
+    label: "Second-person plural (you all)",
+    value: "Second-person plural (you all)",
+  },
+  {
+    label: "Third-person singular (he/she/it)",
+    value: "Third-person singular (he/she/it)",
+  },
+  {
+    label: "Third-person plural (they)",
+    value: "Third-person plural (they)",
+  },
+  {
+    label: "Objective perspective",
+    value: "Objective perspective",
+  },
+  {
+    label: "Subjective perspective",
+    value: "Subjective perspective",
+  },
+  {
+    label: "Omniscient narrator",
+    value: "Omniscient narrator",
+  },
+  {
+    label: "Limited omniscient narrator",
+    value: "Limited omniscient narrator",
+  },
+  {
+    label: "Stream of consciousness",
+    value: "Stream of consciousness",
+  },
+  {
+    label: "Reflective perspective",
+    value: "Reflective perspective",
+  },
+  {
+    label: "Retrospective perspective",
+    value: "Retrospective perspective",
+  },
+  {
+    label: "Unreliable narrator",
+    value: "Unreliable narrator",
+  },
+  {
+    label: "Multiple perspectives",
+    value: "Multiple perspectives",
+  },
+  {
+    label: "Peripheral narrator",
+    value: "Peripheral narrator",
+  },
+  {
+    label: "Epistolary (letters, diary entries)",
+    value: "Epistolary (letters, diary entries)",
+  },
+  {
+    label: "Dramatic/Third-person objective",
+    value: "Dramatic/Third-person objective",
+  },
+  {
+    label: "Direct address to the reader",
+    value: "Direct address to the reader",
+  },
+  {
+    label: "Alternating perspectives",
+    value: "Alternating perspectives"
+  },
+]
+
+export const writingStructures = [
+  {
+    label: "Problem-solution",
+    value: "Problem-solution",
+  },
+  {
+    label: "Cause-effect",
+    value: "Cause-effect",
+  },
+  {
+    label: "Compare-contrast",
+    value: "Compare-contrast",
+  },
+  {
+    label: "Chronological order",
+    value: "Chronological order",
+  },
+  {
+    label: "Spatial order",
+    value: "Spatial order"
+  },
+]
+
+export const instructionalElements = [
+  {
+    label: "Actionable advice",
+    value: "Actionable advice",
+  },
+  {
+    label: "Step-by-step instructions",
+    value: "Step-by-step instructions",
+  },
+  {
+    label: "Tips and tricks",
+    value: "Tips and tricks",
+  },
+  {
+    label: "How-to guides",
+    value: "How-to guides",
+  },
+  {
+    label: "Checklists",
+    value: "Checklists"
+  },
 ]

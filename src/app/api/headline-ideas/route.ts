@@ -83,10 +83,10 @@ export async function POST(request: Request) {
 
     if (body.writing_mode === "custom") {
       const { data: selectedWritingStyle } = await supabase.from("writing_styles").select("*").eq("id", body.writing_style_id).single();
-      writingStyle = selectedWritingStyle.source_value;
+      writingStyle = selectedWritingStyle.text;
     }
 
-    const ai = new AI({ context });
+    const ai = new AI({ context, writing_style: writingStyle });
     const response = await ai.headlines({
       competitorsHeadlines,
       seedKeyword,

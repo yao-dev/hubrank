@@ -1,8 +1,9 @@
 import useProjects from "@/hooks/useProjects";
 import useProjectId from "@/hooks/useProjectId";
-import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space } from "antd";
+import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space, message } from "antd";
 import { useRouter } from "next/navigation";
 import useLanguages from "@/hooks/useLanguages";
+import Label from "../Label/Label";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -19,6 +20,19 @@ const ProjectForm = () => {
 
   if (!project) {
     return null;
+  }
+
+  const onSubmit = async (values: any) => {
+    try {
+      await update.mutateAsync({
+        ...values,
+        project_id: projectId
+      })
+      message.success("Project updated!")
+    } catch (e) {
+      console.log(e);
+      message.error("We are unable to save your update!")
+    }
   }
 
   // const onDeleteProject = () => {
@@ -75,22 +89,22 @@ const ProjectForm = () => {
     <Form
       form={form}
       layout="vertical"
-      onFinish={() => { }}
+      onFinish={onSubmit}
       // labelCol={{ span: 8 }}
       // wrapperCol={{ span: 20 }}
       // style={{ maxWidth: 600 }}
       initialValues={{
         name: project.name,
         website: project.website,
-        description: project?.description?.slice?.(0, 250) || project?.metatags?.description?.slice?.(0, 250),
-        seed_keyword: project.seed_keyword,
+        description: project?.description?.slice?.(0, 700) || project?.metatags?.description?.slice?.(0, 700),
+        // seed_keyword: project.seed_keyword,
         language_id: project.language_id,
+        sitemap: project.sitemap ?? "",
       }}
     >
-
       <Form.Item
         name="language_id"
-        label="Language"
+        label={<Label name="Language" />}
         rules={[{
           required: true,
           type: "number",
@@ -124,13 +138,13 @@ const ProjectForm = () => {
         />
       </Form.Item>
 
-      <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+      <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
         <Input placeholder="Name" count={{ show: true, max: 50 }} />
       </Form.Item>
 
       <Form.Item
         name="website"
-        label="Website"
+        label={<Label name="Website" />}
         validateTrigger="onBlur"
         rules={[{
           required: true,
@@ -149,18 +163,22 @@ const ProjectForm = () => {
       </Form.Item>
       <Form.Item
         name="description"
-        label="Description"
-        rules={[{ required: false, type: "string", max: 250 }]}
+        label={<Label name="Description" />}
+        rules={[{ required: false, type: "string", max: 700 }]}
         hasFeedback
       >
         <Input.TextArea
           placeholder="Description"
-          autoSize={{ minRows: 3, maxRows: 5 }}
+          autoSize={{ minRows: 3, maxRows: 8 }}
           count={{
             show: true,
-            max: 250,
+            max: 700,
           }}
         />
+      </Form.Item>
+
+      <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} hasFeedback>
+        <Input placeholder="Sitemap" />
       </Form.Item>
 
       <Form.Item style={{ marginTop: 42 }}>

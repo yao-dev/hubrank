@@ -37,7 +37,9 @@ export async function POST(request: Request) {
       faq: body.faq,
       word_count: body.word_count,
       language: language.label,
-      keywords: body.keywords
+      keywords: body.keywords,
+      content_type: body.content_type,
+      purpose: body.purpose,
     })
 
     return NextResponse.json({ outline }, { status: 200 });

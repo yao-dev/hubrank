@@ -10,6 +10,7 @@ import {
   insertBlogPost,
   markArticleAsFailure,
   markArticleAsReadyToView,
+  saveWritingCost,
   updateBlogPostStatus,
   writeHook,
   writeSection,
@@ -30,80 +31,6 @@ export async function POST(request: Request) {
 
     if (body.title_mode === "custom") {
       body.title = body.custom_title;
-    }
-
-    if (body.title_mode === "programmatic_seo") {
-      const variables = Object.keys(body).filter((key) => key.startsWith("variables-")).map((key) => {
-        const variable = key.replace("variables-", "");
-        return {
-          description: body[key],
-          variable,
-          instruction: `Replace {${variable}} with ${body[key]}`
-        }
-      })
-      const seoAI = new AI();
-      const pSeoVariablesValue = await seoAI.getPSeoVariablesValue({
-        ...body,
-        variables
-      })
-      console.log(chalk.yellow(JSON.stringify(pSeoVariablesValue, null, 2)));
-      const pSeoOutline = await seoAI.getPSeoOutline({
-        content_type: body.content_type,
-        headline: body.headline,
-        word_count: body.word_count,
-        variables: variables,
-      });
-
-      for (let variableValueSet of pSeoVariablesValue.slice(0, 2)) {
-        let prompt = "Now write up to ${body.word_count} words using this template";
-
-        prompt += body?.purposes?.length > 0 ? `\nPurposes: ${body?.purposes.join(', ')}` : "";
-        prompt += body?.emotions?.length > 0 ? `\nEmotions: ${body?.emotions.join(', ')}` : "";
-        prompt += body?.vocabularies?.length > 0 ? `\nVocabularies: ${body?.vocabularies.join(', ')}` : "";
-        prompt += body?.sentence_structures?.length > 0 ? `\nSentence structures: ${body?.sentence_structures.join(', ')}` : "";
-        prompt += body?.perspectives?.length > 0 ? `\nPerspectives: ${body?.perspectives.join(', ')}` : "";
-        prompt += body?.writing_structures?.length > 0 ? `\nWriting_structures: ${body?.writing_structures.join(', ')}` : "";
-        prompt += body?.instructional_elements?.length > 0 ? `\nInstructional elements: ${body?.instructional_elements.join(', ')}` : "";
-
-        prompt += body.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
-        prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
-        prompt += body.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
-        prompt += body.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
-        prompt += `\n- Language: ${body.language}`
-
-        if (body.additional_information) {
-          prompt += `\n${body.additional_information}`
-        }
-
-        // if (body.keywords?.length > 0) {
-        //   prompt += `\n- List of keywords to include (avoid keywords stuffing): ${body.keywords}`
-        // }
-
-        if (body.sitemaps?.length > 0) {
-          prompt += `\n- Sitemap (useful to include relevant links):\n${JSON.stringify(body.sitemaps, null, 2)}`
-        }
-
-        prompt += `\nOutline:\n${JSON.stringify(pSeoOutline, null, 2)}`;
-        prompt += `\Variables:\n${JSON.stringify(pSeoOutline, null, 2)}`;
-
-        const pSeoArticle = await seoAI.ask(`Now write up to ${body.word_count} words using this template
-
-        Outline:
-        ${JSON.stringify(pSeoOutline, null, 2)}
-
-        Variables:
-        ${variables.map((i) => {
-          return `${i.variable} (replace with ${variableValueSet[i.variable]}): ${i.instruction}\n`
-        })}
-
-        Write in markdown wrapped in \`\`\`markdown\`\`\`.
-        `, { type: "markdown", mode: "PSEO article", temperature: 0.5 })
-
-        console.log(chalk.yellow(cleanArticle(pSeoArticle), null, 2));
-      }
-      return NextResponse.json({
-        success: true
-      }, { status: 200 });
     }
 
     console.log(chalk.yellow(JSON.stringify(body, null, 2)));
@@ -159,14 +86,14 @@ export async function POST(request: Request) {
     const { description: metaDescription } = await ai.metaDescription({ ...body, outline });
 
     // UPDATE WRITE COST
-    // await saveWritingCost({ articleId, cost: ai.cost });
+    await saveWritingCost({ articleId, cost: ai.cost });
 
     // ADD H1 TITLE TO THE ARTICLE
     ai.article = `# ${body.title}\n`;
 
-    // if (body.featuredImage) {
-    //   ai.article += `![${body.featuredImage.alt ?? ""}](${body.featuredImage.href})\n`
-    // }
+    if (body.featuredImage) {
+      ai.article += `![${body.featuredImage.alt ?? ""}](${body.featuredImage.href})\n`
+    }
 
     // let featuredImage = ""
     // if (body.with_featured_image) {
@@ -199,16 +126,9 @@ export async function POST(request: Request) {
         outline,
         seed_keyword: body.seed_keyword,
         keywords: body.keywords, // TODO: make use of it in ai.hook
-        // perspective: body.perspective,
-        // tones: body.tones,
-        // purpose: body.purpose,
-        purposes: body.purposes,
-        emotions: body.emotions,
-        vocabularies: body.vocabularies,
-        sentence_structures: body.sentence_structures,
-        perspectives: body.perspectives,
-        writing_structures: body.writing_structures,
-        instructional_elements: body.instructional_elements,
+        perspective: body.perspective,
+        tones: body.tones,
+        purpose: body.purpose,
         article_id: articleId
       })
     }

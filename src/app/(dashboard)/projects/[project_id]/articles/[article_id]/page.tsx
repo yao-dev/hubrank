@@ -11,6 +11,7 @@ import {
   Form,
   Image,
   Input,
+  Popconfirm,
   Row,
   Spin,
   Typography,
@@ -27,8 +28,24 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import prettify from "pretty";
 import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
+import axios from 'axios';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/helpers/queryKeys';
+import { format } from 'date-fns';
+import Label from '@/components/Label/Label';
 
 const { Text } = Typography;
+
+const slugify = (text: string) =>
+  text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
 
 const mock = {
   url: "https://metatags.io/",
@@ -113,6 +130,7 @@ const Article = ({
     isError
   } = useBlogPosts().getOne(articleId)
   const { data: project } = useProjects().getOne(projectId);
+  const queryClient = useQueryClient();
   const [isSaved, setIsSaved] = useState(true);
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
@@ -191,10 +209,38 @@ const Article = ({
   {/* <!-- Generated via https://usehubrank.com --> */}
 `)
 
+  const schemaMarkup = prettify(`
+<script type="application/ld+json">
+${JSON.stringify(article?.schema_markups ?? {})}
+</script>
+`)
+
   const onCopyHTML = () => {
     navigator.clipboard.writeText(code);
     message.success("Copied to clipboard!");
   }
+
+
+  const onCopySchemaMarkup = () => {
+    navigator.clipboard.writeText(schemaMarkup);
+    message.success("Copied to clipboard!");
+  }
+
+  const onGenerateSchemaMarkup = useMutation({
+    mutationFn: (schemaName: string) => {
+      return axios.post("/api/schema-markup", {
+        schema: schemaName,
+        project_id: project.id,
+        article_id: articleId,
+        language_id: article.language_id,
+      })
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.blogPost(articleId)
+      })
+    }
+  })
 
   if (isError) return null
 
@@ -294,6 +340,26 @@ const Article = ({
                       },
                       {
                         key: '3',
+                        label: ".md",
+                        onClick: () => {
+                          navigator.clipboard.writeText(`---
+title: "${seoForm.getFieldValue("title") ?? ""}"
+description: "${seoForm.getFieldValue("meta_description") ?? ""}"
+image: ${seoForm.getFieldValue("og_image_url") ?? ""}
+keywords: "${seoForm.getFieldValue("keywords") ?? ""}"
+date: ${format(new Date(), "yyyy-MM-dd")}
+modified: ${format(new Date(), "yyyy-MM-dd")}
+active: true
+${article?.schema_markups?.length > 0 ? `schema_markups: ${JSON.stringify(article?.schema_markups, null, 2)}` : ""}
+---
+
+${markdown.current}
+                          `);
+                          message.success("markdown copied to clipboard")
+                        }
+                      },
+                      {
+                        key: '4',
                         label: "text",
                         onClick: () => {
                           navigator.clipboard.writeText(text.current);
@@ -316,26 +382,26 @@ const Article = ({
                   layout="vertical"
                   initialValues={{
                     title: article.title,
-                    slug: mock.slug, // TODO: must be generated
-                    meta_description: mock.description,
-                    keywords: article.keywords.slice(0, 9).join(','),
-                    og_image_url: mock.og_image_url, // TODO: must be generated
+                    slug: slugify(article.title),
+                    meta_description: article.meta_description ?? "",
+                    keywords: article.keywords?.slice(0, 9).join(',') ?? "",
+                    og_image_url: article.featured_image ?? "",
                   }}
                 >
-                  <Form.Item style={{ marginBottom: 12 }} label="Title" name="title" rules={[{ required: true, type: "string", message: "Add a title", max: 60 }]}>
-                    <Input placeholder='Title' count={{ show: true, max: 60 }} />
+                  <Form.Item style={{ marginBottom: 12 }} label={<Label name="Title" />} name="title" rules={[{ required: true, type: "string", message: "Add a title" }]}>
+                    <Input placeholder='Title' />
                   </Form.Item>
-                  <Form.Item style={{ marginBottom: 12 }} label="Slug" name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
+                  <Form.Item style={{ marginBottom: 12 }} label={<Label name="Slug" />} name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
                     <Input placeholder='/article-slug-here' />
                   </Form.Item>
-                  <Form.Item style={{ marginBottom: 12 }} label="Meta description" name="meta_description" rules={[{ required: false, type: "string", max: 160, message: "Add a meta description" }]}>
-                    <Input placeholder='Add a meta description' count={{ show: true, max: 160 }} />
+                  <Form.Item style={{ marginBottom: 28 }} label={<Label name="Meta description" />} name="meta_description" help="160 characters max recommended" rules={[{ required: false, type: "string", message: "Add a meta description" }]}>
+                    <Input placeholder='Add a meta description' />
                   </Form.Item>
-                  <Form.Item style={{ marginBottom: 12 }} label="Keywords" name="keywords" tooltip="Separate the keywords with a comma" rules={[{ required: false, type: "string", message: "Add keywords" }]}>
+                  <Form.Item style={{ marginBottom: 12 }} label={<Label name="Keywords" />} name="keywords" tooltip="Separate the keywords with a comma" rules={[{ required: false, type: "string", message: "Add keywords" }]}>
                     <Input placeholder='Add keywords' />
                   </Form.Item>
 
-                  <Form.Item style={{ marginBottom: 12 }} label="Image" name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+                  <Form.Item style={{ marginBottom: 12 }} label={<Label name="Image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
                     <Input placeholder='https://google.com/image-url' />
                   </Form.Item>
 
@@ -439,6 +505,50 @@ const Article = ({
                       <Button onClick={onCopyHTML} type="primary" size="large" style={{ width: "100%" }} icon={<CopyOutlined />}>Copy to clipboard</Button>
                     </Flex>
                   </Form.Item>
+
+                  <Form.Item label={<Label name="Add schema markup (ld+json)" />}>
+                    <Flex gap="small" style={{ flexWrap: "wrap" }}>
+                      {[
+                        "BreadcrumbList",
+                        "VideoObject",
+                        "Recipe",
+                        "Article",
+                        "WebSite",
+                        "WebPage",
+                        "BlogPosting",
+                        "FAQPage",
+                        "Question",
+                      ].map((schemaName) => {
+                        return (
+                          <Popconfirm
+                            title="Schema markup"
+                            description={(
+                              <span>Do you want to generate a new <b>{schemaName}</b> schema?</span>
+                            )}
+                            onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
+                            onCancel={() => { }}
+                            okText="Yes (3 credits)"
+                            cancelText="No"
+                          >
+                            <Button>{schemaName}</Button>
+                          </Popconfirm>
+                        )
+                      })}
+                    </Flex>
+                  </Form.Item>
+
+                  <Spin spinning={onGenerateSchemaMarkup.isPending}>
+                    <Form.Item>
+                      <Flex vertical gap="small">
+                        <div>
+                          <SyntaxHighlighter style={solarizedDark}>
+                            {schemaMarkup}
+                          </SyntaxHighlighter>
+                        </div>
+                        <Button onClick={onCopySchemaMarkup} type="primary" size="large" style={{ width: "100%" }} icon={<CopyOutlined />}>Copy to clipboard</Button>
+                      </Flex>
+                    </Form.Item>
+                  </Spin>
 
                   {/* <Form.Item style={{ marginBottom: 12 }}>
                     <Flex vertical gap="small">
@@ -552,6 +662,3 @@ const Article = ({
 }
 
 export default Article;
-
-
-

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
 import { DeleteTwoTone } from '@ant-design/icons';
+import { compact } from 'lodash';
 
 type Props = {
   setModalOpen: (open: boolean) => void
@@ -41,30 +42,46 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
           )
         },
       },
-      // {
-      //   title: 'Source type',
-      //   dataIndex: 'source_type',
-      //   key: 'source_type',
-      //   width: 200,
-      //   render: (value: any) => {
-      //     return (
-      //       <span>
-      //         {value || "-"}
-      //       </span>
-      //     )
-      //   },
-      // },
       {
         title: 'Text',
-        dataIndex: 'source_value',
-        key: 'source_value',
-        ellipsis: true,
+        dataIndex: 'text',
+        key: 'text',
+        // ellipsis: true,
         render: (value: any) => {
           return (
             <span>
               {value || "-"}
             </span>
           )
+        },
+      },
+      {
+        title: 'Characteristics',
+        dataIndex: 'characteristics',
+        key: 'characteristics',
+        // ellipsis: true,
+        render: (value: any, record: any) => {
+          const characteristics = compact([
+            record.tones,
+            record.purposes,
+            record.emotions,
+            record.vocabularies,
+            record.sentence_structures,
+            record.perspectives,
+            record.writing_structures,
+            record.instructional_elements,
+          ].flat());
+
+          if (characteristics.length === 0) {
+            return <span>--</span>
+          }
+
+          return characteristics.map((item) => {
+            return (
+              <Tag>{item}</Tag>
+            )
+          })
+
         },
       },
       {

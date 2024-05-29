@@ -103,13 +103,11 @@ const useMarkAsDefault = () => {
 type Create = {
   project_id: string;
   name: string;
-  source_type: string;
-  source_value: string;
+  text: string;
   default?: boolean;
 }
 
 const create = async (data: Create) => {
-  console.log(data)
   if (data.default) {
     return Promise.all([
       supabase

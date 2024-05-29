@@ -98,8 +98,9 @@ type Update = {
   project_id: number;
   name?: string;
   description?: string;
-  target_audience?: string;
-  seed_keyword?: string;
+  sitemap?: string;
+  // target_audience?: string;
+  // seed_keyword?: string;
 }
 
 const update = async ({ project_id, ...data }: Update) => {

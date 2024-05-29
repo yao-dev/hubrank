@@ -370,10 +370,7 @@ const KeywordsTable = ({ savedMode }: Props) => {
           }
         }}
       >
-        <Flex gap="small">
-          <Row>
-            <Col xs={24} sm={8}>
-              {/* <Form.Item noStyle name="search" required>
+        {/* <Form.Item noStyle name="search" required>
                 <AutoComplete
                   options={searchedKeywords}
                   style={{ width: "100%", marginBottom: 8 }}
@@ -384,57 +381,54 @@ const KeywordsTable = ({ savedMode }: Props) => {
                 />
               </Form.Item> */}
 
-              <Space.Compact
-                style={{ width: "100%", marginBottom: 8 }}
-              >
-                <Select
-                  placeholder="Country"
-                  optionLabelProp="label"
-                  // style={{ width: "100%" }}
-                  options={languages?.map((p) => {
-                    return {
-                      ...p,
-                      label: p.label,
-                      value: p.id
-                    }
-                  })}
-                  optionRender={(option: any) => {
-                    return (
-                      <Space>
-                        <Image
-                          src={option.data.image}
-                          width={25}
-                          height={25}
-                          preview={false}
-                        />
-                        {/* {option.label} */}
-                      </Space>
-                    )
-                  }}
-                />
-                <AutoComplete
-                  options={searchedKeywords}
-                  // onSelect={onSelect}
-                  // onSearch={(text) => setOptions(getPanelValue(text))}
-                  placeholder="Search keywords"
-                  allowClear
-                  style={{ width: "100%" }}
-                />
-              </Space.Compact>
-            </Col>
-            <Col xs={24} sm={{ span: 8, offset: 1 }}>
-              <Button
-                disabled={!search || !language_id}
-                icon={screens.xs ? <SearchOutlined /> : null}
-                type="primary"
-                htmlType="submit"
-                loading={isFetchingKeywords}
-                style={{ width: "100%", marginBottom: 8 }}
-              >
-                {screens.xs ? "(1 credit)" : "Search (1 credit)"}
-              </Button>
-            </Col>
-          </Row>
+        <Flex gap="small">
+          <Form.Item noStyle name="language_id">
+            <Select
+              placeholder="Country"
+              optionLabelProp="label"
+              style={{ width: 150 }}
+              options={languages?.map((p) => {
+                return {
+                  ...p,
+                  label: p.label,
+                  value: p.id
+                }
+              })}
+              optionRender={(option: any) => {
+                return (
+                  <Space>
+                    <Image
+                      src={option.data.image}
+                      width={25}
+                      height={25}
+                      preview={false}
+                    />
+                    {option.label}
+                  </Space>
+                )
+              }}
+            />
+          </Form.Item>
+          <Form.Item noStyle name="search">
+            <AutoComplete
+              options={searchedKeywords}
+              // onSelect={onSelect}
+              // onSearch={(text) => setOptions(getPanelValue(text))}
+              placeholder="Search keywords"
+              allowClear
+              style={{ width: 250 }}
+            />
+          </Form.Item>
+          <Button
+            disabled={!search || !language_id}
+            icon={screens.xs ? <SearchOutlined /> : null}
+            type="primary"
+            htmlType="submit"
+            loading={isFetchingKeywords}
+            style={{ width: "auto", marginBottom: 8 }}
+          >
+            {screens.xs ? "(1 credit)" : "Search (1 credit)"}
+          </Button>
         </Flex>
       </Form>
     )

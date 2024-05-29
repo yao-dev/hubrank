@@ -21,7 +21,7 @@ export default function ProjectDetail({
         justify="space-between"
         align="center"
       >
-        <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Brand voices</Typography.Title>
+        <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Writing style</Typography.Title>
         {screens.xs ? (
           <Button
             type="primary"

@@ -63,6 +63,7 @@ const NewArticleForm = () => {
     if (project) {
       settingsForm.setFieldValue("language_id", languageId ? +languageId : +project.language_id)
       settingsForm.setFieldValue("seed_keyword", selectedKeyword || "")
+      settingsForm.setFieldValue("sitemap", project.sitemap || "")
     }
   }, [project, selectedKeyword, settingsForm, languageId])
 
@@ -141,6 +142,42 @@ const NewArticleForm = () => {
           setCurrentStep={setCurrentStep}
           headlines={headlines}
           prev={prev}
+          values={{
+            // ...settingsForm.getFieldsValue(),
+            title: settingsForm.getFieldValue("title_mode") === "custom" ? settingsForm.getFieldValue("custom_title") : headlineForm.getFieldValue("title"),
+            project_id: projectId,
+            title_mode: settingsForm.getFieldValue("title_mode"),
+            seed_keyword: settingsForm.getFieldValue("seed_keyword"),
+            language_id: settingsForm.getFieldValue("language_id"),
+            content_type: settingsForm.getFieldValue("content_type"),
+            purpose: settingsForm.getFieldValue("purpose"),
+            tones: settingsForm.getFieldValue("tones"),
+            perspective: settingsForm.getFieldValue("perspective"),
+            clickbait: settingsForm.getFieldValue("clickbait"),
+            sitemap: settingsForm.getFieldValue("sitemap"),
+            external_sources: settingsForm.getFieldValue("external_sources"),
+            external_sources_objective: settingsForm.getFieldValue("external_sources_objective"),
+            with_featured_image: settingsForm.getFieldValue("with_featured_image"),
+            with_table_of_content: settingsForm.getFieldValue("with_table_of_content"),
+            with_sections_image: settingsForm.getFieldValue("with_sections_image"),
+            with_sections_image_mode: settingsForm.getFieldValue("with_sections_image_mode"),
+            image_source: settingsForm.getFieldValue("image_source"),
+            with_seo: settingsForm.getFieldValue("with_seo"),
+            writing_mode: settingsForm.getFieldValue("writing_mode"),
+            writing_style_id: settingsForm.getFieldValue("writing_style_id"),
+            additional_information: settingsForm.getFieldValue("additional_information"),
+            word_count: settingsForm.getFieldValue("word_count"),
+            keywords: relatedKeywords,
+            with_hook: settingsForm.getFieldValue("with_hook"),
+            // newly added
+            purposes: settingsForm.getFieldValue("purposes"),
+            emotions: settingsForm.getFieldValue("emotions"),
+            vocabularies: settingsForm.getFieldValue("vocabularies"),
+            sentence_structures: settingsForm.getFieldValue("sentence_structures"),
+            perspectives: settingsForm.getFieldValue("perspectives"),
+            writing_structures: settingsForm.getFieldValue("writing_structures"),
+            instructional_elements: settingsForm.getFieldValue("instructional_elements"),
+          }}
         />
       )}
 
@@ -174,6 +211,14 @@ const NewArticleForm = () => {
             word_count: settingsForm.getFieldValue("word_count"),
             keywords: relatedKeywords,
             with_hook: settingsForm.getFieldValue("with_hook"),
+            // newly added
+            purposes: settingsForm.getFieldValue("purposes"),
+            emotions: settingsForm.getFieldValue("emotions"),
+            vocabularies: settingsForm.getFieldValue("vocabularies"),
+            sentence_structures: settingsForm.getFieldValue("sentence_structures"),
+            perspectives: settingsForm.getFieldValue("perspectives"),
+            writing_structures: settingsForm.getFieldValue("writing_structures"),
+            instructional_elements: settingsForm.getFieldValue("instructional_elements"),
           }}
           isLocked={lockedStep !== undefined && lockedStep >= 2}
           setLockedStep={setLockedStep}
@@ -181,11 +226,12 @@ const NewArticleForm = () => {
           setSubmittingStep={setSubmittingStep}
           setCurrentStep={setCurrentStep}
           prev={prev}
+          setRelatedKeywords={setRelatedKeywords}
         />
       )}
 
       {/* <Flex justify="end" align="center" gap="middle">
-        {currentStep > 0 && (
+      {currentStep > 0 && (/write
           <Button disabled={submittingStep !== undefined} onClick={() => prev()}>
             Previous
           </Button>

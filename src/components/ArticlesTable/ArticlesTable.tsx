@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Drawer, Empty, Grid, Flex, Image, Popconfirm, Space, Table, Tag } from 'antd';
+import { Button, Drawer, Empty, Grid, Flex, Image, Popconfirm, Space, Table, Tag, message } from 'antd';
 import { useMemo, useState } from 'react';
 import {
   CheckCircleOutlined,
@@ -7,12 +7,12 @@ import {
   CloseCircleOutlined,
   SyncOutlined,
   DeleteTwoTone,
-  ReloadOutlined,
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
 import axios from 'axios';
+import { IconCopy } from '@tabler/icons-react';
 
 const { useBreakpoint } = Grid
 
@@ -27,13 +27,18 @@ const ArticlesTable = () => {
   const [isRetrying, setIsRetrying] = useState(false);
 
   const getIsDisabled = (status: string) => {
-    return ["queue", "writing"].includes(status)
+    return ["queue", "writing", "error"].includes(status)
     // return ["error", "queue"].includes(status)
   }
 
   const rewrite = (article_id: number) => {
     setIsRetrying(true)
     axios.post('/api/rewrite', { article_id })
+  }
+
+  const onCopyKeyword = (keyword: string) => {
+    navigator.clipboard.writeText(keyword);
+    message.success("Copied to clipboard!");
   }
 
   const columns = useMemo(() => {
@@ -72,10 +77,16 @@ const ArticlesTable = () => {
         key: 'seed_keyword',
         width: 350,
         render: (value: any) => {
+          if (value) {
+            return (
+              <Flex gap="middle">
+                <span>{value}</span>
+                <IconCopy onClick={() => onCopyKeyword(value)} stroke={1.25} style={{ cursor: "pointer" }} />
+              </Flex>
+            )
+          }
           return (
-            <span>
-              {value || "-"}
-            </span>
+            <span>-</span>
           )
         },
       },
@@ -143,7 +154,7 @@ const ArticlesTable = () => {
             >
               use keyword
             </Button> */}
-            {record.status === "error" && record.retry_count < 2 ? (
+            {/* {record.status === "error" && record.retry_count < 2 ? (
               <Button
                 style={{ width: 100 }}
                 icon={<ReloadOutlined />}
@@ -155,32 +166,30 @@ const ArticlesTable = () => {
               >
                 Retry
               </Button>
-            ) : null}
-            {record.status === "error" && record.retry_count > 1 && (
+            ) : null} */}
+            {/* {record.status === "error" && record.retry_count > 1 && (
               <Button
                 onClick={(e) => { e.preventDefault() }}
                 style={{ width: 100 }}
               >
                 Contact us
               </Button>
-            )}
-            {record.status !== "error" && (
-              <Button
-                disabled={getIsDisabled(record.status)}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setArticleId(record.id)
-                  setHtmlPreview(record.html)
-                }}
-                // onClick={(e) => {
-                //   e.preventDefault();
-                //   rewrite(record.id)
-                // }}
-                style={{ width: 100 }}
-              >
-                Preview
-              </Button>
-            )}
+            )} */}
+            <Button
+              disabled={getIsDisabled(record.status)}
+              onClick={(e) => {
+                e.preventDefault();
+                setArticleId(record.id)
+                setHtmlPreview(record.html)
+              }}
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   rewrite(record.id)
+              // }}
+              style={{ width: 100 }}
+            >
+              Preview
+            </Button>
             {/* <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
               Edit
             </Button> */}

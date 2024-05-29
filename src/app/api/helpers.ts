@@ -3,6 +3,7 @@ import chalk from "chalk";
 import { marked } from "marked";
 import { chromium } from 'playwright';
 import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-client';
+import { getSummary } from 'readability-cyr';
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -46,6 +47,10 @@ export const insertBlogPost = async (data: any) => {
         additional_information: data.additional_information,
         word_count: data.word_count,
         with_hook: data.with_hook,
+        with_introduction: data.with_introduction,
+        with_conclusion: data.with_conclusion,
+        with_faq: data.with_faq,
+        with_key_takeways: data.with_key_takeways,
         outline: data.outline,
       })
       .select("id")
@@ -76,8 +81,8 @@ export const getWritingStyle = async (writingStyleId?: number) => {
   let writing_style = "";
   if (writingStyleId) {
     try {
-      const { data: writingStyle } = await supabase.from("writing_styles").select("source_value").eq("id", writingStyleId).limit(1).single();
-      writing_style = writingStyle?.source_value ?? "";
+      const { data: writingStyle } = await supabase.from("writing_styles").select("text").eq("id", writingStyleId).limit(1).single();
+      writing_style = writingStyle?.text ?? "";
     } catch (error) {
       console.error(chalk.bgRed("[Error]: fetching writing style"), error);
       throw error;
@@ -93,6 +98,8 @@ export const writeHook = async ({
   seed_keyword,
   keywords,
   perspective,
+  purpose,
+  tones,
   article_id
 }: any) => {
   console.log(`[start]: hook`);
@@ -102,25 +109,51 @@ export const writeHook = async ({
       outline,
       seed_keyword,
       keywords,
-      perspective,
+      // perspective,
+      // purpose,
+      // tones,
     });
 
-    await saveWritingCost({ articleId: article_id, cost: ai.cost });
+    // await saveWritingCost({ articleId: article_id, cost: ai.cost });
+    const rephraseInstruction = getRephraseInstruction(hook)
 
-    // let stats = getSummary(hook);
-    // if (stats.FleschKincaidGrade > 12) {
-    //   console.log("- rephrase");
-    //   hook = await ai.rephrase(ai.parse(hook, "markdown"));
-    //   console.log("- rephrase done");
-    // }
+    let stats = getSummary(hook);
+    if (stats.FleschKincaidGrade > 12) {
+      console.log("- rephrase");
+      hook = await ai.rephrase(hook, rephraseInstruction);
+      console.log("- rephrase done");
+    }
     console.log("- add hook to article");
-    ai.addArticleContent(ai.parse(hook, "markdown"));
+    // ai.addArticleContent(ai.parse(hook, "markdown"));
+    ai.addArticleContent(hook);
   } catch (error) {
     console.error(chalk.bgRed("[Error]: generating hook"), error);
     throw error;
   }
   console.log(`[end]: hook`);
 }
+
+const getRephraseInstruction = (text: string) => {
+  const wordsCount = text.split(" ").length;
+  // return compact([
+  //   "- diversify vocabulary",
+  //   "- reduce words duplication by paraphrasing them, use synonym or different forms",
+  //   "- do not use adverbs",
+  //   "- do not use compound adverbs",
+  //   "- use active voice",
+  //   wordsCount > 40 && "- split the paragraph",
+  //   "- use idioms",
+  //   "- use phrasal verbs",
+  //   shuffle([
+  //     "- end with a question",
+  //     "- start with a question",
+  //     [...new Array(15)].map(i => "")
+  //   ].flat())[0]
+  // ]).join('\n')
+
+  return "diversify vocabulary, remove adverbs, remove compound adverbs, use active voice, idioms and phrasal verbs, edit like a human."
+}
+
 
 export const writeSection = async ({
   ai,
@@ -145,7 +178,11 @@ export const writeSection = async ({
       href: string;
       alt: string;
     },
-    youtube_video?: any
+    youtube_video?: any;
+    internal_links?: string[];
+    images?: string[],
+    tones?: any;
+    purpose: string;
   };
   title: string;
   outline: string;
@@ -159,16 +196,19 @@ export const writeSection = async ({
       outline,
     });
 
-    await saveWritingCost({ articleId, cost: ai.cost });
+    // await saveWritingCost({ articleId, cost: ai.cost });
 
-    // let stats = getSummary(content);
-    // if (stats.FleschKincaidGrade > 12) {
-    //   console.log("- rephrase");
-    //   content = await ai.rephrase(ai.parse(content, "markdown"));
-    //   console.log("- rephrase done");
-    // }
+    const rephraseInstruction = getRephraseInstruction(content)
+
+    let stats = getSummary(content);
+    if (stats.FleschKincaidGrade > 12) {
+      console.log("- rephrase");
+      content = await ai.rephrase(content, rephraseInstruction);
+      console.log("- rephrase done");
+    }
     console.log("- add section to article");
-    ai.addArticleContent(ai.parse(content, "markdown"));
+    // ai.addArticleContent(ai.parse(content, "markdown"));
+    ai.addArticleContent(content);
   } catch (error) {
     console.error(chalk.bgRed(`[ERROR] generating section ${index}:`), error);
     throw error;
@@ -198,6 +238,16 @@ export const markArticleAsReadyToView = async ({
   featuredImage
 }: any) => {
   try {
+    console.log(chalk.yellow(JSON.stringify({
+      markdown,
+      html,
+      status: 'ready_to_view',
+      writing_time_sec: writingTimeInSeconds,
+      word_count: wordCount,
+      cost,
+      featured_image: featuredImage,
+      meta_description: metaDescription
+    }, null, 2)));
     await supabase
       .from('blog_posts')
       .update({
@@ -215,7 +265,7 @@ export const markArticleAsReadyToView = async ({
     console.log("writing time in seconds", writingTimeInSeconds);
     console.log(chalk.green("Success!"))
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR] updating blog post:", error));
+    console.error(chalk.bgRed("[ERROR] updating blog post:", JSON.stringify(error, null, 2)));
     throw error;
   }
 }
@@ -247,10 +297,10 @@ export const getProjectContext = (values: any) => {
 
 export const normalizePrompt = (prompt: string) => {
   return `${prompt}\n(don't add any text before and after the markdown except the text I request you to write)`
-    .trim()
-    .replaceAll("\n\n\n\n", "\n")
-    .replaceAll("\n\n\n", "\n")
-    .replaceAll("\n\n", "\n")
+  // .trim()
+  // .replaceAll("\n\n\n\n", "\n")
+  // .replaceAll("\n\n\n", "\n")
+  // .replaceAll("\n\n", "\n")
 }
 
 class Vector {
@@ -441,4 +491,29 @@ export const findImage = async (keyword: string) => {
     console.log("istockDownloaderHelper error")
     return;
   }
+}
+
+export const getBlogUrls = (xmlData: string) => {
+  // TODO: the host must be dynamic
+  // Regular expression pattern to match URLs starting with "https://getfiit.app/blog"
+  const regex = /<loc>(https:\/\/getfiit\.app\/blog\/.*?)<\/loc>/g;
+
+  // Initialize an array to store blog URLs
+  const blogUrls = [];
+
+  // Match URLs using the regular expression
+  let match;
+  while ((match = regex.exec(xmlData)) !== null) {
+    blogUrls.push(match[1]);
+  }
+
+  return blogUrls;
+}
+
+export const getProjectById = async (projectId: number) => {
+  return supabase.from("projects").select("*").eq("id", projectId).maybeSingle()
+}
+
+export const saveSchemaMarkups = async (postId: number, schemaMarkups: any) => {
+  return supabase.from("blog_posts").update({ schema_markups: schemaMarkups }).eq("id", postId);
 }

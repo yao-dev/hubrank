@@ -1,6 +1,18 @@
 'use client';;
-import { IconGripVertical } from "@tabler/icons-react";
-import { App, Button, Card, Drawer, Flex, Form, Input, Select, Slider, Spin, Switch } from "antd";
+import { IconBrandUnsplash, IconGripVertical, IconTrash } from "@tabler/icons-react";
+import {
+  App,
+  Button,
+  Card,
+  Drawer,
+  Flex,
+  Form,
+  Image,
+  Input,
+  Slider,
+  Spin,
+  Typography,
+} from "antd";
 import {
   DndContext,
   KeyboardSensor,
@@ -14,13 +26,17 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { forwardRef, useEffect, useState } from "react";
 import { PlusOutlined, CloseOutlined, SyncOutlined, SettingOutlined } from "@ant-design/icons";
-import { uniqueId } from "lodash";
+import { compact, uniqueId } from "lodash";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import { useRouter } from "next/navigation";
-import { medias } from "@/options";
+import { SearchOutlined } from "@ant-design/icons";
+import { getImages } from "@/helpers/image";
+import { getRelatedKeywords } from "@/helpers/seo";
+import supabase from "@/helpers/supabase";
+import Label from "../Label/Label";
 
 export const Item = forwardRef(({ children, draggingHandle, closeIcon, style = {}, isActive, action }: any, ref: any) => {
   let customStyle = {
@@ -86,7 +102,8 @@ const OutlineForm = ({
   form,
   values,
   submittingStep,
-  prev
+  prev,
+  setRelatedKeywords,
 }: any) => {
   const { message, notification } = App.useApp();
   const [activeItem, setActiveItem] = useState(null);
@@ -101,6 +118,12 @@ const OutlineForm = ({
   const projectId = useProjectId();
   const router = useRouter();
   const [headingSettingsForm] = Form.useForm();
+  const [imageSearch, setImageSearch] = useState("");
+  const [imageResult, setImageResult] = useState([]);
+  const [featuredImage, setFeaturedImage] = useState();
+  const [showUnsplashExplorer, setShowUnsplashExplorer] = useState<boolean | string>(false);
+  const sectionImage = Form.useWatch("image", headingSettingsForm)
+  const [sectionImages, setSectionImages] = useState([]);
 
   const getOutline = useMutation({
     mutationFn: async (data: any) => {
@@ -110,18 +133,37 @@ const OutlineForm = ({
 
   const onGenerateOutline = async () => {
     try {
+      const isCustomTitle = values.title_mode === "custom";
+      let relatedKeywords: any;
+
+      if (isCustomTitle) {
+        const { data: language } = await supabase.from("languages").select("*").eq("id", values.language_id).limit(1).single()
+        const rk = await getRelatedKeywords({ keyword: values.seed_keyword, depth: 2, limit: 50, api: false, lang: language.code, location_code: language.location_code })
+
+        relatedKeywords = rk?.map((item: any) => {
+          return compact([
+            item?.keyword_data?.keyword,
+            compact(item?.related_keywords),
+          ])
+        })
+          .flat(2);
+
+        relatedKeywords = [...new Set(relatedKeywords)].slice(0, 30);
+        setRelatedKeywords(relatedKeywords)
+      }
+
       const { data } = await getOutline.mutateAsync({
         title: form.getFieldValue("title"),
         heading_count: form.getFieldValue("heading_count"),
-        introduction: form.getFieldValue("with_introduction"),
-        conclusion: form.getFieldValue("with_conclusion"),
-        key_takeways: form.getFieldValue("with_key_takeways"),
-        faq: form.getFieldValue("with_faq"),
+        introduction: values.with_introduction, // form.getFieldValue("with_introduction"),
+        conclusion: values.with_conclusion, // form.getFieldValue("with_conclusion"),
+        key_takeways: values.with_key_takeways, // form.getFieldValue("with_key_takeways"),
+        faq: values.with_faq, // form.getFieldValue("with_faq"),
         word_count: values.word_count,
         language_id: values.language_id,
         project_id: values.project_id,
         seed_keyword: values.seed_keyword,
-        keywords: values.keywords,
+        keywords: relatedKeywords || values.keywords,
       });
       setItems(data.outline.map((sectionName) => {
         return {
@@ -159,7 +201,10 @@ const OutlineForm = ({
         tone: values.tones?.join?.(","),
         content_type: values.content_type.replaceAll("_", " "),
         clickbait: !!values.clickbait,
-        userId: await getUserId()
+        userId: await getUserId(),
+        featuredImage,
+        sectionImages
+        // featuredImage: featuredImage?.alt && featuredImage?.href ? `![${featuredImage.alt}](${featuredImage.href})` : ""
       })
     } catch {
       notification.error({
@@ -250,7 +295,27 @@ const OutlineForm = ({
     if (selectedHeading === null) {
       headingSettingsForm.resetFields()
     }
-  }, [selectedHeading])
+  }, [selectedHeading]);
+
+  const onSearchImage = async () => {
+    const imagesFound = await getImages(imageSearch, 50);
+    setImageResult(imagesFound)
+  }
+
+  const onSelectImage = (img: { alt: string; href: string }) => {
+    if (showUnsplashExplorer === "section") {
+      // headingSettingsForm.setFieldValue("image", img);
+      // form.setFieldValue("section_images", [
+      //   ...(form.getFieldValue("section_images") || []),
+      //   img
+      // ])
+      setSectionImages(prev => ([...prev, img]))
+
+    } else {
+      setFeaturedImage(img);
+      setShowUnsplashExplorer(false)
+    }
+  }
 
   return (
     <Flex vertical style={{ height: "100%" }}>
@@ -262,10 +327,11 @@ const OutlineForm = ({
           initialValues={{
             title: values.title,
             heading_count: 7,
-            with_introduction: true,
-            with_conclusion: true,
-            with_key_takeways: false,
-            with_faq: false,
+            // with_introduction: true,
+            // with_conclusion: true,
+            // with_key_takeways: false,
+            // with_faq: false,
+            section_images: []
           }}
           autoComplete="off"
           layout="vertical"
@@ -278,11 +344,11 @@ const OutlineForm = ({
           }}
         >
           <div>
-            <Form.Item name="title" label="Article title" rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
+            <Form.Item name="title" label={<Label name="Article title" />} rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
               <Input placeholder="Article title" />
             </Form.Item>
 
-            <Form.Item name="heading_count" label="How many headings?" help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
+            <Form.Item hidden name="heading_count" label={<Label name="How many headings?" />} help="Your selection doesn't take in account the sections below" rules={[]} style={{ margin: 0 }}>
               <Slider
                 marks={{
                   4: "4",
@@ -299,7 +365,7 @@ const OutlineForm = ({
               />
             </Form.Item>
 
-            <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
+            {/* <Flex gap="small" align="center" style={{ marginBottom: 12, marginTop: 12 }}>
               <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
                 <Switch />
               </Form.Item>
@@ -325,7 +391,7 @@ const OutlineForm = ({
                 <Switch />
               </Form.Item>
               <span>FAQ</span>
-            </Flex>
+            </Flex> */}
 
             <Form.Item style={{ marginTop: 32 }}>
               <Flex justify="end">
@@ -382,6 +448,60 @@ const OutlineForm = ({
                 </Flex>
               </Form.Item>
             )}
+
+            <Form.Item label={<Label name="Add featured image" />}>
+              <Button onClick={() => setShowUnsplashExplorer(true)} icon={<SearchOutlined />}>Open image explorer</Button>
+            </Form.Item>
+
+            {featuredImage && (
+              <Form.Item>
+                <Flex align="center" gap="middle">
+                  <Image
+                    src={featuredImage.href}
+                    style={{
+                      width: "100%",
+                      height: 100,
+                      borderRadius: 8,
+                      // aspectRatio: "1/1",
+                      objectFit: "cover"
+                    }}
+                  />
+                  <IconTrash onClick={() => setFeaturedImage(undefined)} />
+                </Flex>
+              </Form.Item>
+            )}
+
+            <Form.Item label={<Label name="Add section images" />}>
+              <Button onClick={() => setShowUnsplashExplorer("section")} icon={<SearchOutlined />}>Open image explorer</Button>
+            </Form.Item>
+
+            {sectionImages.length > 0 && (
+              <Form.Item>
+                <Flex gap="small" style={{ flexWrap: "wrap" }}>
+                  {sectionImages.map((sectionImage, index) => {
+                    return (
+                      <Flex key={sectionImage.href} align="center" gap="middle">
+                        <Image
+                          src={sectionImage.href}
+                          style={{
+                            width: "100%",
+                            height: 100,
+                            borderRadius: 8,
+                            // aspectRatio: "1/1",
+                            objectFit: "cover"
+                          }}
+                        />
+                        <IconTrash onClick={() => {
+                          setSectionImages(
+                            sectionImages.filter((i) => i.href !== sectionImage.href)
+                          )
+                        }} />
+                      </Flex>
+                    )
+                  })}
+                </Flex>
+              </Form.Item>
+            )}
           </div>
 
           <Form.Item style={{ marginBottom: 0 }}>
@@ -398,6 +518,63 @@ const OutlineForm = ({
           </Form.Item>
         </Form>
       </Spin>
+
+      <Drawer
+        title={(
+          <Flex gap="small" align="center">
+            <IconBrandUnsplash />
+            <Typography.Title level={4} style={{ margin: 0 }}>Unplash explorer</Typography.Title>
+          </Flex>
+        )}
+        width={600}
+        onClose={() => setShowUnsplashExplorer(false)}
+        open={!!showUnsplashExplorer}
+        destroyOnClose
+        styles={{
+          body: {
+            paddingBottom: 80,
+          },
+        }}
+      >
+        <Flex vertical gap="large">
+          <Flex gap="small">
+            <Input placeholder="Search image" value={imageSearch} onChange={(e) => setImageSearch(e.target.value)} />
+            <Button onClick={onSearchImage}>Search</Button>
+          </Flex>
+
+          {imageResult.length > 0 ? (
+            <Flex gap={6} style={{ flexWrap: "wrap" }}>
+              {imageResult.map((img) => {
+                return (
+                  <Flex key={img.href} vertical gap="small" style={{ position: "relative" }}>
+                    <Image
+                      src={img.href}
+                      style={{
+                        width: 180,
+                        borderRadius: 8,
+                        aspectRatio: "1/1",
+                        objectFit: "cover"
+                      }}
+                    />
+                    <Button
+                      onClick={() => onSelectImage(img)}
+                      type="primary"
+                      style={{
+                        position: "absolute",
+                        bottom: 6,
+                        left: 6,
+                        right: 6
+                      }}
+                    >
+                      Select
+                    </Button>
+                  </Flex>
+                )
+              })}
+            </Flex>
+          ) : null}
+        </Flex>
+      </Drawer>
 
       <Drawer
         title="Heading settings"
@@ -437,7 +614,8 @@ const OutlineForm = ({
               external_source: selectedHeading.external_source ?? "",
               external_source_instruction: selectedHeading.external_source_instruction ?? "",
               call_to_action: selectedHeading.call_to_action ?? "",
-              call_to_action_example: selectedHeading.call_to_action_example ?? ""
+              call_to_action_example: selectedHeading.call_to_action_example ?? "",
+              image: selectedHeading.image ?? "",
             }}
             autoComplete="off"
             layout="vertical"
@@ -445,7 +623,7 @@ const OutlineForm = ({
           >
             <Form.Item
               name="name"
-              label="Heading"
+              label={<Label name="Heading" />}
               rules={[{ required: true, type: "string", max: 75, message: "Enter a heading name" }]}
               hasFeedback
             >
@@ -460,7 +638,7 @@ const OutlineForm = ({
 
             <Form.Item
               name="custom_prompt"
-              label="Custom prompt"
+              label={<Label name="Custom prompt" />}
               rules={[{ type: "string", max: 300 }]}
               hasFeedback
               help="Provide any context or information we should consider for writing this section"
@@ -476,13 +654,40 @@ const OutlineForm = ({
               />
             </Form.Item>
 
-            <Form.Item name="media" label="Media" rules={[{ required: false, type: "string", message: "Select a media" }]} hasFeedback>
+            <Form.Item label={<Label name="Add image" />}>
+              <Button onClick={() => setShowUnsplashExplorer("section")} icon={<SearchOutlined />}>Open image explorer</Button>
+            </Form.Item>
+
+            {sectionImage?.image && (
+              <Form.Item>
+                <Flex align="center" gap="middle">
+                  <Image
+                    src={sectionImage.image.href}
+                    style={{
+                      width: "100%",
+                      height: 100,
+                      borderRadius: 8,
+                      // aspectRatio: "1/1",
+                      objectFit: "cover"
+                    }}
+                  />
+                  <IconTrash
+                    onClick={() => {
+                      headingSettingsForm.setFieldValue("image", null);
+                    }}
+                  />
+                </Flex>
+              </Form.Item>
+            )}
+
+
+            {/* <Form.Item name="media" label="Media" rules={[{ required: false, type: "string", message: "Select a media" }]} hasFeedback>
               <Select
                 defaultActiveFirstOption
                 placeholder="Select a media"
                 options={medias}
               />
-            </Form.Item>
+            </Form.Item> */}
             {/*
             <Form.Item
               name="external_source"
@@ -504,7 +709,7 @@ const OutlineForm = ({
 
             <Form.Item
               name="external_source"
-              label="External source"
+              label={<Label name="External source" />}
               rules={[{ type: "url", max: 150, message: "Enter a valid url" }]}
               help="Add a source to help the AI write content with real time data that it might not have knowledge of"
               hasFeedback
@@ -522,7 +727,7 @@ const OutlineForm = ({
 
             <Form.Item
               name="external_source_instruction"
-              label="External source instruction"
+              label={<Label name="External source instruction" />}
               rules={[{ type: "string", max: 300, message: "Add instructions" }]}
               help="Explain how to use the information found in the url you provided (external without instruction will be ignored)"
               hasFeedback
@@ -540,7 +745,7 @@ const OutlineForm = ({
 
             <Form.Item
               name="call_to_action"
-              label="CTA"
+              label={<Label name="CTA" />}
               rules={[{ type: "string", max: 300 }]}
               hasFeedback
             >
@@ -556,7 +761,7 @@ const OutlineForm = ({
 
             <Form.Item
               name="call_to_action_example"
-              label="CTA example"
+              label={<Label name="CTA example" />}
               rules={[{ type: "string", max: 300 }]}
               hasFeedback
             >

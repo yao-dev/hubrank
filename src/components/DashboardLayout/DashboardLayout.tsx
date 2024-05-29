@@ -2,18 +2,9 @@
 import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer } from 'antd';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import {
-  IconLogout,
-  IconBulb,
-  IconPigMoney,
-  IconPlug,
-  IconDashboard,
-  IconArticle,
-  IconSeo,
-  IconWriting,
-} from '@tabler/icons-react';
+import { IconLogout, IconDashboard, IconArticle, IconSeo, IconWriting } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
@@ -104,9 +95,13 @@ export default function DashboardLayout({
     token: { colorBgContainer, borderRadiusLG, borderRadiusSM, Layout: { siderBg } },
   } = theme.useToken();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab')
   const projectId = useProjectId()
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  console.log(pathname)
 
   const data: MenuItem[] = useMemo(() => {
     if (projectId !== null) {
@@ -114,29 +109,29 @@ export default function DashboardLayout({
         getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Brand voices', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({
         //   key: "project", label: 'Project', icon: <IconStack2 />, children: [
         //     getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle /> }),
         //     getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo /> }),
-        //     getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Brand voices', icon: <IconWriting /> }),
+        //     getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting /> }),
         //     getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug /> }),
         //     getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings /> }),
         //   ]
         // }),
         // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney />, onClick: () => setIsMobileMenuOpen(false) }),
       ]
     }
 
     return [
       getItem({ key: "dashboard", link: '/', label: 'Dashboard', icon: <IconDashboard /> }),
       // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard /> }),
-      getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
-      getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney /> }),
+      // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
+      // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney /> }),
     ]
   }, [pathname, projectId]);
 
@@ -152,13 +147,13 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard')) {
       return ["dashboard"]
     }
-    if (pathname.includes('/articles')) {
+    if (pathname.includes('/articles') || tab === "articles") {
       return ["article"]
     }
-    if (pathname.includes('/keywords')) {
+    if (pathname.includes('/keywords') || tab === "keywords") {
       return ["keyword"]
     }
-    if (pathname.includes('/brand-voices')) {
+    if (pathname.includes('/brand-voices') || tab === "brand-voices") {
       return ["brand-voice"]
     }
     if (pathname.startsWith('/integrations')) {
@@ -170,7 +165,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/plan-billing')) {
       return ["billing"]
     }
-  }, [pathname])
+  }, [pathname, tab])
 
   const sideMenuContent = useMemo(() => {
     return (

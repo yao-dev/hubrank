@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import useProjects from "@/hooks/useProjects";
 import { Image, Form, Input, Modal, Alert, Select, Space } from "antd";
 import useLanguages from "@/hooks/useLanguages";
+import Label from "../Label/Label";
 
 
 const NewProjectModal = ({ opened, onClose }: any) => {
@@ -60,13 +61,13 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         {error && (
           <Alert message="Something went wrong! Try again please." type="error" showIcon style={{ marginBottom: 12 }} />
         )}
-        <Form.Item name="name" label="Name" rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+        <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
           <Input placeholder="Name" count={{ show: true, max: 50 }} />
         </Form.Item>
 
         <Form.Item
           name="language_id"
-          label="Language"
+          label={<Label name="Language" />}
           rules={[{
             required: true,
             type: "number",
@@ -106,7 +107,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
 
         <Form.Item
           name="website"
-          label="Website"
+          label={<Label name="Website" />}
           validateTrigger="onBlur"
           rules={[{
             required: true,

@@ -1609,13 +1609,13 @@
   dependencies:
     debug "^4.1.1"
 
-"@upstash/qstash@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/@upstash/qstash/-/qstash-2.3.0.tgz#cf18233d091ab5cfb0ffaad72c0da15e2a42bd90"
-  integrity sha512-p4L1n5/OWk8UUJJ6S5iInx+1YXm1LseTXthuFhJ7dY08NSKkGGJqipjH4/2jTxxhXMiXARRng+SQyF71NTnnBA==
+"@upstash/qstash@^2.5.4":
+  version "2.5.4"
+  resolved "https://registry.yarnpkg.com/@upstash/qstash/-/qstash-2.5.4.tgz#e5afe1b436cc12fe9d85614880511874f5753764"
+  integrity sha512-3/JTwW8Kyt5Pqz7h8fuU1vd+ZKdYSkR/suZ5IrFLALeqeenVYQVauz8tTH+jLB1fKZtqITcTjxrS0S9F/4ZbhQ==
   dependencies:
-    crypto-js "^4.2.0"
-    jose "^4.14.4"
+    crypto-js ">=4.2.0"
+    jose "^ 5.2.3"
 
 "@use-gesture/core@10.3.0":
   version "10.3.0"
@@ -2643,9 +2643,9 @@ crypt@0.0.2:
   resolved "https://registry.npmjs.org/crypt/-/crypt-0.0.2.tgz"
   integrity sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
 
-crypto-js@^4.2.0:
+crypto-js@>=4.2.0:
   version "4.2.0"
-  resolved "https://registry.npmjs.org/crypto-js/-/crypto-js-4.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.2.0.tgz#4d931639ecdfd12ff80e8186dba6af2c2e856631"
   integrity sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
 
 css-select@^5.1.0:
@@ -3887,7 +3887,12 @@ joi@^17.6.4:
     "@sideway/formula" "^3.0.1"
     "@sideway/pinpoint" "^2.0.0"
 
-jose@^4.14.4, jose@^4.9.1:
+"jose@^ 5.2.3":
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/jose/-/jose-5.3.0.tgz#61dadf6399e0141d621ad18c1b36a0d6ab17a972"
+  integrity sha512-IChe9AtAE79ru084ow8jzkN2lNrG3Ntfiv65Cvj9uOCE2m5LNsdHG+9EbxWxAoWRF9TgDOqLN5jm08++owDVRg==
+
+jose@^4.9.1:
   version "4.15.4"
   resolved "https://registry.npmjs.org/jose/-/jose-4.15.4.tgz"
   integrity sha512-W+oqK4H+r5sITxfxpSU+MMdr/YSWGvgZMQDIsNoBDGGy4i7GBPTtvFKibQzW06n3U3TqHjhvBJsirShsEJ6eeQ==
@@ -4493,16 +4498,15 @@ openai@^3.2.1, openai@^3.3.0:
     axios "^0.26.0"
     form-data "^4.0.0"
 
-openai@^4.24.1:
-  version "4.24.1"
-  resolved "https://registry.npmjs.org/openai/-/openai-4.24.1.tgz"
-  integrity sha512-ezm/O3eiZMnyBqirUnWm9N6INJU1WhNtz+nK/Zj/2oyKvRz9pgpViDxa5wYOtyGYXPn1sIKBV0I/S4BDhtydqw==
+openai@^4.47.1:
+  version "4.47.1"
+  resolved "https://registry.yarnpkg.com/openai/-/openai-4.47.1.tgz#1d23c7a8eb3d7bcdc69709cd905f4c9af0181dba"
+  integrity sha512-WWSxhC/69ZhYWxH/OBsLEirIjUcfpQ5+ihkXKp06hmeYXgBBIUCa9IptMzYx6NdkiOCsSGYCnTIsxaic3AjRCQ==
   dependencies:
     "@types/node" "^18.11.18"
     "@types/node-fetch" "^2.6.4"
     abort-controller "^3.0.0"
     agentkeepalive "^4.2.1"
-    digest-fetch "^1.3.0"
     form-data-encoder "1.7.2"
     formdata-node "^4.3.2"
     node-fetch "^2.6.7"
