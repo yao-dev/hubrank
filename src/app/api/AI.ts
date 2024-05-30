@@ -837,6 +837,14 @@ Write the outline following the structure below
     - don't write the content
     - keep the variables`;
 
+    prompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
+    prompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
+    prompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
+    prompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
+
+    // TODO: add additional info?
+    // TODO: add language
+
     prompt += `Variables:
     ${values.variables.map((i) => {
       return `${i.variable}: ${i.instruction}\n`

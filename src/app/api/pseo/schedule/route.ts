@@ -22,6 +22,7 @@ export async function POST(request: Request) {
   })
   console.log(chalk.yellow(JSON.stringify(pSeoVariablesValue, null, 2)));
   const outline = await ai.getPSeoOutline({
+    ...body,
     content_type: body.content_type,
     headline: body.title_structure,
     word_count: body.word_count,

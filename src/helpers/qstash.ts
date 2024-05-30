@@ -15,7 +15,7 @@ export const deleteMessage = async (messageId: string) => {
 }
 
 export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string> => {
-  const { data } = await axios.post(`https://qstash.upstash.io/v2/schedules/${destination}`, JSON.stringify(body), {
+  const { data } = await axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(body), {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.NEXT_PUBLIC_QSTASH_TOKEN}`,
