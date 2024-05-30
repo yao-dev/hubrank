@@ -88,9 +88,9 @@ const SettingsForm = ({
 
   const writeArticle = async (values: any) => {
     try {
-      message.success('Article added in the queue!');
-      router.replace(`/projects/${projectId}?tab=articles`)
       axios.post('/api/write', values)
+      message.success('Article added in the queue!');
+      router.replace(`/projects/${projectId}/articles`)
     } catch {
       notification.error({
         message: "We had an issue adding your article in the queue please try again",
@@ -100,12 +100,13 @@ const SettingsForm = ({
     }
   }
 
-  const schedulePSeoArticles = async (values: any) => {
+  const schedulePSeoArticles = (values: any) => {
     try {
-      message.success('Articles added in the queue!');
-      router.replace(`/projects/${projectId}?tab=articles`)
       axios.post('/api/pseo/schedule', values)
-    } catch {
+      message.success('Articles added in the queue!');
+      router.replace(`/projects/${projectId}/articles`)
+    } catch (e) {
+      console.error(e)
       notification.error({
         message: "We had an issue adding your articles in the queue please try again",
         placement: "bottomRight",
@@ -113,8 +114,6 @@ const SettingsForm = ({
       })
     }
   }
-
-  // format(new Date(), "HH:mm")
 
   const onFinish = async (values: any) => {
     const isCustomTitle = values.title_mode === "custom";
@@ -128,7 +127,7 @@ const SettingsForm = ({
       setLockedStep(0);
 
       if (isProgrammaticSeo) {
-        await schedulePSeoArticles({
+        return schedulePSeoArticles({
           ...values,
           // purpose: values.purpose.replaceAll("_", " "),
           // tone: values.tones?.join?.(","),
@@ -141,7 +140,6 @@ const SettingsForm = ({
           // sectionImages
           ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
         });
-        return;
       }
 
       const { data: language } = await supabase.from("languages").select("*").eq("id", values.language_id).limit(1).single()
