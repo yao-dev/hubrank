@@ -826,14 +826,14 @@ Write the outline following the structure below
   }
 
   async getPSeoVariablesValue(values: any) {
-    return this.ask(this.getPSeoVariablesValueTemplate(values), { type: "json", mode: "get-programmatic-seo-headlines", temperature: 0.1, model: models.opus });
+    return this.ask(this.getPSeoVariablesValueTemplate(values), { type: "json", mode: "get-programmatic-seo-variables", temperature: 0.1, model: models.opus });
   }
 
   getPSeoOutlineTemplate(values: any) {
-    let prompt = `Write a ${values.content_type} template for the article "${values.headline}".
+    let prompt = `Write a ${values.content_type} outline for the article "${values.title_structure}".
 
     The template should be usable for different interpolation of the variables
-    - the article contains up to ${values.word_count} words
+    - the article will contains up to ${values.word_count} words
     - don't write the content
     - keep the variables`;
 
@@ -849,11 +849,13 @@ Write the outline following the structure below
     }
     \`\`\`
     Wrap your output in \`\`\`json\`\`\`
-    `
+    `;
+
+    return prompt;
   }
 
   async getPSeoOutline(values: any) {
-    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-headlines", temperature: 0.1, model: models.opus });
+    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-outline", temperature: 0.1, model: models.opus });
   }
 }
 
