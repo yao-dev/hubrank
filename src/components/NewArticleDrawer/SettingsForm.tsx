@@ -214,8 +214,6 @@ const SettingsForm = ({
     form.setFieldValue(field, nextSelectedTags);
   }
 
-  console.log(form)
-
   return (
     <>
       {contextHolder}

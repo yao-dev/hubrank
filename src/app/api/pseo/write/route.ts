@@ -56,6 +56,7 @@ export async function POST(request: Request) {
     prompt += `\n- Sitemap (useful to include relevant links):\n${JSON.stringify(sitemaps, null, 2)}`
   }
 
+  prompt += `\nTitle: ${body.title}`;
   prompt += `\nOutline:\n${JSON.stringify(body.outline, null, 2)}`;
   prompt += `\Variables:\n${body.variables.map((i) => {
     return `${i.variable} (replace with ${body.variableSet[i.variable]}): ${i.instruction}\n`

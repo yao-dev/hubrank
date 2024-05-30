@@ -28,10 +28,10 @@ export async function POST(request: Request) {
     variables: variables,
   });
 
-  for (let [index, variableSet] of Object.entries(pSeoVariablesValue.slice(0, 2))) {
-    let headline = body.title_structure;
+  for (let [index, variableSet] of Object.entries(pSeoVariablesValue)) {
+    let title = body.title_structure;
     Object.keys(variableSet).forEach((variableName) => {
-      headline = headline
+      title = title
         .replace(variableName, variableSet[variableName])
         .replaceAll("{", "")
         .replaceAll("}", "")
@@ -39,10 +39,10 @@ export async function POST(request: Request) {
     // CREATE NEW ARTICLE WITH QUEUE STATUS
     let articleId = await insertBlogPost({
       ...body,
-      title: headline
+      title
     })
     await createSchedule({
-      destination: "https://usehubrank.app/api/pseo/write",
+      destination: "https://usehubrank.com/api/pseo/write",
       body: {
         ...body,
         outline,

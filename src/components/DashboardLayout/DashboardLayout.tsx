@@ -101,8 +101,6 @@ export default function DashboardLayout({
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  console.log(pathname)
-
   const data: MenuItem[] = useMemo(() => {
     if (projectId !== null) {
       return [
