@@ -34,7 +34,10 @@ export async function POST(request: Request) {
     sitemaps = getBlogUrls(sitemapXml)
   }
   // WRITE META DESCRIPTION
-  const { description: metaDescription } = await ai.metaDescription(body);
+  const { description: metaDescription } = await ai.metaDescription({
+    ...body,
+    title: body.headline
+  });
 
   // FETCH WRITING STYLE IF IT EXISTS
   let writingStyle;
@@ -48,7 +51,7 @@ export async function POST(request: Request) {
   })
 
   const { videos } = await getYoutubeVideosForKeyword({
-    keyword: body.headline,
+    keyword: `site:youtube:com ${body.headline}`,
     countryCode: language.code,
     locationCode: language.location_code,
   })
