@@ -51,12 +51,10 @@ export async function POST(request: Request) {
   })
 
   const { videos } = await getYoutubeVideosForKeyword({
-    keyword: `site:youtube:com ${body.headline}`,
+    keyword: `site:youtube.com ${body.headline}`,
     countryCode: language.code,
     locationCode: language.location_code,
   })
-
-  // site:youtube.com lose weight with push ups
 
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
