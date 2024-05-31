@@ -90,7 +90,15 @@ export async function POST(request: Request) {
   }
 
   if (videos?.length > 0) {
-    prompt += `\n- Videos (include relevant video(s) only, up to 1 video per section maximum):\n${JSON.stringify(videos, null, 2)}\n\n`
+    prompt += `\n- Youtube videos (include relevant video(s) only, up to 1 video per section maximum, don't add a list of video at the end of the article):
+    - include relevant video(s) only
+    - up to 1 video per section maximum
+    - don't add a list of video at the end of the article
+    - don't put more than 1 video together
+    - here is how you embed it in the markdown => [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/REPLACE_WITH_YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=REPLACE_WITH_YOUTUBE_VIDEO_ID_HERE)
+
+    ${JSON.stringify(videos, null, 2)}
+    `
   }
 
   prompt += `\nHeadline structure: ${body.title_structure}`;

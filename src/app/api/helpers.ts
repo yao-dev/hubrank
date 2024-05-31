@@ -603,6 +603,9 @@ export const getYoutubeVideosForKeyword = async ({
     }
   });
 
+  console.log("youtube video for keyword", `site:youtube.com ${keyword}`)
+  console.log("result", data.tasks[0].result)
+
   return {
     videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.map((i) => ({
       title: i.title,
