@@ -47,12 +47,12 @@ const slugify = (text: string) =>
     .replace(/[^\w-]+/g, '')
     .replace(/--+/g, '-')
 
-const mock = {
-  url: "https://metatags.io/",
-  slug: "/fake-slug",
-  description: "With Meta Tags you can edit and experiment with your content then preview how your webpage will look on Google, Facebook, Twitter and more!",
-  og_image_url: "https://assets-global.website-files.com/647daf37f31ac13e5d14bb03/64fef99a4049a05b307b7400_Taplio%20open%20graph%20image.webp"
-}
+// const mock = {
+//   url: "https://metatags.io/",
+//   slug: "/fake-slug",
+//   description: "With Meta Tags you can edit and experiment with your content then preview how your webpage will look on Google, Facebook, Twitter and more!",
+//   og_image_url: "https://assets-global.website-files.com/647daf37f31ac13e5d14bb03/64fef99a4049a05b307b7400_Taplio%20open%20graph%20image.webp"
+// }
 
 const styles = {
   google: {
@@ -180,7 +180,7 @@ const Article = ({
 
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
-    return new URL(slug, project.website)?.[prop]
+    return new URL(`${project.blog_path}/${slug}`, new URL(project.website))?.[prop]
   }
 
   const code = prettify(`

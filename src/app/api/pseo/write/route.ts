@@ -1,18 +1,30 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
-import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getWritingStyle, markArticleAsReadyToView, updateBlogPostStatus } from "../../helpers";
+import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getSchemaMarkup, getWritingStyle, markArticleAsReadyToView, saveSchemaMarkups, updateBlogPostStatus } from "../../helpers";
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getSummary } from 'readability-cyr';
+import { supabaseAdmin } from "@/helpers/supabase";
 
-export const maxDuration = 120;
+const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+export const maxDuration = 180;
 
 export async function POST(request: Request) {
   const body = await request.json();
+  const [
+    { data: project },
+    { data: pendingArticle },
+    { data: language },
+  ] = await Promise.all([
+    supabase.from("projects").select("*").eq("id", body.project_id).maybeSingle(),
+    supabase.from("blog_posts").select("*").eq("id", body.articleId).maybeSingle(),
+    supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
+  ]);
+
   const ai = new AI()
 
   // CHANGE STATUS TO WRITING
-  await updateBlogPostStatus(body.articleId, "writing")
+  await updateBlogPostStatus(body.articleId, "writing");
 
   // FETCH THE SITEMAP
   let sitemaps;
@@ -55,7 +67,7 @@ export async function POST(request: Request) {
   // }
 
   if (sitemaps?.length > 0) {
-    prompt += `\n- Sitemap (useful to include relevant links):\n${JSON.stringify(sitemaps, null, 2)}`
+    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${JSON.stringify(sitemaps, null, 2)}`
   }
 
 
@@ -63,6 +75,8 @@ export async function POST(request: Request) {
   prompt += `\nHeadline: ${body.headline}`;
   prompt += `\nOutline:\n${JSON.stringify(body.outline, null, 2)}`;
   prompt += `\nReplace all variables with their respective value.`;
+
+  prompt += `\n\nWrap your output in \`\`\`markdown\`\`\``
 
   const article = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
 
@@ -73,6 +87,19 @@ export async function POST(request: Request) {
   const html = convertMarkdownToHTML(cleanedArticle);
   console.log("html", chalk.redBright(cleanedArticle));
 
+  const schemas = pendingArticle.schema_markups ?? [];
+
+  for (let schema of body.structured_schemas) {
+    const createdSchema = await getSchemaMarkup({
+      project,
+      article: pendingArticle,
+      lang: language.label,
+      schemaName: schema,
+    })
+    schemas.push(createdSchema)
+    console.log("schemas", schemas)
+    await saveSchemaMarkups(pendingArticle.id, schemas);
+  }
 
   // GET ARTICLE STATS
   const articleStats = getSummary(cleanedArticle);

@@ -26,6 +26,7 @@ const ProjectForm = () => {
     try {
       await update.mutateAsync({
         ...values,
+        blog_path: values.blog_path.startsWith("/") ? values.blog_path : `/${values.blog_path}`,
         project_id: projectId
       })
       message.success("Project updated!")
@@ -100,6 +101,7 @@ const ProjectForm = () => {
         // seed_keyword: project.seed_keyword,
         language_id: project.language_id,
         sitemap: project.sitemap ?? "",
+        blog_path: project.blog_path ?? "",
       }}
     >
       <Form.Item
@@ -175,6 +177,10 @@ const ProjectForm = () => {
             max: 700,
           }}
         />
+      </Form.Item>
+
+      <Form.Item name="blog_path" label={<Label name="Blog path" />} tooltip="Defaults to /" rules={[{ required: false, type: "string", message: "Enter a valid blog path" }]} hasFeedback>
+        <Input placeholder="ex: /, /blog" />
       </Form.Item>
 
       <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} hasFeedback>

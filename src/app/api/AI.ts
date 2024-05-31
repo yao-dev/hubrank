@@ -226,7 +226,7 @@ export class AI {
       completion = await this.ai.beta.messages.create({
         // model: opts.model || "claude-3-sonnet-20240229",
         model: models["gpt-4o"],
-        max_tokens: opts.word_count ? opts.word_count * 2 : 4096,
+        max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
         system: this.system,
         messages: [
@@ -242,7 +242,7 @@ export class AI {
       completion = await this.ai.chat.completions.create({
         // model: opts.model || "claude-3-sonnet-20240229",
         model: models["gpt-4o"],
-        max_tokens: opts.word_count ? opts.word_count * 1.5 : 4096,
+        max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
         messages: [
           {

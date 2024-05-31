@@ -1,7 +1,6 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-import { AI } from "../AI";
-import { getProjectContext, saveSchemaMarkups } from "../helpers";
+import { getSchemaMarkup, saveSchemaMarkups } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -20,26 +19,16 @@ export async function POST(request: Request) {
 
     console.log("article.schema_markups", article.schema_markups)
 
-    const context = getProjectContext({
-      name: project.name,
-      website: project.website,
-      description: project.metatags?.description || project?.description,
-      lang: language.label,
-    })
-
-    const ai = new AI({ context });
-    const schemas = article.schema_markups ?? []
-    const createdSchema = await ai.schemaMarkup({
+    const createdSchema = await getSchemaMarkup({
       project,
-      article: article.markdown,
+      article,
+      lang: language.label,
       schemaName: body.schema,
-      metaDescription: article.meta_description
-    });
-
-    console.log("createdSchema", createdSchema)
+    })
+    const schemas = article.schema_markups ?? []
     schemas.push(createdSchema)
     console.log("schemas", schemas)
-    await saveSchemaMarkups(article.id, schemas)
+    await saveSchemaMarkups(article.id, schemas);
 
     return NextResponse.json({
       schema_markup: createdSchema

@@ -5,7 +5,18 @@ import { getUserId } from "@/helpers/user";
 import useLanguages from "@/hooks/useLanguages";
 import useProjectId from "@/hooks/useProjectId";
 import useWritingStyles from "@/hooks/useWritingStyles";
-import { contentTypes, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
+import {
+  contentTypes,
+  emotions,
+  instructionalElements,
+  perspectives,
+  purposes,
+  sentenceStructures,
+  tones,
+  vocabularies,
+  writingStructures,
+  structuredSchemas
+} from "@/options";
 import {
   StarOutlined
 } from '@ant-design/icons';
@@ -62,6 +73,7 @@ const SettingsForm = ({
   const fieldWritingStructures = Form.useWatch("writing_structures", form);
   const fieldInstructionalElements = Form.useWatch("instructional_elements", form);
   const fieldTitleStructure = Form.useWatch("title_structure", form) ?? "";
+  const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const [variableSet, setVariableSet] = useState({});
 
@@ -344,6 +356,7 @@ const SettingsForm = ({
           with_seo: true,
           language_id: null,
           with_hook: false,
+          structured_schemas: [],
         }}
         autoComplete="off"
         layout="vertical"
@@ -766,6 +779,15 @@ const SettingsForm = ({
             hasFeedback
           >
             <Input placeholder="Sitemap url" />
+          </Form.Item>
+
+          <Form.Item name="structured_schemas" label={<Label name="Schema markup (ld+json)" />}>
+            <MultiSelectTagList
+              field="structured_schemas"
+              options={structuredSchemas}
+              selectedOptions={fieldStructuredSchemas}
+              onAddTag={onAddTag}
+            />
           </Form.Item>
 
           <Form.Item

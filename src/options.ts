@@ -915,3 +915,42 @@ export const instructionalElements = [
     value: "Checklists"
   },
 ]
+
+export const structuredSchemas = [
+  {
+    label: "BreadcrumbList",
+    value: "BreadcrumbList",
+  },
+  {
+    label: "VideoObject",
+    value: "VideoObject",
+  },
+  {
+    label: "Recipe",
+    value: "Recipe",
+  },
+  {
+    label: "Article",
+    value: "Article",
+  },
+  {
+    label: "WebSite",
+    value: "WebSite",
+  },
+  {
+    label: "WebPage",
+    value: "WebPage",
+  },
+  {
+    label: "BlogPosting",
+    value: "BlogPosting",
+  },
+  {
+    label: "FAQPage",
+    value: "FAQPage",
+  },
+  {
+    label: "Question",
+    value: "Question",
+  },
+]

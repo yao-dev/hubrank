@@ -4,6 +4,7 @@ import { marked } from "marked";
 import { chromium } from 'playwright';
 import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-client';
 import { getSummary } from 'readability-cyr';
+import { AI } from "./AI";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -516,4 +517,29 @@ export const getProjectById = async (projectId: number) => {
 
 export const saveSchemaMarkups = async (postId: number, schemaMarkups: any) => {
   return supabase.from("blog_posts").update({ schema_markups: schemaMarkups }).eq("id", postId);
+}
+
+export const getSchemaMarkup = async ({
+  project,
+  article,
+  schemaName,
+  lang,
+}: any) => {
+  const context = getProjectContext({
+    name: project.name,
+    website: project.website,
+    description: project.metatags?.description || project?.description,
+    lang,
+  })
+
+  const ai = new AI({ context });
+  const createdSchema = await ai.schemaMarkup({
+    project,
+    article: article.markdown,
+    schemaName: schemaName,
+    metaDescription: article.meta_description
+  });
+
+  console.log("createdSchema", createdSchema)
+  return createdSchema
 }
