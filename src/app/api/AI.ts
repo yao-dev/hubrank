@@ -707,6 +707,10 @@ Write the outline following the structure below
     // prompt += this.opts?.writing_style?.sentence_structures?.length > 0 ? `\nSentence structures: ${this.opts?.writing_style?.sentence_structures.join(', ')}` : "";
     prompt += this.opts?.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${this.opts?.writing_style?.perspectives.join(', ')}` : "";
 
+    if (values.keywords?.length > 0) {
+      prompt += `\n- Keywords (include relevant keywords only):\n${values.keywords.join('\n')}\n\n`
+    }
+
     prompt += `\nWrite a unique description and return a JSON object with the Meta structure.
     \`\`\`ts
     type Meta = {

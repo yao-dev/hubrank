@@ -26,6 +26,11 @@ export async function POST(request: Request) {
   // CHANGE STATUS TO WRITING
   await updateBlogPostStatus(body.articleId, "writing");
 
+  const { keywords } = await getKeywordsForKeywords({
+    keyword: body.headline,
+    countryCode: language.code
+  })
+
   // FETCH THE SITEMAP
   let sitemaps;
   if (body.sitemap) {
@@ -36,7 +41,8 @@ export async function POST(request: Request) {
   // WRITE META DESCRIPTION
   const { description: metaDescription } = await ai.metaDescription({
     ...body,
-    title: body.headline
+    title: body.headline,
+    keywords
   });
 
   // FETCH WRITING STYLE IF IT EXISTS
@@ -45,14 +51,9 @@ export async function POST(request: Request) {
     writingStyle = await getWritingStyle(body.writing_style_id)
   }
 
-  const { keywords } = await getKeywordsForKeywords({
-    keyword: body.headline,
-    countryCode: language.code
-  })
-
   const { videos } = await getYoutubeVideosForKeyword({
     keyword: body.headline,
-    countryCode: language.code,
+    languageCode: language.code,
     locationCode: language.location_code,
   })
 
@@ -134,6 +135,7 @@ export async function POST(request: Request) {
     wordCount: articleStats.words,
     // featuredImage: body.featuredImage?.href ?? "",
     metaDescription,
+    keywords
   });
   return NextResponse.json({
     article: cleanedArticle
