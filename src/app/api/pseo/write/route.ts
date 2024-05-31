@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
-import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getSchemaMarkup, getWritingStyle, markArticleAsReadyToView, saveSchemaMarkups, updateBlogPostStatus } from "../../helpers";
+import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getKeywordsForKeywords, getSchemaMarkup, getWritingStyle, getYoutubeVideosForKeyword, markArticleAsReadyToView, saveSchemaMarkups, updateBlogPostStatus } from "../../helpers";
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getSummary } from 'readability-cyr';
@@ -42,6 +42,19 @@ export async function POST(request: Request) {
     writingStyle = await getWritingStyle(body.writing_style_id)
   }
 
+  const { keywords } = await getKeywordsForKeywords({
+    keyword: body.headline,
+    countryCode: language.code
+  })
+
+  const { videos } = await getYoutubeVideosForKeyword({
+    keyword: body.headline,
+    countryCode: language.code,
+    locationCode: language.location_code,
+  })
+
+  // site:youtube.com lose weight with push ups
+
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
   prompt += writingStyle?.purposes?.length > 0 ? `\nPurposes: ${writingStyle?.purposes.join(', ')}` : "";
@@ -67,9 +80,16 @@ export async function POST(request: Request) {
   // }
 
   if (sitemaps?.length > 0) {
-    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${JSON.stringify(sitemaps, null, 2)}`
+    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${JSON.stringify(sitemaps, null, 2)}\n`
   }
 
+  if (keywords?.length > 0) {
+    prompt += `\n- Keywords (include relevant keywords only, up to 15 keywords):\n${JSON.stringify(keywords, null, 2)}\n`
+  }
+
+  if (videos?.length > 0) {
+    prompt += `\n- Videos (include relevant video(s) only, up to 1 video per section maximum):\n${JSON.stringify(videos, null, 2)}\n`
+  }
 
   prompt += `\nHeadline structure: ${body.title_structure}`;
   prompt += `\nHeadline: ${body.headline}`;

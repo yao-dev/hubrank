@@ -5,6 +5,7 @@ import { chromium } from 'playwright';
 import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-client';
 import { getSummary } from 'readability-cyr';
 import { AI } from "./AI";
+import axios from "axios";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -542,4 +543,65 @@ export const getSchemaMarkup = async ({
 
   console.log("createdSchema", createdSchema)
   return createdSchema
+}
+
+export const getKeywordsForKeywords = async ({
+  keyword,
+  countryCode,
+}: any) => {
+  const { data } = await axios({
+    method: "POST",
+    url: "https://api.dataforseo.com/v3/keywords_data/google/keywords_for_keywords/live",
+    data: [{ "search_partners": false, "keywords": [keyword], "language_code": countryCode || "en", "sort_by": "relevance", "date_interval": "next_month", "include_adult_keywords": false }],
+    auth: {
+      username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
+      password: process.env.NEXT_PUBLIC_DATAFORSEO_PASSWORD || ""
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+
+  return {
+    result: data.tasks[0].result,
+    result_count: data.tasks[0].result_count,
+    keywords: data.tasks[0].result.map((i) => i.keyword)
+  }
+}
+
+export const getYoutubeVideosForKeyword = async ({
+  keyword,
+  languageCode,
+  locationCode,
+}: any) => {
+  const { data } = await axios({
+    method: "POST",
+    url: 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced',
+    data: [{
+      keyword,
+      location_code: locationCode,
+      language_code: languageCode,
+      device: 'desktop',
+      os: 'windows',
+      depth: 50,
+      target: 'youtube.com'
+    }],
+    auth: {
+      username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
+      password: process.env.NEXT_PUBLIC_DATAFORSEO_PASSWORD || ""
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+
+  return {
+    videos: data.tasks[0].result[0].items.map((i) => ({
+      title: i.title,
+      url: i.url,
+      description: i.description,
+      breadcrumb: i.breadcrumb,
+      website_name: i.website_name,
+    })),
+  }
 }
