@@ -11,13 +11,13 @@ import {
 } from '@ant-design/icons';
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
+  Alert,
   AutoComplete,
   Button,
   Flex,
   Form,
   Image,
   Input,
-  InputNumber,
   Segmented,
   Select,
   Space,
@@ -63,6 +63,7 @@ const SettingsForm = ({
   const fieldInstructionalElements = Form.useWatch("instructional_elements", form);
   const fieldTitleStructure = Form.useWatch("title_structure", form) ?? "";
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
+  const [variableSet, setVariableSet] = useState({});
 
   const { data: savedKeywordsOptions = [] } = useQuery({
     queryKey: ["saved_keywords", { projectId }],
@@ -124,9 +125,33 @@ const SettingsForm = ({
     }
 
     if (isCustomTitle || isProgrammaticSeo) {
-      setLockedStep(0);
-
       if (isProgrammaticSeo) {
+        const generateCombinations = () => {
+          const keys = Object.keys(variableSet);
+          const vSet = keys.map(key => variableSet[key].split('\n'));
+          const results = [];
+
+          function combine(prefix, index) {
+            if (index === keys.length) {
+              let title = values.title_structure;
+              for (let i = 0; i < keys.length; i++) {
+                title = title.replace(`{${keys[i]}}`, prefix[i]);
+              }
+              results.push(title);
+              return;
+            }
+
+            vSet[index].forEach(value => {
+              combine([...prefix, value], index + 1);
+            });
+          }
+
+          combine([], 0);
+          return results
+        }
+
+        const headlines = generateCombinations();
+
         return schedulePSeoArticles({
           ...values,
           // purpose: values.purpose.replaceAll("_", " "),
@@ -138,9 +163,13 @@ const SettingsForm = ({
           project_id: projectId,
           // featuredImage,
           // sectionImages
+          headlines,
+          variableSet,
           ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
         });
       }
+
+      setLockedStep(0);
 
       const { data: language } = await supabase.from("languages").select("*").eq("id", values.language_id).limit(1).single()
       const rk = await getRelatedKeywords({ keyword: values.seed_keyword, depth: 2, limit: 50, api: false, lang: language.code, location_code: language.location_code })
@@ -213,6 +242,47 @@ const SettingsForm = ({
       : list.filter((t) => t !== tag);
     form.setFieldValue(field, nextSelectedTags);
   }
+
+  const getVariables = () => {
+    const variables = new Set([]);
+
+    if (fieldTitleStructure) {
+      const acceptedChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "_"]
+      let isVarOpen;
+      let variable = "";
+
+      fieldTitleStructure.split("").forEach((char) => {
+        if (char === "{") {
+          isVarOpen = true;
+          return;
+        };
+        if (char === "}") {
+          isVarOpen = false;
+
+          if (variables.size < 3 && variable.length > 0) {
+            variables.add(variable)
+          }
+
+          variable = ""
+          return;
+        }
+        if (!acceptedChars.includes(char)) {
+          isVarOpen = false;
+          variable = ""
+          return;
+        }
+        variable += char
+      });
+    }
+
+    return [...variables]
+  }
+
+  const estimatedPSeoArticlesCount = isEmpty(variableSet) ? 0 : Object.values(variableSet).map((i) => i.split('\n').length).reduce((a, b) => a * b)
+
+  // Object.entries(variableSet).map(([name, value]) => {
+  //   const values = value.split("\n").filter((i) => !!i.length)
+  // })
 
   return (
     <>
@@ -371,44 +441,16 @@ const SettingsForm = ({
             }
 
             if (getFieldValue('title_mode') === "programmatic_seo") {
-              // fieldTitleStructure
-              const acceptedChars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, "_"]
-              const variables = new Set([]);
-              let isVarOpen;
-              let variable = "";
-
-              fieldTitleStructure.split("").forEach((char) => {
-                if (char === "{") {
-                  isVarOpen = true;
-                  return;
-                };
-                if (char === "}") {
-                  isVarOpen = false;
-
-                  if (variable.length > 0) {
-                    variables.add(variable)
-                  }
-
-                  variable = ""
-                  return;
-                }
-                if (!acceptedChars.includes(char)) {
-                  isVarOpen = false;
-                  variable = ""
-                  return;
-                }
-                variable += char
-              });
-
+              const variables = getVariables()
               return (
-                <>
-                  <Form.Item
+                <Flex vertical gap="middle" style={{ marginTop: 20, marginBottom: 20 }}>
+                  {/* <Form.Item
                     name="article_count"
                     label={<Label name="How many articles?" />}
                     rules={[{ required: true, type: "integer", min: 1, max: 500 }]}
                   >
                     <InputNumber />
-                  </Form.Item>
+                  </Form.Item> */}
                   <Form.Item
                     name="title_structure"
                     label={<Label name="Title structure" />}
@@ -419,24 +461,49 @@ const SettingsForm = ({
                     <Input
                       placeholder="ex: How to {variable_1} in {variable_2}"
                       count={{ show: true, max: 150 }}
+                      onChange={() => {
+                        setVariableSet((prev) => {
+                          Object.keys(prev).forEach((i) => {
+                            if (!variables.includes(i)) {
+                              delete prev[i]
+                            }
+                          })
+                          return prev;
+                        })
+                      }}
                     />
                   </Form.Item>
+
+                  <Form.Item noStyle>
+                    <Alert message={`${estimatedPSeoArticlesCount} articles will be written`} type="info" />
+                  </Form.Item>
+
                   {[...variables].map((variable, index) => {
                     return (
                       <Form.Item
                         key={variable}
-                        name={`variables-${variable}`}
+                        // name={`variables-${variable}`}
                         label={<Label name={`Variable ${index + 1}: ${variable}`} />}
-                        help={`Describe in few words what ${variable} represents`}
-                        rules={[{ required: true, type: "string", max: 75 }]}
+                        // help={`Describe in few words what ${variable} represents`}
+                        help="One value per line"
+                        rules={[{ required: true, type: "string" }]}
                       >
-                        <Input
-                          count={{ show: true, max: 75 }}
+                        <Input.TextArea
+                          placeholder={["value 1", "value 2", "value 3"].join('\n')}
+                          autoSize={{ minRows: 2, maxRows: 6 }}
+                          onChange={e => {
+                            setVariableSet((prev) => {
+                              return {
+                                ...prev,
+                                [variable]: e.target.value
+                              }
+                            })
+                          }}
                         />
                       </Form.Item>
                     )
                   })}
-                </>
+                </Flex>
               )
             }
           }}

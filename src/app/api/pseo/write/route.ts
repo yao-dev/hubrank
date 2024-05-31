@@ -56,11 +56,11 @@ export async function POST(request: Request) {
     prompt += `\n- Sitemap (useful to include relevant links):\n${JSON.stringify(sitemaps, null, 2)}`
   }
 
-  prompt += `\nTitle: ${body.title}`;
+
+  prompt += `\nHeadline structure: ${body.title_structure}`;
+  prompt += `\nHeadline: ${body.headline}`;
   prompt += `\nOutline:\n${JSON.stringify(body.outline, null, 2)}`;
-  prompt += `\Variables:\n${body.variables.map((i) => {
-    return `${i.variable} (replace with ${body.variableSet[i.variable]}): ${i.instruction}\n`
-  })}`;
+  prompt += `\nReplace all variables with their respective value.`;
 
   const article = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
   const cleanedArticle = cleanArticle(article)

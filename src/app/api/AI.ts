@@ -830,7 +830,7 @@ Write the outline following the structure below
   }
 
   getPSeoOutlineTemplate(values: any) {
-    let prompt = `Write a ${values.content_type} outline for the article "${values.title_structure}".
+    let prompt = `Write a generic ${values.content_type} outline for the article structure "${values.title_structure}".
 
     The template should be usable for different interpolation of the variables
     - the article will contains up to ${values.word_count} words
@@ -846,9 +846,7 @@ Write the outline following the structure below
     // TODO: add language
 
     prompt += `Variables:
-    ${values.variables.map((i) => {
-      return `${i.variable}: ${i.instruction}\n`
-    })}`
+    ${JSON.stringify(values.variables, null, 2)}`
 
     prompt += `// output structure
     \`\`\`ts
