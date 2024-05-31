@@ -714,7 +714,7 @@ Write the outline following the structure below
     prompt += `\nWrite a unique description and return a JSON object with the Meta structure.
     \`\`\`ts
     type Meta = {
-      description: string; // value of the meta tag for SEO max length 160, avoid emoji
+      description: string; // max length 160, no emoji.
     }
     \`\`\`
     Wrap your output in \`\`\`json\`\`\``;

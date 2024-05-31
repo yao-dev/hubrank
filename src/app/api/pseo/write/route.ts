@@ -95,7 +95,7 @@ export async function POST(request: Request) {
     - up to 1 video per section maximum
     - don't add a list of video at the end of the article
     - don't put more than 1 video together
-    - here is how you embed it in the markdown => [![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/REPLACE_WITH_YOUTUBE_VIDEO_ID_HERE/0.jpg)](http://www.youtube.com/watch?v=REPLACE_WITH_YOUTUBE_VIDEO_ID_HERE)
+    - here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
 
     ${JSON.stringify(videos, null, 2)}
     `
