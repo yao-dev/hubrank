@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         articleId
       },
       headers: {
-        "Upstash-Delay": `${index}m`,
+        "Upstash-Delay": `${(index || 0) as number * 10}s`,
       }
     });
   }
