@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
-import { cleanArticle, getBlogUrls, getWritingStyle, markArticleAsReadyToView, updateBlogPostStatus } from "../../helpers";
+import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getWritingStyle, markArticleAsReadyToView, updateBlogPostStatus } from "../../helpers";
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getSummary } from 'readability-cyr';
@@ -65,8 +65,14 @@ export async function POST(request: Request) {
   prompt += `\nReplace all variables with their respective value.`;
 
   const article = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
+
   const cleanedArticle = cleanArticle(article)
   console.log(chalk.yellow(cleanedArticle, null, 2));
+
+  // CONVERT MARKDOWN ARTICLE TO HTML
+  const html = convertMarkdownToHTML(cleanedArticle);
+  console.log("html", chalk.redBright(cleanedArticle));
+
 
   // GET ARTICLE STATS
   const articleStats = getSummary(cleanedArticle);
@@ -74,7 +80,7 @@ export async function POST(request: Request) {
   await markArticleAsReadyToView({
     markdown: cleanedArticle,
     // cost: ai.cost,
-    // html,
+    html,
     // writingTimeInSeconds,
     articleId: body.articleId,
     wordCount: articleStats.words,
