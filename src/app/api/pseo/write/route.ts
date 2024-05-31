@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     keyword: body.headline,
     languageCode: language.code,
     locationCode: language.location_code,
-  })
+  });
 
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
@@ -122,7 +122,7 @@ export async function POST(request: Request) {
   for (let schema of body.structured_schemas) {
     const createdSchema = await getSchemaMarkup({
       project,
-      article: pendingArticle,
+      article: cleanedArticle,
       lang: language.label,
       schemaName: schema,
     })

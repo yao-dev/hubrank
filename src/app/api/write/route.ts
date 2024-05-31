@@ -5,11 +5,15 @@ import {
   cleanArticle,
   convertMarkdownToHTML,
   getBlogUrls,
+  getKeywordsForKeywords,
   getProjectContext,
+  getSchemaMarkup,
   getWritingStyle,
+  getYoutubeVideosForKeyword,
   insertBlogPost,
   markArticleAsFailure,
   markArticleAsReadyToView,
+  saveSchemaMarkups,
   updateBlogPostStatus,
   writeHook,
   writeSection,
@@ -32,80 +36,6 @@ export async function POST(request: Request) {
       body.title = body.custom_title;
     }
 
-    if (body.title_mode === "programmatic_seo") {
-      const variables = Object.keys(body).filter((key) => key.startsWith("variables-")).map((key) => {
-        const variable = key.replace("variables-", "");
-        return {
-          description: body[key],
-          variable,
-          instruction: `Replace {${variable}} with ${body[key]}`
-        }
-      })
-      const seoAI = new AI();
-      const pSeoVariablesValue = await seoAI.getPSeoVariablesValue({
-        ...body,
-        variables
-      })
-      console.log(chalk.yellow(JSON.stringify(pSeoVariablesValue, null, 2)));
-      const pSeoOutline = await seoAI.getPSeoOutline({
-        content_type: body.content_type,
-        headline: body.headline,
-        word_count: body.word_count,
-        variables: variables,
-      });
-
-      for (let variableValueSet of pSeoVariablesValue.slice(0, 2)) {
-        let prompt = "Now write up to ${body.word_count} words using this template";
-
-        prompt += body?.purposes?.length > 0 ? `\nPurposes: ${body?.purposes.join(', ')}` : "";
-        prompt += body?.emotions?.length > 0 ? `\nEmotions: ${body?.emotions.join(', ')}` : "";
-        prompt += body?.vocabularies?.length > 0 ? `\nVocabularies: ${body?.vocabularies.join(', ')}` : "";
-        prompt += body?.sentence_structures?.length > 0 ? `\nSentence structures: ${body?.sentence_structures.join(', ')}` : "";
-        prompt += body?.perspectives?.length > 0 ? `\nPerspectives: ${body?.perspectives.join(', ')}` : "";
-        prompt += body?.writing_structures?.length > 0 ? `\nWriting_structures: ${body?.writing_structures.join(', ')}` : "";
-        prompt += body?.instructional_elements?.length > 0 ? `\nInstructional elements: ${body?.instructional_elements.join(', ')}` : "";
-
-        prompt += body.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
-        prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
-        prompt += body.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
-        prompt += body.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
-        prompt += `\n- Language: ${body.language}`
-
-        if (body.additional_information) {
-          prompt += `\n${body.additional_information}`
-        }
-
-        // if (body.keywords?.length > 0) {
-        //   prompt += `\n- List of keywords to include (avoid keywords stuffing): ${body.keywords}`
-        // }
-
-        if (body.sitemaps?.length > 0) {
-          prompt += `\n- Sitemap (useful to include relevant links):\n${JSON.stringify(body.sitemaps, null, 2)}`
-        }
-
-        prompt += `\nOutline:\n${JSON.stringify(pSeoOutline, null, 2)}`;
-        prompt += `\Variables:\n${JSON.stringify(pSeoOutline, null, 2)}`;
-
-        const pSeoArticle = await seoAI.ask(`Now write up to ${body.word_count} words using this template
-
-        Outline:
-        ${JSON.stringify(pSeoOutline, null, 2)}
-
-        Variables:
-        ${variables.map((i) => {
-          return `${i.variable} (replace with ${variableValueSet[i.variable]}): ${i.instruction}\n`
-        })}
-
-        Write in markdown wrapped in \`\`\`markdown\`\`\`.
-        `, { type: "markdown", mode: "PSEO article", temperature: 0.5 })
-
-        console.log(chalk.yellow(cleanArticle(pSeoArticle), null, 2));
-      }
-      return NextResponse.json({
-        success: true
-      }, { status: 200 });
-    }
-
     console.log(chalk.yellow(JSON.stringify(body, null, 2)));
 
     // CREATE NEW ARTICLE WITH QUEUE STATUS
@@ -116,11 +46,23 @@ export async function POST(request: Request) {
 
     const [
       { data: project },
+      { data: pendingArticle },
       { data: language },
     ] = await Promise.all([
       supabase.from("projects").select("*").eq("id", body.project_id).single(),
+      supabase.from("blog_posts").select("*").eq("id", body.articleId).maybeSingle(),
       supabase.from("languages").select("*").eq("id", body.language_id).single()
-    ])
+    ]);
+
+    const { keywords } = await getKeywordsForKeywords({
+      keyword: body.title, // TODO: won't work for provided title
+      countryCode: language.code
+    })
+    const { videos } = await getYoutubeVideosForKeyword({
+      keyword: body.title, // TODO: won't work for provided title
+      languageCode: language.code,
+      locationCode: language.location_code,
+    });
 
     const context = getProjectContext({
       name: project.name,
@@ -148,6 +90,8 @@ export async function POST(request: Request) {
       language: language.label,
       sitemaps,
       images: body.sectionImages,
+      videos,
+      keywords
     });
 
     // GET HEADINGS AS A COMMA SEPARATED STRING
@@ -198,7 +142,7 @@ export async function POST(request: Request) {
         title: body.title,
         outline,
         seed_keyword: body.seed_keyword,
-        keywords: body.keywords, // TODO: make use of it in ai.hook
+        keywords, // TODO: make use of it in ai.hook
         // perspective: body.perspective,
         // tones: body.tones,
         // purpose: body.purpose,
@@ -266,6 +210,7 @@ export async function POST(request: Request) {
           youtube_video: youtubeVideo,
           internal_links: section?.internal_links,
           images: section?.images,
+          video_url: section?.video_url,
         },
         outline,
         title: body.title,
@@ -333,6 +278,20 @@ export async function POST(request: Request) {
 
     // GET ARTICLE STATS
     const articleStats = getSummary(ai.article);
+
+    const schemas = pendingArticle.schema_markups ?? [];
+
+    for (let schema of body.structured_schemas) {
+      const createdSchema = await getSchemaMarkup({
+        project,
+        article: ai.article,
+        lang: language.label,
+        schemaName: schema,
+      })
+      schemas.push(createdSchema)
+      console.log("schemas", schemas)
+      await saveSchemaMarkups(articleId, schemas);
+    }
 
     // UPDATE ARTICLE STATUS TO READY TO VIEW
     await markArticleAsReadyToView({

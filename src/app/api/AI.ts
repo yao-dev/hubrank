@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
 import { emotions, perspectives, purposes, sentenceStructures, tones, vocabularies } from "@/options";
+import { isEmpty } from "lodash";
 
 const costs = {
   "claude-3-opus-20240229": {
@@ -417,9 +418,9 @@ Start and end your writing with triple @@@.
     //   prompt += `\nTones: ${JSON.stringify(values.tones, null, 2)}`
     // }
 
-    // if (!isEmpty(values?.keywords)) {
-    //   prompt += `\nKeywords: ${JSON.stringify(values.keywords, null, 2)}`
-    // }
+    if (!isEmpty(values?.keywords)) {
+      prompt += `\nKeywords:\n${values.keywords.join('\n')}`
+    }
 
     prompt += `
     Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values?.title}"
@@ -436,6 +437,7 @@ Start and end your writing with triple @@@.
 
   writeTemplate(values: any) {
     const hasImages = values?.section?.images?.length > 0;
+    const hasVideo = !!values?.section?.image_url;
 
     let prompt = `For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
     Section heading prefix: ${values?.section?.prefix}
@@ -459,7 +461,7 @@ Start and end your writing with triple @@@.
     //   prompt += `\nPurpose: ${values.purpose}`
     // }
 
-    // prompt += `\nRelated keywords: ${values?.section?.keywords}`
+    prompt += `\nRelevant keywords: ${values?.section?.keywords}`
 
     if (values?.section?.call_to_action) {
       prompt += `\nCall to action instructions:\n${values.section.call_to_action}`;
@@ -471,9 +473,18 @@ Start and end your writing with triple @@@.
     if (values?.section?.internal_links?.length > 0) {
       prompt += `\nInternal links to include:\n${JSON.stringify(values.section.internal_links ?? [], null, 2)}`
     }
+    if (values?.section?.internal_links?.length > 0) {
+      prompt += `\nInternal links to include:\n${values.section.internal_links?.join('\n')}\n\n`
+    }
 
     if (hasImages) {
       prompt += `\nImages to include: ${JSON.stringify(values?.section?.images ?? "", null, 2)}`
+    }
+
+    if (hasVideo) {
+      prompt += `\nVideo to include:
+      // here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
+      url: ${values.section.video_url}`
     }
 
     prompt += `
@@ -586,6 +597,7 @@ Start and end your writing with triple @@@.
 
   outlinePlanTemplate(values: any) {
     const hasImages = values?.images?.length > 0;
+    const hasVideos = values?.videos?.length > 0;
     // - number of heading: ${values.heading_count}
     let prompt = `Write an article outline for the headline: "${values.title}"
 - the content type is ${values.content_type}
@@ -608,19 +620,23 @@ Start and end your writing with triple @@@.
     prompt += `\n- Language: ${values.language}`
 
     if (values.additional_information) {
-      prompt += `\n${values.additional_information}`
+      prompt += `\n-Additional information: ${values.additional_information}`
     }
 
-    // if (values.keywords?.length > 0) {
-    //   prompt += `\n- List of keywords to include (avoid keywords stuffing): ${values.keywords}`
-    // }
+    if (values.keywords?.length > 0) {
+      prompt += `\n- Keywords (include relevant keywords only, avoid keywords stuffing):\n${values.keywords.join('\n')}\n\n`
+    }
 
     if (values.sitemaps?.length > 0) {
-      prompt += `\n- Sitemap:\n${JSON.stringify(values.sitemaps, null, 2)}`
+      prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps?.join('\n')}\n\n`
     }
 
     if (hasImages) {
       prompt += `\n- Images:\n${JSON.stringify(values.images, null, 2)}`
+    }
+
+    if (hasVideos) {
+      prompt += `\n- Videos:\n${JSON.stringify(values.videos, null, 2)}`
     }
 
     // ## Contents
@@ -641,45 +657,65 @@ Start and end your writing with triple @@@.
 Write the outline following the structure below
 `;
 
+
+    // if (videos?.length > 0) {
+    // prompt += `\n- Youtube videos (include relevant video(s) only, up to 1 video per section maximum, don't add a list of video at the end of the article):
+    // - include relevant video(s) only
+    // - up to 1 video per section maximum
+    // - don't add a list of video at the end of the article
+    // - don't put more than 1 video together
+    // - here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
+
+    // ${JSON.stringify(videos, null, 2)}
+    // `
+    // }
+
+    prompt += `\ntype Outline = {
+  table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
+  sections: {
+    name: string;
+    word_count: number;
+    keywords: string; // comma separated
+    internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
+    // include relevant images in the above list, leave it empty otherwise.`;
+
     if (hasImages) {
-      prompt += `\ntype Outline = {
-    table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
-    sections: {
-      name: string;
-      word_count: number;
-      keywords: string; // comma separated
-      internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
-      // include relevant images in the above list, leave it empty otherwise.
-      images: string[]; // ![alt](href)
-      purposes?: string[];
-      emotions?: string[];
-      vocabularies?: string[];
-      sentence_structures?: string[];
-      perspectives?: string[];
-      writing_structures?: string[];
-      instructional_elements?: string[];
-    }[];
-  }
-  `
-    } else {
-      prompt += `\ntype Outline = {
-    table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
-    sections: {
-      name: string;
-      word_count: number;
-      keywords: string; // comma separated
-      internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
-      purposes?: string[];
-      emotions?: string[];
-      vocabularies?: string[];
-      sentence_structures?: string[];
-      perspectives?: string[];
-      writing_structures?: string[];
-      instructional_elements?: string[];
-    }[];
-  }
-  `
+      prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // ![alt](href)`
     }
+
+    if (hasVideos) {
+      prompt += `\n// youtube video
+// include the most relevant video only (optional), up to 1 video per section
+video_url: string;
+`
+    }
+
+    prompt += `purposes?: string[];
+    emotions?: string[];
+    vocabularies?: string[];
+    sentence_structures?: string[];
+    perspectives?: string[];
+    writing_structures?: string[];
+    instructional_elements?: string[];
+}[];`
+
+    prompt += `\ntype Outline = {
+  table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
+  sections: {
+    name: string;
+    word_count: number;
+    keywords: string; // comma separated
+    internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
+    purposes?: string[];
+    emotions?: string[];
+    vocabularies?: string[];
+    sentence_structures?: string[];
+    perspectives?: string[];
+    writing_structures?: string[];
+    instructional_elements?: string[];
+  }[];
+}
+`
 
     prompt += `\nOutput a JSON array wrapped in \`\`\`json\`\`\``
 

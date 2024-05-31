@@ -186,6 +186,7 @@ export const writeSection = async ({
     images?: string[],
     tones?: any;
     purpose: string;
+    video_url?: string;
   };
   title: string;
   outline: string;
@@ -537,7 +538,7 @@ export const getSchemaMarkup = async ({
   const ai = new AI({ context });
   const createdSchema = await ai.schemaMarkup({
     project,
-    article: article.markdown,
+    article,
     schemaName: schemaName,
     metaDescription: article.meta_description
   });
