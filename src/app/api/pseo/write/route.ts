@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   })
 
   const { videos } = await getYoutubeVideosForKeyword({
-    keyword: `site:youtube.com ${body.headline}`,
+    keyword: body.headline,
     countryCode: language.code,
     locationCode: language.location_code,
   })
@@ -81,15 +81,15 @@ export async function POST(request: Request) {
   // }
 
   if (sitemaps?.length > 0) {
-    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${JSON.stringify(sitemaps, null, 2)}\n`
+    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${sitemaps?.join('\n')}\n\n`
   }
 
   if (keywords?.length > 0) {
-    prompt += `\n- Keywords (include relevant keywords only, up to 15 keywords):\n${JSON.stringify(keywords, null, 2)}\n`
+    prompt += `\n- Keywords (include relevant keywords only, up to 15 keywords):\n${keywords.join('\n')}\n\n`
   }
 
   if (videos?.length > 0) {
-    prompt += `\n- Videos (include relevant video(s) only, up to 1 video per section maximum):\n${JSON.stringify(videos, null, 2)}\n`
+    prompt += `\n- Videos (include relevant video(s) only, up to 1 video per section maximum):\n${JSON.stringify(videos, null, 2)}\n\n`
   }
 
   prompt += `\nHeadline structure: ${body.title_structure}`;

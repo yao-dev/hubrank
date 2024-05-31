@@ -6,6 +6,7 @@ import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-cli
 import { getSummary } from 'readability-cyr';
 import { AI } from "./AI";
 import axios from "axios";
+import { isEmpty } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -562,6 +563,14 @@ export const getKeywordsForKeywords = async ({
     }
   });
 
+  if (isEmpty(data.tasks[0].result)) {
+    return {
+      result: [],
+      result_count: 0,
+      keywords: []
+    }
+  }
+
   return {
     result: data.tasks[0].result,
     result_count: data.tasks[0].result_count,
@@ -578,13 +587,12 @@ export const getYoutubeVideosForKeyword = async ({
     method: "POST",
     url: 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced',
     data: [{
-      keyword,
+      keyword: `site:youtube.com ${keyword}`,
       location_code: locationCode,
       language_code: languageCode,
       device: 'desktop',
       os: 'windows',
       depth: 50,
-      target: 'youtube.com'
     }],
     auth: {
       username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
@@ -595,8 +603,10 @@ export const getYoutubeVideosForKeyword = async ({
     }
   });
 
+  console.log(data.tasks[0])
+
   return {
-    videos: data.tasks[0].result[0].items.map((i) => ({
+    videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.map((i) => ({
       title: i.title,
       url: i.url,
       description: i.description,
