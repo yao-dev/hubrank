@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import yaml from 'js-yaml';
 import { getSummary } from 'readability-cyr';
 import { normalizePrompt } from "./helpers";
-import { countTokens } from '@anthropic-ai/tokenizer';
+// import { countTokens } from '@anthropic-ai/tokenizer';
 import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
@@ -201,15 +201,15 @@ export class AI {
     console.log(chalk.cyanBright(this.article))
   }
 
-  addTokenCost({ text, model, mode }: TokenCountArgs) {
-    const modelCost = costs[model][mode];
-    const tokens = countTokens(text);
-    const modelCostPerToken = (modelCost / costs[model].calculation_based_on_token_count)
-    const totalCost = tokens * modelCostPerToken;
+  // addTokenCost({ text, model, mode }: TokenCountArgs) {
+  //   const modelCost = costs[model][mode];
+  //   const tokens = countTokens(text);
+  //   const modelCostPerToken = (modelCost / costs[model].calculation_based_on_token_count)
+  //   const totalCost = tokens * modelCostPerToken;
 
-    this.cost += totalCost;
-    console.log(chalk.blueBright(`[AI]: tokens: ${tokens} | cost: ${totalCost}`));
-  }
+  //   this.cost += totalCost;
+  //   console.log(chalk.blueBright(`[AI]: tokens: ${tokens} | cost: ${totalCost}`));
+  // }
 
   async ask(prompt: any, opts: any = {}) {
     prompt = normalizePrompt(prompt);
