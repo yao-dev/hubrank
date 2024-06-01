@@ -5,8 +5,7 @@ const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "")
 
 export async function GET(request: Request) {
   try {
-    const apiKey = request.headers.get("X-API-KEY")
-    return NextResponse.json({ apiKey })
+    return NextResponse.json([])
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error }, { status: 500 })
