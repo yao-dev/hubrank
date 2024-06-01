@@ -43,7 +43,7 @@ src/app/api/notion-search/
 src/app/api/notion-token/
 src/app/api/shopify.ts
 src/app/api/shopify/
-src/app/api/zapier/
+src/app/api/zapier/oauth
 src/components/ShowCoinsForActions/
 src/plan-billing/
 src/app/api/mistral/route.ts
