@@ -2,7 +2,7 @@
 import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer } from 'antd';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { IconLogout, IconDashboard, IconArticle, IconSeo, IconWriting } from '@tabler/icons-react';
+import { IconLogout, IconDashboard, IconArticle, IconSeo, IconWriting, IconPlug, IconStack2, IconSettings } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
@@ -105,20 +105,22 @@ export default function DashboardLayout({
     if (projectId !== null) {
       return [
         getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+        // getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({
-        //   key: "project", label: 'Project', icon: <IconStack2 />, children: [
-        //     getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle /> }),
-        //     getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo /> }),
-        //     getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting /> }),
-        //     getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug /> }),
-        //     getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings /> }),
-        //   ]
-        // }),
+        getItem({
+          key: "project", label: 'Project', icon: <IconStack2 />, children: [
+            getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
+            getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+            getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+            // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+            getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+          ]
+        }),
+        getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney />, onClick: () => setIsMobileMenuOpen(false) }),
@@ -130,6 +132,8 @@ export default function DashboardLayout({
       // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard /> }),
       // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
       // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney /> }),
+      getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
     ]
   }, [pathname, projectId]);
 

@@ -20,7 +20,7 @@ export default function Integrations() {
       case "notion":
         return router.push(process.env.NEXT_PUBLIC_NOTION_AUTH_URL || "");
       case "zapier":
-        return zapier.login()
+        return router.push("https://zapier.com/developer/public-invite/205776/126f9abfb3a7cfe8264ddacfc0abeae5/")
     }
   }
 
