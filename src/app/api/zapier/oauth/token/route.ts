@@ -14,10 +14,14 @@ export async function POST(request: Request) {
       redirect_uri: form.get("redirect_uri") as string,
       state: form.get("state") as string,
     }
-    console.log("body", body)
 
+    console.log("oauth/token: body", body)
 
-    return NextResponse.json({ access_token: uuid(), refresh_token: uuid() })
+    const token = uuid();
+
+    console.log("oauth/token: token", token)
+
+    return NextResponse.json({ access_token: token, refresh_token: token })
 
 
     // const client = new AuthorizationCode({

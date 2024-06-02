@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import { message } from "antd";
+import { getUserId } from "@/helpers/user";
 
 export const useZapier = () => {
   const router = useRouter();
@@ -20,32 +23,31 @@ export const useZapier = () => {
       (async () => {
         setIsLoading(true)
         router.replace(redirect_uri || "")
-        // axios.post("/api/zapier-integration", {
-        //   user_id: await getUserId(),
-        //   client_id,
-        //   platform
-        // }).then(() => {
-        //   message.success("Zapier integration added!");
-        //   queryClient.invalidateQueries({
-        //     queryKey: ["integrations"],
-        //   });
-        //   setIsLoading(false)
-        // }).catch(() => {
-        //   message.error("New integration failed");
-        //   setIsLoading(false)
-        // })
-        // router.replace('/integrations')
+        axios.post("/api/zapier-integration", {
+          user_id: await getUserId(),
+          client_id,
+          platform
+        }).then(() => {
+          message.success("Zapier integration added!");
+          queryClient.invalidateQueries({
+            queryKey: ["integrations"],
+          });
+          setIsLoading(false)
+        }).catch(() => {
+          message.error("New integration failed");
+          setIsLoading(false)
+        })
+        router.replace('/integrations')
       })()
     }
   }, [params, client_id, state, redirect_uri]);
 
-  const login = () => {
-    // router.push(process.env.NEXT_PUBLIC_ZAPIER_OAUTH_REDIRECT_URI || "")
-    router.push(`https://zapier.com/dashboard/auth/oauth/return/App199242CLIAPI`)
+  const authorize = () => {
+    router.push(process.env.NEXT_PUBLIC_ZAPIER_OAUTH_REDIRECT_URI || "")
   }
 
   return {
     isLoading,
-    login
+    authorize
   }
 }

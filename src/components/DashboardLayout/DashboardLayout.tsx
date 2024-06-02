@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { IconLogout, IconDashboard, IconArticle, IconSeo, IconWriting, IconPlug, IconStack2, IconSettings } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
@@ -94,6 +94,7 @@ export default function DashboardLayout({
   const {
     token: { colorBgContainer, borderRadiusLG, borderRadiusSM, Layout: { siderBg } },
   } = theme.useToken();
+  const params = useParams();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab')
@@ -119,7 +120,7 @@ export default function DashboardLayout({
             getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
           ]
         }),
-        getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "integration", link: `/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard />, onClick: () => setIsMobileMenuOpen(false) }),
         // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
@@ -132,7 +133,7 @@ export default function DashboardLayout({
       // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard /> }),
       // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
       // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney /> }),
-      getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "integration", link: `/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
     ]
   }, [pathname, projectId]);
@@ -144,6 +145,8 @@ export default function DashboardLayout({
       label: "Logout",
     }
   ];
+
+  console.log("params", params)
 
   const selectedKeys = useMemo(() => {
     if (pathname.startsWith('/dashboard')) {
@@ -167,7 +170,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/plan-billing')) {
       return ["billing"]
     }
-  }, [pathname, tab])
+  }, [pathname, params, tab])
 
   const sideMenuContent = useMemo(() => {
     return (

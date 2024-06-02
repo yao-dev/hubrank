@@ -25,13 +25,13 @@ export async function GET(request: Request) {
 
     const redirectUrl = new URL(redirect_uri);
     // http://localhost:3000/api/zapier/oauth/authorize?client_id=zJQjvASH7RHI0qjUJtIKCKvA1VplJcCAqP0Qn5k2kSlFIcZxehNRcYGEmKNXxnOR&state=4342312312&code=98203923495u34&redirect_uri=https://zapier.com/dashboard/auth/oauth/return/App205794CLIAPI/
-    redirectUrl.searchParams.append("client_id", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "");
+    // redirectUrl.searchParams.append("client_id", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "");
     // redirectUrl.searchParams.append("redirect_uri", redirect_uri);
     // redirectUrl.searchParams.append("response_type", "code");
     // redirectUrl.searchParams.append("access_token", uuid());
-    redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
-    // redirectUrl.searchParams.append("state", state);
-    redirectUrl.searchParams.append("code", uuid().replaceAll('-').slice(0, 5));
+    // redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+    redirectUrl.searchParams.append("state", state);
+    redirectUrl.searchParams.append("code", uuid());
 
 
     console.log("zapier redirectUrl", redirectUrl.href)
