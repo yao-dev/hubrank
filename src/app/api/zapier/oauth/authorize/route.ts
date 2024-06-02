@@ -21,16 +21,17 @@ export async function GET(request: Request) {
       state,
     });
 
+    // const callIt = `https://app.usehubrank.com/api/zapier/oauth/authorize?client_id=1234&state=4444&redirect_uri=https://zapier.com/dashboard/auth/oauth/return/App205794CLIAPI/&response_type=code`
+
     const redirectUrl = new URL(redirect_uri);
 
     // redirectUrl.searchParams.append("client_id", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "");
     // redirectUrl.searchParams.append("redirect_uri", redirect_uri);
     // redirectUrl.searchParams.append("response_type", response_type);
-    redirectUrl.searchParams.append("state", state);
     // redirectUrl.searchParams.append("access_token", uuid());
     // redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
-
-    redirectUrl.searchParams.append("code", "1234567");
+    redirectUrl.searchParams.append("state", state);
+    redirectUrl.searchParams.append("code", uuid());
 
 
     console.log("zapier redirectUrl", redirectUrl.href)
