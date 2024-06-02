@@ -1,5 +1,6 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
+import { uuid } from "uuidv4";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -15,7 +16,8 @@ export async function POST(request: Request) {
     }
     console.log("body", body)
 
-    return NextResponse.json({ access_token: 'vkjsdbdjkajksndckjwbrskudbfasb' })
+
+    return NextResponse.json({ access_token: uuid() })
 
 
     // const client = new AuthorizationCode({
