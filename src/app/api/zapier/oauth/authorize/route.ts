@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     // redirectUrl.searchParams.append("access_token", uuid());
     redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
     // redirectUrl.searchParams.append("state", state);
-    redirectUrl.searchParams.append("code", uuid());
+    redirectUrl.searchParams.append("code", uuid().replaceAll('-').slice(0, 5));
 
 
     console.log("zapier redirectUrl", redirectUrl.href)
