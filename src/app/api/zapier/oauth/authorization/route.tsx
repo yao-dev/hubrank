@@ -23,12 +23,15 @@ export async function GET(request: Request) {
 
     const redirectUrl = new URL(redirect_uri);
 
-    redirectUrl.searchParams.append("client_id", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "");
-    redirectUrl.searchParams.append("redirect_uri", redirect_uri);
-    redirectUrl.searchParams.append("response_type", response_type);
-    redirectUrl.searchParams.append("state", state);
-    redirectUrl.searchParams.append("access_token", uuid());
-    redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+    // redirectUrl.searchParams.append("client_id", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "");
+    // redirectUrl.searchParams.append("redirect_uri", redirect_uri);
+    // redirectUrl.searchParams.append("response_type", response_type);
+    // redirectUrl.searchParams.append("state", state);
+    // redirectUrl.searchParams.append("access_token", uuid());
+    // redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+
+    redirectUrl.searchParams.append("code", "1234567");
+
 
     console.log("zapier redirectUrl", redirectUrl.href)
 
