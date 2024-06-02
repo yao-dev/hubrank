@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     //   },
     // })
 
-    return NextResponse.json({ access_token: uuid() })
+    return NextResponse.redirect(redirect_uri);
   } catch (error) {
     // console.error(error)
     return NextResponse.json({ error }, { status: 500 })
