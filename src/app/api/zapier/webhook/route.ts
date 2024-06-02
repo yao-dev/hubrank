@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"))
     const searchParams = new URLSearchParams(request.url);
     const trigger = searchParams.get("trigger") ?? "";
-    console.log("[GET] webhook", { accessToken, trigger })
+    console.log("[GET] webhook", { accessToken, trigger, url: request.url })
     // TODO: get all blog post with status "publishing" that are linked to the X-API-KEY in the headers
     return NextResponse.json([])
   } catch (error) {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   try {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"))
     const body = await request.json();
-    console.log("[POST] webhook", { accessToken, body })
+    console.log("[POST] webhook", { accessToken, body, url: request.url })
 
     return NextResponse.json(body)
   } catch (error) {
@@ -46,7 +46,7 @@ export async function DELETE(request: Request) {
   try {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"));
     const body = await request.json();
-    console.log("[DELETE] webhook", { accessToken, body })
+    console.log("[DELETE] webhook", { accessToken, body, url: request.url })
     return NextResponse.json(body)
   } catch (error) {
     console.error(error)
