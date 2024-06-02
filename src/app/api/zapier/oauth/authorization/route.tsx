@@ -18,7 +18,16 @@ export async function GET(request: Request) {
       redirect_uri,
       response_type,
       state,
-    })
+    });
+
+    const redirectUrl = new URL(redirect_uri);
+
+    redirectUrl.searchParams.append("client_id", client_id);
+    redirectUrl.searchParams.append("redirect_uri", redirect_uri);
+    redirectUrl.searchParams.append("response_type", response_type);
+    redirectUrl.searchParams.append("state", state);
+    redirectUrl.searchParams.append("client_id", client_id);
+    redirectUrl.searchParams.append("client_secret", process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
 
     // const { data } = await axios.post("https://433e-2a00-23c7-5c28-e301-1cfe-16e-9a16-27d8.ngrok-free.app/api/zapier/oauth/access-token", {
     //   // client_id: process.env.NEXT_PUBLIC_ZAPIER_CLIENT_ID ?? "",
