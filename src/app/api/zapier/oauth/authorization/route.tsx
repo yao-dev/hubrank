@@ -1,7 +1,5 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-import axios from "axios";
-import { uuid } from "uuidv4";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -11,15 +9,15 @@ export async function GET(request: Request) {
 
     const client_id = searchParams.get("client_id") ?? "";
     const redirect_uri = searchParams.get("redirect_uri") ?? "";
-    const code = searchParams.get("code_challenge") ?? "";
+    const response_type = searchParams.get("response_type") ?? "";
     const state = searchParams.get("state") ?? "";
 
-    console.log("payload", {
+    console.log("zapier authorize", {
       client_id,
       client_secret: process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "",
       redirect_uri,
-      grant_type: "authorization_code",
-      code,
+      response_type,
+      state,
     })
 
     // const { data } = await axios.post("https://433e-2a00-23c7-5c28-e301-1cfe-16e-9a16-27d8.ngrok-free.app/api/zapier/oauth/access-token", {
