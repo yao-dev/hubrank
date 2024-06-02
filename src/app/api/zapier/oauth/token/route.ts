@@ -7,6 +7,7 @@ const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "")
 export async function POST(request: Request) {
   try {
     const form = await request.formData()
+    // TODO: check that client_id and client_secret are conform to the values .env otherwise throw an error
     const body = {
       client_id: form.get("client_id") as string,
       client_secret: form.get("client_secret") as string,
