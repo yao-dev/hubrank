@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     console.log("body", body)
 
 
-    return NextResponse.json({ access_token: uuid() })
+    return NextResponse.json({ access_token: uuid(), refresh_token: uuid() })
 
 
     // const client = new AuthorizationCode({
