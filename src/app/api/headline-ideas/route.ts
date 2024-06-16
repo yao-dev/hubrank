@@ -1,9 +1,8 @@
-import { AI } from "../AI";
 import { supabaseAdmin } from "@/helpers/supabase";
-import { getRelatedKeywords, getSerpData } from "@/helpers/seo";
+import { getRelatedKeywords } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
-import { getProjectContext } from "../helpers";
+import { getHeadlines, getProjectContext, getWritingStyle } from "../helpers";
 
 export const maxDuration = 45;
 
@@ -28,31 +27,12 @@ export async function POST(request: Request) {
     if (!language) {
       return NextResponse.json({ message: "language not found" }, { status: 500 })
     }
-    const [
-      { data: serpDataForSeedKeyword },
-      { data: relatedKeywords },
-    ] = await Promise.all([
-      getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code }),
-      getRelatedKeywords({ keyword: seedKeyword, depth: 2, limit: 50, api: true, lang: language.code, location_code: language.location_code })
-    ])
 
-    if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
-      return NextResponse.json({ message: "error fetching competitors ranking for main keyword" }, { status: 500 })
-    }
+    const { data: relatedKeywords } = await getRelatedKeywords({ keyword: seedKeyword, depth: 2, limit: 50, api: true, lang: language.code, location_code: language.location_code })
 
     if (relatedKeywords?.tasks_error > 0 || !relatedKeywords) {
       return NextResponse.json({ message: "error fetching related keywords" }, { status: 500 })
     }
-
-    const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
-      .map((item: any) => {
-        return item?.items
-          .filter((subItem: any) => subItem.type === "organic")
-          .map((subItem: any) => {
-            return subItem.title
-          })
-      })
-      .flat(Infinity);
 
     let keywords: any = {};
 
@@ -80,26 +60,22 @@ export async function POST(request: Request) {
     })
 
     let writingStyle;
-
     if (body.writing_mode === "custom") {
-      const { data: selectedWritingStyle } = await supabase.from("writing_styles").select("*").eq("id", body.writing_style_id).single();
-      writingStyle = selectedWritingStyle.text;
+      writingStyle = await getWritingStyle(body.writing_style_id)
     }
 
-    const ai = new AI({ context, writing_style: writingStyle });
-    const response = await ai.headlines({
-      competitorsHeadlines,
-      seedKeyword,
+    const headlines = await getHeadlines({
+      language,
+      context,
+      writingStyle,
       purpose: body.purpose,
       tone: body.tones,
       contentType: body.content_type,
       clickbait: body.clickbait,
-      writingStyle,
       isInspo: body.title_mode === "inspo",
       inspoTitle: body.title_mode === "inspo" && body.inspo_title,
+      count: 1
     });
-
-    const headlines = compact(response.split("\n"))
 
     return NextResponse.json({ headlines, keywords }, { status: 200 });
   } catch (e) {

@@ -103,7 +103,7 @@ export class AI {
 
     if (opts.context) this.system += `\nProduct info:\n${opts.context}\n===`
     if (opts.writing_style) {
-      this.system += `\nWriting style example:\n${opts.writing_style}`
+      this.system += `\nWriting style example to imitate:\n${opts.writing_style}`
       // this.system += opts.writing_style?.purposes?.length > 0 ? `\nPurposes: ${opts.writing_style?.purposes.join(', ')}` : "";
       // this.system += opts.writing_style?.emotions?.length > 0 ? `\nEmotions: ${opts.writing_style?.emotions.join(', ')}` : "";
       // this.system += opts.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${opts.writing_style?.vocabularies.join(', ')}` : "";
@@ -279,33 +279,21 @@ export class AI {
     const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the 1st page of the SERP for the keyword "${values.seedKeyword}":
 - ${values.competitorsHeadlines.join('\n- ')}`
 
-    if (values.writingStyle) {
-      return `${prefix}
+    let prompt = `${prefix}
 
-Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
-- your purpose is ${values.purpose}
-- the content type is "${values.contentType}"
-- one headline per line
-- do not add any text formatting
-${values.clickbait ? "- make it clickbait" : ""}
-
-Copy the tone and writing style of this text: ${values.writingStyle}
-
-Start and end your writing with triple @@@.
-      `
-    }
-
-    return `${prefix}
-
-    Give me 10 unique and SEO friendly headlines made for the search intent "${values.seedKeyword}"
+    Give me ${values.count} unique and SEO friendly ${values.count <= 1 ? "headline" : "headlines"} made for the search intent "${values.seedKeyword}"
     - your tone is ${values.tone}
     - your purpose is ${values.purpose}
     - the content type is "${values.contentType}"
     ${values.clickbait ? "- make it clickbait" : ""}
     - one headline per line
+    - do not prefix with number`;
 
-    Start and end your writing with triple @@@.
-    `
+    if (values.writingStyle) prompt += `\nCopy the tone and writing style of this text: ${values.writingStyle}`;
+
+    prompt += `\nStart and end your writing with triple @@@.`
+
+    return prompt
   }
 
   async headlines(values: any) {

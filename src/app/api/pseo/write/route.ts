@@ -1,6 +1,18 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
-import { cleanArticle, convertMarkdownToHTML, getBlogUrls, getKeywordsForKeywords, getSchemaMarkup, getWritingStyle, getYoutubeVideosForKeyword, markArticleAsReadyToView, saveSchemaMarkups, updateBlogPostStatus } from "../../helpers";
+import {
+  cleanArticle,
+  convertMarkdownToHTML,
+  getAndSaveSchemaMarkup,
+  getBlogUrls,
+  getKeywordsForKeywords,
+  getProjectContext,
+  getWritingStyle,
+  getYoutubeVideosForKeyword,
+  markArticleAsReadyToView,
+  setPromptWritingStyle,
+  updateBlogPostStatus,
+} from "../../helpers";
 import { NextResponse } from "next/server";
 import axios from "axios";
 import { getSummary } from 'readability-cyr';
@@ -21,7 +33,18 @@ export async function POST(request: Request) {
     supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
   ]);
 
-  const ai = new AI()
+
+  const context = getProjectContext({
+    name: project.name,
+    website: project.website,
+    description: project.metatags?.description || project?.description,
+    lang: language.label,
+  })
+
+  const ai = new AI({ context })
+
+  // ADD H1 TITLE TO THE ARTICLE
+  ai.article = `# ${body.headline}\n`;
 
   // CHANGE STATUS TO WRITING
   await updateBlogPostStatus(body.articleId, "writing");
@@ -29,20 +52,25 @@ export async function POST(request: Request) {
   const { keywords } = await getKeywordsForKeywords({
     keyword: body.headline,
     countryCode: language.code
+  });
+
+  console.log({
+    keywords,
+    headline: body.headline,
+    countryCode: language.code
   })
 
-  // FETCH THE SITEMAP
-  let sitemaps;
-  if (body.sitemap) {
-    const { data: sitemapXml } = await axios.get(body.sitemap);
-    console.log(chalk.yellow(sitemapXml));
-    sitemaps = getBlogUrls(sitemapXml)
-  }
   // WRITE META DESCRIPTION
   const { description: metaDescription } = await ai.metaDescription({
     ...body,
     title: body.headline,
     keywords
+  });
+
+  const { videos } = await getYoutubeVideosForKeyword({
+    keyword: body.headline,
+    languageCode: language.code,
+    locationCode: language.location_code,
   });
 
   // FETCH WRITING STYLE IF IT EXISTS
@@ -51,21 +79,17 @@ export async function POST(request: Request) {
     writingStyle = await getWritingStyle(body.writing_style_id)
   }
 
-  const { videos } = await getYoutubeVideosForKeyword({
-    keyword: body.headline,
-    languageCode: language.code,
-    locationCode: language.location_code,
-  });
+  // FETCH THE SITEMAP
+  let sitemaps;
+  if (body.sitemap) {
+    const { data: sitemapXml } = await axios.get(body.sitemap);
+    console.log(chalk.yellow(sitemapXml));
+    sitemaps = getBlogUrls(sitemapXml)
+  }
 
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
-  prompt += writingStyle?.purposes?.length > 0 ? `\nPurposes: ${writingStyle?.purposes.join(', ')}` : "";
-  prompt += writingStyle?.emotions?.length > 0 ? `\nEmotions: ${writingStyle?.emotions.join(', ')}` : "";
-  prompt += writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${writingStyle?.vocabularies.join(', ')}` : "";
-  prompt += writingStyle?.sentence_structures?.length > 0 ? `\nSentence structures: ${writingStyle?.sentence_structures.join(', ')}` : "";
-  prompt += writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${writingStyle?.perspectives.join(', ')}` : "";
-  prompt += writingStyle?.writing_structures?.length > 0 ? `\nWriting_structures: ${writingStyle?.writing_structures.join(', ')}` : "";
-  prompt += writingStyle?.instructional_elements?.length > 0 ? `\nInstructional elements: ${writingStyle?.instructional_elements.join(', ')}` : "";
+  setPromptWritingStyle({ prompt, writingStyle })
 
   prompt += body.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
   prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
@@ -117,19 +141,13 @@ export async function POST(request: Request) {
   const html = convertMarkdownToHTML(cleanedArticle);
   console.log("html", chalk.redBright(cleanedArticle));
 
-  const schemas = pendingArticle.schema_markups ?? [];
-
-  for (let schema of body.structured_schemas) {
-    const createdSchema = await getSchemaMarkup({
-      project,
-      article: cleanedArticle,
-      lang: language.label,
-      schemaName: schema,
-    })
-    schemas.push(createdSchema)
-    console.log("schemas", schemas)
-    await saveSchemaMarkups(pendingArticle.id, schemas);
-  }
+  await getAndSaveSchemaMarkup({
+    project,
+    pendingArticle,
+    cleanedArticle,
+    lang: language.label,
+    structuredSchemas: body.structured_schemas
+  })
 
   // GET ARTICLE STATS
   const articleStats = getSummary(cleanedArticle);

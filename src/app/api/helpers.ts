@@ -6,7 +6,8 @@ import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-cli
 import { getSummary } from 'readability-cyr';
 import { AI } from "./AI";
 import axios from "axios";
-import { isEmpty } from "lodash";
+import { compact, isEmpty } from "lodash";
+import { getSerpData } from "@/helpers/seo";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -92,6 +93,16 @@ export const getWritingStyle = async (writingStyleId?: number) => {
     }
   }
   return writing_style;
+}
+
+export const setPromptWritingStyle = ({ prompt, writingStyle }: any) => {
+  prompt += writingStyle?.purposes?.length > 0 ? `\nPurposes: ${writingStyle?.purposes.join(', ')}` : "";
+  prompt += writingStyle?.emotions?.length > 0 ? `\nEmotions: ${writingStyle?.emotions.join(', ')}` : "";
+  prompt += writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${writingStyle?.vocabularies.join(', ')}` : "";
+  prompt += writingStyle?.sentence_structures?.length > 0 ? `\nSentence structures: ${writingStyle?.sentence_structures.join(', ')}` : "";
+  prompt += writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${writingStyle?.perspectives.join(', ')}` : "";
+  prompt += writingStyle?.writing_structures?.length > 0 ? `\nWriting_structures: ${writingStyle?.writing_structures.join(', ')}` : "";
+  prompt += writingStyle?.instructional_elements?.length > 0 ? `\nInstructional elements: ${writingStyle?.instructional_elements.join(', ')}` : "";
 }
 
 export const writeHook = async ({
@@ -615,5 +626,78 @@ export const getYoutubeVideosForKeyword = async ({
       breadcrumb: i.breadcrumb,
       website_name: i.website_name,
     })),
+  }
+}
+
+export const getHeadlines = async ({
+  language,
+  context,
+  writingStyle,
+  seedKeyword,
+  purpose,
+  tone,
+  contentType,
+  clickbait,
+  isInspo,
+  inspoTitle,
+  count
+}: any) => {
+  if (!language) {
+    throw new Error("language not found")
+  }
+
+  const { data: serpDataForSeedKeyword } = await getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code });
+
+  if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
+    throw new Error("error fetching competitors ranking for main keyword")
+  }
+
+  const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
+    .map((item: any) => {
+      return item?.items
+        .filter((subItem: any) => subItem.type === "organic")
+        .map((subItem: any) => {
+          return subItem.title
+        })
+    })
+    .flat(Infinity);
+
+  const ai = new AI({ context });
+  const response = await ai.headlines({
+    competitorsHeadlines,
+    seedKeyword,
+    purpose,
+    tone,
+    contentType,
+    clickbait,
+    writingStyle,
+    isInspo,
+    inspoTitle,
+    count,
+  });
+
+  const headlines = compact(response.split("\n"));
+  return headlines
+}
+
+export const getAndSaveSchemaMarkup = async ({
+  project,
+  pendingArticle,
+  cleanedArticle,
+  lang,
+  structuredSchemas
+}: any) => {
+  const schemas = pendingArticle.schema_markups ?? [];
+
+  for (let schema of structuredSchemas) {
+    const createdSchema = await getSchemaMarkup({
+      project,
+      article: cleanedArticle,
+      lang,
+      schemaName: schema,
+    })
+    schemas.push(createdSchema)
+    console.log("schemas", schemas)
+    await saveSchemaMarkups(pendingArticle.id, schemas);
   }
 }

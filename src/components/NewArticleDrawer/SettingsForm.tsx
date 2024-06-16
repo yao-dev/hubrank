@@ -136,116 +136,97 @@ const SettingsForm = ({
       return setCurrentStep(isCustomTitle || isProgrammaticSeo ? 2 : 1)
     }
 
-    if (isCustomTitle || isProgrammaticSeo) {
-      if (isProgrammaticSeo) {
-        const generateCombinations = () => {
-          const keys = Object.keys(variableSet);
-          const vSet = keys.map(key => variableSet[key].split('\n'));
-          const results = [];
+    if (isProgrammaticSeo) {
+      const generateCombinations = () => {
+        const keys = Object.keys(variableSet);
+        const vSet = keys.map(key => variableSet[key].split('\n'));
+        const results = [];
 
-          function combine(prefix, index) {
-            if (index === keys.length) {
-              let title = values.title_structure;
-              for (let i = 0; i < keys.length; i++) {
-                title = title.replace(`{${keys[i]}}`, prefix[i]);
-              }
-              results.push(title);
-              return;
+        function combine(prefix, index) {
+          if (index === keys.length) {
+            let title = values.title_structure;
+            for (let i = 0; i < keys.length; i++) {
+              title = title.replace(`{${keys[i]}}`, prefix[i]);
             }
-
-            vSet[index].forEach(value => {
-              combine([...prefix, value], index + 1);
-            });
+            results.push(title);
+            return;
           }
 
-          combine([], 0);
-          return results
+          vSet[index].forEach(value => {
+            combine([...prefix, value], index + 1);
+          });
         }
 
-        const headlines = generateCombinations();
-
-        return schedulePSeoArticles({
-          ...values,
-          // purpose: values.purpose.replaceAll("_", " "),
-          // tone: values.tones?.join?.(","),
-          content_type: values.content_type.replaceAll("_", " "),
-          clickbait: !!values.clickbait,
-          userId: await getUserId(),
-          // keywords: relatedKeywords,
-          project_id: projectId,
-          // featuredImage,
-          // sectionImages
-          headlines,
-          variableSet,
-          ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
-        });
+        combine([], 0);
+        return results
       }
 
-      setLockedStep(0);
+      const headlines = generateCombinations();
 
-      const { data: language } = await supabase.from("languages").select("*").eq("id", values.language_id).limit(1).single()
-      const rk = await getRelatedKeywords({ keyword: values.seed_keyword, depth: 2, limit: 50, api: false, lang: language.code, location_code: language.location_code })
-
-      let relatedKeywords = rk?.map((item: any) => {
-        return compact([
-          item?.keyword_data?.keyword,
-          compact(item?.related_keywords),
-        ])
-      })
-        .flat(2)
-        .slice(0, 30)
-
-      setRelatedKeywords(relatedKeywords);
-
-      await writeArticle({
+      return schedulePSeoArticles({
         ...values,
         // purpose: values.purpose.replaceAll("_", " "),
         // tone: values.tones?.join?.(","),
         content_type: values.content_type.replaceAll("_", " "),
         clickbait: !!values.clickbait,
         userId: await getUserId(),
-        keywords: relatedKeywords,
-        project_id: projectId
+        // keywords: relatedKeywords,
+        project_id: projectId,
         // featuredImage,
         // sectionImages
+        headlines,
+        variableSet,
+        ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
       });
-      return;
-      // return setCurrentStep(2);
     }
 
-    try {
-      messageApi.open({
-        type: 'loading',
-        content: 'Getting headline ideas...',
-        duration: 0,
-      });
+    await writeArticle({
+      ...values,
+      // purpose: values.purpose.replaceAll("_", " "),
+      // tone: values.tones?.join?.(","),
+      content_type: values.content_type.replaceAll("_", " "),
+      clickbait: !!values.clickbait,
+      userId: await getUserId(),
+      // keywords: relatedKeywords,
+      project_id: projectId
+      // featuredImage,
+      // sectionImages
+    });
+    return;
 
-      setSubmittingStep(0);
-      const { data } = await getHeadlines.mutateAsync({
-        ...values,
-        project_id: projectId,
-        // purpose: values.purpose.replaceAll("_", " "),
-        // tone: values.tones?.join?.(","),
-        contentType: values.content_type.replaceAll("_", " "),
-        clickbait: !!values.clickbait
-      });
+    // try {
+    //   messageApi.open({
+    //     type: 'loading',
+    //     content: 'Getting headline ideas...',
+    //     duration: 0,
+    //   });
 
-      setRelatedKeywords(data.keywords);
+    //   setSubmittingStep(0);
+    //   const { data } = await getHeadlines.mutateAsync({
+    //     ...values,
+    //     project_id: projectId,
+    //     // purpose: values.purpose.replaceAll("_", " "),
+    //     // tone: values.tones?.join?.(","),
+    //     contentType: values.content_type.replaceAll("_", " "),
+    //     clickbait: !!values.clickbait
+    //   });
 
-      setSubmittingStep(undefined);
-      setCurrentStep(1)
-      setLockedStep(0);
+    //   setRelatedKeywords(data.keywords);
 
-      setHeadlines(data.headlines.map((h) => ({
-        id: uniqueId(h),
-        headline: h[0] === "-" ? h.slice(1).trim() : h.trim()
-      })));
-    } catch (e) {
-      console.error(e)
-      setSubmittingStep(undefined);
-    } finally {
-      messageApi.destroy();
-    }
+    //   setSubmittingStep(undefined);
+    //   setCurrentStep(1)
+    //   setLockedStep(0);
+
+    //   setHeadlines(data.headlines.map((h) => ({
+    //     id: uniqueId(h),
+    //     headline: h[0] === "-" ? h.slice(1).trim() : h.trim()
+    //   })));
+    // } catch (e) {
+    //   console.error(e)
+    //   setSubmittingStep(undefined);
+    // } finally {
+    //   messageApi.destroy();
+    // }
   };
 
   const onAddTag = (list: string[], tag: string, checked: boolean, field: string) => {

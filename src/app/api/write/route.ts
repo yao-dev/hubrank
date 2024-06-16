@@ -4,7 +4,9 @@ import { getSummary } from 'readability-cyr';
 import {
   cleanArticle,
   convertMarkdownToHTML,
+  getAndSaveSchemaMarkup,
   getBlogUrls,
+  getHeadlines,
   getKeywordsForKeywords,
   getProjectContext,
   getSchemaMarkup,
@@ -31,11 +33,6 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-
-    if (body.title_mode === "custom") {
-      body.title = body.custom_title;
-    }
-
     console.log(chalk.yellow(JSON.stringify(body, null, 2)));
 
     // CREATE NEW ARTICLE WITH QUEUE STATUS
@@ -54,16 +51,6 @@ export async function POST(request: Request) {
       supabase.from("languages").select("*").eq("id", body.language_id).single()
     ]);
 
-    const { keywords } = await getKeywordsForKeywords({
-      keyword: body.title, // TODO: won't work for provided title
-      countryCode: language.code
-    })
-    const { videos } = await getYoutubeVideosForKeyword({
-      keyword: body.title, // TODO: won't work for provided title
-      languageCode: language.code,
-      locationCode: language.location_code,
-    });
-
     const context = getProjectContext({
       name: project.name,
       website: project.website,
@@ -72,7 +59,30 @@ export async function POST(request: Request) {
     })
 
     // FETCH WRITING STYLE IF IT EXISTS
-    const writingStyle = await getWritingStyle(body.writing_style_id)
+    let writingStyle;
+    if (body.writing_style_id) {
+      writingStyle = await getWritingStyle(body.writing_style_id)
+    }
+
+    if (body.title_mode === "custom") {
+      body.title = body.custom_title;
+    } else {
+      const headlines = await getHeadlines({
+        language,
+        context,
+        writingStyle,
+        purpose: body.purpose,
+        tone: body.tones,
+        contentType: body.content_type,
+        clickbait: body.clickbait,
+        isInspo: body.title_mode === "inspo",
+        inspoTitle: body.title_mode === "inspo" && body.inspo_title,
+        count: 1
+      });
+
+      body.title = headlines?.[0]
+    }
+
     const ai = new AI({ context, writing_style: writingStyle });
 
     let sitemaps
@@ -83,6 +93,16 @@ export async function POST(request: Request) {
       console.log(chalk.yellow(sitemapXml));
       sitemaps = getBlogUrls(sitemapXml)
     }
+
+    const { keywords } = await getKeywordsForKeywords({
+      keyword: body.title,
+      countryCode: language.code
+    })
+    const { videos } = await getYoutubeVideosForKeyword({
+      keyword: body.title,
+      languageCode: language.code,
+      locationCode: language.location_code,
+    });
 
     // GET THE WORD COUNT OF EACH SECTION OF THE OUTLINE
     const outlinePlan = await ai.outlinePlan({
@@ -268,9 +288,7 @@ export async function POST(request: Request) {
 
     // CONVERT MARKDOWN ARTICLE TO HTML
     const html = convertMarkdownToHTML(ai.article);
-
     console.log("html", chalk.redBright(ai.article));
-
 
     // END PERFORMANCE CALCULATION
     const end = performance.now();
@@ -279,19 +297,13 @@ export async function POST(request: Request) {
     // GET ARTICLE STATS
     const articleStats = getSummary(ai.article);
 
-    const schemas = pendingArticle.schema_markups ?? [];
-
-    for (let schema of body.structured_schemas) {
-      const createdSchema = await getSchemaMarkup({
-        project,
-        article: ai.article,
-        lang: language.label,
-        schemaName: schema,
-      })
-      schemas.push(createdSchema)
-      console.log("schemas", schemas)
-      await saveSchemaMarkups(articleId, schemas);
-    }
+    await getAndSaveSchemaMarkup({
+      project,
+      pendingArticle,
+      cleanedArticle: ai.article,
+      lang: language.label,
+      structuredSchemas: body.structured_schemas
+    })
 
     // UPDATE ARTICLE STATUS TO READY TO VIEW
     await markArticleAsReadyToView({
