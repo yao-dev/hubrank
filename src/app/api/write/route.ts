@@ -9,13 +9,12 @@ import {
   getHeadlines,
   getKeywordsForKeywords,
   getProjectContext,
-  getSchemaMarkup,
   getWritingStyle,
   getYoutubeVideosForKeyword,
   insertBlogPost,
   markArticleAsFailure,
   markArticleAsReadyToView,
-  saveSchemaMarkups,
+  updateBlogPost,
   updateBlogPostStatus,
   writeHook,
   writeSection,
@@ -43,11 +42,9 @@ export async function POST(request: Request) {
 
     const [
       { data: project },
-      { data: pendingArticle },
       { data: language },
     ] = await Promise.all([
       supabase.from("projects").select("*").eq("id", body.project_id).single(),
-      supabase.from("blog_posts").select("*").eq("id", body.articleId).maybeSingle(),
       supabase.from("languages").select("*").eq("id", body.language_id).single()
     ]);
 
@@ -71,6 +68,7 @@ export async function POST(request: Request) {
         language,
         context,
         writingStyle,
+        seedKeyword: body.seed_keyword,
         purpose: body.purpose,
         tone: body.tones,
         contentType: body.content_type,
@@ -80,7 +78,10 @@ export async function POST(request: Request) {
         count: 1
       });
 
-      body.title = headlines?.[0]
+      body.title = headlines?.[0];
+
+      // CHANGE STATUS TO WRITING
+      await updateBlogPost(articleId, { title: body.title })
     }
 
     const ai = new AI({ context, writing_style: writingStyle });
@@ -299,7 +300,7 @@ export async function POST(request: Request) {
 
     await getAndSaveSchemaMarkup({
       project,
-      pendingArticle,
+      articleId,
       cleanedArticle: ai.article,
       lang: language.label,
       structuredSchemas: body.structured_schemas

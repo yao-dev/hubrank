@@ -81,6 +81,19 @@ export const updateBlogPostStatus = async (articleId: number, status: string) =>
   }
 }
 
+export const updateBlogPost = async (articleId: number, updates: any) => {
+  try {
+    await supabase
+      .from('blog_posts')
+      .update(updates)
+      .eq("id", articleId)
+      .throwOnError();
+  } catch (error) {
+    console.error(chalk.bgRed("[ERROR]: updating blog post"), error);
+    throw error;
+  }
+}
+
 export const getWritingStyle = async (writingStyleId?: number) => {
   let writing_style = "";
   if (writingStyleId) {
@@ -682,12 +695,12 @@ export const getHeadlines = async ({
 
 export const getAndSaveSchemaMarkup = async ({
   project,
-  pendingArticle,
+  articleId,
   cleanedArticle,
   lang,
   structuredSchemas
 }: any) => {
-  const schemas = pendingArticle.schema_markups ?? [];
+  const schemas = [];
 
   for (let schema of structuredSchemas) {
     const createdSchema = await getSchemaMarkup({
@@ -698,6 +711,6 @@ export const getAndSaveSchemaMarkup = async ({
     })
     schemas.push(createdSchema)
     console.log("schemas", schemas)
-    await saveSchemaMarkups(pendingArticle.id, schemas);
+    await saveSchemaMarkups(articleId, schemas);
   }
 }
