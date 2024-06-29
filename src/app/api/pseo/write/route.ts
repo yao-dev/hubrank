@@ -3,18 +3,22 @@ import { AI } from "../../AI";
 import {
   cleanArticle,
   convertMarkdownToHTML,
+  fetchSitemap,
   getAndSaveSchemaMarkup,
   getBlogUrls,
   getKeywordsForKeywords,
   getProjectContext,
+  getProjectKnowledges,
+  getRelevantKeywords,
+  getRelevantUrls,
   getWritingStyle,
   getYoutubeVideosForKeyword,
   markArticleAsReadyToView,
   setPromptWritingStyle,
+  updateBlogPost,
   updateBlogPostStatus,
 } from "../../helpers";
 import { NextResponse } from "next/server";
-import axios from "axios";
 import { getSummary } from 'readability-cyr';
 import { supabaseAdmin } from "@/helpers/supabase";
 
@@ -33,7 +37,6 @@ export async function POST(request: Request) {
     supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
   ]);
 
-
   const context = getProjectContext({
     name: project.name,
     website: project.website,
@@ -49,16 +52,19 @@ export async function POST(request: Request) {
   // CHANGE STATUS TO WRITING
   await updateBlogPostStatus(body.articleId, "writing");
 
-  const { keywords } = await getKeywordsForKeywords({
+  const { keywords: kw } = await getKeywordsForKeywords({
     keyword: body.headline,
     countryCode: language.code
   });
-
-  console.log({
-    keywords,
-    headline: body.headline,
-    countryCode: language.code
+  const keywords = await getRelevantKeywords({
+    query: body.headline,
+    keywords: kw,
+    userId: body.userId,
+    articleId: body.articleId,
+    seedKeyword: body.headline,
+    topK: 30
   })
+  await updateBlogPost(body.articleId, { keywords })
 
   // WRITE META DESCRIPTION
   const { description: metaDescription } = await ai.metaDescription({
@@ -82,10 +88,25 @@ export async function POST(request: Request) {
   // FETCH THE SITEMAP
   let sitemaps;
   if (body.sitemap) {
-    const { data: sitemapXml } = await axios.get(body.sitemap);
+    const sitemapXml = await fetchSitemap(body.sitemap);
     console.log(chalk.yellow(sitemapXml));
-    sitemaps = getBlogUrls(sitemapXml)
+    sitemaps = getBlogUrls({ websiteUrl: project.website, sitemapXml });
+    sitemaps = await getRelevantUrls({
+      query: body.headline,
+      urls: sitemaps,
+      userId: body.userId,
+      articleId: body.articleId,
+      topK: 10
+    });
   }
+
+  // TODO: add knowledges in the prompt
+  const knowledges = await getProjectKnowledges({
+    userId: body.userId,
+    projectId: body.project_id,
+    topK: 8,
+    query: body.headline
+  })
 
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
@@ -95,7 +116,7 @@ export async function POST(request: Request) {
   prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
   prompt += body.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
   prompt += body.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
-  prompt += `\n- Language: ${body.language}`;
+  prompt += `\n- Language: ${language.label}`;
 
   if (body.additional_information) {
     prompt += `\n${body.additional_information}`;
@@ -132,9 +153,11 @@ export async function POST(request: Request) {
 
   prompt += `\n\nWrap your output in \`\`\`markdown\`\`\``
 
-  const article = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
+  const articleContent = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
 
-  const cleanedArticle = cleanArticle(article)
+  ai.article += `\n\n${articleContent}`
+
+  const cleanedArticle = cleanArticle(ai.article)
   console.log(chalk.yellow(cleanedArticle, null, 2));
 
   // CONVERT MARKDOWN ARTICLE TO HTML

@@ -8,6 +8,16 @@ import { AI } from "./AI";
 import axios from "axios";
 import { compact, isEmpty } from "lodash";
 import { getSerpData } from "@/helpers/seo";
+import { Index } from "@upstash/vector";
+import { NodeHtmlMarkdown } from "node-html-markdown";
+import * as cheerio from "cheerio";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { createBackgroundJob } from "@/helpers/qstash";
+
+const upstashVectorIndex = new Index({
+  url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
+  token: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_TOKEN || "",
+})
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -180,7 +190,6 @@ const getRephraseInstruction = (text: string) => {
 
   return "diversify vocabulary, remove adverbs, remove compound adverbs, use active voice, idioms and phrasal verbs, edit like a human."
 }
-
 
 export const writeSection = async ({
   ai,
@@ -521,21 +530,123 @@ export const findImage = async (keyword: string) => {
   }
 }
 
-export const getBlogUrls = (xmlData: string) => {
-  // TODO: the host must be dynamic
-  // Regular expression pattern to match URLs starting with "https://getfiit.app/blog"
-  const regex = /<loc>(https:\/\/getfiit\.app\/blog\/.*?)<\/loc>/g;
+export const fetchSitemap = async (sitemapUrl: string): Promise<string> => {
+  const { data: sitemapXml } = await axios.get(sitemapUrl);
+  return sitemapXml
+}
 
-  // Initialize an array to store blog URLs
-  const blogUrls = [];
+export const getBlogUrls = ({ websiteUrl, sitemapXml, count = 500 }: { websiteUrl: string, sitemapXml: string; count?: number }) => {
+  const $ = cheerio.load(sitemapXml);
+  const urls = new Set();
 
-  // Match URLs using the regular expression
-  let match;
-  while ((match = regex.exec(xmlData)) !== null) {
-    blogUrls.push(match[1]);
-  }
+  // Extract URLs from <loc> tags
+  $('loc').each((_, element) => {
+    urls.add($(element).text().trim());
+  });
 
-  return blogUrls;
+  // Extract URLs from href attributes
+  $('a').each((_, element) => {
+    const href = $(element).attr('href');
+    if (href) {
+      urls.add(href);
+    }
+  });
+
+  return Array.from(urls).slice(0, count).filter((url) => url.startsWith(websiteUrl))
+}
+
+export const getProjectNamespaceId = ({ userId, projectId }: { userId: string; projectId: number }) => {
+  const namespaceId = `${userId}-project-${projectId}`;
+  return namespaceId;
+}
+
+export const getArticleNamespaceId = ({ userId, articleId }: { userId: string; articleId: number }) => {
+  const namespaceId = `${userId}-article-${articleId}`;
+  return namespaceId;
+}
+
+export const getRelevantUrls = async ({
+  query,
+  urls,
+  userId,
+  articleId,
+  topK = 20
+}: {
+  urls: string[];
+  query: string;
+  userId: string;
+  articleId: number;
+  topK?: number
+}) => {
+  const namespaceId = getArticleNamespaceId({ userId, articleId });
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+  const uniqUrls = new Set(urls);
+  const urlSubsets = Array.from(uniqUrls).slice(0, 1000);
+  const promises = urlSubsets.map((url) => {
+    return namespace.upsert({
+      id: url,
+      data: url,
+      metadata: {
+        article_id: articleId,
+        url
+      },
+    })
+  });
+
+  await Promise.all(promises)
+
+  const result = await namespace.query({
+    data: query,
+    topK,
+    includeMetadata: true,
+  });
+
+  await upstashVectorIndex.deleteNamespace(namespaceId);
+
+  return result
+}
+
+export const getRelevantKeywords = async ({
+  query,
+  keywords,
+  userId,
+  articleId,
+  seedKeyword,
+  topK = 20
+}: {
+  keywords: string[];
+  query: string;
+  userId: string;
+  articleId: number;
+  seedKeyword: string;
+  topK?: number
+}) => {
+  const namespaceId = `${userId}-article-${articleId}-keyword-${seedKeyword}`;
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+  const uniqs = new Set(keywords);
+  const subset = Array.from(uniqs).slice(0, 1000);
+  const promises = subset.map((keyword) => {
+    return namespace.upsert({
+      id: keyword,
+      data: keyword,
+      metadata: {
+        article_id: articleId,
+        keyword
+      },
+    })
+  });
+
+  await Promise.all(promises)
+
+  const result = await namespace.query({
+    data: query,
+    topK,
+    includeMetadata: true,
+  });
+
+  await upstashVectorIndex.deleteNamespace(namespaceId);
+
+  return result
 }
 
 export const getProjectById = async (projectId: number) => {
@@ -713,4 +824,126 @@ export const getAndSaveSchemaMarkup = async ({
     console.log("schemas", schemas)
     await saveSchemaMarkups(articleId, schemas);
   }
+}
+
+export const fetchHtml = async (url: string): Promise<string> => {
+  const { data } = await axios.get(url);
+  const $ = cheerio.load(data);
+  return $('body').html() ?? "";
+}
+
+export const getMarkdown = (html: string) => {
+  const $ = cheerio.load(html);
+  $('style, script, [src*="base64"], svg, iframe, noscript, object, embed, link, meta, nav, footer').remove();
+  const body = $('body').html() ?? "";
+  const markdown = NodeHtmlMarkdown.translate(body);
+  return markdown
+}
+
+export const urlToVector = async ({
+  url,
+  index,
+  userId,
+  namespaceId,
+}: {
+  url: string;
+  index: number;
+  userId: string;
+  namespaceId: string
+}) => {
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+  console.log("step 5.1", { index, url })
+  const html = await fetchHtml(url);
+  console.log("step 5.2")
+  const markdown = getMarkdown(html);
+  console.log("step 5.3")
+  const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+    // separators: ["\n\n"],
+    chunkSize: 500,
+    chunkOverlap: 0,
+  });
+  console.log("step 5.4")
+  const output = await splitter.createDocuments([markdown]);
+
+  console.log("step 5.5")
+  const promises = output.map((document, index) => {
+    console.log(`step 5.6.${index}`)
+    return namespace.upsert({
+      id: generateUuid5(document.pageContent),
+      data: document.pageContent,
+      metadata: {
+        userId,
+        content: document.pageContent
+      }
+    })
+  });
+
+  await Promise.all(promises)
+}
+
+export const processUrlsToMarkdownChunks = async ({
+  website,
+  sitemap,
+  userId,
+  projectId
+}: { website: string; sitemap: string; userId: string; projectId: number }) => {
+  console.log("step 1")
+  const namespaceId = getProjectNamespaceId({ userId, projectId });
+
+  console.log("step 2")
+  const urls = getBlogUrls({
+    websiteUrl: website,
+    sitemapXml: await fetchSitemap(sitemap),
+    count: 100
+  });
+
+  console.log("step 3", urls)
+  const namespaceList = await upstashVectorIndex.listNamespaces();
+  console.log({ namespaceId, namespaceList })
+  if (namespaceList.includes(namespaceId)) {
+    console.log("step 3.1")
+    await upstashVectorIndex.deleteNamespace(namespaceId);
+  }
+
+  console.log("step 4", Object.entries(urls))
+  for (const [index, url] of Object.entries(urls)) {
+    await createBackgroundJob({
+      destination: getUpstashDestination("api/url-to-vector/execute"),
+      body: {
+        url,
+        index,
+        userId,
+        namespaceId
+      }
+    })
+  }
+}
+
+export const getProjectKnowledges = async ({
+  userId,
+  projectId,
+  query,
+  topK,
+}: {
+  userId: string;
+  projectId: number,
+  query: string;
+  topK: number,
+}) => {
+  const namespaceId = getProjectNamespaceId({ userId, projectId });
+  const namespace = upstashVectorIndex.namespace(namespaceId)
+  const knowledges = await namespace.query({
+    data: query,
+    topK,
+    includeMetadata: true,
+  });
+
+  console.log({ knowledges })
+
+  return knowledges
+}
+
+export const getUpstashDestination = (endpoint: string) => {
+  const host = process.env.NODE_ENV === "development" ? process.env.UPSTASH_TUNNEL_HOST : "https://app.usehubrank.com";
+  return `${host}/${endpoint}`
 }

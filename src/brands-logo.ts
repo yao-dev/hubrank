@@ -3,7 +3,6 @@ export const brandsLogo = {
   wordpress: "/brands/wordpress.png",
   shopify: "/brands/shopify.png",
   medium: "/brands/medium.png",
-  // notion: "/brands/notion.png",
   webflow: "/brands/webflow.png",
   wix: "/brands/wix.png",
   ghost: "/brands/ghost.png",

@@ -3,13 +3,13 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
-import axios from "axios";
 
-const getOne = async (project_id: number) => {
-  return supabase.from('projects').select('*, languages!language_id(*)').eq('id', project_id).limit(1).single()
+const getOne = async (project_id?: number) => {
+  if (typeof project_id !== "number") return;
+  return supabase.from('projects').select('*, languages!language_id(*)').eq('id', project_id).maybeSingle()
 }
 
-const useGetOne = (project_id: number) => {
+const useGetOne = (project_id?: number) => {
   return useQuery({
     // enabled: project_id !== undefined && !isNaN(project_id),
     enabled: !!project_id,
@@ -56,23 +56,23 @@ type Create = {
 }
 
 const create = async (data: Create) => {
-  let metatags = null;
+  // let metatags = null;
   // let keywords = null;
 
-  try {
-    const [websiteTagsResponse] = await Promise.all([
-      axios.post("/api/get-website-meta", { website: data.website }),
-      // getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
-    ])
-    metatags = websiteTagsResponse.data;
-    // keywords = keywordsResponse;
-  } catch { }
+  // try {
+  //   const [websiteTagsResponse] = await Promise.all([
+  //     axios.post("/api/get-website-meta", { website: data.website }),
+  //     // getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
+  //   ])
+  //   metatags = websiteTagsResponse.data;
+  //   // keywords = keywordsResponse;
+  // } catch { }
 
   return supabase
     .from('projects')
     .insert({
       ...data,
-      metatags,
+      // metatags,
       // keywords,
       user_id: await getUserId()
     })

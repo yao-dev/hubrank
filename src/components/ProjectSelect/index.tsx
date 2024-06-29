@@ -1,7 +1,7 @@
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { Button, Divider, Select } from "antd";
-import { useRouter } from "next/navigation";
+import { Button, Divider, Flex, Image, Select } from "antd";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PlusOutlined } from '@ant-design/icons';
 import NewProjectModal from "../NewProjectModal";
@@ -12,6 +12,9 @@ const ProjectSelect = () => {
   const { data: projects } = getAll();
   const router = useRouter();
   const [openedCreateProject, setOpenCreateProject] = useState(false);
+  const pathname = usePathname();
+
+  console.log({ pathname })
 
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
@@ -32,6 +35,7 @@ const ProjectSelect = () => {
     return null
   }
 
+
   return (
     <>
       <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
@@ -41,13 +45,26 @@ const ProjectSelect = () => {
         value={selectedProject}
         onChange={(value) => {
           if (value !== null) {
-            router.push(`/projects/${value}/articles`);
+            const newPath = pathname.replace(`${projectId}`, `${value}`)
+            router.push(newPath);
           }
         }}
         options={projects?.map((p) => {
           return {
-            label: p.name,
-            value: p.id.toString()
+            label: (
+              <Flex gap={10} align="center">
+                <Image
+                  src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${p.website}&size=128`}
+                  width={20}
+                  height={20}
+                  preview={false}
+                  className="relative bottom-10"
+                />
+                <span>{p.name}</span>
+              </Flex>
+            ),
+            value: p.id.toString(),
+            website: p.website
           }
         })}
         dropdownRender={(menu) => (

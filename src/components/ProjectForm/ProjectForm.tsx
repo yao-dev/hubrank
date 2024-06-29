@@ -4,15 +4,22 @@ import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space, message } 
 import { useRouter } from "next/navigation";
 import useLanguages from "@/hooks/useLanguages";
 import Label from "../Label/Label";
+import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
+import queryKeys from "@/helpers/queryKeys";
+import { getUserId } from "@/helpers/user";
+import { useEffect, useState } from "react";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
-  const { getOne, update, delete: deleteProject } = useProjects()
+  const { getOne, delete: deleteProject } = useProjects()
   const { data: project } = getOne(projectId)
+  const queryClient = useQueryClient();
   // const form = useProjectForm(project);
   const [form] = Form.useForm();
   const router = useRouter()
-  const { data: languages } = useLanguages().getAll()
+  const { data: languages } = useLanguages().getAll();
+  const [isSaving, setIsSaving] = useState(false)
 
   // if (projectId === null || tab !== "settings") {
   //   return null;
@@ -24,13 +31,27 @@ const ProjectForm = () => {
 
   const onSubmit = async (values: any) => {
     try {
-      await update.mutateAsync({
+      setIsSaving(true)
+      const userId = await getUserId()
+      await axios.put('/api/project', {
         ...values,
         blog_path: values.blog_path.startsWith("/") ? values.blog_path : `/${values.blog_path}`,
-        project_id: projectId
+        project_id: projectId,
+        user_id: userId
       })
-      message.success("Project updated!")
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.projects(projectId),
+      });
+      // await update.mutateAsync({
+      //   ...values,
+      //   blog_path: values.blog_path.startsWith("/") ? values.blog_path : `/${values.blog_path}`,
+      //   project_id: projectId
+      // });
+      message.success("Project updated!");
+      setIsSaving(false)
+
     } catch (e) {
+      setIsSaving(false)
       console.log(e);
       message.error("We are unable to save your update!")
     }
@@ -91,6 +112,7 @@ const ProjectForm = () => {
       form={form}
       layout="vertical"
       onFinish={onSubmit}
+      disabled={isSaving}
       // labelCol={{ span: 8 }}
       // wrapperCol={{ span: 20 }}
       // style={{ maxWidth: 600 }}
@@ -208,7 +230,7 @@ const ProjectForm = () => {
           >
             <Button danger type="text">Delete project</Button>
           </Popconfirm>
-          <Button type="primary" htmlType="submit">
+          <Button loading={isSaving} type="primary" htmlType="submit">
             Update
           </Button>
         </Flex>

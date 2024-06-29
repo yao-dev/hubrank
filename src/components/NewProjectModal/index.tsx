@@ -5,12 +5,18 @@ import useProjects from "@/hooks/useProjects";
 import { Image, Form, Input, Modal, Alert, Select, Space } from "antd";
 import useLanguages from "@/hooks/useLanguages";
 import Label from "../Label/Label";
+import axios from "axios";
+import { getUserId } from "@/helpers/user";
+import { useQueryClient } from "@tanstack/react-query";
+import queryKeys from "@/helpers/queryKeys";
 
 
 const NewProjectModal = ({ opened, onClose }: any) => {
   const [error, setError] = useState(false);
   const router = useRouter()
   const projects = useProjects();
+  const queryClient = useQueryClient();
+  const [isSaving, setIsSaving] = useState(false);
 
   const [form] = Form.useForm();
   const { data: languages } = useLanguages().getAll()
@@ -18,13 +24,23 @@ const NewProjectModal = ({ opened, onClose }: any) => {
   const onCreateProject = async (values: any) => {
     try {
       setError(false)
-      const { data: project } = await projects.create.mutateAsync({
+      setIsSaving(true)
+      const userId = await getUserId()
+      const { data } = await axios.post('/api/project', {
         ...values,
-        language_id: +values.language_id
+        language_id: +values.language_id,
+        user_id: userId,
+      })
+      console.log(data)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.projects(),
       });
+      console.log(data)
       onCloseCreateProject()
-      router.push(`/projects/${project.id}/articles`)
+      router.push(`/projects/${data.projectId}/settings`)
+      setIsSaving(false)
     } catch (e) {
+      setIsSaving(false)
       console.error(e)
       setError(true)
     }
@@ -42,20 +58,22 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       onCancel={() => onCloseCreateProject()}
       onOk={() => form.submit()}
       okText="Create"
-      confirmLoading={projects.create.isPending}
+      confirmLoading={isSaving}
       closable={!projects.create.isPending}
+
     >
       <Form
         form={form}
         layout="vertical"
         onFinish={onCreateProject}
+        disabled={isSaving}
         initialValues={{
           name: "",
           website: "",
           // description: "",
           // seed_keyword: "",
           // target_audience: "",
-          language_id: null
+          language_id: 1
         }}
       >
         {error && (

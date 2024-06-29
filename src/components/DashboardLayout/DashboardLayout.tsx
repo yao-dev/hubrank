@@ -146,8 +146,6 @@ export default function DashboardLayout({
     }
   ];
 
-  console.log("params", params)
-
   const selectedKeys = useMemo(() => {
     if (pathname.startsWith('/dashboard')) {
       return ["dashboard"]

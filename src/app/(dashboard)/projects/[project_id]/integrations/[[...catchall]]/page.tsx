@@ -19,8 +19,6 @@ export default function Integrations() {
 
   // const onAddIntegration = () => {
   //   switch (selectedIntegration) {
-  //     case "notion":
-  //       return router.push(process.env.NEXT_PUBLIC_NOTION_AUTH_URL || "");
   //     case "zapier":
   //       zapier.authorize()
   //     // return router.push("https://zapier.com/developer/public-invite/205776/126f9abfb3a7cfe8264ddacfc0abeae5/")

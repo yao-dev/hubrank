@@ -89,7 +89,6 @@ export default function Dashboard() {
                             src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${project.website}&size=128`}
                             width={128 / 3}
                             height={128 / 3}
-                            alt={project.name}
                             preview={false}
                           />
                           <Typography.Title level={5} style={{ fontWeight: 600, margin: 0 }}>{project.name}</Typography.Title>

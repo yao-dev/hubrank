@@ -33,6 +33,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/helpers/queryKeys';
 import { format } from 'date-fns';
 import Label from '@/components/Label/Label';
+import { debounce } from 'lodash';
 
 const { Text } = Typography;
 
@@ -124,11 +125,12 @@ const Article = ({
 }) => {
   const articleId = +params.article_id;
   const projectId = +params.project_id;
+  const { getOne, update: updateBlogPost } = useBlogPosts()
   const {
     data: article,
     isPending,
     isError
-  } = useBlogPosts().getOne(articleId)
+  } = getOne(articleId)
   const { data: project } = useProjects().getOne(projectId);
   const queryClient = useQueryClient();
   const [isSaved, setIsSaved] = useState(true);
@@ -146,6 +148,20 @@ const Article = ({
   const html = useRef<any>(null);
   const text = useRef<any>(null);
   const markdown = useRef<any>(null);
+
+  const onEditorChange = async (content: any) => {
+    html.current = content;
+    text.current = editorRef.current?.editor?.contentAreaContainer?.innerText || "";
+    markdown.current = NodeHtmlMarkdown.translate(content);
+    await updateBlogPost.mutateAsync({
+      id: articleId,
+      html: html.current,
+      markdown: markdown.current
+    })
+    setIsSaved(editorRef.current?.editor?.isNotDirty)
+    setStats(getSummary(text.current));
+    message.success('Saved.');
+  }
 
   const getReadabilityName = (value: any) => {
     if (isNaN(value)) {
@@ -178,9 +194,14 @@ const Article = ({
     return 'Professional'
   }
 
+  const getBlogUrl = () => {
+    if (!project) return "";
+    return new URL(`${project.blog_path}`, new URL(project.website).href).href
+  }
+
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
-    return new URL(`${project.blog_path}/${slug}`, new URL(project.website))?.[prop]
+    return new URL(slug, getBlogUrl())?.[prop]
   }
 
   const code = prettify(`
@@ -220,10 +241,14 @@ ${JSON.stringify(article?.schema_markups ?? {})}
     message.success("Copied to clipboard!");
   }
 
-
   const onCopySchemaMarkup = () => {
     navigator.clipboard.writeText(schemaMarkup);
     message.success("Copied to clipboard!");
+  }
+
+  const onSaveSeoForm = async (values: any) => {
+    console.log(values)
+    message.success("Saved.");
   }
 
   const onGenerateSchemaMarkup = useMutation({
@@ -301,13 +326,14 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 // ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
               }}
               initialValue={article.html}
-              onEditorChange={(content) => {
-                html.current = content
-                text.current = editorRef.current?.editor?.contentAreaContainer?.innerText || ""
-                markdown.current = NodeHtmlMarkdown.translate(content)
-                setIsSaved(editorRef.current?.editor?.isNotDirty)
-                setStats(getSummary(text.current))
-              }}
+              onEditorChange={debounce(onEditorChange, 1500)}
+            // onEditorChange={(content) => {
+            // html.current = content
+            // text.current = editorRef.current?.editor?.contentAreaContainer?.innerText || ""
+            // markdown.current = NodeHtmlMarkdown.translate(content)
+            // setIsSaved(editorRef.current?.editor?.isNotDirty)
+            // setStats(getSummary(text.current))
+            // }}
             />
           )}
         </Col>
@@ -372,7 +398,7 @@ ${markdown.current}
                 >
                   <Button icon={<CopyOutlined />}>Copy</Button>
                 </Dropdown>
-                <Button type="primary" icon={<SaveOutlined />}>Save</Button>
+                <Button onClick={() => seoForm.submit()} type="primary" icon={<SaveOutlined />}>Save</Button>
               </Flex>
 
               {!!project && !!article && (
@@ -387,12 +413,13 @@ ${markdown.current}
                     keywords: article.keywords?.slice(0, 9).join(',') ?? "",
                     og_image_url: article.featured_image ?? "",
                   }}
+                  onFinish={onSaveSeoForm}
                 >
                   <Form.Item style={{ marginBottom: 12 }} label={<Label name="Title" />} name="title" rules={[{ required: true, type: "string", message: "Add a title" }]}>
                     <Input placeholder='Title' />
                   </Form.Item>
                   <Form.Item style={{ marginBottom: 12 }} label={<Label name="Slug" />} name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
-                    <Input placeholder='/article-slug-here' />
+                    <Input addonBefore={getBlogUrl()} placeholder='/article-slug-here' />
                   </Form.Item>
                   <Form.Item style={{ marginBottom: 28 }} label={<Label name="Meta description" />} name="meta_description" help="160 characters max recommended" rules={[{ required: false, type: "string", message: "Add a meta description" }]}>
                     <Input placeholder='Add a meta description' />

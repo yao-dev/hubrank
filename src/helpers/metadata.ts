@@ -19,9 +19,9 @@ export const fetchWebsiteMetadata = async (website: string) => {
       metaTags[prop] = content;
     });
 
-    $('script[type="application/ld+json"]').each((index, script) => {
-      console.log($(script).html())
-    });
+    // $('script[type="application/ld+json"]').each((index, script) => {
+    //   console.log($(script).html())
+    // });
 
     // const metaTags = {
     //   title: $('meta[name="title"]').attr('content'),

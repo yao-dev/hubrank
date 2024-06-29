@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
-import { insertBlogPost } from "../../helpers";
+import { getUpstashDestination, insertBlogPost } from "../../helpers";
 import { AI } from "../../AI";
 
 export async function POST(request: Request) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       title: headline
     })
     await createSchedule({
-      destination: "https://app.usehubrank.com/api/pseo/write",
+      destination: getUpstashDestination("api/pseo/write"),
       body: {
         ...body,
         outline,

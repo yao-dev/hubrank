@@ -4,11 +4,15 @@ import { getSummary } from 'readability-cyr';
 import {
   cleanArticle,
   convertMarkdownToHTML,
+  fetchSitemap,
   getAndSaveSchemaMarkup,
   getBlogUrls,
   getHeadlines,
   getKeywordsForKeywords,
   getProjectContext,
+  getProjectKnowledges,
+  getRelevantKeywords,
+  getRelevantUrls,
   getWritingStyle,
   getYoutubeVideosForKeyword,
   insertBlogPost,
@@ -20,7 +24,6 @@ import {
   writeSection,
 } from "../helpers";
 import chalk from "chalk";
-import axios from "axios";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -90,15 +93,31 @@ export async function POST(request: Request) {
 
     // FETCH THE SITEMAP
     if (body.sitemap) {
-      const { data: sitemapXml } = await axios.get(body.sitemap);
+      const sitemapXml = await fetchSitemap(body.sitemap);
       console.log(chalk.yellow(sitemapXml));
-      sitemaps = getBlogUrls(sitemapXml)
+      sitemaps = getBlogUrls({ websiteUrl: project.website, sitemapXml });
+      sitemaps = await getRelevantUrls({
+        query: body.title,
+        urls: sitemaps,
+        userId: body.userId,
+        articleId,
+        topK: 10
+      });
     }
 
-    const { keywords } = await getKeywordsForKeywords({
+    const { keywords: kw } = await getKeywordsForKeywords({
       keyword: body.title,
       countryCode: language.code
     })
+    const keywords = await getRelevantKeywords({
+      query: body.title,
+      keywords: kw,
+      userId: body.userId,
+      articleId,
+      seedKeyword: body.title,
+      topK: 10
+    })
+    await updateBlogPost(articleId, { keywords })
     const { videos } = await getYoutubeVideosForKeyword({
       keyword: body.title,
       languageCode: language.code,
@@ -211,6 +230,14 @@ export async function POST(request: Request) {
       // if (section.media === "youtube" && section.youtube_search) {
       //   // TODO: fetch video
       // }
+
+      // TODO: add knowledges in writeSection prompt
+      const knowledges = await getProjectKnowledges({
+        userId: body.userId,
+        projectId: body.project_id,
+        topK: 5,
+        query: `${section.name} ${section?.keywords ?? ""}`
+      })
 
       // WRITE EACH SECTION
       await writeSection({

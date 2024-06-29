@@ -1,4 +1,4 @@
-import { Client } from "@upstash/qstash";
+import { Client, PublishToUrlResponse } from "@upstash/qstash";
 import axios from "axios";
 
 const client = new Client({
@@ -12,6 +12,15 @@ const client = new Client({
 export const deleteMessage = async (messageId: string) => {
   await client.messages.delete(messageId);
   // await client.dlq.delete(messageId)
+}
+
+export const createBackgroundJob = async ({ body, destination, headers = {} }: any): Promise<PublishToUrlResponse> => {
+  const response = await client.publishJSON({
+    url: destination,
+    body
+  });
+
+  return response
 }
 
 export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string> => {
