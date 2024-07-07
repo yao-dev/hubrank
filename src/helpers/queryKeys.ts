@@ -36,6 +36,9 @@ const queryKeys = {
   }) => ["target_audiences", filters] as const,
   writingStyles: (project_id: number) => ["writing_styles", project_id] as const,
   languages: (id?: number) => ["languages", id] as const,
+  caption: (id: number) => ["captions", id] as const,
+  captions: (project_id: number, queue?: boolean) => ["captions", { project_id, queue }] as const,
+
 };
 
 export default queryKeys;

@@ -9,6 +9,7 @@ import axios from "axios";
 import { getUserId } from "@/helpers/user";
 import { useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
+import LanguageSelect from "../LanguageSelect/LanguageSelect";
 
 
 const NewProjectModal = ({ opened, onClose }: any) => {
@@ -93,30 +94,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
           }]}
           hasFeedback
         >
-          <Select
-            placeholder="Language"
-            optionLabelProp="label"
-            options={languages?.map((p) => {
-              return {
-                ...p,
-                label: p.label,
-                value: p.id
-              }
-            })}
-            optionRender={(option: any) => {
-              return (
-                <Space>
-                  <Image
-                    src={option.data.image}
-                    width={25}
-                    height={25}
-                    preview={false}
-                  />
-                  {option.label}
-                </Space>
-              )
-            }}
-          />
+          <LanguageSelect languages={languages} />
         </Form.Item>
         {/*
       <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>

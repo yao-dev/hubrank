@@ -23,7 +23,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        width: 350,
+        width: 250,
         render: (value: any, record: any) => {
           if (record.default) {
             return (
@@ -46,7 +46,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Text',
         dataIndex: 'text',
         key: 'text',
-        // ellipsis: true,
+        ellipsis: true,
         render: (value: any) => {
           return (
             <span>
@@ -59,7 +59,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Characteristics',
         dataIndex: 'characteristics',
         key: 'characteristics',
-        // ellipsis: true,
+        ellipsis: true,
         render: (value: any, record: any) => {
           const characteristics = compact([
             record.tones,
@@ -78,7 +78,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
 
           return characteristics.map((item) => {
             return (
-              <Tag>{item}</Tag>
+              <Tag style={{ marginBottom: 5 }}>{item}</Tag>
             )
           })
 

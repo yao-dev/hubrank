@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 import Link from "next/link";
 import NewProjectModal from "@/components/NewProjectModal";
+import PageTitle from "@/components/PageTitle/PageTitle";
 
 export default function Dashboard() {
   const projects = useProjects();
@@ -70,7 +71,7 @@ export default function Dashboard() {
             align="center"
             style={{ marginBottom: 24 }}
           >
-            <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Dashboard</Typography.Title>
+            <PageTitle title="Dashboard" />
             <Button type="primary" onClick={() => setOpenCreateProject(true)} icon={<PlusOutlined />}>
               {screens.xs ? "New" : "New project"}
             </Button>
@@ -82,7 +83,7 @@ export default function Dashboard() {
               return (
                 <Col key={project.id} xs={24} md={12} xl={8} style={{ marginBottom: 24 }}>
                   <Card style={{ height: 180 }}>
-                    <Link href={`/projects/${project.id}/articles`} prefetch>
+                    <Link href={`/projects/${project.id}?tab=blog-posts`} prefetch>
                       <Flex justify="space-between" style={{ marginBottom: 24 }}>
                         <Flex gap="middle" align="center">
                           <Image

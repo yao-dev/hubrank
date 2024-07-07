@@ -11,9 +11,6 @@ const { useBreakpoint } = Grid;
 const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }) => {
   const pathname = usePathname();
   const projectId = useProjectId();
-  // const { data: project } = useProjects().getOne(projectId);
-  // const articleId = useArticleId()
-  // const { data: article } = useBlogPosts().getOne(articleId);
   const router = useRouter();
   const screens = useBreakpoint();
 
@@ -22,7 +19,7 @@ const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }
       return component
     }
     return (
-      <Flex align="center" justify='space-between' style={{ width: "100%" }}>
+      <Flex align="center" gap="small" style={{ width: "100%" }}>
         {component}
         {screens.xs ? (
           <Button icon={<SettingOutlined />} onClick={() => router.push(`/projects/${projectId}/settings`)} />
@@ -30,28 +27,23 @@ const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }
           <Button icon={<SettingOutlined />} onClick={() => router.push(`/projects/${projectId}/settings`)}>Settings</Button>
         )}
       </Flex>
+
     )
   }
 
-  // if (pathname === "/" || pathname === "/projects") return null;
-
-  // if (!pathname.startsWith('/projects/')) return null;
-
   return (
     <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
-      {withSettingsButton(
-        <Flex gap="small" align="center">
-          {!screens.lg && (
-            <MenuUnfoldOutlined onClick={onOpenMobileMenu} style={{ fontSize: 20, padding: 6 }} />
-          )}
-          {screens.lg && pathname !== "/" && (
-            <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
-          )}
-          {pathname.startsWith("/projects") && (
-            <ProjectSelect />
-          )}
-        </Flex>
-      )}
+      {withSettingsButton(<Flex gap="small" align="center">
+        {!screens.lg && (
+          <MenuUnfoldOutlined onClick={onOpenMobileMenu} style={{ fontSize: 20, padding: 6 }} />
+        )}
+        {screens.lg && pathname !== "/" && (
+          <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
+        )}
+        {pathname.startsWith("/projects") && !pathname.endsWith("/projects") && (
+          <ProjectSelect />
+        )}
+      </Flex>)}
     </Flex>
   )
 

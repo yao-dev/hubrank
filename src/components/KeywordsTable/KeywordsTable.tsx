@@ -3,18 +3,16 @@ import {
   App,
   AutoComplete,
   Button,
-  Col,
   ConfigProvider,
   Empty,
   Flex,
   Form,
   Grid,
   Image,
-  Row,
-  Select,
   Space,
   Table,
   Tag,
+  Typography,
 } from 'antd';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
@@ -22,12 +20,14 @@ import useProjectId from '@/hooks/useProjectId';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getRelatedKeywords } from '@/helpers/seo';
 import useLanguages from '@/hooks/useLanguages';
-import { DeleteTwoTone, SearchOutlined } from '@ant-design/icons';
+import { DeleteTwoTone, SearchOutlined, SaveOutlined } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
 import { getUserId } from '@/helpers/user';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { isEmpty } from 'lodash';
+import useDrawers from '@/hooks/useDrawers';
+import LanguageSelect from '../LanguageSelect/LanguageSelect';
 
 const competitionOrder: any = {
   "low": 0,
@@ -35,11 +35,7 @@ const competitionOrder: any = {
   "high": 2,
 }
 
-type Props = {
-  savedMode?: boolean;
-}
-
-const KeywordsTable = ({ savedMode }: Props) => {
+const KeywordsTable = () => {
   const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId);
   const { getAll } = useLanguages();
@@ -55,32 +51,11 @@ const KeywordsTable = ({ savedMode }: Props) => {
   const selectedLanguage = languages?.find(l => l.id === language_id);
   const [keywords, setKeywords] = useState([]);
   const [isFetchingKeywords, setIsFetchingKeywords] = useState(false);
+  const [showSavedKeywords, setShowSavedKeywords] = useState(false);
   const screens = Grid.useBreakpoint();
+  const drawers = useDrawers();
 
-  // const { data: keywords, isLoading: isSearchModeFetching, isFetching, isFetched: isfetched1 } = useQuery({
-  //   enabled: searchEnabled,
-  //   queryKey: ["keywords", search, language_id],
-  //   placeholderData: keepPreviousData,
-  //   gcTime: Infinity,
-  //   queryFn: () => {
-  //     return getRelatedKeywords({ keyword: search, depth: 4, limit: 1000, lang: selectedLanguage.code, location_code: selectedLanguage.location_code })
-  //   },
-  //   select: (data) => {
-  //     return data?.map((item: any) => {
-  //       return {
-  //         language_id: language_id,
-  //         keyword: item.keyword_data.keyword,
-  //         search_volume: item.keyword_data.keyword_info.search_volume,
-  //         competition_level: item.keyword_data.keyword_info.competition_level || "",
-  //         keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
-  //         search_intent: item.keyword_data.search_intent_info.main_intent || "",
-  //         word_count: item.keyword_data.keyword.split(" ").length
-  //       }
-  //     })
-  //   },
-  // });
-
-  const { data: searchedKeywords } = useQuery({
+  const { data: searchedKeywords, isFetched: isSearchedKeywordsFetched } = useQuery({
     enabled: !!projectId,
     queryKey: ["searched_keywords", { projectId }],
     placeholderData: keepPreviousData,
@@ -98,7 +73,7 @@ const KeywordsTable = ({ savedMode }: Props) => {
     },
   });
 
-  const { data: savedKeywords, isLoading: isSavedModeFetching } = useQuery({
+  const { data: savedKeywords, isFetched: isSavedKeywordsFetched } = useQuery({
     queryKey: ["saved_keywords", { projectId }],
     placeholderData: keepPreviousData,
     queryFn: () => {
@@ -154,6 +129,18 @@ const KeywordsTable = ({ savedMode }: Props) => {
   //   })
   // }, [project]);
 
+  const renderShowSavedKeywordsButton = () => {
+    if (showSavedKeywords) {
+      return (
+        <Button onClick={() => setShowSavedKeywords(false)} icon={<SearchOutlined />}>Keywords research</Button>
+      )
+    }
+
+    return (
+      <Button onClick={() => setShowSavedKeywords(true)} icon={<SaveOutlined />}>Saved keywords</Button>
+    )
+  }
+
   const columns = useMemo(() => {
     return [
       {
@@ -161,13 +148,13 @@ const KeywordsTable = ({ savedMode }: Props) => {
         key: 'language',
         width: 50,
         render: (_value: any, record: any) => {
-          if (savedMode && !record?.languages?.image || !savedMode && !activeLanguage?.image) {
+          if (showSavedKeywords && !record?.languages?.image || !showSavedKeywords && !activeLanguage?.image) {
             return (
               <span>-</span>
             )
           }
           return (
-            <Image src={savedMode ? record.languages.image : activeLanguage?.image} width={25} height={25} preview={false} />
+            <Image src={showSavedKeywords ? record.languages.image : activeLanguage?.image} width={25} height={25} preview={false} />
           )
         },
       },
@@ -175,7 +162,6 @@ const KeywordsTable = ({ savedMode }: Props) => {
         title: 'Keyword',
         dataIndex: 'keyword',
         key: 'keyword',
-        // width: 425,
       },
       {
         title: 'Search volume',
@@ -277,7 +263,6 @@ const KeywordsTable = ({ savedMode }: Props) => {
         sorter: (a: any, b: any) => a.word_count - b.word_count,
       },
       {
-        // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => {
@@ -286,12 +271,16 @@ const KeywordsTable = ({ savedMode }: Props) => {
             <Space size="small" align='center'>
               <Button
                 onClick={() => {
-                  router.push(`/projects/${projectId}/articles/new?k=${record.keyword}&lid=${record.language_id || ""}`)
+                  drawers.openBlogPostDrawer({
+                    isOpen: true,
+                    languageId: record.language_id || "",
+                    seedKeyword: record.keyword
+                  })
                 }}
               >
                 use keyword
               </Button>
-              {savedMode ? (
+              {showSavedKeywords ? (
                 <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
               ) : (
                 <Button
@@ -311,170 +300,127 @@ const KeywordsTable = ({ savedMode }: Props) => {
       },
     ]
 
-  }, [savedMode, activeLanguage, savedKeywords, savedKeywordsString, theme]);
+  }, [showSavedKeywords, activeLanguage, savedKeywords, savedKeywordsString, theme]);
 
   const renderSearchBar = () => {
     return (
-      <Form
-        form={form}
-        initialValues={{
-          search: "",
-          language_id: selectedLanguage?.id || project?.language_id
-        }}
-        onFinish={async (values) => {
-          try {
-            setIsFetchingKeywords(true);
-            const searchTerm = values.search;
+      <Flex justify={showSavedKeywords ? "flex-end" : 'space-between'}>
+        {!showSavedKeywords && (
+          <Form
+            form={form}
+            initialValues={{
+              search: "",
+              language_id: selectedLanguage?.id || project?.language_id
+            }}
+            onFinish={async (values) => {
+              try {
+                setShowSavedKeywords(false);
+                setIsFetchingKeywords(true);
+                const searchTerm = values.search;
 
-            const language = languages?.find(l => l.id === values.language_id)
-            const keywordSearchKey = ["keywords", { search: searchTerm, languageId: values.language_id }];
-            const state = queryClient.getQueryState(keywordSearchKey);
+                const language = languages?.find(l => l.id === values.language_id)
+                const keywordSearchKey = ["keywords", { search: searchTerm, languageId: values.language_id }];
+                const state = queryClient.getQueryState(keywordSearchKey);
 
-            const { data: isKeywordSearchBefore } = await supabase.from("searched_keywords").select("id").match({
-              keyword: searchTerm,
-              project_id: projectId
-            }).limit(1).single();
+                const { data: isKeywordSearchBefore } = await supabase.from("searched_keywords").select("id").match({
+                  keyword: searchTerm,
+                  project_id: projectId
+                }).limit(1).single();
 
-            if (!isKeywordSearchBefore) {
-              await supabase.from("searched_keywords").insert({
-                keyword: searchTerm,
-                user_id: await getUserId(),
-                project_id: projectId
-              })
-            }
-
-            if (isEmpty(state?.data)) {
-              queryClient.invalidateQueries({
-                queryKey: ["searched_keywords", { projectId }]
-              });
-              let newKeywords = await getRelatedKeywords({ keyword: searchTerm, depth: 4, limit: 1000, lang: language.code, location_code: language.location_code })
-              newKeywords = newKeywords?.map((item: any) => {
-                return {
-                  language_id: values.language_id,
-                  keyword: item.keyword_data.keyword,
-                  search_volume: item.keyword_data.keyword_info.search_volume,
-                  competition_level: item.keyword_data.keyword_info.competition_level || "",
-                  keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
-                  search_intent: item.keyword_data.search_intent_info.main_intent || "",
-                  word_count: item.keyword_data.keyword.split(" ").length
+                if (!isKeywordSearchBefore) {
+                  await supabase.from("searched_keywords").insert({
+                    keyword: searchTerm,
+                    user_id: await getUserId(),
+                    project_id: projectId
+                  })
                 }
-              })
-              queryClient.setQueryData(keywordSearchKey, newKeywords);
-              setKeywords(newKeywords)
-            } else {
-              setKeywords(state?.data || [])
-            }
-            setActiveLanguage(language)
-          } finally {
-            setIsFetchingKeywords(false)
-          }
-        }}
-      >
-        {/* <Form.Item noStyle name="search" required>
+
+                if (isEmpty(state?.data)) {
+                  queryClient.invalidateQueries({
+                    queryKey: ["searched_keywords", { projectId }]
+                  });
+                  let newKeywords = await getRelatedKeywords({ keyword: searchTerm, depth: 4, limit: 1000, lang: language.code, location_code: language.location_code })
+                  newKeywords = newKeywords?.map((item: any) => {
+                    return {
+                      language_id: values.language_id,
+                      keyword: item.keyword_data.keyword,
+                      search_volume: item.keyword_data.keyword_info.search_volume,
+                      competition_level: item.keyword_data.keyword_info.competition_level || "",
+                      keyword_difficulty: item.keyword_data.keyword_properties.keyword_difficulty,
+                      search_intent: item.keyword_data.search_intent_info.main_intent || "",
+                      word_count: item.keyword_data.keyword.split(" ").length
+                    }
+                  })
+                  queryClient.setQueryData(keywordSearchKey, newKeywords);
+                  setKeywords(newKeywords)
+                } else {
+                  setKeywords(state?.data || [])
+                }
+                setActiveLanguage(language)
+              } finally {
+                setIsFetchingKeywords(false)
+              }
+            }}
+          >
+            <Flex gap="small">
+              <Form.Item noStyle name="language_id">
+                <LanguageSelect languages={languages} placeholder="Country" style={{ width: 150 }} />
+              </Form.Item>
+              <Form.Item noStyle name="search">
                 <AutoComplete
                   options={searchedKeywords}
-                  style={{ width: "100%", marginBottom: 8 }}
                   // onSelect={onSelect}
                   // onSearch={(text) => setOptions(getPanelValue(text))}
                   placeholder="Search keywords"
                   allowClear
+                  style={{ width: 250 }}
                 />
-              </Form.Item> */}
-
-        <Flex gap="small">
-          <Form.Item noStyle name="language_id">
-            <Select
-              placeholder="Country"
-              optionLabelProp="label"
-              style={{ width: 150 }}
-              options={languages?.map((p) => {
-                return {
-                  ...p,
-                  label: p.label,
-                  value: p.id
-                }
-              })}
-              optionRender={(option: any) => {
-                return (
-                  <Space>
-                    <Image
-                      src={option.data.image}
-                      width={25}
-                      height={25}
-                      preview={false}
-                    />
-                    {option.label}
-                  </Space>
-                )
-              }}
-            />
-          </Form.Item>
-          <Form.Item noStyle name="search">
-            <AutoComplete
-              options={searchedKeywords}
-              // onSelect={onSelect}
-              // onSearch={(text) => setOptions(getPanelValue(text))}
-              placeholder="Search keywords"
-              allowClear
-              style={{ width: 250 }}
-            />
-          </Form.Item>
-          <Button
-            disabled={!search || !language_id}
-            icon={screens.xs ? <SearchOutlined /> : null}
-            type="primary"
-            htmlType="submit"
-            loading={isFetchingKeywords}
-            style={{ width: "auto", marginBottom: 8 }}
-          >
-            {screens.xs ? "(1 credit)" : "Search (1 credit)"}
-          </Button>
-        </Flex>
-      </Form>
-    )
-  }
-
-  if (
-    !savedMode && !isSavedModeFetching && !keywords?.length
-    // savedMode && !isSearchModeFetching && !savedKeywords?.length
-  ) {
-    return (
-      <Flex vertical gap="large">
-        <Flex align='center' justify='center' style={{ marginTop: 96 }}>
-          <Empty
-            image="/image-1.png"
-            imageStyle={{ height: screens.xs ? 125 : 200 }}
-            description="No keywords"
-          />
-        </Flex>
-        {!savedMode && (
-          <Flex vertical align='center' justify='center' >
-            {renderSearchBar()}
-          </Flex>
+              </Form.Item>
+              <Button
+                disabled={!search || !language_id}
+                icon={<SearchOutlined />}
+                type="primary"
+                htmlType="submit"
+                loading={isFetchingKeywords}
+                style={{ width: "auto", marginBottom: 0 }}
+              >
+                {screens.xs ? "(1 credit)" : "Search (1 credit)"}
+              </Button>
+            </Flex>
+          </Form>
         )}
+        {renderShowSavedKeywordsButton()}
       </Flex>
     )
   }
 
   return (
     <Flex vertical gap="large" style={{ overflow: "auto" }}>
-      {!savedMode && (
-        <Row>
-          <Col span={12}>
-            {renderSearchBar()}
-          </Col>
-        </Row>
+      {renderSearchBar()}
+      {((!showSavedKeywords && isSearchedKeywordsFetched && isEmpty(keywords)) || (showSavedKeywords && isSavedKeywordsFetched && isEmpty(savedKeywords))) ? (
+        <Flex align='center' justify='center' style={{ marginTop: 96 }}>
+          <Empty
+            image="/image-1.png"
+            imageStyle={{ height: 200 }}
+            description={(
+              <Typography.Text style={{ margin: 0 }}>
+                No keywords found
+              </Typography.Text>
+            )}
+          />
+        </Flex>
+      ) : (
+        <Table
+          size="small"
+          dataSource={showSavedKeywords ? savedKeywords : keywords}
+          columns={columns}
+          loading={isFetchingKeywords}
+          pagination={{
+            pageSize: 25
+          }}
+          style={{ minWidth: 900, overflow: "auto" }}
+        />
       )}
-      <Table
-        size="small"
-        dataSource={!savedMode ? keywords : savedKeywords}
-        columns={columns}
-        loading={isFetchingKeywords}
-        pagination={{
-          pageSize: 25
-        }}
-        style={{ minWidth: 900, overflow: "auto" }}
-      />
     </Flex>
   )
 }

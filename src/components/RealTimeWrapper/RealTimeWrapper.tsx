@@ -7,7 +7,9 @@ import { RealtimeChannel } from "@supabase/supabase-js";
 import { App, Typography } from "antd";
 import useProjectId from "@/hooks/useProjectId";
 
-let channel: RealtimeChannel;
+let blogPosts: RealtimeChannel;
+let captions: RealtimeChannel;
+let newssletter: RealtimeChannel;
 
 const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
@@ -17,7 +19,7 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 
 	React.useEffect(() => {
 		if (sessionStore.session?.user?.id) {
-			channel = supabase
+			blogPosts = supabase
 				.channel('blog_posts')
 				.on('postgres_changes', {
 					event: 'UPDATE',
@@ -56,13 +58,29 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 						queryKey: ["blog_posts"],
 					});
 				})
+				.subscribe();
+
+			captions = supabase
+				.channel('captions')
+				.on('postgres_changes', {
+					event: "INSERT",
+					schema: 'public',
+					table: 'captions',
+					filter: `project_id=eq.${projectId}`,
+				}, () => {
+					queryClient.invalidateQueries({
+						queryKey: ["captions"],
+					});
+				})
 				.subscribe()
 
 			return () => {
-				channel?.unsubscribe?.();
+				blogPosts?.unsubscribe?.();
+				captions?.unsubscribe?.();
 			};
 		} else {
-			channel?.unsubscribe?.();
+			blogPosts?.unsubscribe?.();
+			captions?.unsubscribe?.();
 		}
 	}, [queryClient, sessionStore.session?.user?.id, projectId]);
 

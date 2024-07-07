@@ -7,7 +7,8 @@ export async function POST(request: Request) {
       userId: "01ef70b3-c8c2-4efd-a92a-976efca81562",
       projectId: 68,
       topK: 20,
-      query: "pricing"
+      query: "bannerbear vs abyssale",
+      minScore: 0.8
     });
 
     return NextResponse.json(knowledges, { status: 200 })

@@ -1,6 +1,6 @@
 import useProjects from "@/hooks/useProjects";
 import useProjectId from "@/hooks/useProjectId";
-import { Button, Flex, Form, Image, Input, Popconfirm, Select, Space, message } from "antd";
+import { Button, Flex, Form, Input, Popconfirm, message } from "antd";
 import { useRouter } from "next/navigation";
 import useLanguages from "@/hooks/useLanguages";
 import Label from "../Label/Label";
@@ -8,7 +8,8 @@ import axios from "axios";
 import { useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import { getUserId } from "@/helpers/user";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import LanguageSelect from "../LanguageSelect/LanguageSelect";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -136,30 +137,7 @@ const ProjectForm = () => {
         }]}
         hasFeedback
       >
-        <Select
-          placeholder="Language"
-          optionLabelProp="label"
-          options={languages?.map((p) => {
-            return {
-              ...p,
-              label: p.label,
-              value: p.id
-            }
-          })}
-          optionRender={(option: any) => {
-            return (
-              <Space>
-                <Image
-                  src={option.data.image}
-                  width={25}
-                  height={25}
-                  preview={false}
-                />
-                {option.label}
-              </Space>
-            )
-          }}
-        />
+        <LanguageSelect languages={languages} />
       </Form.Item>
 
       <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>

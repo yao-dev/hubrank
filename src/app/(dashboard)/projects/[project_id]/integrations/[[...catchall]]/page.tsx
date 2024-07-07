@@ -7,6 +7,7 @@ import { useZapier } from '@/hooks/useZapier';
 import { TabsProps } from "antd/lib";
 import Link from 'next/link';
 import axios from 'axios';
+import PageTitle from '@/components/PageTitle/PageTitle';
 
 export default function Integrations() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,7 +115,7 @@ export default function Integrations() {
           justify="space-between"
           align="center"
         >
-          <Typography.Title level={3} style={{ fontWeight: 700, margin: 0 }}>Integrations</Typography.Title>
+          <PageTitle title="Integrations" />
           {/* {screens.xs ? (
             <Button
               type="primary"

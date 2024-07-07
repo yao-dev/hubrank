@@ -1,6 +1,6 @@
 import useProjectId from "@/hooks/useProjectId";
 import useWritingStyles from "@/hooks/useWritingStyles";
-import { App, Flex, Form, Input, Modal, Segmented, Switch } from "antd";
+import { App, Button, Drawer, Flex, Form, Input, Segmented, Switch } from "antd";
 import { useEffect, useState } from "react";
 import {
   emotions,
@@ -16,6 +16,7 @@ import MultiSelectTagList from "../MultiSelectTagList/MultiSelectTagList";
 import { isEmpty, omit } from "lodash";
 import Label from "../Label/Label";
 import axios from "axios";
+import DrawerTitle from "../DrawerTitle/DrawerTitle";
 
 const options = [
   {
@@ -125,7 +126,40 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
   }
 
   return (
-    <Modal
+    <Drawer
+      title={<DrawerTitle title={"New writing style"} />}
+      width={600}
+      onClose={onClose}
+      open={opened}
+      styles={{
+        body: {
+          paddingBottom: 80,
+        },
+      }}
+      footer={
+        <Flex justify="end" align="center" gap="middle">
+          <Button onClick={onClose}>Cancel</Button>
+          <Button
+            onClick={() => form.submit()}
+            type="primary"
+            loading={isSaving}
+            disabled={mode === "manual" ? isEmpty([
+              fieldTones,
+              fieldPurposes,
+              fieldEmotions,
+              fieldVocabularies,
+              fieldSentenceStructures,
+              fieldPerspectives,
+              fieldWritingStructures,
+              fieldInstructionalElements,
+            ].flat()) : !fieldText}
+          >
+            Create
+          </Button>
+        </Flex>
+      }
+    >
+      {/* <Modal
       title="Add writing style"
       open={opened}
       onCancel={onClose}
@@ -143,7 +177,9 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
           fieldInstructionalElements,
         ].flat()) : !fieldText
       }}
-    >
+      width={650}
+      style={{ top: 20 }}
+    > */}
       <Flex vertical gap="large">
         <Form
           disabled={isSaving}
@@ -279,13 +315,13 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
 
           <Form.Item name="default" style={{ marginTop: 12 }}>
             <Flex gap="small">
-              <Switch />
+              <Switch size="small" />
               <span>Set as default</span>
             </Flex>
           </Form.Item>
         </Form>
       </Flex>
-    </Modal>
+    </Drawer>
   )
 }
 

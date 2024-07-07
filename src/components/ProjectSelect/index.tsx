@@ -1,6 +1,6 @@
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { Button, Divider, Flex, Image, Select } from "antd";
+import { Button, Divider, Image, Select } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PlusOutlined } from '@ant-design/icons';
@@ -14,8 +14,6 @@ const ProjectSelect = () => {
   const [openedCreateProject, setOpenCreateProject] = useState(false);
   const pathname = usePathname();
 
-  console.log({ pathname })
-
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
       return p.id === projectId
@@ -24,49 +22,63 @@ const ProjectSelect = () => {
     if (foundProject) {
       return {
         label: foundProject.name,
-        value: foundProject.id.toString()
+        value: foundProject.id.toString(),
+        website: foundProject.website
       }
     }
 
     return null
-  }, [projects, projectId])
+  }, [projects, projectId]);
+
+  const renderProjectFavicon = (website: string) => {
+    return (
+      <Image
+        src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${website}&size=128`}
+        width={20}
+        height={20}
+        preview={false}
+      />
+    )
+  }
+
+  const suffixIcon = useMemo(() => {
+    if (!selectedProject) return null
+    return renderProjectFavicon(selectedProject.website)
+  }, [selectedProject])
 
   if (!projects?.length) {
     return null
   }
 
-
   return (
     <>
       <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
       <Select
-        placeholder="Select a project"
+        placeholder="Select or create a project"
         style={{ width: 200 }}
         value={selectedProject}
         onChange={(value) => {
-          if (value !== null) {
+          if (projectId && value !== null) {
             const newPath = pathname.replace(`${projectId}`, `${value}`)
+            router.push(newPath);
+          } else if (!projectId) {
+            const newPath = window.location.href.replace("/projects", `/projects/${value}`)
             router.push(newPath);
           }
         }}
         options={projects?.map((p) => {
           return {
             label: (
-              <Flex gap={10} align="center">
-                <Image
-                  src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${p.website}&size=128`}
-                  width={20}
-                  height={20}
-                  preview={false}
-                  className="relative bottom-10"
-                />
-                <span>{p.name}</span>
-              </Flex>
+              <>
+                {renderProjectFavicon(p.website)}
+                <span style={{ position: "relative", left: 10 }}>{p.name}</span>
+              </>
             ),
             value: p.id.toString(),
             website: p.website
           }
         })}
+        suffixIcon={suffixIcon}
         dropdownRender={(menu) => (
           <>
             {menu}

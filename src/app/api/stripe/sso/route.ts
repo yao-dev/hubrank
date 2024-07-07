@@ -3,17 +3,16 @@ import crypto from "crypto";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const email = body.user_email.toLowerCase()
 
     const hmac = crypto.createHmac(
       "sha256",
       process.env.NEXT_PUBLIC_STRIPE_SECRET_SSO_KEY || ""
     )
-      .update(body.user_email.toLowerCase())
+      .update(email)
       .digest("hex");
 
-    console.log({ hmac, email: body.user_email.toLowerCase() })
-
-    return Response.json({ hmac })
+    return Response.json({ hmac, email })
   } catch (e) {
     Response.json({ error: e })
   }

@@ -2,7 +2,19 @@
 import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer } from 'antd';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { IconLogout, IconDashboard, IconArticle, IconSeo, IconWriting, IconPlug, IconStack2, IconSettings } from '@tabler/icons-react';
+import {
+  IconLogout,
+  IconDashboard,
+  IconArticle,
+  IconSeo,
+  IconWriting,
+  IconPlug,
+  IconSocial,
+  IconMail,
+  IconPigMoney,
+  IconCreditCard,
+  IconBulb,
+} from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
@@ -78,6 +90,7 @@ function getItem({
         href={link}
         key={key}
         style={{ textDecoration: 'none' }}
+        target={target}
       >
         {label}
       </Link>
@@ -100,73 +113,88 @@ export default function DashboardLayout({
   const tab = searchParams.get('tab')
   const projectId = useProjectId()
   const [isMobileView, setIsMobileView] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // const getMenuLink = (projectId, link) => {
+  //   const isProjectSelected = typeof projectId === "number" && projectId !== 0;
+
+  // }
 
   const data: MenuItem[] = useMemo(() => {
-    if (projectId !== null) {
-      return [
-        getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({
-          key: "project", label: 'Project', icon: <IconStack2 />, children: [
-            getItem({ key: "article", link: `/projects/${projectId}/articles`, label: 'Articles', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-            getItem({ key: "keyword", link: `/projects/${projectId}/keywords`, label: 'Keywords', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-            getItem({ key: "brand-voice", link: `/projects/${projectId}/brand-voices`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
-            // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-            getItem({ key: "setting", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-          ]
-        }),
-        getItem({ key: "integration", link: `/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
-        // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney />, onClick: () => setIsMobileMenuOpen(false) }),
-      ]
-    }
+    const isProjectSelected = typeof projectId === "number" && projectId !== 0;
 
     return [
-      getItem({ key: "dashboard", link: '/', label: 'Dashboard', icon: <IconDashboard /> }),
-      // getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard /> }),
-      // getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
-      // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Earn commissions', target: "_blank", icon: <IconPigMoney /> }),
-      getItem({ key: "integration", link: `/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-      getItem({ key: "setting", link: `/dashboard`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/projects?tab=blog-posts', label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "newsletters", link: isProjectSelected ? `/projects/${projectId}?tab=newsletters` : '/projects?tab=newsletters', label: 'Newsletters', icon: <IconMail />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/projects', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
     ]
-  }, [pathname, projectId]);
 
-  const bottomItems = [
-    {
-      key: 'logout',
-      icon: <IconLogout />,
-      label: "Logout",
-    }
-  ];
+
+    // if (typeof projectId === "number" && projectId !== 0) {
+    //   return [
+    //     getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/dashboard', label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/dashboard', label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "newsletters", link: isProjectSelected ? `/projects/${projectId}?tab=newsletters` : '/dashboard', label: 'Newsletters', icon: <IconMail />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/dashboard', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/dashboard', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/dashboard', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     // getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     // getItem({
+    //     //   key: "project", label: 'Project', icon: <IconStack2 />, children: [
+    //     //     getItem({ key: "blog-posts", link: `/projects/${projectId}?tab=blog-posts`, label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     getItem({ key: "social-media", link: `/projects/${projectId}?tab=social-media`, label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     getItem({ key: "newsletters", link: `/projects/${projectId}?tab=newsletters`, label: 'Newsletters', icon: <IconMail />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     getItem({ key: "keyword-research", link: `/projects/${projectId}?tab=keyword-research`, label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     getItem({ key: "writing-styles", link: `/projects/${projectId}?tab=writing-styles`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //     getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+    //     //   ]
+    //     // }),
+    //     ...commonLinks
+    //   ]
+    // }
+
+    // return [
+    //   dashboardLink,
+    //   ...commonLinks
+    // ];
+  }, [pathname, projectId]);
 
   const selectedKeys = useMemo(() => {
     if (pathname.startsWith('/dashboard')) {
       return ["dashboard"]
     }
-    if (pathname.includes('/articles') || tab === "articles") {
-      return ["article"]
+    if (tab === "blog-posts") {
+      return ["blog-posts"]
     }
-    if (pathname.includes('/keywords') || tab === "keywords") {
-      return ["keyword"]
+    if (tab === "social-media") {
+      return ["social-media"]
     }
-    if (pathname.includes('/brand-voices') || tab === "brand-voices") {
-      return ["brand-voice"]
+    if (tab === "newsletters") {
+      return ["newsletters"]
+    }
+    if (tab === "keyword-research") {
+      return ["keyword-research"]
+    }
+    if (tab === "writing-styles") {
+      return ["writing-styles"]
     }
     if (pathname.startsWith('/integrations')) {
-      return ["integration"]
+      return ["integrations"]
+    }
+    if (!pathname.startsWith('/settings') && pathname.endsWith('/settings')) {
+      return ["project-settings"]
     }
     if (pathname.startsWith('/settings')) {
-      return ["setting"]
+      return ["settings"]
     }
-    if (pathname.startsWith('/plan-billing')) {
-      return ["billing"]
+    if (pathname === '/plan-billing') {
+      return ["billing"];
     }
   }, [pathname, params, tab])
 
@@ -186,21 +214,35 @@ export default function DashboardLayout({
           <Menu
             theme="dark"
             mode="inline"
-            defaultSelectedKeys={['article']}
-            // defaultOpenKeys={['project']}
             selectedKeys={selectedKeys}
             items={data}
             style={{ height: '100%' }}
           />
         </div>
-        <div style={{ marginBottom: 12 }}>
+        <Flex vertical gap="large" style={{ marginBottom: 12 }}>
           <Menu
             theme="dark"
             mode="inline"
-            items={bottomItems}
-            onClick={() => supabase.auth.signOut()}
+            selectedKeys={selectedKeys}
+            items={[
+              getItem({ key: "billing", link: '/plan-billing', label: 'Plan & Billing', icon: <IconCreditCard /> }),
+              getItem({ key: "feedback", link: '/feedback', label: 'Feature Request', icon: <IconBulb /> }),
+              getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
+            ]}
           />
-        </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            items={[
+              {
+                key: 'logout',
+                icon: <IconLogout />,
+                label: "Logout",
+                onClick: () => supabase.auth.signOut()
+              }
+            ]}
+          />
+        </Flex>
       </Flex>
     )
   }, [data, selectedKeys])

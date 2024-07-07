@@ -535,24 +535,26 @@ export const fetchSitemap = async (sitemapUrl: string): Promise<string> => {
   return sitemapXml
 }
 
-export const getBlogUrls = ({ websiteUrl, sitemapXml, count = 500 }: { websiteUrl: string, sitemapXml: string; count?: number }) => {
+export const getBlogUrls = ({ websiteUrl, sitemapXml, count = 500 }: { websiteUrl: string, sitemapXml: string; count?: number }): string[] => {
   const $ = cheerio.load(sitemapXml);
-  const urls = new Set();
+  const list = new Set();
 
   // Extract URLs from <loc> tags
   $('loc').each((_, element) => {
-    urls.add($(element).text().trim());
+    list.add($(element).text().trim());
   });
 
   // Extract URLs from href attributes
   $('a').each((_, element) => {
     const href = $(element).attr('href');
     if (href) {
-      urls.add(href);
+      list.add(href);
     }
   });
 
-  return Array.from(urls).slice(0, count).filter((url) => url.startsWith(websiteUrl))
+  const urls = Array.from(list) as string[];
+
+  return urls.slice(0, count).filter((url) => url.startsWith(websiteUrl))
 }
 
 export const getProjectNamespaceId = ({ userId, projectId }: { userId: string; projectId: number }) => {
@@ -577,7 +579,7 @@ export const getRelevantUrls = async ({
   userId: string;
   articleId: number;
   topK?: number
-}) => {
+}): Promise<string[]> => {
   const namespaceId = getArticleNamespaceId({ userId, articleId });
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const uniqUrls = new Set(urls);
@@ -597,31 +599,30 @@ export const getRelevantUrls = async ({
 
   const result = await namespace.query({
     data: query,
-    topK,
-    includeMetadata: true,
+    topK: 500,
+    // includeMetadata: true,
+    includeData: true
   });
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
 
-  return result
+  return result.filter((item) => item.score >= 0.80).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getRelevantKeywords = async ({
-  query,
   keywords,
   userId,
   articleId,
-  seedKeyword,
+  query,
   topK = 20
 }: {
   keywords: string[];
-  query: string;
   userId: string;
   articleId: number;
-  seedKeyword: string;
+  query: string;
   topK?: number
 }) => {
-  const namespaceId = `${userId}-article-${articleId}-keyword-${seedKeyword}`;
+  const namespaceId = `${userId}-article-${articleId}-keywords`;
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const uniqs = new Set(keywords);
   const subset = Array.from(uniqs).slice(0, 1000);
@@ -640,13 +641,14 @@ export const getRelevantKeywords = async ({
 
   const result = await namespace.query({
     data: query,
-    topK,
-    includeMetadata: true,
+    topK: 500,
+    // includeMetadata: true,
+    includeData: true
   });
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
 
-  return result
+  return result.filter((item) => item.score >= 0.80).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getProjectById = async (projectId: number) => {
@@ -858,9 +860,9 @@ export const urlToVector = async ({
   const markdown = getMarkdown(html);
   console.log("step 5.3")
   const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-    // separators: ["\n\n"],
+    separators: [],
     chunkSize: 500,
-    chunkOverlap: 0,
+    chunkOverlap: 100,
   });
   console.log("step 5.4")
   const output = await splitter.createDocuments([markdown]);
@@ -924,11 +926,13 @@ export const getProjectKnowledges = async ({
   projectId,
   query,
   topK,
+  minScore
 }: {
   userId: string;
   projectId: number,
   query: string;
   topK: number,
+  minScore: number,
 }) => {
   const namespaceId = getProjectNamespaceId({ userId, projectId });
   const namespace = upstashVectorIndex.namespace(namespaceId)
@@ -936,14 +940,59 @@ export const getProjectKnowledges = async ({
     data: query,
     topK,
     includeMetadata: true,
-  });
+    includeData: true,
+  })
 
-  console.log({ knowledges })
+  const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
+  console.log({ filteredKnowledgesByScore });
 
-  return knowledges
+  return filteredKnowledgesByScore
 }
 
 export const getUpstashDestination = (endpoint: string) => {
   const host = process.env.NODE_ENV === "development" ? process.env.UPSTASH_TUNNEL_HOST : "https://app.usehubrank.com";
   return `${host}/${endpoint}`
+}
+
+export const insertCaption = async (data: {
+  caption: string;
+  title?: string;
+  platform: string;
+  user_id: string;
+  project_id: number;
+  language_id: number;
+  writing_style_id?: number;
+  metadata: { [key: string]: any };
+}) => {
+  try {
+    const { data: queuedCaption } = await supabase.from("captions")
+      .insert({
+        ...data,
+      })
+      .select("id")
+      .single()
+      .throwOnError();
+    console.log(chalk.bgBlue("[INFO]: queuedCaption"), queuedCaption);
+    return queuedCaption?.id;
+  } catch (error) {
+    console.error(chalk.bgRed("[ERROR]: inserting caption"), error);
+    throw error;
+  }
+}
+
+export const insertNewsletter = async (data: any) => {
+  try {
+    const { data: queuedNewsletter } = await supabase.from("newsletters")
+      .insert({
+        ...data,
+      })
+      .select("id")
+      .single()
+      .throwOnError();
+    console.log(chalk.bgBlue("[INFO]: queuedNewsletter"), queuedNewsletter);
+    return queuedNewsletter?.id;
+  } catch (error) {
+    console.error(chalk.bgRed("[ERROR]: inserting newsletter"), error);
+    throw error;
+  }
 }

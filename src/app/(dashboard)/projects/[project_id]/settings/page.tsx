@@ -19,13 +19,6 @@ export default function ProjectSettings({
         <ProjectForm />
       ),
     },
-    // {
-    //   key: 'seo-meta',
-    //   label: 'SEO Meta',
-    //   children: (
-    //     <ProjectMetaForm />
-    //   ),
-    // },
   ];
 
   return (

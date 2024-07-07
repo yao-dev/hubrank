@@ -7,6 +7,7 @@ import { useInterval, useToggle } from '@mantine/hooks';
 import { Form, Alert, Input, Button, Card, Flex, Typography, Image, Spin, Row, Col } from 'antd';
 import { useRouter } from 'next/navigation';
 import useSession from '@/hooks/useSession';
+import Label from '@/components/Label/Label';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
@@ -111,7 +112,7 @@ export default function Login() {
   }
 
   return (
-    <Flex vertical align="center" justify="center" style={{ height: '100dvh' }}>
+    <Flex vertical align="center" justify="center" style={{ height: '85dvh' }}>
       {isLoading ? (
         <Spin />
       ) : (
@@ -130,7 +131,7 @@ export default function Login() {
               <Typography.Title level={4} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
                 Log in or sign up
               </Typography.Title>
-              <Typography.Paragraph style={{ marginTop: 6, textAlign: "center", fontWeight: 400, marginBottom: 24 }}>
+              <Typography.Paragraph style={{ marginTop: 6, textAlign: "center", fontWeight: 400, marginBottom: 32, color: "#4B5563" }}>
                 Enter your email to get a login code
               </Typography.Paragraph>
 
@@ -153,8 +154,8 @@ export default function Login() {
                   />
                 )}
 
-                <Form.Item name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
-                  <Input size="large" placeholder="me@gmail.com" prefix={<IconMail stroke={1.5} />} />
+                <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
+                  <Input size="large" placeholder="john@xample.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
                 </Form.Item>
 
                 <Form.Item
@@ -168,11 +169,11 @@ export default function Login() {
                       <>
                         <Form.Item
                           name="otp"
-                          // label="One-time login code"
+                          label={<Label name="One-time login code" />}
                           validateTrigger="onSubmit"
                           rules={[{ required: true, message: 'One-time login code is invalid or expired', len: 6 }]}
                         >
-                          <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.5} />} />
+                          <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.25} />} />
                         </Form.Item>
 
                         <Typography.Text onClick={resendOtp} style={{ cursor: !count ? 'pointer' : "default", textAlign: 'center', display: "inline-block", width: "100%" }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>

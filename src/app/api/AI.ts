@@ -7,7 +7,36 @@ import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
 import { emotions, perspectives, purposes, sentenceStructures, tones, vocabularies } from "@/options";
-import { isEmpty } from "lodash";
+import { capitalize, isEmpty } from "lodash";
+
+export type CaptionTemplate = {
+  platform: string;
+  goal: "write" | "rephrase" | "reply";
+  caption_length: number;
+  description: string;
+  tones?: string[];
+  purposes?: string[];
+  emotions?: string[];
+  vocabularies?: string[];
+  sentence_structures?: string[];
+  perspectives?: string[];
+  writing_structures?: string[];
+  instructional_elements?: string[];
+  with_hashtags?: boolean;
+  with_emojis?: boolean;
+  with_single_emoji?: boolean;
+  with_question?: boolean;
+  with_hook?: boolean;
+  with_cta?: boolean;
+  cta?: string;
+  caption_source?: string;
+  language: string;
+  writingStyle?: string;
+  external_sources?: {
+    url: string;
+    objective: string
+  }
+}
 
 const costs = {
   "claude-3-opus-20240229": {
@@ -41,8 +70,8 @@ const costs = {
     calculation_based_on_token_count: 1000000,
   },
   "gpt-4o": {
-    input: 0.80, // not real data
-    output: 2.4, // not real data
+    input: 5,
+    output: 15,
     calculation_based_on_token_count: 1000000,
   },
   "gpt-4-0613": {
@@ -109,7 +138,7 @@ export class AI {
       // this.system += opts.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${opts.writing_style?.vocabularies.join(', ')}` : "";
       // this.system += opts.writing_style?.sentence_structures?.length > 0 ? `\nSentence structures: ${opts.writing_style?.sentence_structures.join(', ')}` : "";
       // this.system += opts.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${opts.writing_style?.perspectives.join(', ')}` : "";
-      // this.system += opts.writing_style?.writing_structures?.length > 0 ? `\nWriting_structures: ${opts.writing_style?.writing_structures.join(', ')}` : "";
+      // this.system += opts.writing_style?.writing_structures?.length > 0 ? `\nWriting structures: ${opts.writing_style?.writing_structures.join(', ')}` : "";
       // this.system += opts.writing_style?.instructional_elements?.length > 0 ? `\nInstructional elements: ${opts.writing_style?.instructional_elements.join(', ')}` : "";
     }
 
@@ -140,6 +169,8 @@ export class AI {
         return /```yml([\s\S]+?)```/i;
       case "markdown":
         return /```markdown([\s\S]+?)```/i;
+      case "text":
+        return /```text([\s\S]+?)```/i;
       default:
         return
     }
@@ -399,7 +430,7 @@ export class AI {
     prompt += this.opts?.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${this.opts?.writing_style?.vocabularies.join(', ')}` : "";
     // prompt += this.opts?.writing_style?.sentence_structures?.length > 0 ? `\nSentence structures: ${this.opts?.writing_style?.sentence_structures.join(', ')}` : "";
     prompt += this.opts?.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${this.opts?.writing_style?.perspectives.join(', ')}` : "";
-    // prompt += this.opts?.writing_style?.writing_structures?.length > 0 ? `\nWriting_structures: ${this.opts?.writing_style?.writing_structures.join(', ')}` : "";
+    // prompt += this.opts?.writing_style?.writing_structures?.length > 0 ? `\nWriting structures: ${this.opts?.writing_style?.writing_structures.join(', ')}` : "";
     // prompt += this.opts?.writing_style?.instructional_elements?.length > 0 ? `\nInstructional elements: ${this.opts?.writing_style?.instructional_elements.join(', ')}` : "";
 
     // if (!isEmpty(values?.tones)) {
@@ -438,7 +469,7 @@ export class AI {
     prompt += values?.section?.vocabularies?.length > 0 ? `\nVocabularies: ${values?.section?.vocabularies.join(', ')}` : "";
     prompt += values?.section?.sentence_structures?.length > 0 ? `\nSentence structures: ${values?.section?.sentence_structures.join(', ')}` : "";
     prompt += values?.section?.perspectives?.length > 0 ? `\nPerspectives: ${values?.section?.perspectives.join(', ')}` : "";
-    prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting_structures: ${values?.section?.writing_structures.join(', ')}` : "";
+    prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting structures: ${values?.section?.writing_structures.join(', ')}` : "";
     prompt += values?.section?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values?.section?.instructional_elements.join(', ')}` : "";
 
     // if (!isEmpty(values?.tones)) {
@@ -597,7 +628,7 @@ export class AI {
     prompt += values.vocabularies?.length > 0 ? `\nVocabularies: ${values.vocabularies.join(', ')}` : "";
     prompt += values.sentence_structures?.length > 0 ? `\nSentence structures: ${values.sentence_structures.join(', ')}` : "";
     prompt += values.perspectives?.length > 0 ? `\nPerspectives: ${values.perspectives.join(', ')}` : "";
-    prompt += values.writing_structures?.length > 0 ? `\nWriting_structures: ${values.writing_structures.join(', ')}` : "";
+    prompt += values.writing_structures?.length > 0 ? `\nWriting structures: ${values.writing_structures.join(', ')}` : "";
     prompt += values.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.instructional_elements.join(', ')}` : "";
 
     prompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
@@ -709,7 +740,6 @@ video_url: string;
 
     return prompt
   }
-
 
   async outlinePlan(values: any) {
     return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models.opus });
@@ -826,8 +856,10 @@ video_url: string;
     `
   }
 
-  async getWritingCharacteristics(values: any) {
-    return this.ask(this.getWritingCharacteristicsTemplate(values), { type: "json", mode: "get-writing-style", temperature: 0.5, model: models.opus });
+  async getWritingCharacteristics(text: string) {
+    console.log("ENTER 2", text)
+    console.log("ENTER 3", this.getWritingCharacteristicsTemplate(text))
+    return this.ask(this.getWritingCharacteristicsTemplate(text), { type: "json", mode: "get-writing-style", temperature: 0.5, model: models.opus });
   }
 
   getPSeoVariablesValueTemplate(values: any) {
@@ -870,8 +902,11 @@ video_url: string;
     prompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
     prompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ\n";
 
-    // TODO: add additional info?
-    // TODO: add language
+    prompt += `\n- Language: ${values.language}`
+
+    if (values.additional_information) {
+      prompt += `\n-Additional information: ${values.additional_information}`
+    }
 
     prompt += `\nVariables:
     ${JSON.stringify(values.variables, null, 2)}`
@@ -890,6 +925,62 @@ video_url: string;
 
   async getPSeoOutline(values: any) {
     return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-outline", temperature: 0.1, model: models.opus });
+  }
+
+  getCaptionTemplate(values: CaptionTemplate) {
+    let prompt = `Write a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`;
+
+    prompt += `\n- Language: ${values.language}`
+    if (values.tones) prompt += values.tones?.length > 0 ? `\nTones: ${values.tones.join(', ')}` : "";
+    if (values.purposes) prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
+    if (values.emotions) prompt += values.emotions?.length > 0 ? `\nEmotions: ${values.emotions.join(', ')}` : "";
+    if (values.vocabularies) prompt += values.vocabularies?.length > 0 ? `\nVocabularies: ${values.vocabularies.join(', ')}` : "";
+    if (values.sentence_structures) prompt += values.sentence_structures?.length > 0 ? `\nSentence structures: ${values.sentence_structures.join(', ')}` : "";
+    if (values.perspectives) prompt += values.perspectives?.length > 0 ? `\nPerspectives: ${values.perspectives.join(', ')}` : "";
+    if (values.writing_structures) prompt += values.writing_structures?.length > 0 ? `\nWriting structures: ${values.writing_structures.join(', ')}` : "";
+    if (values.instructional_elements) prompt += values.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.instructional_elements.join(', ')}` : "";
+
+    if (values.with_hook) prompt += "\n- Add a hook";
+    if (values.with_question) prompt += "\n- Add a question to engage the readers";
+    prompt += values.with_hashtags ? "\n- Add hashtags" : "\n- do not add hashtags"
+    if (values.with_emojis && !values.with_single_emoji) prompt += "\n- Add emojis"
+    if (values.with_single_emoji && !values.with_emojis) prompt += "\n- Add one emoji"
+    if (!values.with_single_emoji && !values.with_emojis) prompt += "\n- Do not add emojis"
+    if (values.with_cta && values.cta) prompt += `\n- CTA: ${values.cta}`
+    if (!values.with_cta) prompt += `\n- Do not add any CTA`
+
+    if (values.writingStyle) prompt += `\nHere is my writing style: ${values.writingStyle}\n`;
+
+    if (values.goal === "write") {
+      prompt += `\n-${capitalize(values.goal)} a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`
+    }
+
+    if (values.goal === "rephrase" && values.caption_source) {
+      prompt += `\n-Rephrase (while keeping the level of similary/duplication low) using my writing style the following ${values.platform} caption to up to ${values.caption_length} characters maximum about, caption source to rephrase: "${values.caption_source}"\n`
+      prompt += `\n-Don't copy or add any links you find in the caption source`
+      prompt += `\n-Don't add/make up links unless I provide it to you`
+    }
+
+    if (values.goal === "reply" && values.caption_source) {
+      prompt += `\n-Reply to the following ${values.platform} caption using my writing style to up to ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
+      prompt += `\n-Don't copy or add any links you find in the caption source`
+      prompt += `\n-Don't add/make up links unless I provide it to you`
+    }
+
+    prompt += `\n// output structure
+    \`\`\`ts
+    type Result = {
+      caption: string;
+    }
+    \`\`\`
+    Wrap your output in \`\`\`json\`\`\`
+    `;
+
+    return prompt;
+  }
+
+  async getCaption(values: CaptionTemplate): Promise<{ caption: string }> {
+    return this.ask(this.getCaptionTemplate(values), { type: "json", mode: "get-caption", temperature: 0.7, model: models.opus });
   }
 }
 

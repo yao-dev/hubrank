@@ -21,8 +21,6 @@ export async function POST(request: Request) {
       .single()
       .throwOnError();
 
-    console.log(result)
-
     return NextResponse.json({ projectId: result.data.id }, { status: 201 })
   } catch (e) {
     console.log(e)
@@ -33,12 +31,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const { project_id, user_id, ...data } = await request.json();
-
-    console.log({ project_id, user_id, ...data })
-
     const metatags = (await fetchWebsiteMetadata(data.website)) ?? {};
-
-    console.log({ metatags })
 
     await supabase
       .from('projects')

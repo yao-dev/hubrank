@@ -63,19 +63,30 @@ export default function RootLayout({
               // 2. Combine dark algorithm and compact algorithm
               // algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
               token: {
-                "colorPrimary": "#5D5FEF",
-                "colorInfo": "#232323",
-                "wireframe": false,
+                colorPrimary: "#5D5FEF",
+                colorInfo: "#232323",
+                wireframe: false,
+                borderRadius: 4,
               },
               components: {
                 Alert: {
                   colorInfo: "#1677FF",
                   colorInfoBg: "#E6F4FF",
-                  colorInfoBorder: "#91CAFF"
+                  colorInfoBorder: "#91CAFF",
+                  algorithm: true
                 },
                 Layout: {
-                  siderBg: "#001529"
-                }
+                  siderBg: "#001529",
+                  algorithm: true
+                },
+                // Input: {
+                //   borderRadius: 4,
+                //   algorithm: true
+                // },
+                // Button: {
+                //   borderRadius: 4,
+                //   algorithm: true
+                // }
               }
             }}
           >
