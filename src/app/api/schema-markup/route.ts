@@ -1,12 +1,21 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-import { getSchemaMarkup, saveSchemaMarkups } from "../helpers";
+import { checkCredits, deductCredits, getSchemaMarkup, saveSchemaMarkups } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // CHECK IF USER HAS ENOUGH CREDITS
+    const creditCheck = {
+      userId: body.user_id,
+      costInCredits: 0.5,
+      featureName: "schema-markup"
+    }
+    await checkCredits(creditCheck);
+
     const [
       { data: project },
       { data: article },
@@ -29,6 +38,8 @@ export async function POST(request: Request) {
     schemas.push(createdSchema)
     console.log("schemas", schemas)
     await saveSchemaMarkups(article.id, schemas);
+
+    await deductCredits(creditCheck);
 
     return NextResponse.json({
       schema_markup: createdSchema

@@ -23,7 +23,6 @@ import { captionLengthOptions, platformsOptions } from "@/options";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
 import { capitalize } from "lodash";
-import ExternalSourcesField from "../ExternalSourcesField/ExternalSourcesField";
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -85,6 +84,7 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
           with_question: false,
           cta: "",
           external_sources: [],
+          youtube_url: ""
         }}
         autoComplete="off"
         layout="vertical"
@@ -190,6 +190,7 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
 
         {goal === "youtube_to_caption" && (
           <Form.Item
+            label={<Label name="Youtube url" />}
             name="youtube_url"
             validateTrigger={['onChange', 'onBlur']}
             rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
@@ -261,7 +262,7 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
 
         <WritingStyleSelect form={form} />
 
-        <ExternalSourcesField name="external_sources" />
+        {/* <ExternalSourcesField name="external_sources" /> */}
       </Form>
     </Flex>
   )

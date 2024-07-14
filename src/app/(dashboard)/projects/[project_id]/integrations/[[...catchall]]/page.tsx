@@ -1,6 +1,6 @@
 'use client';;
-import { Card, Col, Flex, Image, Modal, Typography, Row, Grid, Tabs, Button } from 'antd';
-import { useState } from 'react';
+import { Card, Col, Flex, Image, Modal, Row, Grid, Tabs, Button } from 'antd';
+import { useEffect, useState } from 'react';
 import { brandsLogo } from '@/brands-logo';
 import { useRouter } from 'next/navigation';
 import { useZapier } from '@/hooks/useZapier';
@@ -17,6 +17,10 @@ export default function Integrations() {
   const router = useRouter();
   const zapier = useZapier()
   const screens = Grid.useBreakpoint();
+
+  useEffect(() => {
+    router.replace("/dashboard")
+  }, [])
 
   // const onAddIntegration = () => {
   //   switch (selectedIntegration) {

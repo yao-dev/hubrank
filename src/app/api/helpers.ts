@@ -980,19 +980,77 @@ export const insertCaption = async (data: {
   }
 }
 
-export const insertNewsletter = async (data: any) => {
-  try {
-    const { data: queuedNewsletter } = await supabase.from("newsletters")
-      .insert({
-        ...data,
-      })
-      .select("id")
-      .single()
-      .throwOnError();
-    console.log(chalk.bgBlue("[INFO]: queuedNewsletter"), queuedNewsletter);
-    return queuedNewsletter?.id;
-  } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: inserting newsletter"), error);
-    throw error;
+export const checkCredits = async ({
+  userId,
+  costInCredits,
+  featureName,
+}: {
+  userId: string;
+  costInCredits: number; // cost of premium feature in credits
+  featureName: string;
+}) => {
+  console.log(chalk.yellow(`Check if user "${userId}" credits for feature "${featureName}"`));
+  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const credits = user?.subscription?.credits ?? 0;
+
+  if (user?.subscription?.status !== "active") {
+    console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have an active subscription"`))
+    // throw new Error("inactive_subscription")
+    throw { error: "inactive_subscription" }
   }
+  if (!credits || credits < costInCredits) {
+    console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have enough credit (${costInCredits} required) to access feature "${featureName}"`))
+    // throw new Error("insufficient_credits")
+    throw { error: "insufficient_credits" }
+  }
+
+  return user.subscription ?? {}
+}
+
+export const deductCredits = async ({
+  userId,
+  costInCredits,
+  featureName,
+}: {
+  userId: string;
+  costInCredits: number; // cost of premium feature in credits
+  featureName: string;
+}) => {
+  const subscription = await checkCredits({
+    userId,
+    costInCredits,
+    featureName,
+  });
+
+  const credits = subscription.credits ?? 0;
+
+  console.log(chalk.yellow(`Deduct ${costInCredits} credits to user id "${userId}" for feature "${featureName}"`));
+
+  await supabase.from("users").update({
+    subscription: {
+      ...subscription,
+      credits: Math.max(0, credits - costInCredits)
+    }
+  })
+    .eq("id", userId)
+}
+
+export const updateCredits = async ({ userId, credits, action }: {
+  userId: string,
+  credits: number,
+  action: "increment" | "replace"
+}) => {
+  console.log(chalk.yellow(`[${action}] ${credits} credits for user "${userId}"`));
+  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const subscription = user?.subscription ?? {};
+  const userCredits = Math.max(0, user?.subscription?.credits ?? 0);
+  const newCredits = action === "increment" ? userCredits + credits : credits;
+
+  await supabase.from("users").update({
+    subscription: {
+      ...subscription,
+      credits: newCredits
+    }
+  })
+    .eq("id", userId)
 }

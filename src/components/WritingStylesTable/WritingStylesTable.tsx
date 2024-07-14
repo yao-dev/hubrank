@@ -46,6 +46,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Text',
         dataIndex: 'text',
         key: 'text',
+        width: 380,
         ellipsis: true,
         render: (value: any) => {
           return (
@@ -59,7 +60,8 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         title: 'Characteristics',
         dataIndex: 'characteristics',
         key: 'characteristics',
-        ellipsis: true,
+        // ellipsis: true,
+        width: 600,
         render: (value: any, record: any) => {
           const characteristics = compact([
             record.tones,
@@ -88,7 +90,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         // title: 'Action',
         dataIndex: 'action',
         key: 'action',
-        width: 160,
+        // width: 160,
         render: (_: any, record: any) => (
           <Space size="small" align='center'>
             <Popconfirm
@@ -170,6 +172,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
           dataSource={data?.data}
           columns={columns}
           loading={false}
+          pagination={false}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       </Flex>

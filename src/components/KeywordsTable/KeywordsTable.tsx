@@ -18,7 +18,6 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import useProjectId from '@/hooks/useProjectId';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getRelatedKeywords } from '@/helpers/seo';
 import useLanguages from '@/hooks/useLanguages';
 import { DeleteTwoTone, SearchOutlined, SaveOutlined } from '@ant-design/icons';
 import supabase from '@/helpers/supabase';
@@ -28,6 +27,9 @@ import { useRouter } from 'next/navigation';
 import { isEmpty } from 'lodash';
 import useDrawers from '@/hooks/useDrawers';
 import LanguageSelect from '../LanguageSelect/LanguageSelect';
+import axios from 'axios';
+import { getShouldShowPricing } from '@/helpers/pricing';
+import usePricingModal from '@/hooks/usePricingModal';
 
 const competitionOrder: any = {
   "low": 0,
@@ -54,6 +56,7 @@ const KeywordsTable = () => {
   const [showSavedKeywords, setShowSavedKeywords] = useState(false);
   const screens = Grid.useBreakpoint();
   const drawers = useDrawers();
+  const pricingModal = usePricingModal();
 
   const { data: searchedKeywords, isFetched: isSearchedKeywordsFetched } = useQuery({
     enabled: !!projectId,
@@ -327,10 +330,12 @@ const KeywordsTable = () => {
                   project_id: projectId
                 }).limit(1).single();
 
+                const userId = await getUserId();
+
                 if (!isKeywordSearchBefore) {
                   await supabase.from("searched_keywords").insert({
                     keyword: searchTerm,
-                    user_id: await getUserId(),
+                    user_id: userId,
                     project_id: projectId
                   })
                 }
@@ -339,8 +344,14 @@ const KeywordsTable = () => {
                   queryClient.invalidateQueries({
                     queryKey: ["searched_keywords", { projectId }]
                   });
-                  let newKeywords = await getRelatedKeywords({ keyword: searchTerm, depth: 4, limit: 1000, lang: language.code, location_code: language.location_code })
-                  newKeywords = newKeywords?.map((item: any) => {
+                  let { data: keywordsSuggestion } = await axios.post('/api/keywords-suggestion', {
+                    userId,
+                    query: searchTerm,
+                    lang: language.code,
+                    locationCode: language.location_code
+                  });
+
+                  const newKeywords = keywordsSuggestion?.map((item: any) => {
                     return {
                       language_id: values.language_id,
                       keyword: item.keyword_data.keyword,
@@ -357,6 +368,10 @@ const KeywordsTable = () => {
                   setKeywords(state?.data || [])
                 }
                 setActiveLanguage(language)
+              } catch (e: any) {
+                if (getShouldShowPricing(e)) {
+                  pricingModal.open(true)
+                }
               } finally {
                 setIsFetchingKeywords(false)
               }
@@ -384,7 +399,7 @@ const KeywordsTable = () => {
                 loading={isFetchingKeywords}
                 style={{ width: "auto", marginBottom: 0 }}
               >
-                {screens.xs ? "(1 credit)" : "Search (1 credit)"}
+                {screens.xs ? "(0.5 credit)" : "Search (0.5 credit)"}
               </Button>
             </Flex>
           </Form>
@@ -415,9 +430,10 @@ const KeywordsTable = () => {
           dataSource={showSavedKeywords ? savedKeywords : keywords}
           columns={columns}
           loading={isFetchingKeywords}
-          pagination={{
-            pageSize: 25
-          }}
+          // pagination={{
+          //   pageSize: 25
+          // }}
+          pagination={false}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       )}

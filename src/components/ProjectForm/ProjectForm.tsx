@@ -16,7 +16,6 @@ const ProjectForm = () => {
   const { getOne, delete: deleteProject } = useProjects()
   const { data: project } = getOne(projectId)
   const queryClient = useQueryClient();
-  // const form = useProjectForm(project);
   const [form] = Form.useForm();
   const router = useRouter()
   const { data: languages } = useLanguages().getAll();

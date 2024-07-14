@@ -1,7 +1,6 @@
 'use client';;
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
-import { VerifyEmailOtpParams } from '@supabase/supabase-js';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
 import { Form, Alert, Input, Button, Card, Flex, Typography, Image, Spin, Row, Col } from 'antd';
@@ -70,7 +69,7 @@ export default function Login() {
         email: values.email,
         token: values.otp,
         type: 'email'
-      } as VerifyEmailOtpParams)
+      })
 
       if (error) {
         console.log("error", error)

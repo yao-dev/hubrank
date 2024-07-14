@@ -11,21 +11,14 @@ type captionState = {
   languageId?: number;
 }
 
-type NewsletterState = {
-  isOpen: boolean;
-  languageId?: number;
-}
-
 type State = {
   blogPost: BlogPostState;
   caption: captionState;
-  newsletter: NewsletterState;
 };
 
 type Action = {
   openBlogPostDrawer: (data: BlogPostState) => void;
   openCaptionDrawer: (data: captionState) => void;
-  openNewsletterDrawer: (data: NewsletterState) => void;
 };
 
 const openBlogPostDrawer = (state: State, data: BlogPostState): State => {
@@ -50,16 +43,6 @@ const openCaptionDrawer = (state: State, data: captionState): State => {
   };
 };
 
-const openNewsletterDrawer = (state: State, data: NewsletterState): State => {
-  return {
-    ...state,
-    newsletter: {
-      ...state.newsletter,
-      isOpen: data.isOpen,
-    }
-  };
-};
-
 const useDrawers = create<State & Action>(
   (set) => ({
     blogPost: {
@@ -71,16 +54,10 @@ const useDrawers = create<State & Action>(
       isOpen: false,
       languageId: undefined,
     },
-    newsletter: {
-      isOpen: false,
-      languageId: undefined,
-    },
     openBlogPostDrawer: (data: BlogPostState) =>
       set((state) => openBlogPostDrawer(state, data)),
     openCaptionDrawer: (data: captionState) =>
       set((state) => openCaptionDrawer(state, data)),
-    openNewsletterDrawer: (data: captionState) =>
-      set((state) => openNewsletterDrawer(state, data)),
   })
 );
 

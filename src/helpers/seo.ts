@@ -33,7 +33,7 @@ export const getRelatedKeywords = async ({
     data: [{ keyword, "location_code": location_code, "language_code": lang, depth, "include_seed_keyword": false, "include_serp_info": false, limit, "offset": 0 }],
   });
 
-  return data?.tasks?.[0]?.result?.[0]?.items
+  return data?.tasks?.[0]?.result?.[0]?.items ?? []
 }
 
 

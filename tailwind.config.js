@@ -1,21 +1,32 @@
 /** @type {import('tailwindcss').Config} */
+const { colors: defaultColors } = require('tailwindcss/defaultTheme');
+
 module.exports = {
+  // https://tailwindcss.com/docs/configuration#important
+  important: true,
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    "./node_modules/@billing-js/react-billing-js/index.js"
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      colors: {
+        ...defaultColors,
+        primary: {
+          100: "#DFDFFE",
+          200: "#BFC0FD",
+          300: "#9EA0FA",
+          400: "#8486F5",
+          500: "#5D5FEF",
+          600: "#4345CD",
+          700: "#2E30AC",
+          800: "#1D1E8A",
+          900: "#111272",
+        },
       },
     },
   },
   plugins: [
-    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
   ],
 }
+

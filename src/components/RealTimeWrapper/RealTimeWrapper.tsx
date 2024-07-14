@@ -6,19 +6,39 @@ import Link from "next/link";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { App, Typography } from "antd";
 import useProjectId from "@/hooks/useProjectId";
+import usePricingModal from "@/hooks/usePricingModal";
 
+let users: RealtimeChannel;
 let blogPosts: RealtimeChannel;
 let captions: RealtimeChannel;
-let newssletter: RealtimeChannel;
 
 const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
 	const sessionStore = useSession();
 	const { notification } = App.useApp()
 	const projectId = useProjectId();
+	const pricingModal = usePricingModal();
 
 	React.useEffect(() => {
 		if (sessionStore.session?.user?.id) {
+			users = supabase
+				.channel('users')
+				.on('postgres_changes', {
+					event: 'UPDATE',
+					schema: 'public',
+					table: 'users',
+					filter: `id=eq.${sessionStore.session.user.id}`,
+				}, (data) => {
+					if (data.eventType === 'UPDATE') {
+						queryClient.invalidateQueries({
+							queryKey: ["users"],
+						});
+					}
+					if (data.old?.subscription?.credits !== data.new?.subscription?.credits && data.new?.subscription?.credits <= 0) {
+						pricingModal.open(true);
+					}
+				});
+
 			blogPosts = supabase
 				.channel('blog_posts')
 				.on('postgres_changes', {
@@ -77,10 +97,12 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 			return () => {
 				blogPosts?.unsubscribe?.();
 				captions?.unsubscribe?.();
+				users?.unsubscribe?.();
 			};
 		} else {
 			blogPosts?.unsubscribe?.();
 			captions?.unsubscribe?.();
+			users?.unsubscribe?.();
 		}
 	}, [queryClient, sessionStore.session?.user?.id, projectId]);
 

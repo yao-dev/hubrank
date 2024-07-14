@@ -26,7 +26,6 @@ import Label from "../Label/Label";
 import { contentTypes, structuredSchemas } from "@/options";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
-import ExternalSourcesField from "../ExternalSourcesField/ExternalSourcesField";
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -161,6 +160,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           language_id: null,
           with_hook: false,
           structured_schemas: [],
+          youtube_url: ""
         }}
         autoComplete="off"
         layout="vertical"
@@ -188,11 +188,19 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
 
         <Form.Item
           name="title_mode"
-          label={<Label name="Title mode" />}
+          label={<Label name="Mode" />}
           rules={[{ required: true }]}
         >
           <Segmented
-            options={[{ label: "AI", value: "ai" }, { label: "Inspo", value: "inspo" }, { label: "Custom title", value: "custom" }, { label: "Programmatic SEO", value: "programmatic_seo" }]} style={{ width: "fit-content" }} />
+            options={[
+              { label: "AI", value: "ai" },
+              { label: "Inspo", value: "inspo" },
+              { label: "Custom title", value: "custom" },
+              { label: "Programmatic SEO", value: "programmatic_seo" },
+              { label: "Youtube to blog", value: "youtube_to_blog" },
+            ]}
+            style={{ width: "fit-content" }}
+          />
         </Form.Item>
 
         <Form.Item
@@ -211,7 +219,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
             if (getFieldValue('title_mode') === "inspo") {
               return (
                 <>
-                  <Form.Item name="inspo_title" label="Inspo title" help="" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
+                  <Form.Item name="inspo_title" label={<Label name="Inspo title" />} help="" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
                     <Input placeholder="Inspo title" count={{ show: true, max: 75 }} />
                   </Form.Item>
                   <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
@@ -299,6 +307,21 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
                     )
                   })}
                 </Flex>
+              )
+            }
+
+            if (getFieldValue('title_mode') === "youtube_to_blog") {
+              return (
+                <Form.Item
+                  label={<Label name="Youtube url" />}
+                  name="youtube_url"
+                  validateTrigger={['onChange', 'onBlur']}
+                  rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
+                  hasFeedback
+                  style={{ marginBottom: 24 }}
+                >
+                  <Input placeholder="Youtube URL" />
+                </Form.Item>
               )
             }
           }}
@@ -420,7 +443,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
             <Input placeholder="Sitemap url" />
           </Form.Item>
 
-          <ExternalSourcesField name="external_sources" />
+          {/* <ExternalSourcesField name="external_sources" /> */}
 
           <Form.Item name="structured_schemas" label={<Label name="Schema markup (ld+json)" />}>
             <MultiSelectTagList

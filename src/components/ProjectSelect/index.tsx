@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PlusOutlined } from '@ant-design/icons';
 import NewProjectModal from "../NewProjectModal";
+import useUser from "@/hooks/useUser";
+import usePricingModal from "@/hooks/usePricingModal";
 
 const ProjectSelect = () => {
   const projectId = useProjectId();
@@ -13,6 +15,21 @@ const ProjectSelect = () => {
   const router = useRouter();
   const [openedCreateProject, setOpenCreateProject] = useState(false);
   const pathname = usePathname();
+  const user = useUser();
+  const pricingModal = usePricingModal();
+
+  const hasReachedLimit = projects && user?.subscription?.projects_limit <= projects?.length;
+
+  const onOpenNewProject = () => {
+    if (hasReachedLimit) {
+      pricingModal.open(true, {
+        title: "You've reached your projects limit",
+        subtitle: "Upgrade to create more projects"
+      })
+    } else {
+      setOpenCreateProject(true)
+    }
+  }
 
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
@@ -83,7 +100,7 @@ const ProjectSelect = () => {
           <>
             {menu}
             <Divider style={{ margin: '8px 0' }} />
-            <Button type="text" block icon={<PlusOutlined />} onClick={() => setOpenCreateProject(true)}>
+            <Button type="text" block icon={<PlusOutlined />} onClick={onOpenNewProject}>
               New project
             </Button>
           </>

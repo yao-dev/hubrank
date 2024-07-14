@@ -34,6 +34,9 @@ import queryKeys from '@/helpers/queryKeys';
 import { format } from 'date-fns';
 import Label from '@/components/Label/Label';
 import { debounce } from 'lodash';
+import { getUserId } from '@/helpers/user';
+import { getShouldShowPricing } from '@/helpers/pricing';
+import usePricingModal from '@/hooks/usePricingModal';
 
 const { Text } = Typography;
 
@@ -143,6 +146,7 @@ const Article = ({
   const slug = Form.useWatch("slug", seoForm);
   const metaDescription = Form.useWatch("meta_description", seoForm);
   const keywords = Form.useWatch("keywords", seoForm);
+  const pricingModal = usePricingModal();
 
   const editorRef = useRef<any>(null);
   const html = useRef<any>(null);
@@ -252,19 +256,27 @@ ${JSON.stringify(article?.schema_markups ?? {})}
   }
 
   const onGenerateSchemaMarkup = useMutation({
-    mutationFn: (schemaName: string) => {
+    mutationFn: async (schemaName: string) => {
       return axios.post("/api/schema-markup", {
         schema: schemaName,
         project_id: project.id,
         article_id: articleId,
         language_id: article.language_id,
+        user_id: await getUserId(),
       })
     },
     onSuccess() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.blogPost(articleId)
       })
-    }
+    },
+    onError(e: any) {
+      if (getShouldShowPricing(e)) {
+        pricingModal.open(true)
+      } else {
+        message.error("An error occured, please try again.")
+      }
+    },
   })
 
   if (isError) return null
@@ -554,7 +566,7 @@ ${markdown.current}
                             )}
                             onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
                             onCancel={() => { }}
-                            okText="Yes (3 credits)"
+                            okText="Yes (0.5 credit)"
                             cancelText="No"
                           >
                             <Button>{schemaName}</Button>

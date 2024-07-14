@@ -1,4 +1,4 @@
-import { Image, Select, Space } from "antd"
+import { Flex, Image, Select } from "antd";
 
 const LanguageSelect = ({ languages = [], ...props }: any) => {
   return (
@@ -9,7 +9,7 @@ const LanguageSelect = ({ languages = [], ...props }: any) => {
         return {
           ...p,
           label: (
-            <Space>
+            <Flex align="center" gap={6}>
               <Image
                 src={p.image}
                 width={25}
@@ -17,7 +17,7 @@ const LanguageSelect = ({ languages = [], ...props }: any) => {
                 preview={false}
               />
               {p.label}
-            </Space>
+            </Flex>
           ),
           value: p.id
         }

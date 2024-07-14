@@ -11,10 +11,8 @@ import WritingStylesTable from '@/components/WritingStylesTable/WritingStylesTab
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useDrawers from '@/hooks/useDrawers';
 import NewCaptionDrawer from '@/components/NewCaptionDrawer/NewCaptionDrawer';
-import NewNewsletterDrawer from '@/components/NewNewsletterDrawer/NewNewsletterDrawer';
 import NewBlogPostDrawer from '@/components/NewBlogPostDrawer/NewBlogPostDrawer';
 import CaptionsTable from '@/components/CaptionsTable/CaptionsTable';
-import NewslettersTable from '@/components/NewslettersTable/NewslettersTable';
 import PageTitle from '@/components/PageTitle/PageTitle';
 import { capitalize } from 'lodash';
 
@@ -29,8 +27,6 @@ export default function ProjectDetail({
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "blog-posts")
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
-  const { getAll } = useBlogPosts()
-  const { refetch: refetchArticles, isRefetching } = getAll({ queue: false });
   const drawers = useDrawers()
 
   useEffect(() => {
@@ -83,26 +79,6 @@ export default function ProjectDetail({
       // ),
     },
     {
-      key: 'newsletters',
-      label: 'Newsletters',
-      children: (
-        <NewslettersTable />
-      )
-      // children: (
-      //   <Flex align='center' justify='center' style={{ marginTop: 96 }}>
-      //     <Empty
-      //       image="/image-1.png"
-      //       imageStyle={{ height: 200 }}
-      //       description={(
-      //         <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
-      //           No newsletters
-      //         </Typography.Text>
-      //       )}
-      //     />
-      //   </Flex>
-      // ),
-    },
-    {
       key: 'keyword-research',
       label: 'Keyword research',
       children: (
@@ -146,12 +122,6 @@ export default function ProjectDetail({
           icon: <PlusOutlined />,
           text: "Caption"
         });
-      case "newsletters":
-        return getActionButton({
-          onClick: () => drawers.openNewsletterDrawer({ isOpen: true }),
-          icon: <PlusOutlined />,
-          text: "Newsletter"
-        });
       case "writing-styles":
         return getActionButton({
           onClick: () => setIsWritingStyleModalOpened(true),
@@ -177,10 +147,6 @@ export default function ProjectDetail({
       <NewCaptionDrawer
         open={drawers.caption.isOpen}
         onClose={() => drawers.openCaptionDrawer({ isOpen: false })}
-      />
-      <NewNewsletterDrawer
-        open={drawers.newsletter.isOpen}
-        onClose={() => drawers.openNewsletterDrawer({ isOpen: false })}
       />
 
       <PageTitle title={capitalize(pageTitle)} />

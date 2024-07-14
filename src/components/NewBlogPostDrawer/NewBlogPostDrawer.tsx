@@ -8,6 +8,8 @@ import axios from "axios";
 import useProjectId from "@/hooks/useProjectId";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import { useState } from "react";
+import { getShouldShowPricing } from "@/helpers/pricing";
+import usePricingModal from "@/hooks/usePricingModal";
 
 type Props = {
   open: boolean;
@@ -18,6 +20,10 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const projectId = useProjectId();
   const [form] = Form.useForm();
   const [variableSet, setVariableSet] = useState({});
+  const pricingModal = usePricingModal();
+  const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
+  const creditsCount = 1 + ((fieldStructuredSchemas?.length ?? 0) / 2)
+
 
   const writeArticle = async (values: any) => {
     try {
@@ -25,12 +31,17 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       message.success('Article added in the queue!');
       onClose();
       form.resetFields();
-    } catch {
-      notification.error({
-        message: "We had an issue adding your article in the queue please try again",
-        placement: "bottomRight",
-        role: "alert",
-      })
+    } catch (e) {
+      if (getShouldShowPricing(e)) {
+        pricingModal.open(true);
+      } else {
+        console.error(e)
+        notification.error({
+          message: "We had an issue adding your article in the queue please try again",
+          placement: "bottomRight",
+          role: "alert",
+        })
+      }
     }
   }
 
@@ -41,12 +52,17 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       onClose();
       form.resetFields();
     } catch (e) {
-      console.error(e)
-      notification.error({
-        message: "We had an issue adding your articles in the queue please try again",
-        placement: "bottomRight",
-        role: "alert",
-      })
+      if (getShouldShowPricing(e)) {
+        pricingModal.open(true);
+      } else {
+        console.error(e)
+        notification.error({
+          message: "We had an issue adding your articles in the queue please try again",
+          placement: "bottomRight",
+          role: "alert",
+        })
+      }
+
     }
   }
 
@@ -118,8 +134,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       }}
       footer={
         <Flex justify="end">
-          <Button onClick={() => form.submit()} type="primary">
-            Write (3 credits)
+          <Button onClick={() => form.submit()} type="primary" style={{ width: 150 }}>
+            Write ({creditsCount} credits)
           </Button>
         </Flex>
       }

@@ -34,16 +34,10 @@ const BlogPostsTable = () => {
   const router = useRouter();
   const projectId = useProjectId();
   const screens = useBreakpoint();
-  const [isRetrying, setIsRetrying] = useState(false);
 
   const getIsDisabled = (status: string) => {
     return ["queue", "writing", "error"].includes(status)
     // return ["error", "queue"].includes(status)
-  }
-
-  const rewrite = (article_id: number) => {
-    setIsRetrying(true)
-    axios.post('/api/rewrite', { article_id })
   }
 
   const onCopyKeyword = (keyword: string) => {
@@ -138,7 +132,6 @@ const BlogPostsTable = () => {
           return (
             <span>
               <Tag color={color} icon={valueLowercase === "writing" || valueLowercase === "queue" ? icon : null}>
-                {/* {value.toUpperCase()} */}
                 {value.replaceAll("_", " ").toUpperCase()}
               </Tag>
             </span>
@@ -306,10 +299,11 @@ const BlogPostsTable = () => {
           dataSource={articles?.data}
           columns={columns}
           loading={isPending}
-          pagination={{
-            pageSizeOptions: [10, 25, 50],
-            pageSize: 25,
-          }}
+          // pagination={{
+          //   pageSizeOptions: [10, 25, 50],
+          //   pageSize: 25,
+          // }}
+          pagination={false}
           style={{ minWidth: 900, overflow: "auto" }}
         // onRow={(record) => {
         //   return {

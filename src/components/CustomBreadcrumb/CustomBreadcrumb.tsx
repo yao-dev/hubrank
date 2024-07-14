@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
 import { SettingOutlined } from "@ant-design/icons";
 import ProjectSelect from '../ProjectSelect';
-import { ArrowLeftOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+// import { ArrowLeftOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
 const { useBreakpoint } = Grid;
 
@@ -31,21 +31,35 @@ const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }
     )
   }
 
-  return (
-    <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
-      {withSettingsButton(<Flex gap="small" align="center">
-        {!screens.lg && (
-          <MenuUnfoldOutlined onClick={onOpenMobileMenu} style={{ fontSize: 20, padding: 6 }} />
-        )}
-        {screens.lg && pathname !== "/" && (
-          <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
-        )}
-        {pathname.startsWith("/projects") && !pathname.endsWith("/projects") && (
-          <ProjectSelect />
-        )}
-      </Flex>)}
-    </Flex>
-  )
+  if (pathname.startsWith("/projects") && !pathname.endsWith("/projects")) {
+    return (
+      <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
+        {withSettingsButton(<Flex gap="small" align="center">
+          {pathname.startsWith("/projects") && !pathname.endsWith("/projects") && (
+            <ProjectSelect />
+          )}
+        </Flex>)}
+      </Flex>
+    )
+
+  }
+
+  return null
+  // return (
+  //   <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
+  //     {withSettingsButton(<Flex gap="small" align="center">
+  //       {!screens.lg && (
+  //         <MenuUnfoldOutlined onClick={onOpenMobileMenu} style={{ fontSize: 20, padding: 6 }} />
+  //       )}
+  //       {screens.lg && pathname !== "/" && (
+  //         <Button onClick={() => router.back()} icon={<ArrowLeftOutlined />}>Back</Button>
+  //       )}
+  //       {pathname.startsWith("/projects") && !pathname.endsWith("/projects") && (
+  //         <ProjectSelect />
+  //       )}
+  //     </Flex>)}
+  //   </Flex>
+  // )
 
 }
 

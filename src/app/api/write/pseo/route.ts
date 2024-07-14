@@ -1,8 +1,10 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
 import {
+  checkCredits,
   cleanArticle,
   convertMarkdownToHTML,
+  deductCredits,
   fetchSitemap,
   getAndSaveSchemaMarkup,
   getBlogUrls,
@@ -27,6 +29,15 @@ export const maxDuration = 180;
 
 export async function POST(request: Request) {
   const body = await request.json();
+
+  // CHECK IF USER HAS ENOUGH CREDITS
+  const creditCheck = {
+    userId: body.userId,
+    costInCredits: 1 + (body.structured_schemas.length * 0.5),
+    featureName: "pseo/write"
+  }
+  await checkCredits(creditCheck);
+
   const [
     { data: project },
     { data: pendingArticle },
@@ -185,6 +196,10 @@ export async function POST(request: Request) {
     metaDescription,
     keywords
   });
+
+  // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+  await deductCredits(creditCheck);
+
   return NextResponse.json({
     article: cleanedArticle
   }, { status: 200 });

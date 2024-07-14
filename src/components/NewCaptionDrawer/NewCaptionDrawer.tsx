@@ -5,6 +5,8 @@ import NewCaptionForm from "../NewCaptionForm/NewCaptionForm";
 import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import axios from "axios";
+import { getShouldShowPricing } from "@/helpers/pricing";
+import usePricingModal from "@/hooks/usePricingModal";
 
 type Props = {
   open: boolean;
@@ -14,6 +16,7 @@ type Props = {
 const NewCaptionDrawer = ({ open, onClose }: Props) => {
   const projectId = useProjectId();
   const [form] = Form.useForm();
+  const pricingModal = usePricingModal();
 
   const writeCaption = async (values: any) => {
     try {
@@ -21,12 +24,16 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
       message.success('Caption added in the queue!');
       onClose();
       form.resetFields()
-    } catch {
-      notification.error({
-        message: "We had an issue adding your caption in the queue please try again",
-        placement: "bottomRight",
-        role: "alert",
-      })
+    } catch (e) {
+      if (getShouldShowPricing(e)) {
+        pricingModal.open(true);
+      } else {
+        notification.error({
+          message: "We had an issue adding your caption in the queue please try again",
+          placement: "bottomRight",
+          role: "alert",
+        })
+      }
     }
   }
 
@@ -63,7 +70,7 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
             loading={false}
             disabled={false}
           >
-            Write caption (2 credits)
+            Write caption (0.5 credit)
           </Button>
         </Flex>
       }

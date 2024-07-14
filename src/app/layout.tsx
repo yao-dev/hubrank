@@ -7,9 +7,9 @@ import { ConfigProvider, theme } from 'antd';
 import enUS from 'antd/locale/en_US';
 import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
 import { App } from 'antd';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import "./global.css";
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -102,7 +102,6 @@ export default function RootLayout({
                     {children}
                   </RealtimeWrapper>
                 </SessionProvider>
-                <ReactQueryDevtools initialIsOpen={false} />
               </PersistQueryClientProvider>
             </App>
           </ConfigProvider>

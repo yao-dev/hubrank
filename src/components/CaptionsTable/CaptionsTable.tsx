@@ -179,10 +179,11 @@ const CaptionsTable = () => {
         dataSource={captions?.data}
         columns={columns}
         loading={false}
-        pagination={{
-          pageSizeOptions: [10, 25, 50],
-          pageSize: 25,
-        }}
+        // pagination={{
+        //   pageSizeOptions: [10, 25, 50],
+        //   pageSize: 25,
+        // }}
+        pagination={false}
         style={{ minWidth: 900, overflow: "auto" }}
       />
     </Flex>

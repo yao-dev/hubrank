@@ -16,6 +16,7 @@ const queryKeys = {
     status?: string;
   }) => ["articles", filters] as const,
   articlesCount: (project_id: number) => ["articles", "articles_count", project_id] as const,
+  user: () => ["user"] as const,
   users: () => ["users"] as const,
   competitors: (project_id?: number) => ["competitors", { project_id }] as const,
   getAllKeywordsInTopic: (topic_id: number) => ["get_all_topic_keywords", topic_id] as const,
@@ -26,7 +27,7 @@ const queryKeys = {
   //   status?: string;
   //   project_id: number
   // }) => ["blog_posts", filters] as const,
-  blogPosts: (project_id: number, queue?: boolean) => ["blog_posts", { project_id, queue }] as const,
+  blogPosts: (project_id?: number, queue?: boolean) => ["blog_posts", { project_id, queue }] as const,
   blogPostsCount: () => ["blog_posts", "blog_posts_count"] as const,
   getAllSeedKeywords: () => ["get_all_seed_keywords"] as const,
   targetAudiences: (filters: {

@@ -140,10 +140,11 @@ const IntegrationsTable = ({ isLoading }: any) => {
           dataSource={integrations || []}
           columns={columns}
           // loading={isLoading}
-          pagination={{
-            pageSizeOptions: [10, 25, 50],
-            pageSize: 25,
-          }}
+          // pagination={{
+          //   pageSizeOptions: [10, 25, 50],
+          //   pageSize: 25,
+          // }}
+          pagination={false}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       </div>
