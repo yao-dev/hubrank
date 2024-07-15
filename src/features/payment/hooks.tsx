@@ -105,6 +105,12 @@ export const usePricing = () => {
 
   userSubscriptions.forEach((userSubscription: any) => {
     subscriptionsByPriceId[userSubscription.plan.id] = userSubscription
+  });
+
+  console.log({
+    redirectToCustomerPortal,
+    productsQuery,
+    pricesQuery
   })
 
   return {

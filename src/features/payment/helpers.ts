@@ -238,12 +238,6 @@ export const handleWebhookEvent = async (event: HandleWebhookEvent) => {
   const subscription = user?.subscription ?? {};
 
   switch (event.type) {
-    case webhookEvents.billing_portal_session_created:
-      // console.log(chalk.yellow(event.type), eventObject)
-      break;
-    case webhookEvents.customer_updated:
-      // console.log(chalk.yellow(event.type), eventObject)
-      break;
     case webhookEvents.customer_subscription_created: {
       console.log(chalk.yellow(event.type), eventObject)
       await supabase.from("users").update({
