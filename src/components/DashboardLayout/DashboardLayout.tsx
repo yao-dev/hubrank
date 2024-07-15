@@ -14,6 +14,7 @@ import {
   IconBulb,
   IconCoin,
   IconSettings,
+  IconBrain,
 } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
@@ -136,6 +137,7 @@ export default function DashboardLayout({
       getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "knowledges-base", link: isProjectSelected ? `/projects/${projectId}?tab=knowledges-base` : '/projects?tab=knowledges-base', label: 'Knowledges base', icon: <IconBrain />, onClick: () => setIsMobileMenuOpen(false) }),
       projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/projects', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
     ])
@@ -185,6 +187,9 @@ export default function DashboardLayout({
     }
     if (tab === "writing-styles") {
       return ["writing-styles"]
+    }
+    if (tab === "knowledges-base") {
+      return ["knowledges-base"]
     }
     if (pathname.startsWith('/integrations')) {
       return ["integrations"]

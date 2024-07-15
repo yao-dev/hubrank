@@ -16,11 +16,11 @@ const legals = [
 const Footer = () => {
   return (
     <section className="py-10 lg:py-20 border-t mt-20">
-      <div className="flex flex-col-reverse md:flex-row gap-16 container mx-auto px-6 lg:px-40 justify-between">
+      <div className="flex flex-col md:flex-row gap-16 container mx-auto px-6 lg:px-40 justify-between">
         <div className="flex flex-col gap-6">
           <Logo />
 
-          <p className="text-sx font-light text-zinc-600 w-72">
+          <p className="font-light text-zinc-600 w-72">
             Create blogs, and socials with no SEO expertise in just few clicks.
           </p>
 
@@ -32,7 +32,7 @@ const Footer = () => {
 
         <div className="flex gap-12">
           <div className="flex flex-col gap-6">
-            <p className="uppercase font-semibold text-xs">links</p>
+            <p className="uppercase font-semibold">links</p>
 
             <div className="flex flex-col gap-4">
               {menu.map((item) => {
@@ -40,7 +40,7 @@ const Footer = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="hover:text-primary-500 text-xs font-light"
+                    className="hover:text-primary-500 font-light"
                   >
                     {item.link}
                   </Link>
@@ -48,7 +48,7 @@ const Footer = () => {
               })}
               <Link
                 href="https://hubrank.promotekit.com"
-                className="hover:text-primary-500 text-xs font-light"
+                className="hover:text-primary-500 font-light"
               >
                 Affiliates - Earn 50%
               </Link>

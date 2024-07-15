@@ -189,7 +189,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                                         // color: tokens.token.colorPrimary
                                       }}
                                     />
-                                    <Typography.Text type="secondary" style={{ fontWeight: 500 }}>{feature.name}</Typography.Text>
+                                    <Typography.Text type="secondary" style={{ fontWeight: 400 }}>{feature.name}</Typography.Text>
                                   </Flex>
                                 )
                               })}

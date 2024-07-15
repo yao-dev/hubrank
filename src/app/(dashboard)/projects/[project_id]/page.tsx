@@ -8,13 +8,14 @@ import BlogPostsTable from '@/components/BlogPostsTable/BlogPostsTable';
 import { PlusOutlined } from '@ant-design/icons';
 import WritingStyleForm from '@/components/WritingStyleForm/WritingStyleForm';
 import WritingStylesTable from '@/components/WritingStylesTable/WritingStylesTable';
-import useBlogPosts from '@/hooks/useBlogPosts';
 import useDrawers from '@/hooks/useDrawers';
 import NewCaptionDrawer from '@/components/NewCaptionDrawer/NewCaptionDrawer';
 import NewBlogPostDrawer from '@/components/NewBlogPostDrawer/NewBlogPostDrawer';
 import CaptionsTable from '@/components/CaptionsTable/CaptionsTable';
 import PageTitle from '@/components/PageTitle/PageTitle';
 import { capitalize } from 'lodash';
+import KnowledgesBaseTable from '@/components/KnowledgesBaseTable/KnowledgesBaseTable';
+import NewKnowledgeDrawer from '@/components/NewKnowledgeDrawer/NewKnowledgeDrawer';
 
 export default function ProjectDetail({
   params,
@@ -64,19 +65,6 @@ export default function ProjectDetail({
       children: (
         <CaptionsTable />
       )
-      // children: (
-      //   <Flex align='center' justify='center' style={{ marginTop: 96 }}>
-      //     <Empty
-      //       image="/image-1.png"
-      //       imageStyle={{ height: 200 }}
-      //       description={(
-      //         <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
-      //           No social media content
-      //         </Typography.Text>
-      //       )}
-      //     />
-      //   </Flex>
-      // ),
     },
     {
       key: 'keyword-research',
@@ -89,6 +77,13 @@ export default function ProjectDetail({
       key: 'writing-styles',
       label: 'Writing style',
       children: <WritingStylesTable setModalOpen={setIsWritingStyleModalOpened} />,
+    },
+    {
+      key: 'knowledges-base',
+      label: 'Knowledges base',
+      children: (
+        <KnowledgesBaseTable />
+      ),
     },
   ];
 
@@ -128,6 +123,12 @@ export default function ProjectDetail({
           icon: <PlusOutlined />,
           text: "Writing style"
         })
+      case "knowledges-base":
+        return getActionButton({
+          onClick: () => drawers.openKnowledgeDrawer({ isOpen: true }),
+          icon: <PlusOutlined />,
+          text: "Knowledge"
+        })
     }
   }
 
@@ -147,6 +148,10 @@ export default function ProjectDetail({
       <NewCaptionDrawer
         open={drawers.caption.isOpen}
         onClose={() => drawers.openCaptionDrawer({ isOpen: false })}
+      />
+      <NewKnowledgeDrawer
+        open={drawers.knowledge.isOpen}
+        onClose={() => drawers.openKnowledgeDrawer({ isOpen: false })}
       />
 
       <PageTitle title={capitalize(pageTitle)} />

@@ -1,14 +1,17 @@
 'use client';;
-import { Button, Flex, Popconfirm, Space, Table, Image, message } from 'antd';
+import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Typography, Grid } from 'antd';
 import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
 import { IconCopy, IconWorld } from '@tabler/icons-react';
 import useCaptions from '@/hooks/useCaptions';
 import { platforms } from '@/options';
 
+const { useBreakpoint } = Grid
+
 const CaptionsTable = () => {
   const { delete: deleteCaption, getAll } = useCaptions();
-  const { data: captions } = getAll({ queue: false });
+  const { data: captions, isPending, isFetched } = getAll({ queue: false });
+  const screens = useBreakpoint();
 
   const onCopyCaption = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -156,21 +159,21 @@ const CaptionsTable = () => {
     ]
   }, []);
 
-  // if (!isPending && isFetched && !articles?.data?.length) {
-  //   return (
-  //     <Flex align='center' justify='center' style={{ marginTop: 96 }}>
-  //       <Empty
-  //         image="/image-1.png"
-  //         imageStyle={{ height: screens.xs ? 125 : 200 }}
-  //         description={(
-  //           <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
-  //             You have no captions yet
-  //           </Typography.Text>
-  //         )}
-  //       />
-  //     </Flex>
-  //   )
-  // }
+  if (!isPending && isFetched && !captions?.data?.length) {
+    return (
+      <Flex align='center' justify='center' style={{ marginTop: 96 }}>
+        <Empty
+          image="/image-1.png"
+          imageStyle={{ height: screens.xs ? 125 : 200 }}
+          description={(
+            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+              You have no captions yet
+            </Typography.Text>
+          )}
+        />
+      </Flex>
+    )
+  }
 
   return (
     <Flex vertical gap="middle" style={{ overflow: "auto" }}>

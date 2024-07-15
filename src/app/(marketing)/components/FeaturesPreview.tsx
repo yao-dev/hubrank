@@ -27,7 +27,7 @@ const FeaturesPreview = () => {
   return (
     <section className="hidden container mx-auto px-4 lg:px-40 lg:flex flex-col items-center gap-12">
       <div className="flex flex-col items-center gap-6">
-        <h3 className="text-2xl font-semibold">See by yourself</h3>
+        <h3 className="text-3xl font-semibold">See for yourself</h3>
         <Segmented
           size="large"
           options={featuresInAction.map((item) => ({
@@ -37,7 +37,7 @@ const FeaturesPreview = () => {
           style={{ width: "fit-content" }}
           onChange={(id) => setFeatureInActionVideo(featuresInAction.find(item => item.id === id))}
         />
-        <p className="text-zinc-600 font-light text-center w-2/3">
+        <p className="text-zinc-600 text-base font-light text-center w-2/3">
           {featureInActionVideo.description}
         </p>
       </div>

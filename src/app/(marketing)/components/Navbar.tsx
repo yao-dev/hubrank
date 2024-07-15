@@ -34,7 +34,7 @@ const Navbar = () => {
 
   useOnClickOutside(ref, handleClickOutside);
 
-  const loginButton = useCallback((className?: string) => {
+  const loginButton = useCallback((className?: string, text?: boolean) => {
     return (
       <Button
         href={user ? "/dashboard" : "/login"}
@@ -57,7 +57,7 @@ const Navbar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-primary-500 text-lg"
+              className="hover:text-primary-500 text-base uppercase"
             >
               {item.link}
             </Link>
@@ -80,14 +80,14 @@ const Navbar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="hover:bg-primary-500 hover:text-white transition inline-block text-center px-2 py-3 border-b last:border-b-0"
+              className="hover:bg-primary-500 hover:text-white transition inline-block text-center px-2 py-3 border-b last:border-b-0 uppercase"
               onClick={handleClickOutside}
             >
               {item.link}
             </Link>
           ))}
 
-          {loginButton("m-2 py-2 h-fit")}
+          {loginButton("m-2 py-2 h-fit bg-primary-500")}
         </div>
       )}
     </nav>

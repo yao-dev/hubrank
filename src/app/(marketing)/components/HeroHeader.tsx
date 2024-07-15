@@ -6,12 +6,12 @@ const HeroHeader = () => {
     <header className="flex flex-col items-center py-2 lg:py-5 px-4 lg:px-40 mx-auto mt-12 lg:mt-8">
       <div className="container flex flex-col justify-center items-center">
         {/* headline */}
-        <h1 className="w-4/5 lg:w-2/3 text-5xl font-black mb-4 text-center">
+        <h1 className="w-4/5 lg:w-2/3 text-5xl lg:text-6xl font-black mb-4 text-center">
           AI Powered Content Marketing
         </h1>
 
         {/* subheadline */}
-        <h2 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg">
+        <h2 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg lg:text-xl">
           Create blogs, and socials with no SEO expertise in just few clicks.
         </h2>
 

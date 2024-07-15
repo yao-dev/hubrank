@@ -28,13 +28,13 @@ const testimonials = [
 const Testimonials = () => {
   return (
     <section id="testimonials" className="container mx-auto flex flex-col items-center px-4 lg:px-40 py-5 lg:py-20 gap-6">
-      <span className="uppercase text-right text-primary-500">Testimonials</span>
-      <h3 className="text-2xl font-semibold mb-6 text-center">Listen to what others have to say about us</h3>
+      <span className="uppercase text-base text-right text-primary-500">Testimonials</span>
+      <h3 className="text-3xl font-semibold mb-6 text-center">Listen to what others have to say about us</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 px-6">
         {testimonials.map((item) => {
           return (
-            <p key={item.id} className="text-center font-light text-zinc-600 mb-8">{item.review}</p>
+            <p key={item.id} className="text-center text-base font-light text-zinc-600 mb-8">{item.review}</p>
           )
         })}
       </div>

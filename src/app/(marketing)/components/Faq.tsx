@@ -23,10 +23,10 @@ const Faq = () => {
 
   const header = (
     <div className="flex flex-col gap-2 items-center text-center lg:items-start lg:text-left">
-      <span className="uppercase text-primary-500">any questions</span>
+      <span className="uppercase text-base text-primary-500">any questions</span>
       <div>
-        <h3 className="text-2xl font-semibold mb-4 uppercase">faq</h3>
-        <p className="font-light text-zinc-600 mb-4 lg:mb-8">
+        <h3 className="text-3xl font-semibold mb-4 uppercase">faq</h3>
+        <p className="text-base font-light text-zinc-600 mb-4 lg:mb-8">
           Ranking high on Google is way harder than it looks, you've written countless articles and got no traffic or got stuck in the ideation phase.
         </p>
       </div>
@@ -56,12 +56,12 @@ const Faq = () => {
                   }}
                   className="flex justify-between items-center p-3 rounded-md border hover:border-primary-300 transition cursor-pointer"
                 >
-                  <p className="font-semibold">{item.question}</p>
+                  <p className="text-base font-semibold">{item.question}</p>
                   <IconChevronDown className={`transition duration-500 ${isActive ? "rotate-180" : ""}`} />
                 </div>
 
                 {isActive && (
-                  <p className="p-3 font-light text-zinc-600">
+                  <p className="p-3 text-base font-light text-zinc-600">
                     {item.answer}
                   </p>
                 )}

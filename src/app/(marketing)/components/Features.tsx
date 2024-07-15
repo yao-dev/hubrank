@@ -114,26 +114,28 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="container flex flex-col mx-auto items-center gap-4 px-4 lg:px-40 mb-12">
-      <span className="uppercase font-light text-primary-500">features</span>
+    <section id="features" className="bg-[#f9f9ff] pt-14">
+      <div className="container flex flex-col mx-auto items-center gap-4 px-4 lg:px-40 mb-12">
+        <span className="uppercase text-base font-light text-primary-500">features</span>
 
-      <div className="flex flex-col gap-4">
-        <h3 className="text-2xl font-semibold text-center">Your content marketing toolset</h3>
-        <p className="font-light text-zinc-600 lg:w-1/2 mx-auto text-center mb-8">
-          The body text should clarify your main intention. Why should people care about your product? Use this space to clarify your product offering.
-        </p>
+        <div className="flex flex-col gap-4">
+          <h3 className="text-3xl font-semibold text-center">Your content marketing toolset</h3>
+          <p className="text-base font-light text-zinc-600 lg:w-1/2 mx-auto text-center mb-8">
+            The body text should clarify your main intention. Why should people care about your product? Use this space to clarify your product offering.
+          </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-12 mb-8 text-center lg:text-left px-6">
-          {features.map((item) => (
-            <div
-              key={item.id}
-              className={`flex flex-col gap-2`}
-            >
-              <p className="text-2xl text-center lg:text-left">{item.icon}</p>
-              <p className="text-md font-semibold">{item.title}</p>
-              <p className="text-sm font-light text-zinc-600">{item.description}</p>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-12 mb-8 text-center lg:text-left px-6">
+            {features.map((item) => (
+              <div
+                key={item.id}
+                className={`flex flex-col gap-2 bg-white border rounded-lg p-6`}
+              >
+                <p className="text-3xl text-center lg:text-left">{item.icon}</p>
+                <p className="text-lg font-semibold">{item.title}</p>
+                <p className="text-sm font-light text-zinc-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

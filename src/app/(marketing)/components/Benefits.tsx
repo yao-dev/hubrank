@@ -21,13 +21,13 @@ const benefits = [
 const Benefits = () => {
   return (
     <section className="container flex flex-col items-center gap-2 px-4 lg:px-40 pt-0 pb-20 lg:py-20 mx-auto">
-      <span className="uppercase text-primary-500 mb-2 lg:mb-8">Benefits</span>
+      <span className="uppercase text-primary-500 mb-2 lg:mb-8 text-base">Benefits</span>
 
       <div className="flex flex-row gap-16 items-center">
         {/* left section */}
         <div className="flex flex-col lg:w-1/2">
-          <h3 className="text-2xl font-semibold mb-4 text-center lg:text-left">With Hubrank</h3>
-          <p className="font-light text-zinc-600 mb-8 text-center lg:text-left">
+          <h3 className="text-3xl font-semibold mb-4 text-center lg:text-left">With Hubrank</h3>
+          <p className="text-base font-light text-zinc-600 mb-8 text-center lg:text-left">
             We removes the need to be a writer to write expert-level articles.
           </p>
 
@@ -36,8 +36,8 @@ const Benefits = () => {
               <div key={item.title} className="flex flex-col lg:flex-row gap-4 items-center mb-8 last:mb-0">
                 <p className="text-4xl">{item.icon}</p>
                 <div>
-                  <p className="text-sm font-semibold mb-1 text-center lg:text-left">{item.title}</p>
-                  <p className="text-sm font-light text-center lg:text-left">{item.description}</p>
+                  <p className="text-base font-semibold mb-1 text-center lg:text-left">{item.title}</p>
+                  <p className="text-base font-light text-center lg:text-left">{item.description}</p>
                 </div>
               </div>
             ))}

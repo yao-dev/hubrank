@@ -11,14 +11,20 @@ type captionState = {
   languageId?: number;
 }
 
+type knowledgeState = {
+  isOpen: boolean;
+}
+
 type State = {
   blogPost: BlogPostState;
   caption: captionState;
+  knowledge: knowledgeState;
 };
 
 type Action = {
   openBlogPostDrawer: (data: BlogPostState) => void;
   openCaptionDrawer: (data: captionState) => void;
+  openKnowledgeDrawer: (data: knowledgeState) => void;
 };
 
 const openBlogPostDrawer = (state: State, data: BlogPostState): State => {
@@ -43,6 +49,16 @@ const openCaptionDrawer = (state: State, data: captionState): State => {
   };
 };
 
+const openKnowledgeDrawer = (state: State, data: knowledgeState): State => {
+  return {
+    ...state,
+    knowledge: {
+      ...state.knowledge,
+      isOpen: data.isOpen,
+    }
+  };
+};
+
 const useDrawers = create<State & Action>(
   (set) => ({
     blogPost: {
@@ -54,10 +70,15 @@ const useDrawers = create<State & Action>(
       isOpen: false,
       languageId: undefined,
     },
+    knowledge: {
+      isOpen: false,
+    },
     openBlogPostDrawer: (data: BlogPostState) =>
       set((state) => openBlogPostDrawer(state, data)),
     openCaptionDrawer: (data: captionState) =>
       set((state) => openCaptionDrawer(state, data)),
+    openKnowledgeDrawer: (data: knowledgeState) =>
+      set((state) => openKnowledgeDrawer(state, data)),
   })
 );
 

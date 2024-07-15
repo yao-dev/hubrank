@@ -1,5 +1,5 @@
 'use client';
-import { Alert, App, Button, Empty, Flex, Grid, Popconfirm, Space, Table, Tag } from 'antd';
+import { Alert, App, Button, Empty, Flex, Grid, Popconfirm, Space, Table, Tag, Typography } from 'antd';
 import { useMemo } from 'react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
@@ -144,20 +144,16 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         <Empty
           image="/image-1.png"
           imageStyle={{ height: screens.xs ? 125 : 200 }}
-          description="You have no articles yet"
+          description={(
+            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+              You have no writing style yet
+            </Typography.Text>
+          )}
         />
-        {/* <Button
-            type="primary"
-            onClick={() => setModalOpen(true)}
-            style={{ marginTop: 12 }}
-            icon={<PlusOutlined />}
-
-          >
-            Add writing style
-          </Button> */}
       </Flex>
     )
   }
+
 
   if (isFetched && !!data?.data?.length) {
     const hasDefault = data.data.some((i) => i.default);
