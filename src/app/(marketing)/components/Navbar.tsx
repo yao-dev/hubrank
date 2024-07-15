@@ -3,7 +3,7 @@ import useUser from "@/hooks/useUser";
 import { Button } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useOnClickOutside } from 'usehooks-ts';
 import Logo from "./Logo";
 
@@ -18,6 +18,15 @@ const Navbar = () => {
   const user = useUser();
   const ref = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [top, setTop] = useState(true);
+
+  useEffect(() => {
+    const scrollHandler = () => {
+      window.scrollY > 125 ? setTop(false) : setTop(true)
+    };
+    window.addEventListener('scroll', scrollHandler);
+    return () => window.removeEventListener('scroll', scrollHandler);
+  }, [top]);
 
   const handleClickOutside = () => {
     setIsMenuOpen(false)
@@ -26,18 +35,18 @@ const Navbar = () => {
   useOnClickOutside(ref, handleClickOutside)
 
   return (
-    <nav className="flex flex-col items-center py-2 sm:py-5 px-3 sm:px-20 md:px-40 relative">
+    <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-10 ${!top && `shadow-lg`}`}>
       <div className="container flex flex-row justify-between items-center">
         {/* logo */}
         <Logo />
 
         {/* menu */}
-        <div className="hidden sm:flex flex-row gap-4">
+        <div className="hidden lg:flex flex-row gap-4">
           {menu.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-primary-500"
+              className="hover:text-primary-500 text-lg"
             >
               {item.link}
             </Link>
@@ -47,22 +56,25 @@ const Navbar = () => {
         {/* login button */}
         <Button
           href={user ? "/dashboard" : "/login"}
-          className="hidden sm:visible bg-black text-white hover:border-transparent"
+          className="hidden lg:block bg-black text-white hover:border-transparent"
         >
           {user ? "Dashboard" : "Login"}
         </Button>
 
         {/* mobile menu */}
-        <IconMenu2 onClick={() => setIsMenuOpen(isMenuOpen ? false : true)} className="sm:hidden cursor-pointer z-20" />
+        <IconMenu2 id="menu" onClick={() => {
+          console.log("click burger menu")
+          setIsMenuOpen(isMenuOpen ? false : true);
+        }} className="lg:hidden cursor-pointer z-20" />
       </div>
 
       {isMenuOpen && (
-        <div ref={ref} className="sm:hidden flex flex-col absolute top-[50px] border w-full bg-white transition z-10">
+        <div ref={ref} className="lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
           {menu.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:bg-primary-300 inline-block text-center px-2 py-3"
+              className="hover:bg-primary-500 hover:text-white transition inline-block text-center px-2 py-3 border-b last:border-b-0"
               onClick={handleClickOutside}
             >
               {item.link}

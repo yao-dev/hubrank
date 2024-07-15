@@ -31,7 +31,9 @@ export default function LandingPage() {
 
       <Testimonials />
 
-      <Pricing />
+      <div className="mb-12">
+        <Pricing />
+      </div>
 
       <Faq />
 

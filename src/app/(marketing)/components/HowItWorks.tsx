@@ -38,12 +38,12 @@ const HowItWorks = () => {
   const [content, setContent] = useState<string>("blog");
 
   return (
-    <section className="container flex flex-col items-center gap-2 px-40 mx-auto mb-16">
+    <section className="container flex flex-col items-center gap-2 px-4 lg:px-40 mx-auto mb-16">
       <div className='flex flex-col gap-4 items-center'>
-        <span className="uppercase text-primary-500">How it works</span>
-        <h3 className="text-2xl font-semibold">💡 From idea to content</h3>
+        <span className="uppercase text-primary-500 text-center">How it works</span>
+        <h3 className="text-2xl font-semibold text-center">💡 From idea to content</h3>
 
-        <p className="text-zinc-600 font-light text-center w-2/3">
+        <p className="text-zinc-600 font-light text-center lg:w-2/3">
           We get it - ranking high on Google is way harder than it looks. You've written blog post after blog post targeting keywords in your niche. But your website still gets crickets when it comes to organic search traffic.
         </p>
 

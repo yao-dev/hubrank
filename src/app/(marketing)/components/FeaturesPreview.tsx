@@ -25,7 +25,7 @@ const featuresInAction = [
 const FeaturesPreview = () => {
   const [featureInActionVideo, setFeatureInActionVideo] = useState(featuresInAction[0])
   return (
-    <section className="container mx-auto px-40 flex flex-col items-center gap-12">
+    <section className="hidden container mx-auto px-4 lg:px-40 lg:flex flex-col items-center gap-12">
       <div className="flex flex-col items-center gap-6">
         <h3 className="text-2xl font-semibold">See by yourself</h3>
         <Segmented
@@ -43,7 +43,7 @@ const FeaturesPreview = () => {
       </div>
 
       {featureInActionVideo && (
-        <div className="p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-4/5 h-[600px]">
+        <div className="p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5 h-[400px] lg:h-[600px]">
           <video
             src={featureInActionVideo.video}
             loop

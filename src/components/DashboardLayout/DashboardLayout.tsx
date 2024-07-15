@@ -205,7 +205,7 @@ export default function DashboardLayout({
       <Flex vertical justify='space-between' style={{ height: '100%' }}>
         <div>
           <Flex align='center' style={{ padding: 16, paddingLeft: 28 }}>
-            <Link href="/" prefetch>
+            <Link href="/dashboard" prefetch>
               <Image
                 src="/brand-logo-white.png"
                 preview={false}

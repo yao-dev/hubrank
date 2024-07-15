@@ -535,7 +535,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           <span>FAQ</span>
         </Flex>
 
-        <Flex vertical>
+        <Flex vertical hidden>
           <Flex gap="small" align="center">
             <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
               <Switch size="small" />
@@ -550,7 +550,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           <span>Table of content</span>
         </Flex> */}
 
-          <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
+          <Flex hidden gap="small" align="center" style={{ marginBottom: 18 }}>
             <Form.Item name="with_sections_image" style={{ margin: 0 }}>
               <Switch size="small" />
             </Form.Item>

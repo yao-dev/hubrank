@@ -95,7 +95,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                       </Flex>
                     </Flex> */}
 
-              <Flex gap="middle" justify="center">
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                 {products.map((product: Product) => {
                   if (!product?.id) return null;
 
@@ -106,7 +106,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                   const isSubscribed = subscription?.plan?.id === currentPrice?.id;
 
                   const pricing = (
-                    <Card key={product.id} style={{ width: 350, borderColor: recommendedSubscription ? "#353b48" : undefined }}>
+                    <Card key={product.id} className="w-full" style={{ borderColor: recommendedSubscription ? "#353b48" : undefined }}>
                       <Flex vertical>
                         <Flex align="center" gap="small" style={{ marginBottom: 4 }}>
                           <Typography.Text strong style={{ fontSize: 20 }}>{product.name}</Typography.Text>
@@ -214,7 +214,7 @@ export default function PricingTable({ title, subtitle }: Props) {
 
                   return pricing
                 })}
-              </Flex>
+              </div>
             </Flex>
           </Flex>
         </Flex>
