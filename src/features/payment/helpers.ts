@@ -13,7 +13,7 @@ import { stripeUrls, webhookEvents } from "./constants";
 import chalk from "chalk";
 import { isEmpty } from "lodash";
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY ?? "");
+const stripe = require('stripe')(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY ?? "");
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export const getCheckoutData = ({
