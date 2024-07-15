@@ -34,8 +34,8 @@ export const getCheckoutData = ({
       ],
       mode: "subscription",
       // ui_mode: 'embedded',
-      success_url: getCheckoutReturnUrl({ origin }), // TODO: ?success=true
-      cancel_url: getCheckoutReturnUrl({ origin }), // TODO: add ?canceled=true
+      success_url: getCheckoutReturnUrl({ origin }), // NOTE: ?success=true
+      cancel_url: getCheckoutReturnUrl({ origin }), // NOTE: add ?canceled=true
       automatic_tax: { enabled: true },
       metadata,
       customer: customerId
@@ -51,8 +51,8 @@ export const getCheckoutData = ({
     ],
     mode: "subscription",
     // ui_mode: 'embedded',
-    success_url: getCheckoutReturnUrl({ origin }), // TODO: ?success=true
-    cancel_url: getCheckoutReturnUrl({ origin }), // TODO: add ?canceled=true
+    success_url: getCheckoutReturnUrl({ origin }), // NOTE: ?success=true
+    cancel_url: getCheckoutReturnUrl({ origin }), // NOTE: add ?canceled=true
     automatic_tax: { enabled: true },
     metadata,
     customer_email: customerEmail
@@ -169,10 +169,9 @@ export const getWebhookSecret = (origin: string) => {
   if (origin.includes("localhost")) {
     webhookSecret = secrets.localhost;
   }
-  // TODO: uncomment when live
-  // if (process.env.NODE_ENV === "production") {
-  //   webhookSecret = secrets.live_mode;
-  // }
+  if (process.env.NODE_ENV === "production") {
+    webhookSecret = secrets.live_mode;
+  }
 
   return webhookSecret ?? "";
 }

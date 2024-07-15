@@ -32,7 +32,16 @@ const Navbar = () => {
     setIsMenuOpen(false)
   }
 
-  useOnClickOutside(ref, handleClickOutside)
+  useOnClickOutside(ref, handleClickOutside);
+
+  const loginButton = (
+    <Button
+      href={user ? "/dashboard" : "/login"}
+      className="hidden lg:block bg-black text-white hover:border-transparent"
+    >
+      {user ? "Dashboard" : "Login"}
+    </Button>
+  )
 
   return (
     <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-10 ${!top && `shadow-lg`}`}>
@@ -53,21 +62,16 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* login button */}
-        <Button
-          href={user ? "/dashboard" : "/login"}
-          className="hidden lg:block bg-black text-white hover:border-transparent"
-        >
-          {user ? "Dashboard" : "Login"}
-        </Button>
+        {loginButton}
 
-        {/* mobile menu */}
+        {/* mobile menu trigger */}
         <IconMenu2 id="menu" onClick={() => {
           console.log("click burger menu")
           setIsMenuOpen(isMenuOpen ? false : true);
         }} className="lg:hidden cursor-pointer z-20" />
       </div>
 
+      {/* mobile menu trigger */}
       {isMenuOpen && (
         <div ref={ref} className="lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
           {menu.map((item) => (
@@ -80,6 +84,8 @@ const Navbar = () => {
               {item.link}
             </Link>
           ))}
+
+          {loginButton}
         </div>
       )}
     </nav>
