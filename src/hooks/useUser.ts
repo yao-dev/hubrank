@@ -11,6 +11,7 @@ const useUser = () => {
   useEffect(() => {
     getUserId().then((userId) => setUserId(userId)).catch(console.error)
   }, []);
+
   const { data: user } = useQuery({
     enabled: !!userId,
     queryKey: queryKeys.user(),
