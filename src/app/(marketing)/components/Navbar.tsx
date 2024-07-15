@@ -3,7 +3,7 @@ import useUser from "@/hooks/useUser";
 import { Button } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useOnClickOutside } from 'usehooks-ts';
 import Logo from "./Logo";
 
@@ -34,14 +34,16 @@ const Navbar = () => {
 
   useOnClickOutside(ref, handleClickOutside);
 
-  const loginButton = (
-    <Button
-      href={user ? "/dashboard" : "/login"}
-      className="hidden lg:block bg-black text-white hover:border-transparent"
-    >
-      {user ? "Dashboard" : "Login"}
-    </Button>
-  )
+  const loginButton = useCallback((className?: string) => {
+    return (
+      <Button
+        href={user ? "/dashboard" : "/login"}
+        className={`bg-black text-white hover:border-transparent ${className}`}
+      >
+        {user ? "Dashboard" : "Login"}
+      </Button>
+    )
+  }, [])
 
   return (
     <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-10 ${!top && `shadow-lg`}`}>
@@ -62,7 +64,7 @@ const Navbar = () => {
           ))}
         </div>
 
-        {loginButton}
+        {loginButton("hidden lg:block")}
 
         {/* mobile menu trigger */}
         <IconMenu2 id="menu" onClick={() => {
@@ -71,7 +73,7 @@ const Navbar = () => {
         }} className="lg:hidden cursor-pointer z-20" />
       </div>
 
-      {/* mobile menu trigger */}
+      {/* mobile menu */}
       {isMenuOpen && (
         <div ref={ref} className="lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
           {menu.map((item) => (
@@ -85,7 +87,7 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {loginButton}
+          {loginButton("m-2 py-2 h-fit")}
         </div>
       )}
     </nav>
