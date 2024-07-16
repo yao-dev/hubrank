@@ -45,7 +45,6 @@ const personas = [
   "Entrepreneurs",
 ];
 
-
 const HeroHeader = () => {
   const text = useTypewriter(personas, 125, 100, 1000);
 
@@ -79,15 +78,21 @@ const HeroHeader = () => {
 
         {/* headline */}
         <h1 className="lg:w-2/3 text-5xl lg:text-6xl font-black mb-4 text-center">
-          AI Powered Content Marketing
+          {/* AI Content Toolkit */}
+          {/* Marketing Toolkit */}
+          {/* AI Marketing Toolkit */}
+          {/* AI Powered Content Marketing */}
+          AI Content Marketing for
+          {/* AI Toolkit */}
           <div>
-            for{` `}
+            {/* for{` `} */}
+            <span className='opacity-0'>p</span>
             <span
               id="typewriter"
               className='text-primary-500 relative stroke-current'
             >
               {text}
-              <svg className="absolute -bottom-0.5 left-4 w-2/3 max-w-44 max-h-1.5" viewBox="0 0 55 5" xmlns="http://www.w3.org/2000/svg"
+              <svg className="hidden sm:block absolute -bottom-0.5 left-4 w-2/3 max-w-44 max-h-1.5" viewBox="0 0 55 5" xmlns="http://www.w3.org/2000/svg"
                 preserveAspectRatio="none">
                 <path d="M0.652466 4.00002C15.8925 2.66668 48.0351 0.400018 54.6853 2.00002" stroke-width="2"></path>
               </svg>
