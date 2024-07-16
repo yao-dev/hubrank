@@ -107,12 +107,6 @@ export const usePricing = () => {
     subscriptionsByPriceId[userSubscription.plan.id] = userSubscription
   });
 
-  console.log({
-    redirectToCustomerPortal,
-    productsQuery,
-    pricesQuery
-  })
-
   return {
     products: productsQuery.data ?? [],
     prices: pricesByProductId,

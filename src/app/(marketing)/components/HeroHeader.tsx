@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { IconCircleCheckFilled } from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconStarFilled } from "@tabler/icons-react";
 import GetStarted from "./GetStarted";
 
 
@@ -38,10 +38,10 @@ function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, d
 }
 
 const personas = [
-  "E-commerce owners",
+  "E-commerce Owners",
   "Marketers",
   "Agencies",
-  "Content creators",
+  "Content Creators",
   "Entrepreneurs",
 ];
 
@@ -49,9 +49,34 @@ const personas = [
 const HeroHeader = () => {
   const text = useTypewriter(personas, 125, 100, 1000);
 
+  const fiveStars = (
+    <div className="flex gap-1 text-primary-500">
+      <IconStarFilled />
+      <IconStarFilled />
+      <IconStarFilled />
+      <IconStarFilled />
+      <IconStarFilled />
+    </div>
+  )
+
   return (
     <header className="flex flex-col items-center py-2 lg:py-5 px-4 lg:px-40 mx-auto mt-12 lg:mt-8">
       <div className="container flex flex-col justify-center items-center">
+        <div className="flex gap-12 mx-auto mb-6">
+          <div className="flex flex-col gap-1 items-center">
+            {fiveStars}
+            <span className='text-zinc-600'>"I can't believe it's free!"</span>
+          </div>
+          <div className="hidden sm:flex flex-col gap-1 items-center">
+            {fiveStars}
+            <span className='text-zinc-600'>"wow, absolutely perfect!"</span>
+          </div>
+          <div className="hidden sm:flex flex-col gap-1 items-center">
+            {fiveStars}
+            <span className='text-zinc-600'>"I just want to hug you!"</span>
+          </div>
+        </div>
+
         {/* headline */}
         <h1 className="lg:w-2/3 text-5xl lg:text-6xl font-black mb-4 text-center">
           AI Powered Content Marketing
