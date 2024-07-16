@@ -11,7 +11,6 @@ import {
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
-import axios from 'axios';
 import {
   IconArticle,
   IconBrandFacebook,
@@ -245,7 +244,7 @@ const BlogPostsTable = () => {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/image-1.png"
+          image="/empty-state/empty-blog-posts.png"
           imageStyle={{ height: screens.xs ? 125 : 200 }}
           description={(
             <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>

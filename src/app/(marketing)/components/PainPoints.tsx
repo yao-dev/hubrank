@@ -47,7 +47,7 @@ const PainPoints = () => {
         {/* right section */}
         <div className="hidden lg:block w-1/2">
           <Image
-            src="/confused.png"
+            src="/marketing/struggle-1.png"
             className="rounded-lg"
             preview={false}
           />

@@ -134,8 +134,8 @@ const KnowledgesBaseTable = () => {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/image-1.png"
-          imageStyle={{ height: screens.xs ? 125 : 200 }}
+          image="/empty-state/empty-knowledges.png"
+          imageStyle={{ height: screens.xs ? 125 : 200, margin: "auto", display: "flex" }}
           description={(
             <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
               You have no knowledges added yet

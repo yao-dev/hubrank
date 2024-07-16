@@ -57,7 +57,7 @@ const Navbar = () => {
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-primary-500 text-base uppercase"
+              className="hover:text-primary-500 text-base font-medium"
             >
               {item.link}
             </Link>

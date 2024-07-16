@@ -23,7 +23,9 @@ import { InboxOutlined } from '@ant-design/icons';
 const draggerProps: UploadProps = {
   name: 'file',
   multiple: true,
+  accept: "pdf,doc,csv,txt,html,json",
   action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
+  maxCount: 10,
   onChange(info) {
     const { status } = info.file;
     if (status !== 'uploading') {
@@ -53,7 +55,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const drawers = useDrawers();
   const mode = Form.useWatch('mode', form);
-  const withCta = Form.useWatch('with_cta', form);
+  const isSitemap = Form.useWatch('is_sitemap', form);
 
   useEffect(() => {
     if (project && drawers.caption.isOpen) {
@@ -113,31 +115,46 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         {mode === "text" && (
           <Form.Item
             name="text"
-            label={<Label name="What do you want to write about?" />}
-            rules={[{ type: "string", max: 150, required: true }]}
+            rules={[{ type: "string", max: 1000, required: true }]}
             hasFeedback
           >
             <Input.TextArea
-              placeholder=""
-              autoSize={{ minRows: 3, maxRows: 5 }}
+              placeholder="Add any text as a knowledge resource to train the AI on"
+              autoSize={{ minRows: 3, maxRows: 20 }}
               count={{
                 show: true,
-                max: 150,
+                max: 1000,
               }}
             />
           </Form.Item>
         )}
 
         {mode === "url" && (
-          <Form.Item
-            name="url"
-            validateTrigger={['onChange', 'onBlur']}
-            rules={[{ required: false, message: 'Please enter a valid url', type: "url" }]}
-            hasFeedback
-            help="website, sitemap, youtube url."
-          >
-            <Input placeholder="Url" />
-          </Form.Item>
+          <>
+            <Form.Item
+              name="url"
+              validateTrigger={['onChange', 'onBlur']}
+              rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
+              hasFeedback
+              help="Website, sitemap, youtube url."
+            >
+              <Input placeholder="Url" />
+            </Form.Item>
+            <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
+              <Form.Item name="is_sitemap" style={{ margin: 0 }}>
+                <Switch size="small" />
+              </Form.Item>
+              <span>Is it a sitemap?</span>
+            </Flex>
+          </>
+        )}
+
+        {mode === "url" && isSitemap && (
+          <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
+            <Form.Item style={{ margin: 0 }}>
+              <Button>Fetch sitemap urls</Button>
+            </Form.Item>
+          </Flex>
         )}
 
         {mode === "file" && (
@@ -153,29 +170,9 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
               </p>
               <p className="ant-upload-text">Click or drag file to this area to upload</p>
               <p className="ant-upload-hint">
-                Support for a single or bulk upload. Strictly prohibited from uploading company data or other
-                banned files.
+                You can upload up to 10 files at once, we only support the following files (<b>pdf,doc,csv,txt,html,json</b>) with up to <b>5MB</b> per file.
               </p>
             </Upload.Dragger>
-          </Form.Item>
-        )}
-
-        <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
-          <Form.Item name="with_cta" style={{ margin: 0 }}>
-            <Switch size="small" />
-          </Form.Item>
-          <span>Is it a sitemap?</span>
-        </Flex>
-
-        <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
-          <Form.Item name="with_cta" style={{ margin: 0 }}>
-            <Button>Fetch sitemap</Button>
-          </Form.Item>
-        </Flex>
-
-        {withCta && (
-          <Form.Item name="cta" label="CTA" rules={[{ required: true, type: "string", max: 150 }]} hasFeedback>
-            <Input placeholder="CTA" count={{ show: true, max: 150 }} />
           </Form.Item>
         )}
 

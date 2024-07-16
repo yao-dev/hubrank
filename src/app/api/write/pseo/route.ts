@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     lang: language.label,
   })
 
-  const ai = new AI({ context })
+  const ai = new AI({ context });
 
   // ADD H1 TITLE TO THE ARTICLE
   ai.article = `# ${body.headline}\n`;

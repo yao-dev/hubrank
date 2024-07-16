@@ -415,7 +415,7 @@ const KeywordsTable = () => {
       {((!showSavedKeywords && isSearchedKeywordsFetched && isEmpty(keywords)) || (showSavedKeywords && isSavedKeywordsFetched && isEmpty(savedKeywords))) ? (
         <Flex align='center' justify='center' style={{ marginTop: 96 }}>
           <Empty
-            image="/image-1.png"
+            image="/empty-state/empty-keywords.png"
             imageStyle={{ height: 200 }}
             description={(
               <Typography.Text style={{ margin: 0 }}>
