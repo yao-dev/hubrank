@@ -38,11 +38,12 @@ function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, d
 }
 
 const personas = [
-  "E-commerce Owners",
+  "E-commerce",
+  // "Ecom Owners",
   "Marketers",
   "Agencies",
-  "Content Creators",
-  "Entrepreneurs",
+  "Creators",
+  // "Entrepreneurs",
 ];
 
 const HeroHeader = () => {
@@ -80,9 +81,11 @@ const HeroHeader = () => {
         <h1 className="lg:w-2/3 text-5xl lg:text-6xl font-black mb-4 text-center">
           {/* AI Content Toolkit */}
           {/* Marketing Toolkit */}
-          {/* AI Marketing Toolkit */}
+          {/* AI Marketing Toolkit for */}
           {/* AI Powered Content Marketing */}
-          AI Content Marketing for
+          AI Content Marketing Toolkit for
+          {/* AI Powered Content Marketing Toolkit for */}
+          {/* AI Content Marketing for */}
           {/* AI Toolkit */}
           <div>
             {/* for{` `} */}
