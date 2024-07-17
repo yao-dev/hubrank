@@ -46,7 +46,7 @@ const Navbar = () => {
   }, [])
 
   return (
-    <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-10 ${!top && `shadow-lg`}`}>
+    <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-lg`}`}>
       <div className="container flex flex-row justify-between items-center">
         {/* logo */}
         <Logo />

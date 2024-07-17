@@ -92,9 +92,9 @@ const features = [
     id: 12,
     icon: <IconLink className="text-primary-500 mx-auto lg:mx-0" />,
     title: (
-      <div className="flex flex-col lg:flex-row gap-2 text-center lg:text-left">
+      <div className="flex flex-col 2xl:flex-row gap-2 text-center lg:text-left">
         <p>Internal linking</p>
-        <Tag color="gold" className="mx-auto w-min">coming soon</Tag>
+        <Tag color="gold" className="mx-auto lg:mx-0 w-min h-fit">coming soon</Tag>
       </div>
     ),
     description: "In aliquet malesuada consectetur in enim eu maecenas suspendisse. Elementum at enim consequa.",
@@ -103,9 +103,9 @@ const features = [
     id: 13,
     icon: <IconLayoutCollage className="text-primary-500 mx-auto lg:mx-0" />,
     title: (
-      <div className="flex flex-col lg:flex-row gap-2 text-center lg:text-left">
+      <div className="flex flex-col 2xl:flex-row gap-2 text-center lg:text-left">
         <p>In-content images</p>
-        <Tag color="gold" className="mx-auto w-min">coming soon</Tag>
+        <Tag color="gold" className="mx-auto lg:mx-0 w-min h-fit">coming soon</Tag>
       </div>
     ),
     description: "In aliquet malesuada consectetur in enim eu maecenas suspendisse. Elementum at enim consequa.",

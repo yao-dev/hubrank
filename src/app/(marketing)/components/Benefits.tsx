@@ -29,7 +29,7 @@ const Benefits = () => {
       <section className="container flex flex-col items-center gap-2 px-4 lg:px-40 pt-0 pb-20 lg:py-20 mx-auto relative">
         <img
           src="/marketing/arrow.png"
-          className="absolute z-50 w-24 -top-10 left-5 lg:-top-10 lg:left-32 lg:w-[200px] h-auto rotate-180 transform -scale-x-100"
+          className="absolute z-10 w-24 -top-10 left-5 lg:-top-10 lg:left-32 lg:w-[200px] h-auto rotate-180 transform -scale-x-100"
         />
 
         <span className="uppercase text-primary-500 mb-2 lg:mb-8 text-base">Benefits</span>
