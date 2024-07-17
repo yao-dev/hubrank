@@ -39,7 +39,7 @@ function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, d
 
 const personas = [
   "E-commerce",
-  // "Ecom Owners",
+  "Brand Owners",
   "Marketers",
   "Agencies",
   "Creators",
