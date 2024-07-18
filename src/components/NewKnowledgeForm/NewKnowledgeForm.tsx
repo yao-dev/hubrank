@@ -7,18 +7,25 @@ import {
   Form,
   FormInstance,
   Input,
+  InputRef,
   Radio,
   RadioChangeEvent,
+  Space,
   Switch,
+  Table,
   Upload,
   UploadProps,
   message,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useDrawers from "@/hooks/useDrawers";
 import WritingStyleForm from "../WritingStyleForm/WritingStyleForm";
 import Label from "../Label/Label";
-import { InboxOutlined } from '@ant-design/icons';
+import { InboxOutlined, SearchOutlined } from '@ant-design/icons';
+import axios from "axios";
+import { isEmpty } from "lodash";
+import Highlighter from 'react-highlight-words';
+import type { FilterDropdownProps } from 'antd/es/table/interface';
 
 const draggerProps: UploadProps = {
   name: 'file',
@@ -42,6 +49,12 @@ const draggerProps: UploadProps = {
   },
 };
 
+type DataType = {
+  key: React.Key;
+  url: string;
+}
+
+type DataIndex = keyof DataType;
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -53,6 +66,11 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   const { data: project, isPending } = useProjects().getOne(projectId)
   const [, contextHolder] = message.useMessage();
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
+  const [isFetchingSitemap, setIsFetchingSitemap] = useState(false);
+  const [sitemapUrls, setSitemapUrls] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef<InputRef>(null);
   const drawers = useDrawers();
   const mode = Form.useWatch('mode', form);
   const isSitemap = Form.useWatch('is_sitemap', form);
@@ -63,9 +81,117 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
     }
   }, [project, drawers.caption.isOpen]);
 
+  const handleSearch = (
+    selectedKeys: string[],
+    confirm: FilterDropdownProps['confirm'],
+    dataIndex: DataIndex,
+  ) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters: () => void) => {
+    clearFilters();
+    setSearchText('');
+  };
+
+  const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<DataType> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+      <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+          style={{ marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => handleReset(clearFilters)}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Clear
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: (filtered: boolean) => (
+      <SearchOutlined style={{ color: filtered ? '#1677ff' : undefined }} />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex]
+        .toString()
+        .toLowerCase()
+        .includes((value as string).toLowerCase()),
+    onFilterDropdownOpenChange: (visible) => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    render: (text) =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  const columns = useMemo(() => {
+    return [
+      {
+        title: "Url",
+        dataIndex: 'url',
+        key: 'url',
+        ...getColumnSearchProps('url'),
+      },
+    ]
+  }, []);
+
+  const rowSelection = {
+    onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
+      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    },
+    getCheckboxProps: (record: DataType) => ({
+      disabled: false,
+      url: record.url,
+    }),
+  };
+
+  const onFetchSiteMapUrls = async () => {
+    setIsFetchingSitemap(true)
+    try {
+      const { data } = await axios.post("/api/sitemap", {
+        website_url: project.website,
+        url: form.getFieldValue("url"),
+      });
+      if (!isEmpty(data.urls)) {
+        setSitemapUrls(data.urls)
+      }
+      setIsFetchingSitemap(false)
+    } catch (e) {
+      console.error(e)
+      setIsFetchingSitemap(false)
+    }
+  }
+
   if (isPending) return null;
-
-
 
   return (
     <Flex vertical gap="large" style={{ height: "100%" }}>
@@ -82,12 +208,13 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
           url: "",
           urls: [],
           files: [],
-          sitemap: false
+          is_sitemap: false
         }}
         autoComplete="off"
         layout="vertical"
         onFinish={onSubmit}
         onError={console.log}
+        disabled={isFetchingSitemap}
       >
         <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
           <Form.Item
@@ -152,7 +279,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         {mode === "url" && isSitemap && (
           <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
             <Form.Item style={{ margin: 0 }}>
-              <Button>Fetch sitemap urls</Button>
+              <Button loading={isFetchingSitemap} onClick={onFetchSiteMapUrls}>Fetch sitemap urls</Button>
             </Form.Item>
           </Flex>
         )}
@@ -175,8 +302,25 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
             </Upload.Dragger>
           </Form.Item>
         )}
-
       </Form>
+
+      {mode === "url" && isSitemap && !isEmpty(sitemapUrls) && (
+        <Flex vertical gap={12}>
+          <Label name="Select urls you want the AI to be trained on" />
+          <Table
+            rowSelection={{
+              type: "checkbox",
+              ...rowSelection,
+            }}
+            columns={columns}
+            dataSource={sitemapUrls.map((url) => ({ key: url, url }))}
+            pagination={false}
+            scroll={{ y: 400 }}
+            size="small"
+          />
+          <p><b>{sitemapUrls.length}</b> urls found</p>
+        </Flex>
+      )}
     </Flex>
   )
 }

@@ -1,12 +1,8 @@
 'use client';;
 import { Button, Drawer, Flex, Form, message, notification } from "antd";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
-import { getUserId } from "@/helpers/user";
-import useProjectId from "@/hooks/useProjectId";
-import axios from "axios";
-import { getShouldShowPricing } from "@/helpers/pricing";
-import usePricingModal from "@/hooks/usePricingModal";
 import NewKnowledgeForm from "../NewKnowledgeForm/NewKnowledgeForm";
+import useKnowledges from "@/hooks/useKnowledges";
 
 type Props = {
   open: boolean;
@@ -14,42 +10,60 @@ type Props = {
 }
 
 const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
-  const projectId = useProjectId();
   const [form] = Form.useForm();
-  const pricingModal = usePricingModal();
+  const { create: createKnowledge } = useKnowledges();
 
-  const writeKnowledge = async (values: any) => {
-    try {
-      axios.post('/api/write/knowledge', values)
-      message.success('Knowledge added in the queue!');
-      onClose();
-      form.resetFields()
-    } catch (e) {
-      if (getShouldShowPricing(e)) {
-        pricingModal.open(true);
-      } else {
-        notification.error({
-          message: "We had an issue adding your knowledge in the queue please try again",
-          placement: "bottomRight",
-          role: "alert",
-        })
-      }
-    }
+  const scheduleKnowledgeTraining = async (data: {
+    mode: "text";
+    text: string;
+  } | {
+    mode: "url";
+    urls: string[];
+  } | {
+    mode: "url";
+    files: any[];
+  }) => {
+    await createKnowledge.mutateAsync(data)
   }
 
   const onFinish = async (values: any) => {
-    await writeKnowledge({
-      ...values,
-      user_id: await getUserId(),
-      project_id: projectId
-    });
-    return;
+    try {
+      if (values.mode === "text") {
+        await scheduleKnowledgeTraining({
+          mode: values.mode,
+          text: values.text
+        });
+      }
+      if (values.mode === "url") {
+        await scheduleKnowledgeTraining({
+          mode: values.mode,
+          urls: values.sitemap ? values.urls : [values.url]
+        });
+      }
+      if (values.mode === "file") {
+        await scheduleKnowledgeTraining({
+          mode: values.mode,
+          files: values.files
+        });
+      }
+
+      message.success('Knowledge added for training!');
+      onClose();
+      form.resetFields()
+    } catch (e) {
+      console.error(e);
+      notification.error({
+        message: "We had an issue adding your knowledge for training please try again",
+        placement: "bottomRight",
+        role: "alert",
+      })
+    }
   };
 
   return (
     <Drawer
       title={<DrawerTitle title="New knowledge" />}
-      width={600}
+      width={800}
       onClose={() => {
         onClose();
         form.resetFields()
@@ -67,10 +81,10 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
           <Button
             onClick={() => form.submit()}
             type="primary"
-            loading={false}
-            disabled={false}
+            loading={createKnowledge.isPending}
+            disabled={createKnowledge.isPending}
           >
-            Write knowledge (0.5 credit)
+            Add
           </Button>
         </Flex>
       }

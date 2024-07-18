@@ -59,14 +59,19 @@ export default function Dashboard() {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/image-1.png"
+          // TODO: replace with a folder image
+          image="/empty-state/empty-blog-posts.png"
           imageStyle={{ height: screens.xs ? 125 : 200 }}
-          description="You have no projects yet"
+          // description="You have no projects yet"
+          description={(
+            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+              You have no projects yet
+            </Typography.Text>
+          )}
         >
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            // onClick={() => setArticleDrawerOpen(true)}
             onClick={() => setOpenCreateProject(true)}
             style={{ marginTop: 12 }}
           >

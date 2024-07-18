@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "tunnel": "npx localtunnel --port 3000"
+    "upstash": "npx localtunnel --port 3000"
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.0",
@@ -59,6 +59,7 @@
     "react": "18.2.0",
     "react-currency-format": "^1.1.0",
     "react-dom": "18.2.0",
+    "react-highlight-words": "^0.20.0",
     "react-syntax-highlighter": "^15.5.0",
     "readability-cyr": "^1.0.8",
     "reading-time": "^1.5.0",

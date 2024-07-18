@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Flex, Popconfirm, Space, Table, Empty, Typography, Grid, Tag } from 'antd';
+import { Button, Flex, Popconfirm, Space, Table, Empty, Tag } from 'antd';
 import { useMemo } from 'react';
 import useKnowledges from '@/hooks/useKnowledges';
 import {
@@ -9,21 +9,21 @@ import {
   SyncOutlined,
   DeleteTwoTone,
 } from '@ant-design/icons';
-
-const { useBreakpoint } = Grid
+import useProjectId from '@/hooks/useProjectId';
+import { IconCsv, IconFileTypeDoc, IconHtml, IconJson, IconLink, IconPdf, IconTxt } from '@tabler/icons-react';
 
 const KnowledgesBaseTable = () => {
   const { delete: deleteKnowledge, getAll } = useKnowledges();
   const { data: knowledges, isPending, isFetched } = getAll({ queue: false });
-  const screens = useBreakpoint();
 
   const columns = useMemo(() => {
     return [
       {
-        title: 'Name',
-        dataIndex: 'name',
-        key: 'name',
-        width: null,
+        title: 'Content',
+        dataIndex: 'content',
+        key: 'content',
+        width: undefined,
+        ellipsis: true,
         render: (value: any) => {
           return (
             <span>{value ?? "-"}</span>
@@ -31,11 +31,32 @@ const KnowledgesBaseTable = () => {
         },
       },
       {
-        title: 'Description',
-        dataIndex: 'description',
-        key: 'description',
-        width: null,
-        render: (value: any) => {
+        title: 'Type',
+        dataIndex: 'type',
+        key: 'type',
+        width: 100,
+        render: (value: any, record: any) => {
+          if (record.type === "txt") {
+            return <IconTxt />
+          }
+          if (record.type === "pdf") {
+            return <IconPdf />
+          }
+          if (record.type === "json") {
+            return <IconJson />
+          }
+          if (record.type === "doc") {
+            return <IconFileTypeDoc />
+          }
+          if (record.type === "csv") {
+            return <IconCsv />
+          }
+          if (record.type === "html") {
+            return <IconHtml />
+          }
+          if (record.type === "url") {
+            return <IconLink />
+          }
           return (
             <span>{value ?? "-"}</span>
           )
@@ -47,7 +68,7 @@ const KnowledgesBaseTable = () => {
         key: 'status',
         filters: [
           { text: 'Queue', value: 'queue' },
-          { text: 'Learning', value: 'learning' },
+          { text: 'Training', value: 'training' },
           { text: 'Ready', value: 'ready' },
           { text: 'Error', value: 'error' },
         ],
@@ -72,7 +93,7 @@ const KnowledgesBaseTable = () => {
             color = "success";
             icon = <CheckCircleOutlined />;
           }
-          if (valueLowercase === "learning") {
+          if (valueLowercase === "training") {
             color = "blue";
             icon = <SyncOutlined spin />;
           }
@@ -83,7 +104,7 @@ const KnowledgesBaseTable = () => {
 
           return (
             <span>
-              <Tag color={color} icon={valueLowercase === "writing" || valueLowercase === "queue" ? icon : null}>
+              <Tag color={color} icon={["training", "queue"].includes(valueLowercase) ? icon : null}>
                 {/* {value.toUpperCase()} */}
                 {value.replaceAll("_", " ").toUpperCase()}
               </Tag>
@@ -99,9 +120,9 @@ const KnowledgesBaseTable = () => {
             <Popconfirm
               title="Delete knowledge"
               description="Are you sure to delete this knowledge?"
-              onConfirm={(e) => {
+              onConfirm={async (e) => {
                 e?.preventDefault();
-                deleteKnowledge.mutate(record.id)
+                await deleteKnowledge.mutateAsync(record.id);
               }}
               onCancel={(e) => {
                 e?.preventDefault()
@@ -109,13 +130,14 @@ const KnowledgesBaseTable = () => {
               okText="Yes"
               cancelText="No"
               okButtonProps={{
-                danger: true
+                danger: true,
               }}
               style={{ cursor: "pointer" }}
               onPopupClick={e => e.preventDefault()}
             >
               <Button
                 onClick={(e) => e.preventDefault()}
+                loading={deleteKnowledge.isPending}
                 icon={(
                   <DeleteTwoTone
                     onClick={(e) => e.preventDefault()}
@@ -135,11 +157,11 @@ const KnowledgesBaseTable = () => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/empty-state/empty-knowledges.png"
-          imageStyle={{ height: screens.xs ? 125 : 200, margin: "auto", display: "flex" }}
+          imageStyle={{ height: 250 }}
           description={(
-            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+            <span className='m-0 relative top-4 text-base'>
               You have no knowledges added yet
-            </Typography.Text>
+            </span>
           )}
         />
       </Flex>

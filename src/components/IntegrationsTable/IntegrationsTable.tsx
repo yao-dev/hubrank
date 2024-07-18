@@ -114,8 +114,12 @@ const IntegrationsTable = ({ isLoading }: any) => {
   //     <Flex align='center' justify='center' style={{ marginTop: 96 }}>
   //       <Empty
   //         image="/image-1.png"
-  //         imageStyle={{ height: 200 }}
-  //         description="You have no articles yet"
+  // imageStyle={{ height: 250 }}
+  // description={(
+  //   <span className='m-0 relative top-4 text-base'>
+  //     You have no integrations yet
+  //   </span>
+  // )}
   //       >
   // <Button
   //   type="primary"

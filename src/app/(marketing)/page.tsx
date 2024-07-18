@@ -4,11 +4,8 @@ import HeroHeader from "./components/HeroHeader";
 import PainPoints from "./components/PainPoints";
 import Benefits from "./components/Benefits";
 import Features from "./components/Features";
-import Testimonials from "./components/Testimonials";
 import FeaturesPreview from "./components/FeaturesPreview";
-import Faq from "./components/Faq";
 import "./style.css";
-import HowItWorks from "./components/HowItWorks";
 import Pricing from "./components/Pricing";
 
 export default function LandingPage() {
@@ -23,19 +20,19 @@ export default function LandingPage() {
         <Benefits />
       </div>
 
-      <HowItWorks />
+      {/* <HowItWorks /> */}
 
       <Features />
 
       <FeaturesPreview />
 
-      <Testimonials />
+      {/* <Testimonials /> */}
 
       <div className="mb-12">
         <Pricing />
       </div>
 
-      <Faq />
+      {/* <Faq /> */}
 
       <Footer />
     </div>

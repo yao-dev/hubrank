@@ -164,11 +164,11 @@ const CaptionsTable = () => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/empty-state/empty-social-media.png"
-          imageStyle={{ height: screens.xs ? 125 : 200 }}
+          imageStyle={{ height: 250 }}
           description={(
-            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+            <span className='m-0 relative top-4 text-base'>
               You have no captions yet
-            </Typography.Text>
+            </span>
           )}
         />
       </Flex>

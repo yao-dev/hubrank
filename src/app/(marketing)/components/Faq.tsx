@@ -23,7 +23,7 @@ const Faq = () => {
 
   const header = (
     <div className="flex flex-col gap-2 items-center text-center lg:items-start lg:text-left">
-      <span className="uppercase text-base text-primary-500">any questions</span>
+      <span className="uppercase text-base text-primary-500">have questions?</span>
       <div>
         <h3 className="text-3xl font-semibold mb-4 uppercase">faq</h3>
         <p className="text-base font-light text-zinc-600 mb-4 lg:mb-8">

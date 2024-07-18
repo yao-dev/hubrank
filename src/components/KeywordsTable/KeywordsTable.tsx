@@ -12,7 +12,6 @@ import {
   Space,
   Table,
   Tag,
-  Typography,
 } from 'antd';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
@@ -416,11 +415,11 @@ const KeywordsTable = () => {
         <Flex align='center' justify='center' style={{ marginTop: 96 }}>
           <Empty
             image="/empty-state/empty-keywords.png"
-            imageStyle={{ height: 200 }}
+            imageStyle={{ height: 250 }}
             description={(
-              <Typography.Text style={{ margin: 0 }}>
+              <span className='m-0 text-base'>
                 No keywords found
-              </Typography.Text>
+              </span>
             )}
           />
         </Flex>

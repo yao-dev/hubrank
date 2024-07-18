@@ -9,8 +9,8 @@ const menu = [
 ]
 
 const legals = [
-  { href: "/terms-of-services", link: "Terms of services" },
-  { href: "/privacy-policy", link: "Privacy Policy" },
+  { href: "/", link: "Terms of services" },
+  { href: "/", link: "Privacy Policy" },
 ]
 
 const Footer = () => {
@@ -64,7 +64,7 @@ const Footer = () => {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="hover:text-primary-500 text-xs font-light"
+                    className="hover:text-primary-500 font-light"
                   >
                     {item.link}
                   </Link>

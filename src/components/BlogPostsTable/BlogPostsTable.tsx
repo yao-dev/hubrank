@@ -1,5 +1,17 @@
 'use client';;
-import { Button, Drawer, Empty, Grid, Flex, Image, Popconfirm, Space, Table, Tag, message, Typography } from 'antd';
+import {
+  Button,
+  Drawer,
+  Empty,
+  Grid,
+  Flex,
+  Image,
+  Popconfirm,
+  Space,
+  Table,
+  Tag,
+  message,
+} from 'antd';
 import { useMemo, useState } from 'react';
 import {
   CheckCircleOutlined,
@@ -245,11 +257,11 @@ const BlogPostsTable = () => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/empty-state/empty-blog-posts.png"
-          imageStyle={{ height: screens.xs ? 125 : 200 }}
+          imageStyle={{ height: 250 }}
           description={(
-            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
+            <span className='m-0 relative top-4 text-base'>
               You have no articles yet
-            </Typography.Text>
+            </span>
           )}
         />
       </Flex>

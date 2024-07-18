@@ -5,9 +5,9 @@ import {
   cleanArticle,
   convertMarkdownToHTML,
   deductCredits,
-  fetchSitemap,
+  fetchSitemapXml,
   getAndSaveSchemaMarkup,
-  getBlogUrls,
+  getSitemapUrls,
   getKeywordsForKeywords,
   getProjectContext,
   getProjectKnowledges,
@@ -98,9 +98,9 @@ export async function POST(request: Request) {
   // FETCH THE SITEMAP
   let sitemaps;
   if (body.sitemap) {
-    const sitemapXml = await fetchSitemap(body.sitemap);
+    const sitemapXml = await fetchSitemapXml(body.sitemap);
     console.log(chalk.yellow(sitemapXml));
-    sitemaps = getBlogUrls({ websiteUrl: project.website, sitemapXml });
+    sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
     sitemaps = await getRelevantUrls({
       query: body.headline,
       urls: sitemaps,

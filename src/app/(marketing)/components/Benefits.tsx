@@ -47,7 +47,7 @@ const Benefits = () => {
                 <div key={item.title} className="flex flex-col lg:flex-row gap-4 items-center mb-8 last:mb-0">
                   <p className="text-4xl">{item.icon}</p>
                   <div>
-                    <p className="text-base font-semibold mb-1 text-center lg:text-left">{item.title}</p>
+                    {/* <p className="text-base font-semibold mb-1 text-center lg:text-left">{item.title}</p> */}
                     <p className="text-base font-light text-center lg:text-left">{item.description}</p>
                   </div>
                 </div>

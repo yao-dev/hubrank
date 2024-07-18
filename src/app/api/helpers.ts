@@ -11,7 +11,7 @@ import { getSerpData } from "@/helpers/seo";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
+import { CharacterTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
 
 const upstashVectorIndex = new Index({
@@ -530,12 +530,12 @@ export const findImage = async (keyword: string) => {
   }
 }
 
-export const fetchSitemap = async (sitemapUrl: string): Promise<string> => {
+export const fetchSitemapXml = async (sitemapUrl: string): Promise<string> => {
   const { data: sitemapXml } = await axios.get(sitemapUrl);
   return sitemapXml
 }
 
-export const getBlogUrls = ({ websiteUrl, sitemapXml, count = 500 }: { websiteUrl: string, sitemapXml: string; count?: number }): string[] => {
+export const getSitemapUrls = ({ websiteUrl, sitemapXml, count = 500 }: { websiteUrl: string, sitemapXml: string; count?: number }): string[] => {
   const $ = cheerio.load(sitemapXml);
   const list = new Set();
 
@@ -847,11 +847,13 @@ export const urlToVector = async ({
   index,
   userId,
   namespaceId,
+  metadata = {}
 }: {
   url: string;
   index: number;
   userId: string;
-  namespaceId: string
+  namespaceId: string;
+  metadata?: any;
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
   console.log("step 5.1", { index, url })
@@ -859,8 +861,8 @@ export const urlToVector = async ({
   console.log("step 5.2")
   const markdown = getMarkdown(html);
   console.log("step 5.3")
-  const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
-    separators: [],
+  // const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
+  const splitter = new CharacterTextSplitter({
     chunkSize: 500,
     chunkOverlap: 100,
   });
@@ -874,6 +876,7 @@ export const urlToVector = async ({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
       metadata: {
+        ...metadata,
         userId,
         content: document.pageContent
       }
@@ -883,31 +886,55 @@ export const urlToVector = async ({
   await Promise.all(promises)
 }
 
+export const textToVector = async ({
+  text,
+  userId,
+  namespaceId,
+  metadata = {}
+}: {
+  text: string;
+  userId: string;
+  namespaceId: string;
+  metadata?: any;
+}) => {
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+  const splitter = new CharacterTextSplitter({
+    chunkSize: 500,
+    chunkOverlap: 100,
+  })
+  const output = await splitter.createDocuments([text]);
+  const promises = output.map((document) => {
+    return namespace.upsert({
+      id: generateUuid5(document.pageContent),
+      data: document.pageContent,
+      metadata: {
+        ...metadata,
+        userId,
+        content: document.pageContent,
+      }
+    })
+  });
+
+  await Promise.all(promises)
+}
+
 export const processUrlsToMarkdownChunks = async ({
-  website,
-  sitemap,
+  urls,
   userId,
   projectId
-}: { website: string; sitemap: string; userId: string; projectId: number }) => {
+}: { urls: string[]; userId: string; projectId: number }) => {
   console.log("step 1")
   const namespaceId = getProjectNamespaceId({ userId, projectId });
 
-  console.log("step 2")
-  const urls = getBlogUrls({
-    websiteUrl: website,
-    sitemapXml: await fetchSitemap(sitemap),
-    count: 100
-  });
-
-  console.log("step 3", urls)
+  console.log("step 2", urls)
   const namespaceList = await upstashVectorIndex.listNamespaces();
   console.log({ namespaceId, namespaceList })
   if (namespaceList.includes(namespaceId)) {
-    console.log("step 3.1")
+    console.log("step 2.1")
     await upstashVectorIndex.deleteNamespace(namespaceId);
   }
 
-  console.log("step 4", Object.entries(urls))
+  console.log("step 3", Object.entries(urls))
   for (const [index, url] of Object.entries(urls)) {
     await createBackgroundJob({
       destination: getUpstashDestination("api/url-to-vector/execute"),
@@ -919,6 +946,34 @@ export const processUrlsToMarkdownChunks = async ({
       }
     })
   }
+}
+
+// https://upstash.com/docs/vector/features/filtering
+// filter example: "population >= 1000000 AND geography.continent = 'Asia'"
+export const queryVector = async ({
+  namespaceId,
+  query = "",
+  topK = 1000,
+  minScore = 0,
+  filter = ""
+}: {
+  namespaceId: string;
+  query?: string;
+  topK?: number,
+  minScore?: number,
+  filter?: string
+}) => {
+  const namespace = upstashVectorIndex.namespace(namespaceId)
+  const knowledges = await namespace.query({
+    data: query,
+    topK,
+    includeMetadata: true,
+    includeData: true,
+    filter
+  });
+
+  const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
+  return filteredKnowledgesByScore
 }
 
 export const getProjectKnowledges = async ({
@@ -1053,4 +1108,27 @@ export const updateCredits = async ({ userId, credits, action }: {
     }
   })
     .eq("id", userId)
+}
+
+export const saveKnowledgeInDatabase = (data: {
+  userId: string;
+  projectId: number;
+  content: string;
+  type: string;
+}) => {
+  return supabase.from("knowledges").insert({
+    user_id: data.userId,
+    project_id: data.projectId,
+    content: data.content,
+    type: data.type,
+    status: "training"
+  }).select("id").maybeSingle().throwOnError()
+}
+
+export const updateKnowledgeStatus = (knowledgeId: number, status: string) => {
+  return supabase.from("knowledges").update({ status }).eq("id", knowledgeId).throwOnError()
+}
+
+export const deleteVectors = async (ids: string[] | number[]) => {
+  return upstashVectorIndex.delete(ids);
 }

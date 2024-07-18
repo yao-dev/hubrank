@@ -65,20 +65,20 @@ const HeroHeader = () => {
         <div className="flex gap-12 mx-auto mb-6">
           <div className="flex flex-col gap-1 items-center">
             {fiveStars}
-            <span className='text-zinc-600 italic'>"I can't believe it's free!"</span>
+            <span className='text-zinc-600 italic'>"This is a game-changer!"</span>
           </div>
           <div className="hidden sm:flex flex-col gap-1 items-center">
             {fiveStars}
-            <span className='text-zinc-600 italic'>"wow, absolutely perfect!"</span>
+            <span className='text-zinc-600 italic'>"The best writing tool out there!"</span>
           </div>
           <div className="hidden sm:flex flex-col gap-1 items-center">
             {fiveStars}
-            <span className='text-zinc-600 italic'>"I just want to hug you!"</span>
+            <span className='text-zinc-600 italic'>"I'm blown away by the results!"</span>
           </div>
         </div>
 
         {/* headline */}
-        <h1 className="lg:w-2/3 text-5xl lg:text-6xl font-black mb-4 text-center">
+        <h1 className="lg:w-2/3 w-full text-4xl lg:text-6xl font-black mb-4 text-center">
           {/* AI Content Toolkit */}
           {/* Marketing Toolkit */}
           {/* AI Marketing Toolkit for */}

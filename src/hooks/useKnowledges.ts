@@ -4,6 +4,8 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { isNaN } from "lodash";
 import useProjectId from "./useProjectId";
+import axios from "axios";
+import { getUserId } from "@/helpers/user";
 
 const getOne = async (id: number) => {
   return supabase.from('knowledges').select('*').eq('id', id).single();
@@ -42,18 +44,21 @@ const useGetAll = ({ queue }: { queue?: boolean }) => {
   });
 };
 
-const deleteOne = async (id: number) => {
-  return supabase
-    .from('knowledges')
-    .delete()
-    .eq('id', id)
-    .throwOnError()
+const deleteOne = async (knowledgeId: number, projectId: number) => {
+  return axios.delete("/api/knowledges-training", {
+    data: {
+      user_id: await getUserId(),
+      project_id: projectId,
+      knowledge_id: knowledgeId,
+    },
+  })
 }
 
 const useDelete = () => {
+  const projectId = useProjectId();
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: deleteOne,
+    mutationFn: (knowledgeId: number) => deleteOne(knowledgeId, projectId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['knowledges'],
@@ -85,13 +90,35 @@ const useUpdate = () => {
   })
 }
 
+const create = async (data: any, projectId: number) => {
+  return axios.post("/api/knowledges-training/schedule", {
+    user_id: await getUserId(),
+    project_id: projectId,
+    ...data,
+  })
+}
+
+const useCreate = () => {
+  const projectId = useProjectId();
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (data: any) => create(data, projectId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['knowledges'],
+      });
+    },
+  })
+}
+
 
 const useKnowledges = () => {
   return {
     getOne: useGetOne,
     getAll: useGetAll,
     delete: useDelete(),
-    update: useUpdate()
+    update: useUpdate(),
+    create: useCreate()
   }
 }
 

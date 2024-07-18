@@ -143,11 +143,11 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
           image="/empty-state/empty-writing-style.png"
-          imageStyle={{ height: screens.xs ? 125 : 200, margin: "auto" }}
+          imageStyle={{ height: 250 }}
           description={(
-            <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
-              You have no writing style yet
-            </Typography.Text>
+            <span className='m-0 relative top-4 text-base'>
+              You have no writing styles yet
+            </span>
           )}
         />
       </Flex>
