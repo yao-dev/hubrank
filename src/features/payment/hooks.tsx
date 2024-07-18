@@ -69,6 +69,7 @@ export const useProductPrices = (productIds: string[] = []) => {
 
 export const useUserSubscriptions = (customerId: string) => {
   const { data } = useQuery({
+    enabled: !!customerId,
     queryKey: ['subscriptions', { customerId }],
     queryFn: () => {
       return axios.post(stripeUrls.USER_SUBSCRIPTIONS, { customerId })
