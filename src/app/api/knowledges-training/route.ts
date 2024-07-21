@@ -7,6 +7,7 @@ export const maxDuration = 30;
 
 export async function POST(request: Request) {
   const body = await request.json();
+  console.log("/api/knowledges-training", { body })
   try {
     switch (body.type) {
       case 'INSERT': {
