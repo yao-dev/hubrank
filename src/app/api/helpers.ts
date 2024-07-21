@@ -844,34 +844,24 @@ export const getMarkdown = (html: string) => {
 
 export const urlToVector = async ({
   url,
-  index,
   userId,
   namespaceId,
   metadata = {}
 }: {
   url: string;
-  index: number;
   userId: string;
   namespaceId: string;
   metadata?: any;
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
-  console.log("step 5.1", { index, url })
   const html = await fetchHtml(url);
-  console.log("step 5.2")
   const markdown = getMarkdown(html);
-  console.log("step 5.3")
-  // const splitter = RecursiveCharacterTextSplitter.fromLanguage("markdown", {
   const splitter = new CharacterTextSplitter({
     chunkSize: 500,
     chunkOverlap: 100,
   });
-  console.log("step 5.4")
   const output = await splitter.createDocuments([markdown]);
-
-  console.log("step 5.5")
   const promises = output.map((document, index) => {
-    console.log(`step 5.6.${index}`)
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,

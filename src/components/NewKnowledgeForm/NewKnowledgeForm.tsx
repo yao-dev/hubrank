@@ -97,7 +97,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   };
 
   const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<DataType> => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, close }) => (
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
@@ -135,12 +135,12 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         .toString()
         .toLowerCase()
         .includes((value as string).toLowerCase()),
-    onFilterDropdownOpenChange: (visible) => {
+    onFilterDropdownOpenChange: (visible: boolean) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
       }
     },
-    render: (text) =>
+    render: (text: any) =>
       searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
@@ -166,7 +166,9 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
 
   const rowSelection = {
     onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+      form.setFieldValue("urls", selectedRows.map(item => item.url));
+      console.log("test urls", selectedRows.map(item => item.url));
+      console.log("form urls", form.getFieldValue("urls"))
     },
     getCheckboxProps: (record: DataType) => ({
       disabled: false,
@@ -187,7 +189,8 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
       setIsFetchingSitemap(false)
     } catch (e) {
       console.error(e)
-      setIsFetchingSitemap(false)
+      setIsFetchingSitemap(false);
+      message.error("We couldn't fetch your sitemap urls, please try again.")
     }
   }
 
@@ -271,7 +274,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
               <Form.Item name="is_sitemap" style={{ margin: 0 }}>
                 <Switch size="small" />
               </Form.Item>
-              <span>Is it a sitemap?</span>
+              <span className="cursor-pointer" onClick={() => form.setFieldValue("is_sitemap", !form.getFieldValue("is_sitemap"))}>Is it a sitemap?</span>
             </Flex>
           </>
         )}

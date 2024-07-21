@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Flex, Popconfirm, Space, Table, Empty, Tag } from 'antd';
+import { Button, Flex, Popconfirm, Space, Table, Empty, Tag, message } from 'antd';
 import { useMemo } from 'react';
 import useKnowledges from '@/hooks/useKnowledges';
 import {
@@ -9,12 +9,12 @@ import {
   SyncOutlined,
   DeleteTwoTone,
 } from '@ant-design/icons';
-import useProjectId from '@/hooks/useProjectId';
 import { IconCsv, IconFileTypeDoc, IconHtml, IconJson, IconLink, IconPdf, IconTxt } from '@tabler/icons-react';
 
 const KnowledgesBaseTable = () => {
   const { delete: deleteKnowledge, getAll } = useKnowledges();
   const { data: knowledges, isPending, isFetched } = getAll({ queue: false });
+  const [messageApi, contextHolder] = message.useMessage();
 
   const columns = useMemo(() => {
     return [
@@ -120,9 +120,16 @@ const KnowledgesBaseTable = () => {
             <Popconfirm
               title="Delete knowledge"
               description="Are you sure to delete this knowledge?"
-              onConfirm={async (e) => {
+              onConfirm={(e) => {
                 e?.preventDefault();
-                await deleteKnowledge.mutateAsync(record.id);
+                messageApi.loading("Deleting knowledge");
+                deleteKnowledge.mutateAsync(record.id)
+                  .then(() => {
+                    message.success('Knowledge deleted')
+                  })
+                  .catch(() => {
+                    message.error('We couldn\'nt delete this knowledge')
+                  })
               }}
               onCancel={(e) => {
                 e?.preventDefault()
@@ -137,7 +144,6 @@ const KnowledgesBaseTable = () => {
             >
               <Button
                 onClick={(e) => e.preventDefault()}
-                loading={deleteKnowledge.isPending}
                 icon={(
                   <DeleteTwoTone
                     onClick={(e) => e.preventDefault()}
@@ -170,6 +176,7 @@ const KnowledgesBaseTable = () => {
 
   return (
     <Flex vertical gap="middle" style={{ overflow: "auto" }}>
+      {contextHolder}
       <Table
         size="small"
         dataSource={knowledges?.data}

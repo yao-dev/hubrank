@@ -7,9 +7,10 @@ import {
   urlToVector,
 } from "@/app/api/helpers";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
+  console.time("training time")
   const body = await request.json();
   const namespaceId = getProjectNamespaceId({ userId: body.user_id, projectId: body.project_id })
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
 
   if (body.mode === "url") {
     let knowledgeId;
-    for (let [index, url] of Object.entries(body.urls)) {
+    for (let [index, url] of Object.entries(body.urls.slice(0, 100))) {
       const { data } = await saveKnowledgeInDatabase({
         userId: body.user_id,
         projectId: body.project_id,
@@ -48,20 +49,21 @@ export async function POST(request: Request) {
 
       knowledgeId = data?.id;
 
-      await urlToVector({
-        url: url as string,
-        index: +index,
-        userId: body.user_id,
-        namespaceId,
-        metadata: {
-          knowledgeId
-        }
-      });
+      // if (knowledgeId) {
+      //   await urlToVector({
+      //     url: url as string,
+      //     index: +index,
+      //     userId: body.user_id,
+      //     namespaceId,
+      //     metadata: {
+      //       knowledgeId
+      //     }
+      //   });
+
+      //   await updateKnowledgeStatus(knowledgeId, "ready");
+      // }
     }
 
-    if (knowledgeId) {
-      await updateKnowledgeStatus(knowledgeId, "ready");
-    }
   }
 
   if (body.mode === "file") {
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
     }
   }
 
+  console.timeEnd("training time")
   return NextResponse.json({
     success: true
   }, { status: 200 });

@@ -269,8 +269,9 @@ export default function DashboardLayout({
               {
                 key: 'logout',
                 icon: <IconLogout />,
-                label: "Logout",
-                onClick: () => supabase.auth.signOut()
+                label: (
+                  <span onClick={() => supabase.auth.signOut()}>Logout</span>
+                ),
               }
             ]}
           />
