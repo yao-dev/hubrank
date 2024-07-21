@@ -39,7 +39,7 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
       const userId = await getUserId();
 
       if (values.mode === "text") {
-        scheduleKnowledgeTraining({
+        await scheduleKnowledgeTraining({
           mode: values.mode,
           content: values.text,
           user_id: userId,
@@ -64,7 +64,8 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
             type: "url",
           }
         })
-        scheduleKnowledgeTraining(data);
+        console.log(data)
+        await scheduleKnowledgeTraining(data);
       }
       if (values.mode === "file") {
         // TODO: handle files

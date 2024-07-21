@@ -5,32 +5,9 @@ import { supabaseAdmin } from "@/helpers/supabase";
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 30;
 
-// type InsertPayload = {
-//   type: 'INSERT'
-//   table: string
-//   schema: string
-//   record: TableRecord<T>
-//   old_record: null
-// }
-// type UpdatePayload = {
-//   type: 'UPDATE'
-//   table: string
-//   schema: string
-//   record: TableRecord<T>
-//   old_record: TableRecord<T>
-// }
-// type DeletePayload = {
-//   type: 'DELETE'
-//   table: string
-//   schema: string
-//   record: null
-//   old_record: TableRecord<T>
-// }
-
 export async function POST(request: Request) {
+  const body = await request.json();
   try {
-    const body = await request.json();
-
     switch (body.type) {
       case 'INSERT': {
         const record = body.record;
@@ -85,7 +62,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
-    const body = await request.json();
     return NextResponse.json({ message: "Knowledges webhook error", error, body }, { status: 500 })
   }
 }

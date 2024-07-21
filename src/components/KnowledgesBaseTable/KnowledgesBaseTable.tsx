@@ -122,14 +122,14 @@ const KnowledgesBaseTable = () => {
               description="Are you sure to delete this knowledge?"
               onConfirm={(e) => {
                 e?.preventDefault();
-                messageApi.loading("Deleting knowledge");
-                deleteKnowledge.mutateAsync(record.id)
-                  .then(() => {
-                    message.success('Knowledge deleted')
-                  })
-                  .catch(() => {
-                    message.error('We couldn\'nt delete this knowledge')
-                  })
+                try {
+                  deleteKnowledge.mutate(record.id);
+                  message.success('Knowledge deleted');
+                } catch (e) {
+                  console.error(e)
+                  message.error('We couldn\'nt delete this knowledge');
+                }
+
               }}
               onCancel={(e) => {
                 e?.preventDefault()

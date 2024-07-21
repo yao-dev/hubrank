@@ -4,8 +4,6 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { isNaN } from "lodash";
 import useProjectId from "./useProjectId";
-import axios from "axios";
-import { getUserId } from "@/helpers/user";
 
 const getOne = async (id: number) => {
   return supabase.from('knowledges').select('*').eq('id', id).single();
@@ -47,7 +45,7 @@ const useGetAll = ({ queue }: { queue?: boolean }) => {
 const useDelete = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (id: number) => supabase.from("knowledges").delete().eq("id", id),
+    mutationFn: async (id: number) => supabase.from("knowledges").delete().eq("id", id).throwOnError(),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['knowledges'],
@@ -82,7 +80,7 @@ const useUpdate = () => {
 const useCreate = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (data: any) => supabase.from("knowledges").insert(data),
+    mutationFn: async (data: any) => supabase.from("knowledges").insert(data).throwOnError(),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['knowledges'],
