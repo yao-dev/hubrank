@@ -22,7 +22,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const scrollHandler = () => {
-      window.scrollY > 125 ? setTop(false) : setTop(true)
+      window.scrollY > 75 ? setTop(false) : setTop(true)
     };
     window.addEventListener('scroll', scrollHandler);
     return () => window.removeEventListener('scroll', scrollHandler);
@@ -46,7 +46,7 @@ const Navbar = () => {
   }, [])
 
   return (
-    <nav className={`sticky top-0 flex flex-col items-center py-2 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-lg`}`}>
+    <nav className={`sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>
       <div className="container flex flex-row justify-between items-center">
         {/* logo */}
         <Logo />

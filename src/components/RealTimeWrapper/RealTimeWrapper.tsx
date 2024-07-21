@@ -11,6 +11,7 @@ import usePricingModal from "@/hooks/usePricingModal";
 let users: RealtimeChannel;
 let blogPosts: RealtimeChannel;
 let captions: RealtimeChannel;
+let knowledges: RealtimeChannel;
 
 const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
@@ -94,15 +95,31 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 				})
 				.subscribe()
 
+			knowledges = supabase
+				.channel('knowledges')
+				.on('postgres_changes', {
+					event: "INSERT",
+					schema: 'public',
+					table: 'knowledges',
+					filter: `project_id=eq.${projectId}`,
+				}, () => {
+					queryClient.invalidateQueries({
+						queryKey: ["knowledges"],
+					});
+				})
+				.subscribe()
+
 			return () => {
 				blogPosts?.unsubscribe?.();
 				captions?.unsubscribe?.();
 				users?.unsubscribe?.();
+				knowledges?.unsubscribe?.();
 			};
 		} else {
 			blogPosts?.unsubscribe?.();
 			captions?.unsubscribe?.();
 			users?.unsubscribe?.();
+			knowledges?.unsubscribe?.();
 		}
 	}, [queryClient, sessionStore.session?.user?.id, projectId]);
 

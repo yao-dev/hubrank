@@ -7,7 +7,7 @@ const Logo = ({ className }: { className?: string }) => {
       <Image
         src="/brand-logo-black.png"
         preview={false}
-        className={`w-36 ${className}`}
+        className={`w-32 lg:w-36 ${className}`}
       />
     </Link>
   )
