@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
-import { deleteVectors, getProjectNamespaceId, queryVector, textToVector, updateKnowledgeStatus, urlToVector } from "../helpers";
+import {
+  deleteVectors,
+  getIsYoutubeUrl,
+  getProjectNamespaceId,
+  loaders,
+  queryVector,
+  textToVector,
+  updateKnowledgeStatus,
+  urlToVector,
+} from "../helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -7,7 +16,7 @@ export const maxDuration = 30;
 
 export async function POST(request: Request) {
   const body = await request.json();
-  console.log("/api/knowledges-training", { body })
+
   try {
     switch (body.type) {
       case 'INSERT': {
@@ -25,16 +34,28 @@ export async function POST(request: Request) {
         }
 
         if (record.mode === "url") {
-          await urlToVector({
-            url: record.content,
-            userId: record.user_id,
-            namespaceId,
-            metadata: { knowledgeId }
-          });
+          if (getIsYoutubeUrl(record.content)) {
+            const transcript = await loaders.youtube(record.content);
+            await textToVector({
+              text: transcript,
+              userId: record.user_id,
+              namespaceId,
+              metadata: { knowledgeId }
+            });
+          } else {
+            await urlToVector({
+              url: record.content,
+              userId: record.user_id,
+              namespaceId,
+              metadata: { knowledgeId }
+            });
+          }
         }
 
         // TODO: handle files
-        if (record.mode === "file") { }
+        if (record.mode === "file") {
+          console.log("received file record", record);
+        }
 
         await updateKnowledgeStatus(knowledgeId, "ready");
       }
@@ -64,35 +85,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
     return NextResponse.json({ message: "Knowledges webhook error", error, body }, { status: 500 })
-  }
-}
-
-// TODO: to be deleted
-export async function DELETE(request: Request) {
-  try {
-    const body = await request.json();
-    console.log("body", body)
-    const namespaceId = getProjectNamespaceId({ userId: body.user_id, projectId: body.project_id })
-    console.log("namespaceId", namespaceId)
-    const vectors = await queryVector({
-      namespaceId,
-      filter: `knowledgeId = ${body.knowledge_id}`
-    });
-
-    if (vectors.length) {
-      const vectorIds: any = vectors.map((item) => item.id);
-      console.log("vectors", vectors)
-      console.log(vectors.length)
-      await deleteVectors(vectorIds)
-    } else {
-      console.log("There is no vectors to delete for this knowledge item")
-    }
-
-    await supabase.from("knowledges").delete().eq("id", body.knowledge_id);
-
-    return NextResponse.json({ message: "Knowledge deleted with success" }, { status: 200 })
-  } catch (e) {
-    console.log(e)
-    return NextResponse.json({ message: "Delete knowledge error" }, { status: 500 })
   }
 }

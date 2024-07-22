@@ -11,8 +11,13 @@ import { getSerpData } from "@/helpers/seo";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
-import { CharacterTextSplitter } from "langchain/text_splitter";
+import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
+import { YoutubeTranscript } from 'youtube-transcript';
+import { JSONLoader } from "langchain/document_loaders/fs/json";
+import { unlinkSync, writeFileSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 
 const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
@@ -856,9 +861,10 @@ export const urlToVector = async ({
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const html = await fetchHtml(url);
   const markdown = getMarkdown(html);
-  const splitter = new CharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 100,
+  const splitter = new TokenTextSplitter({
+    encodingName: "gpt2",
+    chunkSize: 150,
+    chunkOverlap: 50,
   });
   const output = await splitter.createDocuments([markdown]);
   const promises = output.map((document, index) => {
@@ -888,24 +894,30 @@ export const textToVector = async ({
   metadata?: any;
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
-  const splitter = new CharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 100,
-  })
-  const output = await splitter.createDocuments([text]);
-  const promises = output.map((document) => {
-    return namespace.upsert({
-      id: generateUuid5(document.pageContent),
-      data: document.pageContent,
-      metadata: {
-        ...metadata,
-        userId,
-        content: document.pageContent,
-      }
-    })
+  // const splitter = new CharacterTextSplitter({
+  //   chunkSize: 40,
+  //   chunkOverlap: 1,
+  // });
+  const splitter = new TokenTextSplitter({
+    encodingName: "gpt2",
+    chunkSize: 150,
+    chunkOverlap: 50,
   });
+  const output = await splitter.createDocuments([text]);
+  console.log(output)
+  // const promises = output.map((document) => {
+  //   return namespace.upsert({
+  //     id: generateUuid5(document.pageContent),
+  //     data: document.pageContent,
+  //     metadata: {
+  //       ...metadata,
+  //       userId,
+  //       content: document.pageContent,
+  //     }
+  //   })
+  // });
 
-  await Promise.all(promises)
+  // await Promise.all(promises)
 }
 
 export const processUrlsToMarkdownChunks = async ({
@@ -1121,4 +1133,50 @@ export const updateKnowledgeStatus = (knowledgeId: number, status: string) => {
 
 export const deleteVectors = async (ids: string[] | number[]) => {
   return upstashVectorIndex.delete(ids);
+}
+
+export const getIsYoutubeUrl = (url: string) => {
+  return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/")
+}
+
+const getYoutubeTranscript = async (url: string) => {
+  const transcriptJson = await YoutubeTranscript.fetchTranscript(url);
+  const transcriptText = transcriptJson.map((chunk) => {
+    return chunk.text
+  }).join(" ");
+  return transcriptText;
+}
+
+// save file
+// file.name, file.type, buffer
+
+const jsonLoader = async (file: File) => {
+  // Convert the file to a buffer
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  // Create a temporary file path
+  const tempFilePath = join(tmpdir(), file.name);
+
+  // Write the buffer to a temporary file
+  writeFileSync(tempFilePath, buffer);
+
+  // Use the file path for the JSONLoader
+  const loader = new JSONLoader(tempFilePath);
+  const docs = await loader.load();
+
+  // Clean up the temporary file
+  unlinkSync(tempFilePath);
+
+  return docs
+}
+
+export const loaders = {
+  youtube: getYoutubeTranscript,
+  json: jsonLoader,
+  csv: null,
+  pdf: null,
+  markdown: null,
+  html: null,
+  txt: null,
+  docx: null,
 }

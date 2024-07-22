@@ -26,28 +26,7 @@ import axios from "axios";
 import { isEmpty } from "lodash";
 import Highlighter from 'react-highlight-words';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
-
-const draggerProps: UploadProps = {
-  name: 'file',
-  multiple: true,
-  accept: "pdf,doc,csv,txt,html,json",
-  action: 'https://660d2bd96ddfa2943b33731c.mockapi.io/api/upload',
-  maxCount: 10,
-  onChange(info) {
-    const { status } = info.file;
-    if (status !== 'uploading') {
-      console.log(info.file, info.fileList);
-    }
-    if (status === 'done') {
-      message.success(`${info.file.name} file uploaded successfully.`);
-    } else if (status === 'error') {
-      message.error(`${info.file.name} file upload failed.`);
-    }
-  },
-  onDrop(e) {
-    console.log('Dropped files', e.dataTransfer.files);
-  },
-};
+import { getUserId } from "@/helpers/user";
 
 type DataType = {
   key: React.Key;
@@ -70,6 +49,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   const [sitemapUrls, setSitemapUrls] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
+  const [draggerProps, setDraggerProps] = useState<UploadProps>();
   const searchInput = useRef<InputRef>(null);
   const drawers = useDrawers();
   const mode = Form.useWatch('mode', form);
@@ -194,6 +174,36 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
     }
   }
 
+  useEffect(() => {
+    getUserId().then((userId) => {
+      setDraggerProps({
+        name: 'file',
+        multiple: false,
+        accept: "pdf,doc,csv,txt,html,json,md",
+        action: '/api/upload',
+        maxCount: 1,
+        headers: {
+          user_id: userId ?? "",
+          project_id: projectId.toString()
+        },
+        onChange(info) {
+          const { status } = info.file;
+          if (status !== 'uploading') {
+            console.log(info.file, info.fileList);
+          }
+          if (status === 'done') {
+            message.success(`${info.file.name} file uploaded successfully.`);
+          } else if (status === 'error') {
+            message.error(`${info.file.name} file upload failed.`);
+          }
+        },
+        onDrop(e) {
+          console.log('Dropped files', e.dataTransfer.files);
+        },
+      })
+    })
+  }, [])
+
   if (isPending) return null;
 
   return (
@@ -300,7 +310,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
               </p>
               <p className="ant-upload-text">Click or drag file to this area to upload</p>
               <p className="ant-upload-hint">
-                You can upload up to 10 files at once, we only support the following files (<b>pdf,doc,csv,txt,html,json</b>) with up to <b>5MB</b> per file.
+                You can upload up to 10 files at once, we only support the following files (<b>pdf,doc,csv,txt,html,json,md</b>) with up to <b>5MB</b> per file.
               </p>
             </Upload.Dragger>
           </Form.Item>
