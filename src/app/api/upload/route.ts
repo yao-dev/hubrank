@@ -22,31 +22,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Project id is missing in headers" }, { status: 400 });
     }
 
-    const fileType = file.type.split("/").slice(-1);
+    console.log(file)
+    const fileType = file.type.split("/").slice(-1)[0];
     console.log("fileType", fileType)
-    const fileName = `${userId}-${projectId}-${file.name}.${fileType}`;
+    const fileName = `${userId}-${projectId}-${file.name}`;
     console.log("fileName", fileName)
 
-    const { data } = await supabase.storage.from("files").upload(fileName, file);
-    console.log("save storage", data)
+    // const { data } = await supabase.storage.from("files").upload(fileName, file);
 
-    await supabase.from("knowledges").insert({
-      user_id: userId,
-      project_id: projectId,
-      content: file.name,
-      type: fileType,
-      mode: "file",
-      file: {
-        ...data,
-        name: fileName
-      }
-    }).throwOnError();
-    console.log("knowledge inserted trigger webhook");
+    // if (!data?.id) {
+    //   return NextResponse.json({ error: "We couldn't process your file" }, { status: 400 });
+    // }
 
-    console.log(`removing file: ${fileName}`)
-    await supabase.storage.from("files").remove([fileName]);
-    console.log("file removed!");
+    // console.log("save storage", data);
 
+    // await supabase.from("knowledges").insert({
+    //   user_id: userId,
+    //   project_id: projectId,
+    //   content: file.name,
+    //   type: fileType,
+    //   mode: "file",
+    //   file: {
+    //     ...data,
+    //     type: fileType
+    //   }
+    // }).throwOnError();
+    // console.log("knowledge inserted trigger webhook");
     return NextResponse.json({ message: "Upload file with success" });
   } catch (e) {
     console.log(e)

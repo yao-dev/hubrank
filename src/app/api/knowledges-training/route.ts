@@ -52,9 +52,21 @@ export async function POST(request: Request) {
           }
         }
 
-        // TODO: handle files
         if (record.mode === "file") {
           console.log("received file record", record);
+          const { data: blob } = await supabase.storage.from("files").download(record.file.fullPath)
+          console.log("blob", blob);
+          if (!blob) {
+            return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
+          }
+          const file = new File([blob], record.file.path);
+          // check if the file is a .docx
+          if (record.file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            await loaders.docx(file)
+          } else {
+            await loaders[record.file.type](file);
+          }
+          await supabase.storage.from("files").remove([record.file.path])
         }
 
         await updateKnowledgeStatus(knowledgeId, "ready");

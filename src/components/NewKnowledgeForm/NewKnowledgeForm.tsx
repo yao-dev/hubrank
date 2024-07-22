@@ -26,7 +26,7 @@ import axios from "axios";
 import { isEmpty } from "lodash";
 import Highlighter from 'react-highlight-words';
 import type { FilterDropdownProps } from 'antd/es/table/interface';
-import { getUserId } from "@/helpers/user";
+import useUser from "@/hooks/useUser";
 
 type DataType = {
   key: React.Key;
@@ -41,6 +41,7 @@ type Props = {
 }
 
 const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
+  const user = useUser()
   const projectId = useProjectId();
   const { data: project, isPending } = useProjects().getOne(projectId)
   const [, contextHolder] = message.useMessage();
@@ -175,7 +176,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   }
 
   useEffect(() => {
-    getUserId().then((userId) => {
+    if (user?.id) {
       setDraggerProps({
         name: 'file',
         multiple: false,
@@ -183,8 +184,8 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         action: '/api/upload',
         maxCount: 1,
         headers: {
-          user_id: userId ?? "",
-          project_id: projectId.toString()
+          user_id: user.id,
+          project_id: projectId.toString(),
         },
         onChange(info) {
           const { status } = info.file;
@@ -201,8 +202,8 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
           console.log('Dropped files', e.dataTransfer.files);
         },
       })
-    })
-  }, [])
+    }
+  }, [user?.id, projectId]);
 
   if (isPending) return null;
 
@@ -310,7 +311,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
               </p>
               <p className="ant-upload-text">Click or drag file to this area to upload</p>
               <p className="ant-upload-hint">
-                You can upload up to 10 files at once, we only support the following files (<b>pdf,doc,csv,txt,html,json,md</b>) with up to <b>5MB</b> per file.
+                Supported files (<b>pdf,doc,csv,txt,html,json,md</b>) with up to <b>10MB</b>.
               </p>
             </Upload.Dragger>
           </Form.Item>

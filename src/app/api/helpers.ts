@@ -15,6 +15,11 @@ import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
 import { YoutubeTranscript } from 'youtube-transcript';
 import { JSONLoader } from "langchain/document_loaders/fs/json";
+import { CSVLoader } from "langchain/document_loaders/fs/csv";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { UnstructuredLoader } from "@langchain/community/document_loaders/fs/unstructured";
+import { TextLoader } from "langchain/document_loaders/fs/text";
+import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { unlinkSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
@@ -1140,6 +1145,10 @@ export const getIsYoutubeUrl = (url: string) => {
 }
 
 const getYoutubeTranscript = async (url: string) => {
+  // const loader = YoutubeLoader.createFromUrl("https://youtu.be/bZQun8Y4L2A", {
+  //   language: "en",
+  //   addVideoInfo: true,
+  // });
   const transcriptJson = await YoutubeTranscript.fetchTranscript(url);
   const transcriptText = transcriptJson.map((chunk) => {
     return chunk.text
@@ -1147,36 +1156,37 @@ const getYoutubeTranscript = async (url: string) => {
   return transcriptText;
 }
 
-// save file
-// file.name, file.type, buffer
-
-const jsonLoader = async (file: File) => {
+export const getFilePathFromBlob = async (file: Blob) => {
   // Convert the file to a buffer
   const buffer = Buffer.from(await file.arrayBuffer());
-
   // Create a temporary file path
   const tempFilePath = join(tmpdir(), file.name);
-
   // Write the buffer to a temporary file
   writeFileSync(tempFilePath, buffer);
+  return tempFilePath
+}
 
-  // Use the file path for the JSONLoader
-  const loader = new JSONLoader(tempFilePath);
-  const docs = await loader.load();
-
+const loadFile = async ({
+  file,
+  loader,
+}: {
+  file: Blob,
+  loader: any,
+}) => {
+  const filePath = await getFilePathFromBlob(file);
+  const docs = await new loader(filePath).load();
   // Clean up the temporary file
-  unlinkSync(tempFilePath);
-
+  unlinkSync(filePath);
   return docs
 }
 
 export const loaders = {
   youtube: getYoutubeTranscript,
-  json: jsonLoader,
-  csv: null,
-  pdf: null,
-  markdown: null,
-  html: null,
-  txt: null,
-  docx: null,
+  json: (file: Blob) => loadFile({ file, loader: JSONLoader }),
+  csv: (file: Blob) => loadFile({ file, loader: CSVLoader }),
+  pdf: (file: Blob) => loadFile({ file, loader: PDFLoader }),
+  markdown: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
+  html: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
+  plain: (file: Blob) => loadFile({ file, loader: TextLoader }),
+  docx: (file: Blob) => loadFile({ file, loader: DocxLoader }),
 }
