@@ -61,7 +61,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
           const file = new File([blob], record.file.path);
+          console.log("file", file);
           const docs = await loaders[record.file.type](file);
+          console.log("docs", docs);
           await docsToVector({
             docs,
             userId: record.user_id,
