@@ -28,26 +28,26 @@ export async function POST(req: Request) {
     const fileName = `${userId}-${projectId}-${file.name}`;
     console.log("fileName", fileName)
 
-    // const { data } = await supabase.storage.from("files").upload(fileName, file);
+    const { data } = await supabase.storage.from("files").upload(fileName, file);
 
-    // if (!data?.id) {
-    //   return NextResponse.json({ error: "We couldn't process your file" }, { status: 400 });
-    // }
+    if (!data?.id) {
+      return NextResponse.json({ error: "We couldn't process your file" }, { status: 400 });
+    }
 
-    // console.log("save storage", data);
+    console.log("save storage", data);
 
-    // await supabase.from("knowledges").insert({
-    //   user_id: userId,
-    //   project_id: projectId,
-    //   content: file.name,
-    //   type: fileType,
-    //   mode: "file",
-    //   file: {
-    //     ...data,
-    //     type: fileType
-    //   }
-    // }).throwOnError();
-    // console.log("knowledge inserted trigger webhook");
+    await supabase.from("knowledges").insert({
+      user_id: userId,
+      project_id: projectId,
+      content: file.name,
+      type: fileType,
+      mode: "file",
+      file: {
+        ...data,
+        type: fileType
+      }
+    }).throwOnError();
+    console.log("knowledge inserted trigger webhook");
     return NextResponse.json({ message: "Upload file with success" });
   } catch (e) {
     console.log(e)
