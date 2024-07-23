@@ -1192,7 +1192,7 @@ export const getFilePathFromBlob = async (file: Blob) => {
   return tempFilePath
 }
 
-const loadFile = async ({
+const loadFileFromBlob = async ({
   blob,
   loader,
 }: {
@@ -1208,13 +1208,13 @@ const loadFile = async ({
 
 export const loaders = {
   youtube: getYoutubeTranscript,
-  json: (file: Blob) => loadFile({ file, loader: JSONLoader }),
-  csv: (file: Blob) => loadFile({ file, loader: CSVLoader }),
-  pdf: (file: Blob) => loadFile({ file, loader: PDFLoader }),
-  md: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
-  html: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
-  txt: (file: Blob) => loadFile({ file, loader: TextLoader }),
-  docx: (file: Blob) => loadFile({ file, loader: DocxLoader }),
+  json: (blob: Blob) => loadFileFromBlob({ blob, loader: JSONLoader }),
+  csv: (blob: Blob) => loadFileFromBlob({ blob, loader: CSVLoader }),
+  pdf: (blob: Blob) => loadFileFromBlob({ blob, loader: PDFLoader }),
+  md: (blob: Blob) => loadFileFromBlob({ blob, loader: UnstructuredLoader }),
+  html: (blob: Blob) => loadFileFromBlob({ blob, loader: UnstructuredLoader }),
+  txt: (blob: Blob) => loadFileFromBlob({ blob, loader: TextLoader }),
+  docx: (blob: Blob) => loadFileFromBlob({ blob, loader: DocxLoader }),
 }
 
 export const getIsDocx = (extension: string) => {
