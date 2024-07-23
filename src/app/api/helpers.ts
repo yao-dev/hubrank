@@ -909,20 +909,46 @@ export const textToVector = async ({
     chunkOverlap: 50,
   });
   const output = await splitter.createDocuments([text]);
-  console.log(output)
-  // const promises = output.map((document) => {
-  //   return namespace.upsert({
-  //     id: generateUuid5(document.pageContent),
-  //     data: document.pageContent,
-  //     metadata: {
-  //       ...metadata,
-  //       userId,
-  //       content: document.pageContent,
-  //     }
-  //   })
-  // });
+  const promises = output.map((document) => {
+    return namespace.upsert({
+      id: generateUuid5(document.pageContent),
+      data: document.pageContent,
+      metadata: {
+        ...metadata,
+        userId,
+        content: document.pageContent,
+      }
+    })
+  });
 
-  // await Promise.all(promises)
+  await Promise.all(promises)
+}
+
+export const docsToVector = async ({
+  docs,
+  userId,
+  namespaceId,
+  metadata = {}
+}: {
+  docs: any[];
+  userId: string;
+  namespaceId: string;
+  metadata?: any;
+}) => {
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+  const promises = docs.map((document) => {
+    return namespace.upsert({
+      id: generateUuid5(document.pageContent),
+      data: document.pageContent,
+      metadata: {
+        ...metadata,
+        userId,
+        content: document.pageContent,
+      }
+    })
+  });
+
+  await Promise.all(promises)
 }
 
 export const processUrlsToMarkdownChunks = async ({
@@ -1189,4 +1215,8 @@ export const loaders = {
   html: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
   plain: (file: Blob) => loadFile({ file, loader: TextLoader }),
   docx: (file: Blob) => loadFile({ file, loader: DocxLoader }),
+}
+
+export const getIsDocx = (extension: string) => {
+  return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 }

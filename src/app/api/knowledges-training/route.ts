@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   deleteVectors,
+  docsToVector,
+  getIsDocx,
   getIsYoutubeUrl,
   getProjectNamespaceId,
   loaders,
@@ -20,7 +22,7 @@ export async function POST(request: Request) {
   try {
     switch (body.type) {
       case 'INSERT': {
-        const record = body.record;
+        const record: any = body.record;
         const knowledgeId = record.id;
         const namespaceId = getProjectNamespaceId({ userId: record.user_id, projectId: record.project_id })
 
@@ -60,12 +62,19 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
           const file = new File([blob], record.file.path);
+          let docs;
           // check if the file is a .docx
-          if (record.file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            await loaders.docx(file)
+          if (getIsDocx(record.file.type)) {
+            docs = await loaders.docx(file)
           } else {
-            await loaders[record.file.type](file);
+            docs = await loaders[record.file.type](file);
           }
+          await docsToVector({
+            docs,
+            userId: record.user_id,
+            namespaceId,
+            metadata: { knowledgeId }
+          })
           await supabase.storage.from("files").remove([record.file.path])
         }
 
