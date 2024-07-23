@@ -3,11 +3,6 @@ import { NextRequest, NextResponse } from "next/server"
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next()
 
-  console.log({
-    url: request.url,
-    nextUrl: request.nextUrl.pathname,
-  })
-
   if (
     request.nextUrl.pathname.startsWith("/api") ||
     request.nextUrl.pathname.endsWith("5pgozwml3q-uc.a.run.app") ||
@@ -15,7 +10,6 @@ export async function middleware(request: NextRequest) {
   ) {
     response.headers.append("Access-Control-Allow-Origin", "*")
   }
-
 
   // res.headers.append('Access-Control-Allow-Credentials', "true");
   // res.headers.append('Access-Control-Allow-Origin', "*");
