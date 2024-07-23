@@ -1193,13 +1193,13 @@ export const getFilePathFromBlob = async (file: Blob) => {
 }
 
 const loadFile = async ({
-  file,
+  blob,
   loader,
 }: {
-  file: Blob,
+  blob: Blob,
   loader: any,
 }) => {
-  const filePath = await getFilePathFromBlob(file);
+  const filePath = await getFilePathFromBlob(blob);
   const docs = await new loader(filePath).load();
   // Clean up the temporary file
   unlinkSync(filePath);
