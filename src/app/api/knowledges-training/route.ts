@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
         if (record.mode === "file") {
           console.log("received file record", record);
-          const { data: blob } = await supabase.storage.from("files").download(record.file.fullPath)
+          const { data: blob } = await supabase.storage.from("files").download(record.file.path)
           console.log("blob", blob);
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
