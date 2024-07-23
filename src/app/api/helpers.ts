@@ -1213,10 +1213,14 @@ export const loaders = {
   pdf: (file: Blob) => loadFile({ file, loader: PDFLoader }),
   markdown: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
   html: (file: Blob) => loadFile({ file, loader: UnstructuredLoader }),
-  plain: (file: Blob) => loadFile({ file, loader: TextLoader }),
+  txt: (file: Blob) => loadFile({ file, loader: TextLoader }),
   docx: (file: Blob) => loadFile({ file, loader: DocxLoader }),
 }
 
 export const getIsDocx = (extension: string) => {
-  return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || extension === "docx"
+}
+
+export const getIsTxt = (extension: string) => {
+  return extension === 'text/plain' || extension === "txt"
 }

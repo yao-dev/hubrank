@@ -1,6 +1,7 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { getIsDocx, getIsTxt } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -40,7 +41,7 @@ export async function POST(req: Request) {
       user_id: userId,
       project_id: projectId,
       content: file.name,
-      type: fileType,
+      type: getIsTxt(fileType) ? "txt" : getIsDocx(fileType) ? "docx" : fileType,
       mode: "file",
       file: {
         ...data,

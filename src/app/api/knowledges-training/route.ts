@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   deleteVectors,
   docsToVector,
-  getIsDocx,
   getIsYoutubeUrl,
   getProjectNamespaceId,
   loaders,
@@ -62,13 +61,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
           const file = new File([blob], record.file.path);
-          let docs;
-          // check if the file is a .docx
-          if (getIsDocx(record.file.type)) {
-            docs = await loaders.docx(file)
-          } else {
-            docs = await loaders[record.file.type](file);
-          }
+          const docs = await loaders[record.file.type](file);
           await docsToVector({
             docs,
             userId: record.user_id,
