@@ -14,7 +14,7 @@ import {
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -56,12 +56,13 @@ export async function POST(request: Request) {
 
         if (record.mode === "file") {
           console.log("received file record", record);
-          const { data: blob } = await supabase.storage.from("files").download(record.file.path);
+          const fileName = record.file.path
+          const { data: blob } = await supabase.storage.from("files").download(fileName);
           console.log("blob", blob)
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
-          const docs = await getDocumentsFromFile(blob, record.file.path);
+          const docs = await getDocumentsFromFile(blob, fileName);
 
           if (docs?.length === 1) {
             await textToVector({
@@ -78,7 +79,10 @@ export async function POST(request: Request) {
               metadata: { knowledgeId }
             })
           }
-          await supabase.storage.from("files").remove([record.file.path])
+
+          console.log(`Training done for: ${fileName}`)
+
+          await supabase.storage.from("files").remove([fileName])
         }
 
         await updateKnowledgeStatus(knowledgeId, "ready");
