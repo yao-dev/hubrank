@@ -29,9 +29,14 @@ export async function POST(req: Request) {
     const fileName = `${userId}-${projectId}-${file.name}`;
     console.log("fileName", fileName)
 
-    const { data } = await supabase.storage.from("files").upload(fileName, file);
+    const { data, error } = await supabase.storage.from("files").upload(fileName, file);
+
+    if (error?.error === "Duplicate") {
+      return NextResponse.json({ error: "The file already exists" }, { status: 409 });
+    }
 
     if (!data?.id) {
+      console.log(error)
       return NextResponse.json({ error: "We couldn't process your file" }, { status: 400 });
     }
 
@@ -53,6 +58,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Upload file with success" });
   } catch (e) {
     console.log(e)
+    return NextResponse.json({ message: "Upload file with error" })
   }
-  return NextResponse.json({ message: "Upload file with error" })
 }

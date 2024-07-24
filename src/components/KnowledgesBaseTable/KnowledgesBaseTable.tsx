@@ -9,7 +9,7 @@ import {
   SyncOutlined,
   DeleteTwoTone,
 } from '@ant-design/icons';
-import { IconCsv, IconFileTypeDoc, IconHtml, IconJson, IconLink, IconPdf, IconTxt } from '@tabler/icons-react';
+import { IconCsv, IconFileTypeDoc, IconHtml, IconJson, IconLink, IconMarkdown, IconPdf, IconTxt } from '@tabler/icons-react';
 
 const KnowledgesBaseTable = () => {
   const { delete: deleteKnowledge, getAll } = useKnowledges();
@@ -45,7 +45,7 @@ const KnowledgesBaseTable = () => {
           if (record.type === "json") {
             return <IconJson />
           }
-          if (record.type === "doc") {
+          if (record.type === "docx") {
             return <IconFileTypeDoc />
           }
           if (record.type === "csv") {
@@ -53,6 +53,9 @@ const KnowledgesBaseTable = () => {
           }
           if (record.type === "html") {
             return <IconHtml />
+          }
+          if (record.type === "md") {
+            return <IconMarkdown />
           }
           if (record.type === "url") {
             return <IconLink />

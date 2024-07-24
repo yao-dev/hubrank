@@ -14,8 +14,6 @@ type Props = {
 const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
   const [form] = Form.useForm();
   const { create: createKnowledge } = useKnowledges();
-  const isSitemap = Form.useWatch("is_sitemap", form);
-  const urls = Form.useWatch("urls", form);
   const projectId = useProjectId();
 
   const scheduleKnowledgeTraining = async (data: {
@@ -66,9 +64,6 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
         })
         console.log(data)
         await scheduleKnowledgeTraining(data);
-      }
-      if (values.mode === "file") {
-        // TODO: handle files
       }
 
       onClose();

@@ -59,7 +59,6 @@ export async function POST(request: Request) {
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
-          console.log("blob", blob, blob.name);
           // const file = new File([blob], record.file.path);
           // console.log("file", file);
           const docs = await loaders[record.file.type](blob);
@@ -100,6 +99,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
+    console.log(error)
     return NextResponse.json({ message: "Knowledges webhook error", error, body }, { status: 500 })
   }
 }

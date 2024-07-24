@@ -1185,7 +1185,8 @@ const getYoutubeTranscript = async (url: string) => {
 export const getFilePathFromBlob = async (file: Blob) => {
   // Convert the file to a buffer
   const buffer = Buffer.from(await file.arrayBuffer());
-  console.log("buffer", buffer)
+  console.log("file", file)
+  console.log("file.name", file.name)
   // Create a temporary file path
   const tempFilePath = join(tmpdir(), file.name);
   console.log("tempFilePath", tempFilePath)
