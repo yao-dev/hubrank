@@ -106,6 +106,7 @@ export async function POST(request: Request) {
         }
 
         await supabase.from("knowledges").delete().eq("id", knowledgeId);
+        await supabase.storage.from("files").remove([oldRecord.file.path]);
         break;
       }
     }

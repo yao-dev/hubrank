@@ -23,7 +23,6 @@ export async function POST(req: Request) {
     }
 
     console.log(file)
-    // const fileType = file.type.split("/").slice(-1)[0];
     const fileType = file.name.split(".").slice(-1)[0];
     console.log("fileType", fileType)
     const fileName = `${userId}-${projectId}-${file.name}`;
