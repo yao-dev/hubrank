@@ -85,7 +85,6 @@ export async function POST(request: Request) {
         break;
       }
       case 'DELETE': {
-        console.log("ENTER HERE", body)
         const oldRecord = body.old_record;
         const knowledgeId = oldRecord.id;
         const namespaceId = getProjectNamespaceId({ userId: oldRecord.user_id, projectId: oldRecord.project_id })
@@ -97,8 +96,6 @@ export async function POST(request: Request) {
 
         if (vectors.length) {
           const vectorIds: any = vectors.map((item) => item.id);
-          console.log("vectors", vectors)
-          console.log(vectors.length)
           await deleteVectors(vectorIds)
         } else {
           console.log("There is no vectors to delete for this knowledge item")

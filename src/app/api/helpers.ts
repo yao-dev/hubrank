@@ -17,12 +17,12 @@ import { YoutubeTranscript } from 'youtube-transcript';
 import { JSONLoader } from "langchain/document_loaders/fs/json";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { UnstructuredLoader } from "@langchain/community/document_loaders/fs/unstructured";
 import { TextLoader } from "langchain/document_loaders/fs/text";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { Document } from "@langchain/core/documents";
 
 const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
@@ -844,10 +844,14 @@ export const fetchHtml = async (url: string): Promise<string> => {
   return $('body').html() ?? "";
 }
 
-export const getMarkdown = (html: string) => {
+const cleanHtml = (html: string) => {
   const $ = cheerio.load(html);
   $('style, script, [src*="base64"], svg, iframe, noscript, object, embed, link, meta, nav, footer').remove();
-  const body = $('body').html() ?? "";
+  return $('body').html() ?? "";
+}
+
+export const getMarkdown = (html: string) => {
+  const body = cleanHtml(html)
   const markdown = NodeHtmlMarkdown.translate(body);
   return markdown
 }
@@ -1196,12 +1200,7 @@ const getFileExtensionName = (fileName: string) => {
 }
 
 export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
-  const options = {
-    apiKey: process.env.UNSTRUCTURED_IO_SECRET ?? ""
-  }
-
   const fileExtension = getFileExtensionName(fileName);
-
   switch (fileExtension) {
     case 'pdf':
       return new PDFLoader(blob, { splitPages: true }).load();
@@ -1218,8 +1217,14 @@ export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
     case 'ppt':
     case 'pptx':
     case 'md':
-      const buffer = Buffer.from(await blob.arrayBuffer());
-      return new UnstructuredLoader({ buffer, fileName }, options).load();
+      const response = await axios({
+        method: 'get',
+        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/files/${fileName}`,
+        responseType: 'text'
+      });
+      return new Document({
+        pageContent: fileExtension === "html" ? cleanHtml(response.data) : response.data
+      });
     default:
       throw new Error(`File not supported: ${fileName}`)
   }
