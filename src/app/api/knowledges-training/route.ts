@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     switch (body.type) {
       case "INSERT":
         supabase.storage.from("files").remove([body.record.file.path]);
-        supabase.from("knowledges").update({ status: "error" }).eq("id", body.record.id)
+        updateKnowledgeStatus(body.record.id, "error")
         break;
     }
 

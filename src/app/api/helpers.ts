@@ -14,7 +14,7 @@ import * as cheerio from "cheerio";
 import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
 import { YoutubeTranscript } from 'youtube-transcript';
-import { JSONLinesLoader, JSONLoader } from "langchain/document_loaders/fs/json";
+import { JSONLoader } from "langchain/document_loaders/fs/json";
 import { CSVLoader } from "langchain/document_loaders/fs/csv";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { UnstructuredLoader } from "@langchain/community/document_loaders/fs/unstructured";
@@ -871,6 +871,7 @@ export const urlToVector = async ({
     encodingName: "gpt2",
     chunkSize: 150,
     chunkOverlap: 50,
+    keepSeparator: false
   });
   const output = await splitter.createDocuments([markdown]);
   const promises = output.map((document, index) => {
@@ -908,6 +909,7 @@ export const textToVector = async ({
     encodingName: "gpt2",
     chunkSize: 150,
     chunkOverlap: 50,
+    keepSeparator: false,
   });
   const output = await splitter.createDocuments([text]);
   const promises = output.map((document) => {
@@ -938,7 +940,9 @@ export const docsToVector = async ({
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const promises = docs.map((document, index) => {
-    console.log(`document ${index}`, document)
+    console.log(`document ${index}`);
+    console.log("generateUuid5(this is a test)", generateUuid5("this is a test"))
+    console.log("generateUuid5(document.pageContent)", generateUuid5(document.pageContent))
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
