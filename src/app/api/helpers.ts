@@ -1200,6 +1200,7 @@ const loadFileFromBlob = async ({
   loader,
   fileName,
 }: {
+  blob: Blob,
   loader: any,
   fileName: string
 }) => {
