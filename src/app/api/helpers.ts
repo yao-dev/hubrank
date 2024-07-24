@@ -15,15 +15,14 @@ import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
 import { YoutubeTranscript } from 'youtube-transcript';
 import { JSONLoader } from "langchain/document_loaders/fs/json";
-import { CSVLoader } from "langchain/document_loaders/fs/csv";
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { UnstructuredLoader } from "@langchain/community/document_loaders/fs/unstructured";
 import { TextLoader } from "langchain/document_loaders/fs/text";
 import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
-import { unlinkSync, writeFileSync } from "fs";
+import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 
 const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
@@ -871,7 +870,6 @@ export const urlToVector = async ({
     encodingName: "gpt2",
     chunkSize: 150,
     chunkOverlap: 50,
-    keepSeparator: false
   });
   const output = await splitter.createDocuments([markdown]);
   const promises = output.map((document, index) => {
@@ -901,15 +899,10 @@ export const textToVector = async ({
   metadata?: any;
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
-  // const splitter = new CharacterTextSplitter({
-  //   chunkSize: 40,
-  //   chunkOverlap: 1,
-  // });
   const splitter = new TokenTextSplitter({
     encodingName: "gpt2",
     chunkSize: 150,
     chunkOverlap: 50,
-    keepSeparator: false,
   });
   const output = await splitter.createDocuments([text]);
   const promises = output.map((document) => {
@@ -924,7 +917,7 @@ export const textToVector = async ({
     })
   });
 
-  await Promise.all(promises)
+  return Promise.all(promises)
 }
 
 export const docsToVector = async ({
@@ -940,9 +933,6 @@ export const docsToVector = async ({
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const promises = docs.map((document, index) => {
-    console.log(`document ${index}`);
-    console.log("generateUuid5(this is a test)", generateUuid5("this is a test"))
-    console.log("generateUuid5(document.pageContent)", generateUuid5(document.pageContent))
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
@@ -1188,7 +1178,7 @@ export const getYoutubeTranscript = async (url: string) => {
   return transcriptText;
 }
 
-export const getFilePathFromBlob = async (file: Blob, fileName: string) => {
+const getFilePathFromBlob = async (file: Blob, fileName: string) => {
   // Convert the file to a buffer
   const buffer = Buffer.from(await file.arrayBuffer());
   console.log("file", file)
@@ -1201,34 +1191,36 @@ export const getFilePathFromBlob = async (file: Blob, fileName: string) => {
   return tempFilePath
 }
 
-export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
-  const filePath = await getFilePathFromBlob(blob, fileName);
+const getFileExtensionName = (fileName: string) => {
+  return fileName.split(".").slice(-1)[0];
+}
 
+export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
   const options = {
     apiKey: process.env.UNSTRUCTURED_IO_SECRET ?? ""
   }
 
-  const directoryLoader = new DirectoryLoader(filePath, {
-    '.pdf': (path) => new PDFLoader(path, { splitPages: true }),
-    '.docx': (path) => new DocxLoader(path),
-    '.json': (path) => new JSONLoader(path),
-    '.txt': (path) => new TextLoader(path),
-    '.csv': (path) => new CSVLoader(path),
-    '.htm': (path) => new UnstructuredLoader(path, options),
-    '.html': (path) => new UnstructuredLoader(path, options),
-    '.ppt': (path) => new UnstructuredLoader(path, options),
-    '.pptx': (path) => new UnstructuredLoader(path, options),
-    '.md': (path) => new UnstructuredLoader(path, options),
-  })
-  const docs = await directoryLoader.load();
-  unlinkSync(filePath);
-  return docs
+  const fileExtension = getFileExtensionName(fileName);
+
+  switch (fileExtension) {
+    case 'pdf':
+      return new PDFLoader(blob, { splitPages: true }).load();
+    case 'docx':
+      return new DocxLoader(blob).load();
+    case 'json':
+      return new JSONLoader(blob).load();
+    case 'txt':
+      return new TextLoader(blob).load();
+    case 'csv':
+      return new CSVLoader(blob).load();
+    case 'htm':
+    case 'html':
+    case 'ppt':
+    case 'pptx':
+    case 'md':
+      const buffer = Buffer.from(await blob.arrayBuffer());
+      return new UnstructuredLoader({ buffer, fileName }, options).load();
+    default:
+      throw new Error(`File not supported: ${fileName}`)
+  }
 }
-
-// export const getIsDocx = (extension: string) => {
-//   return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || extension === "docx"
-// }
-
-// export const getIsTxt = (extension: string) => {
-//   return extension === 'text/plain' || extension === "txt"
-// }

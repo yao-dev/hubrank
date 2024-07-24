@@ -2,11 +2,10 @@ import { NextResponse } from "next/server";
 import {
   deleteVectors,
   docsToVector,
+  getDocumentsFromFile,
   getIsYoutubeUrl,
   getProjectNamespaceId,
   getYoutubeTranscript,
-  loaders,
-  getDocumentsFromFile,
   queryVector,
   textToVector,
   updateKnowledgeStatus,
@@ -57,24 +56,36 @@ export async function POST(request: Request) {
 
         if (record.mode === "file") {
           console.log("received file record", record);
-          const { data: blob } = await supabase.storage.from("files").download(record.file.path)
+          const { data: blob } = await supabase.storage.from("files").download(record.file.path);
+          console.log("blob", blob)
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
-          const docs = await getDocumentsFromFile(blob, record.file.path)
-          console.log("docs 1", docs[0]);
-          await docsToVector({
-            docs,
-            userId: record.user_id,
-            namespaceId,
-            metadata: { knowledgeId }
-          })
+          const docs = await getDocumentsFromFile(blob, record.file.path);
+
+          if (docs?.length === 1) {
+            await textToVector({
+              text: docs[0].pageContent,
+              userId: record.user_id,
+              namespaceId,
+              metadata: { knowledgeId }
+            });
+          } else {
+            await docsToVector({
+              docs,
+              userId: record.user_id,
+              namespaceId,
+              metadata: { knowledgeId }
+            })
+          }
           await supabase.storage.from("files").remove([record.file.path])
         }
 
         await updateKnowledgeStatus(knowledgeId, "ready");
+        break;
       }
       case 'DELETE': {
+        console.log("ENTER HERE", body)
         const oldRecord = body.old_record;
         const knowledgeId = oldRecord.id;
         const namespaceId = getProjectNamespaceId({ userId: oldRecord.user_id, projectId: oldRecord.project_id })
@@ -94,16 +105,17 @@ export async function POST(request: Request) {
         }
 
         await supabase.from("knowledges").delete().eq("id", knowledgeId);
+        break;
       }
     }
 
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
-    console.log(error)
+    console.error(error, body)
     switch (body.type) {
       case "INSERT":
-        supabase.storage.from("files").remove([body.record.file.path]);
-        updateKnowledgeStatus(body.record.id, "error")
+        await updateKnowledgeStatus(body.record.id, "error");
+        await supabase.storage.from("files").remove([body.record.file.path]);
         break;
     }
 
