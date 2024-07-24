@@ -4,7 +4,9 @@ import {
   docsToVector,
   getIsYoutubeUrl,
   getProjectNamespaceId,
+  getYoutubeTranscript,
   loaders,
+  getDocumentsFromFile,
   queryVector,
   textToVector,
   updateKnowledgeStatus,
@@ -36,7 +38,7 @@ export async function POST(request: Request) {
 
         if (record.mode === "url") {
           if (getIsYoutubeUrl(record.content)) {
-            const transcript = await loaders.youtube(record.content);
+            const transcript = await getYoutubeTranscript(record.content);
             await textToVector({
               text: transcript,
               userId: record.user_id,
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
-          const docs = await loaders[record.file.type](blob, record.file.path);
+          const docs = await getDocumentsFromFile(blob, record.file.path)
           console.log("docs 1", docs[0]);
           await docsToVector({
             docs,

@@ -14,7 +14,7 @@ import * as cheerio from "cheerio";
 import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
 import { YoutubeTranscript } from 'youtube-transcript';
-import { JSONLoader } from "langchain/document_loaders/fs/json";
+import { JSONLinesLoader, JSONLoader } from "langchain/document_loaders/fs/json";
 import { CSVLoader } from "langchain/document_loaders/fs/csv";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { UnstructuredLoader } from "@langchain/community/document_loaders/fs/unstructured";
@@ -23,6 +23,7 @@ import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { unlinkSync, writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { DirectoryLoader } from "langchain/document_loaders/fs/directory";
 
 const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
@@ -1171,7 +1172,7 @@ export const getIsYoutubeUrl = (url: string) => {
   return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/")
 }
 
-const getYoutubeTranscript = async (url: string) => {
+export const getYoutubeTranscript = async (url: string) => {
   // const loader = YoutubeLoader.createFromUrl("https://youtu.be/bZQun8Y4L2A", {
   //   language: "en",
   //   addVideoInfo: true,
@@ -1196,30 +1197,23 @@ export const getFilePathFromBlob = async (file: Blob, fileName: string) => {
   return tempFilePath
 }
 
-const loadFileFromBlob = async ({
-  blob,
-  loader,
-  fileName,
-}: {
-  blob: Blob,
-  loader: any,
-  fileName: string
-}) => {
+export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
   const filePath = await getFilePathFromBlob(blob, fileName);
-  const docs = await new loader(filePath).load();
+  const directoryLoader = new DirectoryLoader(filePath, {
+    '.pdf': (path) => new PDFLoader(path, { splitPages: true }),
+    '.docx': (path) => new DocxLoader(path),
+    '.json': (path) => new JSONLoader(path),
+    '.txt': (path) => new TextLoader(path),
+    '.csv': (path) => new CSVLoader(path),
+    '.htm': (path) => new UnstructuredLoader(path),
+    '.html': (path) => new UnstructuredLoader(path),
+    '.ppt': (path) => new UnstructuredLoader(path),
+    '.pptx': (path) => new UnstructuredLoader(path),
+    '.md': (path) => new UnstructuredLoader(path),
+  })
+  const docs = await directoryLoader.load();
   unlinkSync(filePath);
   return docs
-}
-
-export const loaders = {
-  youtube: getYoutubeTranscript,
-  json: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: JSONLoader, fileName }),
-  csv: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: CSVLoader, fileName }),
-  pdf: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: PDFLoader, fileName }),
-  md: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: UnstructuredLoader, fileName }),
-  html: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: UnstructuredLoader, fileName }),
-  txt: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: TextLoader, fileName }),
-  docx: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: DocxLoader, fileName }),
 }
 
 // export const getIsDocx = (extension: string) => {
