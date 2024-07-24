@@ -63,6 +63,8 @@ export async function POST(request: Request) {
           }
           const docs = await getDocumentsFromFile(blob, record.file.path);
 
+          console.log(docs)
+
           if (docs?.length === 1) {
             await textToVector({
               text: docs[0].pageContent,

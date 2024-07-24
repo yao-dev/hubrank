@@ -1222,9 +1222,9 @@ export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
         url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/files/${fileName}`,
         responseType: 'text'
       });
-      return new Document({
+      return [new Document({
         pageContent: fileExtension === "html" ? cleanHtml(response.data) : response.data
-      });
+      })];
     default:
       throw new Error(`File not supported: ${fileName}`)
   }
