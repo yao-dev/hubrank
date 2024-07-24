@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import {
   deleteVectors,
   docsToVector,
-  getFilePathFromBlob,
   getIsYoutubeUrl,
   getProjectNamespaceId,
   loaders,
@@ -99,6 +98,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
     console.log(error)
+    switch (body.type) {
+      case "INSERT":
+        supabase.storage.from("files").remove([body.record.file.path]);
+        supabase.from("knowledges").update({ status: "error" }).eq("id", body.record.id)
+        break;
+    }
+
     return NextResponse.json({ message: "Knowledges webhook error", error, body }, { status: 500 })
   }
 }

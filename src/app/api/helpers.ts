@@ -1221,10 +1221,10 @@ export const loaders = {
   docx: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: DocxLoader, fileName }),
 }
 
-export const getIsDocx = (extension: string) => {
-  return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || extension === "docx"
-}
+// export const getIsDocx = (extension: string) => {
+//   return extension === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || extension === "docx"
+// }
 
-export const getIsTxt = (extension: string) => {
-  return extension === 'text/plain' || extension === "txt"
-}
+// export const getIsTxt = (extension: string) => {
+//   return extension === 'text/plain' || extension === "txt"
+// }
