@@ -1182,13 +1182,13 @@ const getYoutubeTranscript = async (url: string) => {
   return transcriptText;
 }
 
-export const getFilePathFromBlob = async (file: Blob) => {
+export const getFilePathFromBlob = async (file: Blob, fileName: string) => {
   // Convert the file to a buffer
   const buffer = Buffer.from(await file.arrayBuffer());
   console.log("file", file)
-  console.log("file.name", file.name)
+  console.log("file.name", fileName)
   // Create a temporary file path
-  const tempFilePath = join(tmpdir(), file.name);
+  const tempFilePath = join(tmpdir(), fileName);
   console.log("tempFilePath", tempFilePath)
   // Write the buffer to a temporary file
   writeFileSync(tempFilePath, buffer);
@@ -1198,26 +1198,26 @@ export const getFilePathFromBlob = async (file: Blob) => {
 const loadFileFromBlob = async ({
   blob,
   loader,
+  fileName,
 }: {
-  blob: Blob,
   loader: any,
+  fileName: string
 }) => {
-  const filePath = await getFilePathFromBlob(blob);
+  const filePath = await getFilePathFromBlob(blob, fileName);
   const docs = await new loader(filePath).load();
-  // Clean up the temporary file
   unlinkSync(filePath);
   return docs
 }
 
 export const loaders = {
   youtube: getYoutubeTranscript,
-  json: (blob: Blob) => loadFileFromBlob({ blob, loader: JSONLoader }),
-  csv: (blob: Blob) => loadFileFromBlob({ blob, loader: CSVLoader }),
-  pdf: (blob: Blob) => loadFileFromBlob({ blob, loader: PDFLoader }),
-  md: (blob: Blob) => loadFileFromBlob({ blob, loader: UnstructuredLoader }),
-  html: (blob: Blob) => loadFileFromBlob({ blob, loader: UnstructuredLoader }),
-  txt: (blob: Blob) => loadFileFromBlob({ blob, loader: TextLoader }),
-  docx: (blob: Blob) => loadFileFromBlob({ blob, loader: DocxLoader }),
+  json: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: JSONLoader, fileName }),
+  csv: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: CSVLoader, fileName }),
+  pdf: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: PDFLoader, fileName }),
+  md: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: UnstructuredLoader, fileName }),
+  html: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: UnstructuredLoader, fileName }),
+  txt: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: TextLoader, fileName }),
+  docx: (blob: Blob, fileName: string) => loadFileFromBlob({ blob, loader: DocxLoader, fileName }),
 }
 
 export const getIsDocx = (extension: string) => {

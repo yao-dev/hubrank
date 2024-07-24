@@ -195,7 +195,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
           if (status === 'done') {
             message.success(`${info.file.name} file uploaded successfully.`);
           } else if (status === 'error') {
-            message.error(info?.file?.response?.error);
+            message.error(info?.file?.response?.error ?? "We couldn't upload your file, please try again.");
           }
         },
         onDrop() {
