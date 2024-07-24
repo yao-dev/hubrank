@@ -12,6 +12,7 @@ import {
   urlToVector,
 } from "../helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
+import { shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -63,6 +64,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
           const docs = await getDocumentsFromFile(blob, fileName);
+
+          console.log("There is ", docs.length, " documents to train");
+          console.log("Random docs sample", shuffle(docs)[0].pageContent);
 
           if (docs?.length === 1) {
             await textToVector({

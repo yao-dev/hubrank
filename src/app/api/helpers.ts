@@ -876,6 +876,7 @@ export const urlToVector = async ({
   });
   const output = await splitter.createDocuments([markdown]);
   const promises = output.map((document, index) => {
+    console.log("Training document number:", index + 1)
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
@@ -908,7 +909,8 @@ export const textToVector = async ({
     chunkOverlap: 50,
   });
   const output = await splitter.createDocuments([text]);
-  const promises = output.map((document) => {
+  const promises = output.map((document, index) => {
+    console.log("Training document number:", index + 1)
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
@@ -936,6 +938,7 @@ export const docsToVector = async ({
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const promises = docs.map((document, index) => {
+    console.log("Training document number:", index + 1)
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
