@@ -22,7 +22,6 @@ import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { Document } from "@langchain/core/documents";
 
 const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
@@ -1222,9 +1221,14 @@ export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
         url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/files/${fileName}`,
         responseType: 'text'
       });
-      return [new Document({
-        pageContent: fileExtension === "html" ? cleanHtml(response.data) : response.data
-      })];
+      const content = fileExtension === "html" ? cleanHtml(response.data) : response.data
+      const splitter = new TokenTextSplitter({
+        encodingName: "gpt2",
+        chunkSize: 150,
+        chunkOverlap: 50,
+      });
+      return splitter.createDocuments([content]);
+
     default:
       throw new Error(`File not supported: ${fileName}`)
   }

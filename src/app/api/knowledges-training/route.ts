@@ -14,7 +14,7 @@ import {
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -62,8 +62,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
           }
           const docs = await getDocumentsFromFile(blob, record.file.path);
-
-          console.log(docs)
 
           if (docs?.length === 1) {
             await textToVector({
