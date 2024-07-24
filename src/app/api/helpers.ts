@@ -936,7 +936,8 @@ export const docsToVector = async ({
   metadata?: any;
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId);
-  const promises = docs.map((document) => {
+  const promises = docs.map((document, index) => {
+    console.log(`document ${index}`, document)
     return namespace.upsert({
       id: generateUuid5(document.pageContent),
       data: document.pageContent,
