@@ -1203,17 +1203,22 @@ export const getFilePathFromBlob = async (file: Blob, fileName: string) => {
 
 export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
   const filePath = await getFilePathFromBlob(blob, fileName);
+
+  const options = {
+    apiKey: process.env.UNSTRUCTURED_IO_SECRET ?? ""
+  }
+
   const directoryLoader = new DirectoryLoader(filePath, {
     '.pdf': (path) => new PDFLoader(path, { splitPages: true }),
     '.docx': (path) => new DocxLoader(path),
     '.json': (path) => new JSONLoader(path),
     '.txt': (path) => new TextLoader(path),
     '.csv': (path) => new CSVLoader(path),
-    '.htm': (path) => new UnstructuredLoader(path),
-    '.html': (path) => new UnstructuredLoader(path),
-    '.ppt': (path) => new UnstructuredLoader(path),
-    '.pptx': (path) => new UnstructuredLoader(path),
-    '.md': (path) => new UnstructuredLoader(path),
+    '.htm': (path) => new UnstructuredLoader(path, options),
+    '.html': (path) => new UnstructuredLoader(path, options),
+    '.ppt': (path) => new UnstructuredLoader(path, options),
+    '.pptx': (path) => new UnstructuredLoader(path, options),
+    '.md': (path) => new UnstructuredLoader(path, options),
   })
   const docs = await directoryLoader.load();
   unlinkSync(filePath);
