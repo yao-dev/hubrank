@@ -968,6 +968,7 @@ export const docsToVector = async ({
         }
       })
     });
+    await Promise.all(promises);
   } else {
     promises = docs.map((document, index) => {
       console.log("Training document number:", index + 1);
@@ -989,10 +990,9 @@ export const docsToVector = async ({
         }
       })
     });
+    await Promise.all(promises);
+    await new Promise((resolve) => setTimeout(resolve, 15000))
   }
-
-
-  await Promise.all(promises)
 }
 
 export const processUrlsToMarkdownChunks = async ({
