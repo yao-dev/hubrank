@@ -972,7 +972,7 @@ export const docsToVector = async ({
     promises = docs.map((document, index) => {
       console.log("Training document number:", index + 1);
       return createBackgroundJob({
-        timeoutSec: 10,
+        timeoutSec: 30,
         destination: getUpstashDestination("api/background-job/add-documents"),
         body: {
           namespaceId,
