@@ -37,10 +37,11 @@ type DataIndex = keyof DataType;
 
 type Props = {
   onSubmit: (values: any) => void;
-  form: FormInstance<any>
+  form: FormInstance<any>;
+  closeDrawer: () => void;
 }
 
-const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
+const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
   const user = useUser()
   const projectId = useProjectId();
   const { data: project, isPending } = useProjects().getOne(projectId)
@@ -148,8 +149,6 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
   const rowSelection = {
     onChange: (selectedRowKeys: React.Key[], selectedRows: DataType[]) => {
       form.setFieldValue("urls", selectedRows.map(item => item.url));
-      console.log("test urls", selectedRows.map(item => item.url));
-      console.log("form urls", form.getFieldValue("urls"))
     },
     getCheckboxProps: (record: DataType) => ({
       disabled: false,
@@ -189,18 +188,12 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         },
         onChange(info) {
           const { status } = info.file;
-          if (status !== 'uploading') {
-            console.log(info.file, info.fileList);
-          }
           if (status === 'done') {
             message.success(`${info.file.name} file uploaded successfully.`);
+            closeDrawer();
           } else if (status === 'error') {
             message.error(info?.file?.response?.error ?? "We couldn't upload your file, please try again.");
           }
-        },
-        onDrop() {
-          console.log("ENTERED")
-          drawers.openKnowledgeDrawer({ isOpen: false })
         },
       })
     }
@@ -228,7 +221,6 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         autoComplete="off"
         layout="vertical"
         onFinish={onSubmit}
-        onError={console.log}
         disabled={isFetchingSitemap}
       >
         <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
@@ -257,7 +249,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
         {mode === "text" && (
           <Form.Item
             name="text"
-            rules={[{ type: "string", max: 1000, required: true }]}
+            rules={[{ type: "string", max: 10000, required: true }]}
             hasFeedback
           >
             <Input.TextArea
@@ -265,7 +257,7 @@ const NewKnowledgeForm = ({ onSubmit, form }: Props) => {
               autoSize={{ minRows: 3, maxRows: 20 }}
               count={{
                 show: true,
-                max: 1000,
+                max: 10000,
               }}
             />
           </Form.Item>

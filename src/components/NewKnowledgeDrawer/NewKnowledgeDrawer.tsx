@@ -111,6 +111,7 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
       <NewKnowledgeForm
         form={form}
         onSubmit={onFinish}
+        closeDrawer={onClose}
       />
     </Drawer>
   )

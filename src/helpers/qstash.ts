@@ -14,10 +14,11 @@ export const deleteMessage = async (messageId: string) => {
   // await client.dlq.delete(messageId)
 }
 
-export const createBackgroundJob = async ({ body, destination, headers = {} }: any): Promise<PublishToUrlResponse> => {
+export const createBackgroundJob = async ({ body, destination, timeoutSec }: any): Promise<PublishToUrlResponse> => {
   const response = await client.publishJSON({
     url: destination,
-    body
+    body,
+    timeout: timeoutSec
   });
 
   return response

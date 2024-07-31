@@ -117,7 +117,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: "Knowledges webhook success", body }, { status: 200 })
   } catch (error) {
-    console.error(error, body)
+    console.log({ error, body })
     switch (body.type) {
       case "INSERT":
         await updateKnowledgeStatus(body.record.id, "error");

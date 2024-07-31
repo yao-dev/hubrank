@@ -23,7 +23,7 @@ import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 
-const upstashVectorIndex = new Index({
+export const upstashVectorIndex = new Index({
   url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
   token: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_TOKEN || "",
 })
@@ -845,8 +845,24 @@ export const fetchHtml = async (url: string): Promise<string> => {
 
 const cleanHtml = (html: string) => {
   const $ = cheerio.load(html);
-  $('style, script, [src*="base64"], svg, iframe, noscript, object, embed, link, meta, nav, footer').remove();
+  $('style, script, [src*="base64"], img, svg, iframe, noscript, object, embed, link, meta, nav, footer, aside').remove();
   return $('body').html() ?? "";
+}
+
+const cleanMarkdown = (markdown: string) => {
+  // Matches base64 images in HTML <img> tags
+  const imgTagRegex = /<img[^>]+src=["']data:image\/(png|jpg|jpeg|gif);base64,[^"']*["'][^>]*>/gi;
+  // Matches base64 images in Markdown syntax ![alt text](data:image/png;base64,...)
+  const markdownImageRegex = /!\[.*?\]\(data:image\/(png|jpg|jpeg|gif);base64,[^)]+\)/gi;
+  // Matches base64 images that start with <data: and end with >
+  const dataTagRegex = /<data:image\/(png|jpg|jpeg|gif);base64,[^>]*>/gi;
+
+  // Remove base64 images from the markdown string
+  return markdown
+    .replace(imgTagRegex, '')
+    .replace(markdownImageRegex, '')
+    .replace(dataTagRegex, '')
+    .trim()
 }
 
 export const getMarkdown = (html: string) => {
@@ -936,19 +952,45 @@ export const docsToVector = async ({
   namespaceId: string;
   metadata?: any;
 }) => {
-  const namespace = upstashVectorIndex.namespace(namespaceId);
-  const promises = docs.map((document, index) => {
-    console.log("Training document number:", index + 1)
-    return namespace.upsert({
-      id: generateUuid5(document.pageContent),
-      data: document.pageContent,
-      metadata: {
-        ...metadata,
-        userId,
-        content: document.pageContent,
-      }
-    })
-  });
+  let promises;
+
+  if (docs.length < 500) {
+    const namespace = upstashVectorIndex.namespace(namespaceId);
+    promises = docs.map((document, index) => {
+      console.log("Training document number:", index + 1);
+      return namespace.upsert({
+        id: generateUuid5(document.pageContent),
+        data: document.pageContent,
+        metadata: {
+          ...metadata,
+          userId,
+          content: document.pageContent,
+        }
+      })
+    });
+  } else {
+    promises = docs.map((document, index) => {
+      console.log("Training document number:", index + 1);
+      return createBackgroundJob({
+        timeoutSec: 10,
+        destination: getUpstashDestination("api/background-job/add-documents"),
+        body: {
+          namespaceId,
+          index,
+          document: {
+            id: generateUuid5(document.pageContent),
+            data: document.pageContent,
+            metadata: {
+              ...metadata,
+              userId,
+              content: document.pageContent,
+            }
+          }
+        }
+      })
+    });
+  }
+
 
   await Promise.all(promises)
 }
@@ -1224,10 +1266,17 @@ export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
         url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/files/${fileName}`,
         responseType: 'text'
       });
-      const content = fileExtension === "html" ? cleanHtml(response.data) : response.data
+      let content = response.data;
+
+      if (fileExtension === "html") {
+        content = cleanHtml(content);
+      }
+      if (fileExtension === "md") {
+        content = cleanMarkdown(content);
+      }
       const splitter = new TokenTextSplitter({
         encodingName: "gpt2",
-        chunkSize: 150,
+        chunkSize: 400,
         chunkOverlap: 50,
       });
       return splitter.createDocuments([content]);
