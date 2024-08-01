@@ -99,10 +99,14 @@ const ProjectSelect = () => {
         dropdownRender={(menu) => (
           <>
             {menu}
-            <Divider style={{ margin: '8px 0' }} />
-            <Button type="text" block icon={<PlusOutlined />} onClick={onOpenNewProject}>
-              New project
-            </Button>
+            {projects?.length < 5 && (
+              <>
+                <Divider style={{ margin: '8px 0' }} />
+                <Button type="text" block icon={<PlusOutlined />} onClick={onOpenNewProject}>
+                  New project
+                </Button>
+              </>
+            )}
           </>
         )}
       />

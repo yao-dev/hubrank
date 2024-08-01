@@ -2,28 +2,23 @@ import { NextResponse } from "next/server";
 import { AI } from "../../AI";
 import { getSummary } from 'readability-cyr';
 import {
-  checkCredits,
   cleanArticle,
   convertMarkdownToHTML,
   deductCredits,
   fetchSitemapXml,
   getAndSaveSchemaMarkup,
   getSitemapUrls,
-  getHeadlines,
   getKeywordsForKeywords,
-  getProjectContext,
   getProjectKnowledges,
   getRelevantKeywords,
   getRelevantUrls,
-  getWritingStyle,
   getYoutubeVideosForKeyword,
-  insertBlogPost,
   markArticleAsFailure,
   markArticleAsReadyToView,
   updateBlogPost,
-  updateBlogPostStatus,
   writeHook,
   writeSection,
+  getYoutubeTranscript,
 } from "../../helpers";
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
@@ -37,64 +32,11 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-
-    // CHECK IF USER HAS ENOUGH CREDITS
-    const creditCheck = {
-      userId: body.userId,
-      costInCredits: 1 + (body.structured_schemas.length * 0.5),
-      featureName: "write"
-    }
-    await checkCredits(creditCheck);
-
-    // CREATE NEW ARTICLE WITH QUEUE STATUS
-    articleId = await insertBlogPost(body)
-
-    // CHANGE STATUS TO WRITING
-    await updateBlogPostStatus(articleId, "writing")
-
-    const [
-      { data: project },
-      { data: language },
-    ] = await Promise.all([
-      supabase.from("projects").select("*").eq("id", body.project_id).single(),
-      supabase.from("languages").select("*").eq("id", body.language_id).single()
-    ]);
-
-    const context = getProjectContext({
-      name: project.name,
-      website: project.website,
-      description: project.metatags?.description || project?.description,
-      lang: language.label,
-    })
-
-    // FETCH WRITING STYLE IF IT EXISTS
-    let writingStyle;
-    if (body.writing_style_id) {
-      writingStyle = await getWritingStyle(body.writing_style_id)
-    }
-
-    if (body.title_mode === "custom") {
-      body.title = body.custom_title;
-    } else {
-      const headlines = await getHeadlines({
-        language,
-        context,
-        writingStyle,
-        seedKeyword: body.seed_keyword,
-        purpose: body.purpose,
-        tone: body.tones,
-        contentType: body.content_type,
-        clickbait: body.clickbait,
-        isInspo: body.title_mode === "inspo",
-        inspoTitle: body.title_mode === "inspo" && body.inspo_title,
-        count: 1
-      });
-
-      body.title = headlines?.[0];
-
-      // CHANGE STATUS TO WRITING
-      await updateBlogPost(articleId, { title: body.title })
-    }
+    const context = body.context;
+    const writingStyle = body.writingStyle;
+    const language = body.language;
+    const project = body.project;
+    articleId = body.articleId;
 
     const ai = new AI({ context, writing_style: writingStyle });
 
@@ -128,12 +70,23 @@ export async function POST(request: Request) {
       query: body.title,
       topK: 30
     })
-    await updateBlogPost(articleId, { keywords })
-    const { videos } = await getYoutubeVideosForKeyword({
-      keyword: body.title,
-      languageCode: language.code,
-      locationCode: language.location_code,
-    });
+    await updateBlogPost(articleId, { keywords });
+
+    let youtubeTranscript;
+    if (body.title_mode === "youtube_to_blog" && body.youtube_url) {
+      youtubeTranscript = await getYoutubeTranscript(body.youtube_url);
+    }
+
+    let videos = [];
+    if (body.with_youtube_videos) {
+      const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
+        keyword: body.title,
+        languageCode: language.code,
+        locationCode: language.location_code,
+      });
+      videos = youtubeVideos;
+    }
+
 
     // GET THE WORD COUNT OF EACH SECTION OF THE OUTLINE
     const outlinePlan = await ai.outlinePlan({
@@ -142,7 +95,8 @@ export async function POST(request: Request) {
       sitemaps,
       images: body.sectionImages,
       videos,
-      keywords
+      keywords,
+      youtube_transcript: youtubeTranscript
     });
 
     // GET HEADINGS AS A COMMA SEPARATED STRING
@@ -157,7 +111,7 @@ export async function POST(request: Request) {
     // await saveWritingCost({ articleId, cost: ai.cost });
 
     // ADD H1 TITLE TO THE ARTICLE
-    ai.article = `# ${body.title}\n`;
+    // ai.article = `# ${body.title}\n`;
 
     // if (body.featuredImage) {
     //   ai.article += `![${body.featuredImage.alt ?? ""}](${body.featuredImage.href})\n`
@@ -197,6 +151,7 @@ export async function POST(request: Request) {
         // perspective: body.perspective,
         // tones: body.tones,
         // purpose: body.purpose,
+        // article_id: articleId
         purposes: body.purposes,
         emotions: body.emotions,
         vocabularies: body.vocabularies,
@@ -204,7 +159,6 @@ export async function POST(request: Request) {
         perspectives: body.perspectives,
         writing_structures: body.writing_structures,
         instructional_elements: body.instructional_elements,
-        article_id: articleId
       })
     }
 
@@ -237,11 +191,6 @@ export async function POST(request: Request) {
       //   image = await getImage("unsplash", shuffle(get(section, "keywords", "").split(","))[0])
       // }
 
-      let youtubeVideo;
-      // if (section.media === "youtube" && section.youtube_search) {
-      //   // TODO: fetch video
-      // }
-
       // TODO: add knowledges in writeSection prompt
       const knowledges = await getProjectKnowledges({
         userId: body.userId,
@@ -266,7 +215,6 @@ export async function POST(request: Request) {
           tones: body.tones,
           purpose: body.purpose,
           image,
-          youtube_video: youtubeVideo,
           internal_links: section?.internal_links,
           images: section?.images,
           video_url: section?.video_url,
@@ -345,6 +293,11 @@ export async function POST(request: Request) {
     });
 
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const creditCheck = {
+      userId: body.userId,
+      costInCredits: 1 + (body.structured_schemas.length * 0.25),
+      featureName: "write"
+    }
     await deductCredits(creditCheck);
 
     // UPDATE ARTICLE STATUS TO READY TO VIEW

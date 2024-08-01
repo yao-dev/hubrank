@@ -8,7 +8,6 @@ import axios from "axios";
 import useProjectId from "@/hooks/useProjectId";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import { useState } from "react";
-import { getShouldShowPricing } from "@/helpers/pricing";
 import usePricingModal from "@/hooks/usePricingModal";
 
 type Props = {
@@ -22,47 +21,55 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const [variableSet, setVariableSet] = useState({});
   const pricingModal = usePricingModal();
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
-  const creditsCount = 1 + ((fieldStructuredSchemas?.length ?? 0) / 2)
+  const extra = ((fieldStructuredSchemas?.length ?? 0) / 4);
+  const creditsCount = 1 + extra
 
 
   const writeArticle = async (values: any) => {
     try {
-      axios.post('/api/write/blog-post', values)
+      const { data } = await axios.post('/api/credits-check', {
+        user_id: await getUserId(),
+        action: 'write-blog-post',
+        extra
+      });
+      if (!data.authorized) {
+        return pricingModal.open(true)
+      }
+      axios.post('/api/write/blog-post/schedule', values)
       message.success('Article added in the queue!');
       onClose();
       form.resetFields();
     } catch (e) {
-      if (getShouldShowPricing(e)) {
-        pricingModal.open(true);
-      } else {
-        console.error(e)
-        notification.error({
-          message: "We had an issue adding your article in the queue please try again",
-          placement: "bottomRight",
-          role: "alert",
-        })
-      }
+      console.error(e)
+      notification.error({
+        message: "We had an issue adding your article in the queue please try again",
+        placement: "bottomRight",
+        role: "alert",
+      })
     }
   }
 
-  const schedulePSeoArticles = (values: any) => {
+  const schedulePSeoArticles = async (values: any) => {
     try {
-      axios.post('/api/pseo/schedule', values)
+      const { data } = await axios.post('/api/credits-check', {
+        user_id: await getUserId(),
+        action: 'write-pseo',
+        extra
+      });
+      if (!data.authorized) {
+        return pricingModal.open(true)
+      }
+      axios.post('/api/pseo/schedule', values);
       message.success('Articles added in the queue!');
       onClose();
       form.resetFields();
     } catch (e) {
-      if (getShouldShowPricing(e)) {
-        pricingModal.open(true);
-      } else {
-        console.error(e)
-        notification.error({
-          message: "We had an issue adding your articles in the queue please try again",
-          placement: "bottomRight",
-          role: "alert",
-        })
-      }
-
+      console.error(e)
+      notification.error({
+        message: "We had an issue adding your articles in the queue please try again",
+        placement: "bottomRight",
+        role: "alert",
+      })
     }
   }
 
@@ -135,7 +142,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       footer={
         <Flex justify="end">
           <Button onClick={() => form.submit()} type="primary" style={{ width: 150 }}>
-            Write ({creditsCount} credits)
+            Write ({creditsCount} {creditsCount > 1 ? "credits" : "credit "})
           </Button>
         </Flex>
       }

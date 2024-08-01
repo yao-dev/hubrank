@@ -31,14 +31,15 @@ export default function Dashboard() {
   const hasReachedLimit = projectList && user?.subscription?.projects_limit <= projectList?.length;
 
   const onOpenNewProject = () => {
-    if (hasReachedLimit) {
-      pricingModal.open(true, {
-        title: "You've reached your projects limit",
-        subtitle: "Upgrade to create more projects"
-      })
-    } else {
-      setOpenCreateProject(true)
-    }
+    // if (hasReachedLimit) {
+    //   pricingModal.open(true, {
+    //     title: "You've reached your projects limit",
+    //     subtitle: "Upgrade to create more projects"
+    //   })
+    // } else {
+    //   setOpenCreateProject(true)
+    // }
+    setOpenCreateProject(true)
   }
 
   if (isError) {
@@ -95,7 +96,7 @@ export default function Dashboard() {
             style={{ marginBottom: 24 }}
           >
             <PageTitle title="Dashboard" />
-            <Button type="primary" onClick={onOpenNewProject} icon={<PlusOutlined />}>
+            <Button disabled={projectList?.length >= 5} type="primary" onClick={onOpenNewProject} icon={<PlusOutlined />}>
               {screens.xs ? "New" : "New project"}
             </Button>
           </Flex>

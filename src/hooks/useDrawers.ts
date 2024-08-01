@@ -6,25 +6,31 @@ type BlogPostState = {
   seedKeyword?: string;
 }
 
-type captionState = {
+type CaptionState = {
   isOpen: boolean;
   languageId?: number;
 }
 
-type knowledgeState = {
+type KnowledgeState = {
+  isOpen: boolean;
+}
+
+type ExportBlogPostState = {
   isOpen: boolean;
 }
 
 type State = {
   blogPost: BlogPostState;
-  caption: captionState;
-  knowledge: knowledgeState;
+  caption: CaptionState;
+  knowledge: KnowledgeState;
+  exportBlogPost: ExportBlogPostState;
 };
 
 type Action = {
   openBlogPostDrawer: (data: BlogPostState) => void;
-  openCaptionDrawer: (data: captionState) => void;
-  openKnowledgeDrawer: (data: knowledgeState) => void;
+  openCaptionDrawer: (data: CaptionState) => void;
+  openKnowledgeDrawer: (data: KnowledgeState) => void;
+  openExportBlogPostDrawer: (data: ExportBlogPostState) => void;
 };
 
 const openBlogPostDrawer = (state: State, data: BlogPostState): State => {
@@ -39,7 +45,7 @@ const openBlogPostDrawer = (state: State, data: BlogPostState): State => {
   };
 };
 
-const openCaptionDrawer = (state: State, data: captionState): State => {
+const openCaptionDrawer = (state: State, data: CaptionState): State => {
   return {
     ...state,
     caption: {
@@ -49,11 +55,21 @@ const openCaptionDrawer = (state: State, data: captionState): State => {
   };
 };
 
-const openKnowledgeDrawer = (state: State, data: knowledgeState): State => {
+const openKnowledgeDrawer = (state: State, data: KnowledgeState): State => {
   return {
     ...state,
     knowledge: {
       ...state.knowledge,
+      isOpen: data.isOpen,
+    }
+  };
+};
+
+const openExportBlogPostDrawer = (state: State, data: ExportBlogPostState): State => {
+  return {
+    ...state,
+    exportBlogPost: {
+      ...state.exportBlogPost,
       isOpen: data.isOpen,
     }
   };
@@ -73,12 +89,17 @@ const useDrawers = create<State & Action>(
     knowledge: {
       isOpen: false,
     },
+    exportBlogPost: {
+      isOpen: false,
+    },
     openBlogPostDrawer: (data: BlogPostState) =>
       set((state) => openBlogPostDrawer(state, data)),
-    openCaptionDrawer: (data: captionState) =>
+    openCaptionDrawer: (data: CaptionState) =>
       set((state) => openCaptionDrawer(state, data)),
-    openKnowledgeDrawer: (data: knowledgeState) =>
+    openKnowledgeDrawer: (data: KnowledgeState) =>
       set((state) => openKnowledgeDrawer(state, data)),
+    openExportBlogPostDrawer: (data: ExportBlogPostState) =>
+      set((state) => openExportBlogPostDrawer(state, data)),
   })
 );
 

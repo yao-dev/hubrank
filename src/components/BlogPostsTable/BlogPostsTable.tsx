@@ -34,6 +34,7 @@ import {
   IconMail,
   IconWorld,
 } from '@tabler/icons-react';
+import Link from 'next/link';
 
 const { useBreakpoint } = Grid
 
@@ -73,11 +74,11 @@ const BlogPostsTable = () => {
         dataIndex: 'title',
         key: 'title',
         width: !screens.lg ? 800 : null,
-        render: (value: any) => {
+        render: (value: any, record: any) => {
           return (
-            <span>
+            <Link href={`/projects/${projectId}/articles/${record.id}`} className='w-full inline-block'>
               {value || "-"}
-            </span>
+            </Link>
           )
         },
       },

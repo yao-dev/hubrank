@@ -8,14 +8,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // CHECK IF USER HAS ENOUGH CREDITS
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: 0.5,
-      featureName: "schema-markup"
-    }
-    await checkCredits(creditCheck);
-
     const [
       { data: project },
       { data: article },
@@ -39,6 +31,11 @@ export async function POST(request: Request) {
     console.log("schemas", schemas)
     await saveSchemaMarkups(article.id, schemas);
 
+    const creditCheck = {
+      userId: body.user_id,
+      costInCredits: 0.25,
+      featureName: "schema-markup"
+    }
     await deductCredits(creditCheck);
 
     return NextResponse.json({

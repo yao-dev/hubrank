@@ -1125,18 +1125,25 @@ export const checkCredits = async ({
   const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
   const credits = user?.subscription?.credits ?? 0;
 
-  if (user?.subscription?.status !== "active") {
-    console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have an active subscription"`))
-    // throw new Error("inactive_subscription")
-    throw { error: "inactive_subscription" }
-  }
-  if (!credits || credits < costInCredits) {
-    console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have enough credit (${costInCredits} required) to access feature "${featureName}"`))
-    // throw new Error("insufficient_credits")
-    throw { error: "insufficient_credits" }
-  }
+  // if (user?.subscription?.status !== "active") {
+  //   console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have an active subscription"`))
+  //   // throw new Error("inactive_subscription")
+  //   throw { error: "inactive_subscription" }
+  // }
+  // if (!credits || credits < costInCredits) {
+  //   console.log(chalk.bgRedBright(`❌ User "${userId}" doesn't have enough credit (${costInCredits} required) to access feature "${featureName}"`))
+  //   // throw new Error("insufficient_credits")
+  //   throw { error: "insufficient_credits" }
+  // }
 
   return user.subscription ?? {}
+}
+
+export const getUserCredits = async (userId: string) => {
+  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const subscription = user.subscription ?? {}
+  const credits = subscription.credits ?? 0;
+  return credits
 }
 
 export const deductCredits = async ({
@@ -1148,12 +1155,8 @@ export const deductCredits = async ({
   costInCredits: number; // cost of premium feature in credits
   featureName: string;
 }) => {
-  const subscription = await checkCredits({
-    userId,
-    costInCredits,
-    featureName,
-  });
-
+  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const subscription = user.subscription ?? {}
   const credits = subscription.credits ?? 0;
 
   console.log(chalk.yellow(`Deduct ${costInCredits} credits to user id "${userId}" for feature "${featureName}"`));

@@ -155,6 +155,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           with_faq: false,
           with_sections_image: false,
           with_sections_image_mode: 'Auto',
+          with_youtube_videos: false,
           image_source: 'Unsplash',
           with_seo: true,
           language_id: null,
@@ -166,6 +167,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
         layout="vertical"
         // onFinish={onFinish}
         onFinish={onSubmit}
+        scrollToFirstError
       >
         <Form.Item
           name="language_id"
@@ -226,7 +228,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
                     <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
                       <Switch size="small" />
                     </Form.Item>
-                    <span>Clickbait title</span>
+                    <span className="cursor-pointer" onClick={() => form.setFieldValue("clickbait", !form.getFieldValue("clickbait"))}>Clickbait title</span>
                   </Flex>
                 </>
               )
@@ -238,7 +240,12 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
                   <Form.Item name="clickbait" rules={[]} style={{ margin: 0 }}>
                     <Switch size="small" />
                   </Form.Item>
-                  <span>Clickbait title</span>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => form.setFieldValue("clickbait", !form.getFieldValue("clickbait"))}
+                  >
+                    Clickbait title
+                  </span>
                 </Flex>
               )
             }
@@ -316,7 +323,20 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
                   label={<Label name="Youtube url" />}
                   name="youtube_url"
                   validateTrigger={['onChange', 'onBlur']}
-                  rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
+                  rules={[{
+                    required: true,
+                    message: 'Please enter a valid Youtube url',
+                    type: "url"
+                  },
+                  () => ({
+                    validator(_, value) {
+                      if (!value || value.startsWith("https://www.youtube.com/watch?v=") || value.startsWith("https://youtu.be/")) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject();
+                    },
+                  }),
+                  ]}
                   hasFeedback
                   style={{ marginBottom: 24 }}
                 >
@@ -504,44 +524,81 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           <Form.Item name="with_hook" tooltip="Short sentence that comes before the introduction, its goal is to capture the reader's attention and encourage them to continue reading." rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Include hook</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_hook", !form.getFieldValue("with_hook"))}
+          >
+            Include hook
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_introduction" rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Introduction</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_introduction", !form.getFieldValue("with_introduction"))}
+          >
+            Introduction
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_conclusion" rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Conclusion</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_conclusion", !form.getFieldValue("with_conclusion"))}
+          >
+            Conclusion
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_key_takeways" rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Key takeways</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_key_takeways", !form.getFieldValue("with_key_takeways"))}
+          >
+            Key takeways
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_faq" rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>FAQ</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_faq", !form.getFieldValue("with_faq"))}
+          >
+            FAQ
+          </span>
+        </Flex>
+
+        <Flex gap="small" align="center">
+          <Form.Item name="with_youtube_videos" rules={[]} style={{ margin: 0 }}>
+            <Switch size="small" />
+          </Form.Item>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_youtube_videos", !form.getFieldValue("with_youtube_videos"))}
+          >
+            Include Youtube videos
+          </span>
         </Flex>
 
         <Flex vertical hidden>
-          <Flex gap="small" align="center">
+          {/* <Flex gap="small" align="center">
             <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
               <Switch size="small" />
             </Form.Item>
             <span>Include featured image</span>
-          </Flex>
+          </Flex> */}
 
           {/* <Flex gap="small" align="center">
           <Form.Item name="with_table_of_content" rules={[]} style={{ margin: 0 }}>
@@ -550,12 +607,12 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           <span>Table of content</span>
         </Flex> */}
 
-          <Flex hidden gap="small" align="center" style={{ marginBottom: 18 }}>
+          {/* <Flex hidden gap="small" align="center" style={{ marginBottom: 18 }}>
             <Form.Item name="with_sections_image" style={{ margin: 0 }}>
               <Switch size="small" />
             </Form.Item>
             <span>Include sections image</span>
-          </Flex>
+          </Flex> */}
 
           <Form.Item
             noStyle
@@ -577,7 +634,6 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
                   </Form.Item>
                 </>
               ) : null
-
             }}
           </Form.Item>
 

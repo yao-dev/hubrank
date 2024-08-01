@@ -106,7 +106,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                   const isSubscribed = subscription?.plan?.id === currentPrice?.id;
 
                   const pricing = (
-                    <Card key={product.id} className="w-full" style={{ borderColor: recommendedSubscription ? "#353b48" : undefined }}>
+                    <Card key={product.id} className="w-full" style={{ borderColor: recommendedSubscription ? tokens.token.colorPrimary : undefined, borderWidth: 2 }}>
                       <Flex vertical>
                         <Flex align="center" gap="small" style={{ marginBottom: 4 }}>
                           <Typography.Text strong style={{ fontSize: 20 }}>{product.name}</Typography.Text>
@@ -115,7 +115,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                         </Flex>
                         <Typography.Text type="secondary" style={{ marginBottom: 12 }}>{product.description}</Typography.Text>
 
-                        <Flex vertical gap="large">
+                        <Flex vertical gap="small">
                           <Flex align="baseline">
                             <Typography.Text style={{ fontSize: 42, fontWeight: 800 }}>
                               <CurrencyFormat

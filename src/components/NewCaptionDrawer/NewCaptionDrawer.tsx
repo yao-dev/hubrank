@@ -5,7 +5,6 @@ import NewCaptionForm from "../NewCaptionForm/NewCaptionForm";
 import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import axios from "axios";
-import { getShouldShowPricing } from "@/helpers/pricing";
 import usePricingModal from "@/hooks/usePricingModal";
 
 type Props = {
@@ -20,20 +19,23 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
 
   const writeCaption = async (values: any) => {
     try {
+      const { data } = await axios.post('/api/credits-check', {
+        user_id: await getUserId(),
+        action: 'write-cpation',
+      });
+      if (!data.authorized) {
+        return pricingModal.open(true)
+      }
       axios.post('/api/write/caption', values)
       message.success('Caption added in the queue!');
       onClose();
       form.resetFields()
     } catch (e) {
-      if (getShouldShowPricing(e)) {
-        pricingModal.open(true);
-      } else {
-        notification.error({
-          message: "We had an issue adding your caption in the queue please try again",
-          placement: "bottomRight",
-          role: "alert",
-        })
-      }
+      notification.error({
+        message: "We had an issue adding your caption in the queue please try again",
+        placement: "bottomRight",
+        role: "alert",
+      })
     }
   }
 

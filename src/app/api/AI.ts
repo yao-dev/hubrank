@@ -11,7 +11,7 @@ import { capitalize, isEmpty } from "lodash";
 
 export type CaptionTemplate = {
   platform: string;
-  goal: "write" | "rephrase" | "reply";
+  goal: "write" | "rephrase" | "reply" | "youtube_to_caption";
   caption_length: number;
   description: string;
   tones?: string[];
@@ -35,7 +35,8 @@ export type CaptionTemplate = {
   external_sources?: {
     url: string;
     objective: string
-  }
+  };
+  youtube_transcript?: string
 }
 
 const costs = {
@@ -623,6 +624,10 @@ export class AI {
 - the article has no more than ${values.words_count} words length
 - a section that has more than 200 words should be split into sub-sections or paragraphs`;
 
+    if (values.youtube_transcript) {
+      prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 2000)}`
+    }
+
     prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
     prompt += values.emotions?.length > 0 ? `\nEmotions: ${values.emotions.join(', ')}` : "";
     prompt += values.vocabularies?.length > 0 ? `\nVocabularies: ${values.vocabularies.join(', ')}` : "";
@@ -963,6 +968,13 @@ video_url: string;
 
     if (values.goal === "reply" && values.caption_source) {
       prompt += `\n-Reply to the following ${values.platform} caption using my writing style to up to ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
+      prompt += `\n-Don't copy or add any links you find in the caption source`
+      prompt += `\n-Don't add/make up links unless I provide it to you`
+    }
+
+
+    if (values.goal === "youtube_to_caption" && values.youtube_transcript) {
+      prompt += `\n-${capitalize(values.goal)} a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.youtube_transcript.slice(0, 2000)}.`
       prompt += `\n-Don't copy or add any links you find in the caption source`
       prompt += `\n-Don't add/make up links unless I provide it to you`
     }

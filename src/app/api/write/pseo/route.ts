@@ -1,7 +1,6 @@
 import chalk from "chalk";
 import { AI } from "../../AI";
 import {
-  checkCredits,
   cleanArticle,
   convertMarkdownToHTML,
   deductCredits,
@@ -30,14 +29,6 @@ export const maxDuration = 180;
 export async function POST(request: Request) {
   const body = await request.json();
 
-  // CHECK IF USER HAS ENOUGH CREDITS
-  const creditCheck = {
-    userId: body.userId,
-    costInCredits: 1 + (body.structured_schemas.length * 0.5),
-    featureName: "pseo/write"
-  }
-  await checkCredits(creditCheck);
-
   const [
     { data: project },
     { data: pendingArticle },
@@ -58,7 +49,7 @@ export async function POST(request: Request) {
   const ai = new AI({ context });
 
   // ADD H1 TITLE TO THE ARTICLE
-  ai.article = `# ${body.headline}\n`;
+  // ai.article = `# ${body.headline}\n`;
 
   // CHANGE STATUS TO WRITING
   await updateBlogPostStatus(body.articleId, "writing");
@@ -81,12 +72,6 @@ export async function POST(request: Request) {
     ...body,
     title: body.headline,
     keywords
-  });
-
-  const { videos } = await getYoutubeVideosForKeyword({
-    keyword: body.headline,
-    languageCode: language.code,
-    locationCode: language.location_code,
   });
 
   // FETCH WRITING STYLE IF IT EXISTS
@@ -144,6 +129,16 @@ export async function POST(request: Request) {
     prompt += `\n- Keywords (include relevant keywords only, up to 15 keywords):\n${keywords.join('\n')}\n\n`
   }
 
+  let videos = [];
+  if (body.with_youtube_videos) {
+    const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
+      keyword: body.headline,
+      languageCode: language.code,
+      locationCode: language.location_code,
+    });
+    videos = youtubeVideos;
+  }
+
   if (videos?.length > 0) {
     prompt += `\n- Youtube videos (include relevant video(s) only, up to 1 video per section maximum, don't add a list of video at the end of the article):
     - include relevant video(s) only
@@ -198,6 +193,11 @@ export async function POST(request: Request) {
   });
 
   // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+  const creditCheck = {
+    userId: body.userId,
+    costInCredits: 1 + (body.structured_schemas.length * 0.25),
+    featureName: "pseo/write"
+  }
   await deductCredits(creditCheck);
 
   return NextResponse.json({

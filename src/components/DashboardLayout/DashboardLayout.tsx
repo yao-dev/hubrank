@@ -179,6 +179,9 @@ export default function DashboardLayout({
     if (tab === "blog-posts") {
       return ["blog-posts"]
     }
+    if (pathname.includes('/projects/') && pathname.includes('/articles/')) {
+      return ["blog-posts"]
+    }
     if (tab === "social-media") {
       return ["social-media"]
     }
@@ -284,11 +287,10 @@ export default function DashboardLayout({
 
   return (
     <>
-      {/* <Featurebase /> */}
       <InitClarityTracking />
       <Script
         strategy="lazyOnload"
-        src="https://embed.tawk.to/668ddf99c3fb85929e3d7110/1i2d32sg5"
+        src="../../scripts/crisp.js"
       />
       <Drawer
         open={isMobileMenuOpen}

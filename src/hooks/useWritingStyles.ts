@@ -109,20 +109,20 @@ type Create = {
 
 const create = async (data: Create) => {
   if (data.default) {
-    return Promise.all([
-      supabase
-        .from('writing_styles')
-        .update({ default: false })
-        .eq("project_id", data.project_id)
-        .throwOnError(),
-      supabase
-        .from('writing_styles')
-        .insert({
-          ...data,
-          user_id: await getUserId(),
-        })
-        .throwOnError(),
-    ])
+    await supabase
+      .from('writing_styles')
+      .update({ default: true })
+      .eq("project_id", data.project_id)
+      .throwOnError()
+    await supabase
+      .from('writing_styles')
+      .insert({
+        ...data,
+        user_id: await getUserId(),
+      })
+      .throwOnError();
+
+    return;
   }
   return supabase
     .from('writing_styles')

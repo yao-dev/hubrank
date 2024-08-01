@@ -89,7 +89,7 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
         autoComplete="off"
         layout="vertical"
         onFinish={onSubmit}
-        onError={console.log}
+        scrollToFirstError
       >
         <Form.Item
           name="language_id"
@@ -193,7 +193,20 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
             label={<Label name="Youtube url" />}
             name="youtube_url"
             validateTrigger={['onChange', 'onBlur']}
-            rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
+            rules={[{
+              required: true,
+              message: 'Please enter a valid Youtube url',
+              type: "url"
+            },
+            () => ({
+              validator(_, value) {
+                if (!value || value.startsWith("https://www.youtube.com/watch?v=") || value.startsWith("https://youtu.be/")) {
+                  return Promise.resolve();
+                }
+                return Promise.reject();
+              },
+            }),
+            ]}
             hasFeedback
           >
             <Input placeholder="Youtube URL" />
@@ -216,42 +229,82 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
           <Form.Item name="with_hook" style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Add hook</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_hook", !form.getFieldValue("with_hook"))}
+          >
+            Add hook
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_question" style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Engage with a question</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_question", !form.getFieldValue("with_question"))}
+          >
+            Engage with a question
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_hashtags" style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Hashtags</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_hashtags", !form.getFieldValue("with_hashtags"))}
+          >
+            Hashtags
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_single_emoji" style={{ margin: 0 }}>
             <Switch size="small" onChange={(checked) => checked && form.setFieldValue("with_emojis", false)} />
           </Form.Item>
-          <span>Single emoji</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => {
+              form.setFieldValue("with_single_emoji", !form.getFieldValue("with_single_emoji"));
+              if (form.getFieldValue("with_emojis")) {
+                form.setFieldValue("with_emojis", false)
+              }
+            }}
+          >
+            Single emoji
+          </span>
         </Flex>
 
         <Flex gap="small" align="center">
           <Form.Item name="with_emojis" style={{ margin: 0 }}>
             <Switch size="small" onChange={(checked) => checked && form.setFieldValue("with_single_emoji", false)} />
           </Form.Item>
-          <span>Emojis</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => {
+              form.setFieldValue("with_emojis", !form.getFieldValue("with_emojis"));
+              if (form.getFieldValue("with_single_emoji")) {
+                form.setFieldValue("with_single_emoji", false)
+              }
+            }}
+          >
+            Emojis
+          </span>
         </Flex>
 
         <Flex gap="small" align="center" style={{ marginBottom: 18 }}>
           <Form.Item name="with_cta" style={{ margin: 0 }}>
             <Switch size="small" />
           </Form.Item>
-          <span>Add CTA</span>
+          <span
+            className="cursor-pointer"
+            onClick={() => form.setFieldValue("with_cta", !form.getFieldValue("with_cta"))}
+          >
+            Add CTA
+          </span>
         </Flex>
 
         {withCta && (

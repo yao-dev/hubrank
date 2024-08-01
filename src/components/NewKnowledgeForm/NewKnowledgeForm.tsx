@@ -222,6 +222,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
         layout="vertical"
         onFinish={onSubmit}
         disabled={isFetchingSitemap}
+        scrollToFirstError
       >
         <Flex gap="small" align="center" style={{ marginBottom: 12 }}>
           <Form.Item

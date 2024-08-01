@@ -200,6 +200,7 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
           }}
           layout="vertical"
           onFinish={onSubmit}
+          scrollToFirstError
         >
           <Form.Item
             name="name"
@@ -316,7 +317,12 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
           <Form.Item name="default" style={{ marginTop: 12 }}>
             <Flex gap="small">
               <Switch size="small" />
-              <span>Set as default</span>
+              <span
+                className="cursor-pointer"
+                onClick={() => form.setFieldValue("default", !form.getFieldValue("default"))}
+              >
+                Set as default
+              </span>
             </Flex>
           </Form.Item>
         </Form>

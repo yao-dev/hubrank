@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { AI, CaptionTemplate } from "@/app/api/AI";
-import { checkCredits, deductCredits, getProjectContext, getWritingStyle, insertCaption } from "@/app/api/helpers";
+import { checkCredits, deductCredits, getProjectContext, getWritingStyle, getYoutubeTranscript, insertCaption } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -9,14 +9,6 @@ export const maxDuration = 300;
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-
-    // CHECK IF USER HAS ENOUGH CREDITS
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: 0.5,
-      featureName: "caption"
-    }
-    await checkCredits(creditCheck);
 
     const [
       { data: project },
@@ -48,6 +40,11 @@ export async function POST(request: Request) {
 
     const ai = new AI({ context, writing_style: writingStyle });
 
+    let youtubeTranscript;
+    if (body.goal === "youtube_to_caption" && body.youtube_url) {
+      youtubeTranscript = await getYoutubeTranscript(body.youtube_url)
+    }
+
     const metadata: CaptionTemplate = {
       goal: body.goal,
       with_hashtags: body.with_hashtags,
@@ -70,7 +67,8 @@ export async function POST(request: Request) {
       language: language.label,
       platform: body.platform,
       description: body.description,
-      external_sources: body.external_sources
+      external_sources: body.external_sources,
+      youtube_transcript: youtubeTranscript
     }
 
     const result = await ai.getCaption({
@@ -91,6 +89,11 @@ export async function POST(request: Request) {
     });
 
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const creditCheck = {
+      userId: body.user_id,
+      costInCredits: 0.5,
+      featureName: "caption"
+    }
     await deductCredits(creditCheck);
 
     return NextResponse.json(body, { status: 200 });

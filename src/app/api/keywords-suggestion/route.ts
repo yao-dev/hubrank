@@ -7,10 +7,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const creditsCheckOptions = {
       userId: body.userId,
-      costInCredits: 0.5,
+      costInCredits: 0.25,
       featureName: "keyword-suggestion"
     }
-    await checkCredits(creditsCheckOptions)
     const keywords = await getRelatedKeywords({ keyword: body.query, depth: 4, limit: 1000, lang: body.lang, location_code: body.locationCode });
     await deductCredits(creditsCheckOptions)
     return NextResponse.json(keywords)

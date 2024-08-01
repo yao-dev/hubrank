@@ -125,6 +125,7 @@ const ProjectForm = () => {
         sitemap: project.sitemap ?? "",
         blog_path: project.blog_path ?? "",
       }}
+      scrollToFirstError
     >
       <Form.Item
         name="language_id"

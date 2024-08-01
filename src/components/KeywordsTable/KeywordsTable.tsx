@@ -27,7 +27,6 @@ import { isEmpty } from 'lodash';
 import useDrawers from '@/hooks/useDrawers';
 import LanguageSelect from '../LanguageSelect/LanguageSelect';
 import axios from 'axios';
-import { getShouldShowPricing } from '@/helpers/pricing';
 import usePricingModal from '@/hooks/usePricingModal';
 
 const competitionOrder: any = {
@@ -316,8 +315,17 @@ const KeywordsTable = () => {
             }}
             onFinish={async (values) => {
               try {
-                setShowSavedKeywords(false);
                 setIsFetchingKeywords(true);
+                const { data } = await axios.post('/api/credits-check', {
+                  user_id: await getUserId(),
+                  action: 'keywords-research'
+                });
+                if (!data.authorized) {
+                  setIsFetchingKeywords(false);
+                  return pricingModal.open(true)
+                }
+
+                setShowSavedKeywords(false);
                 const searchTerm = values.search;
 
                 const language = languages?.find(l => l.id === values.language_id)
@@ -367,10 +375,6 @@ const KeywordsTable = () => {
                   setKeywords(state?.data || [])
                 }
                 setActiveLanguage(language)
-              } catch (e: any) {
-                if (getShouldShowPricing(e)) {
-                  pricingModal.open(true)
-                }
               } finally {
                 setIsFetchingKeywords(false)
               }
@@ -398,7 +402,7 @@ const KeywordsTable = () => {
                 loading={isFetchingKeywords}
                 style={{ width: "auto", marginBottom: 0 }}
               >
-                {screens.xs ? "(0.5 credit)" : "Search (0.5 credit)"}
+                {screens.xs ? "(0.25 credit)" : "Search (0.25 credit)"}
               </Button>
             </Flex>
           </Form>
