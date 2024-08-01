@@ -288,10 +288,6 @@ export default function DashboardLayout({
   return (
     <>
       <InitClarityTracking />
-      <Script
-        strategy="lazyOnload"
-        src="../../scripts/crisp.js"
-      />
       <Drawer
         open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

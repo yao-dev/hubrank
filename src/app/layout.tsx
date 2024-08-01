@@ -10,6 +10,7 @@ import { App } from 'antd';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import "./global.css";
+import Script from 'next/script';
 
 
 const inter = Inter({ subsets: ['latin'] })
@@ -48,6 +49,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <title>Hubrank</title>
+        <Script
+          strategy="lazyOnload"
+          src="../scripts/crisp.js"
+        />
       </head>
       <body className={inter.className} style={{ margin: 0, background: token.colorBgLayout }}>
         <AntdRegistry>
