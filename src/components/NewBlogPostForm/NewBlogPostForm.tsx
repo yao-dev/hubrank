@@ -45,7 +45,6 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
   const [variableSet, setVariableSet] = useState({});
   const drawers = useDrawers();
 
-
   useEffect(() => {
     if (project && drawers.blogPost.isOpen) {
       form.setFieldValue("seed_keyword", drawers.blogPost.seedKeyword);
@@ -167,6 +166,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
         layout="vertical"
         // onFinish={onFinish}
         onFinish={onSubmit}
+        onError={console.error}
         scrollToFirstError
       >
         <Form.Item

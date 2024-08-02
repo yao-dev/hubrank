@@ -30,10 +30,6 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             })
         });
       } else {
-        console.log('LOGGED IN', {
-          event,
-          session
-        })
         if (event === 'INITIAL_SESSION') {
           axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then().catch()
         }

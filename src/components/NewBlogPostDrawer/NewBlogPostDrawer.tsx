@@ -26,6 +26,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
 
   const writeArticle = async (values: any) => {
+    console.log(values)
     try {
       const { data } = await axios.post('/api/credits-check', {
         user_id: await getUserId(),
@@ -75,6 +76,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
   const onSubmit = async (values: any) => {
     const isProgrammaticSeo = values.title_mode === "programmatic_seo";
+
+    console.log(values)
 
     if (isProgrammaticSeo) {
       const generateCombinations = () => {
@@ -147,7 +150,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         </Flex>
       }
     >
-      <NewBlogPostForm form={form} onSubmit={onSubmit} />
+      <NewBlog
+        PostForm form={form} onSubmit={onSubmit} />
     </Drawer>
   )
 }
