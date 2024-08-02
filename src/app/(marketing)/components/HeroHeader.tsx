@@ -60,7 +60,7 @@ const HeroHeader = () => {
   )
 
   return (
-    <header className="flex flex-col items-center py-2 lg:py-5 px-4 lg:px-40 mx-auto mt-12 lg:mt-8">
+    <header className="flex flex-col items-center py-2 lg:py-5 px-4 lg:px-40 mx-auto mt-12 lg:mt-0">
       <div className="container flex flex-col justify-center items-center">
         <div className="flex gap-12 mx-auto mb-6">
           <div className="flex flex-col gap-1 items-center">
