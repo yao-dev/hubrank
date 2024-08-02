@@ -8,6 +8,7 @@ export const stripeUrls = {
   RETURN_CHECKOUT: "ORIGIN/subscriptions",
   // RETURN_CHECKOUT: "ORIGIN/subscriptions?session_id=CHECKOUT_SESSION_ID",
   USER_SUBSCRIPTIONS: "/api/checkout/user-subscriptions",
+  CREATE_CUSTOMER: '/api/checkout/create-customer'
 }
 
 export const webhookEvents = {

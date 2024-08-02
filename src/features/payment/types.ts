@@ -31,12 +31,12 @@ export type CheckoutData = {
 export type GetCheckoutData = {
   priceId: string;
   metadata: any;
-  customerId?: string;
+  customerId: string;
   origin: string;
 } | {
   priceId: string;
   metadata: any;
-  customerEmail?: string;
+  customerEmail: string;
   origin: string;
 }
 

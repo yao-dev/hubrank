@@ -43,7 +43,7 @@ const Navbar = () => {
         {user ? "Dashboard" : "Login"}
       </Button>
     )
-  }, [])
+  }, [user])
 
   return (
     <nav className={`sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>

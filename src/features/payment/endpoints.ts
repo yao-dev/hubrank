@@ -10,11 +10,23 @@ import {
   getWebhookEvent,
   getWebhookSecret,
   handleWebhookEvent,
+  upsertStripeCustomer,
 } from "@/features/payment/helpers";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export default {
+  upsertStripeCustomer: async (req: NextRequest): Promise<Response> => {
+    const body = await req.json()
+    try {
+      const customer = await upsertStripeCustomer(body.user_id);
+      return NextResponse.json({ customer });
+    } catch (e: any) {
+      const errorMessage = `❌ Error (upsertStripeCustomer): ${e?.message}`
+      console.log(errorMessage);
+      return new Response(errorMessage, { status: 400 });
+    }
+  },
   createCheckoutSession: async (req: NextRequest): Promise<NextResponse<unknown>> => {
     const body = await req.json()
     const origin = req.nextUrl.origin;

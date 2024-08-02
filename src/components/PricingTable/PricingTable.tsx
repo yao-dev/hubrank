@@ -99,14 +99,16 @@ export default function PricingTable({ title, subtitle }: Props) {
                 {products.map((product: Product) => {
                   if (!product?.id) return null;
 
-                  const recommendedSubscription = product.metadata.recommended;
+                  const bestValueSubscription = product.metadata.best_value;
+                  const mostPopularSubscription = product.metadata.most_popular;
                   const currentPrice = prices[product.id]
                   const subscription: any = Object.values(userSubscriptions)?.[0];
                   const hasSubscription = !!subscription;
                   const isSubscribed = subscription?.plan?.id === currentPrice?.id;
 
                   const pricing = (
-                    <Card key={product.id} className="w-full" style={{ borderColor: recommendedSubscription ? tokens.token.colorPrimary : undefined, borderWidth: 2 }}>
+
+                    <Card key={product.id} className="w-full" style={{ borderColor: mostPopularSubscription ? tokens.token.colorPrimary : undefined, borderWidth: 2 }}>
                       <Flex vertical>
                         <Flex align="center" gap="small" style={{ marginBottom: 4 }}>
                           <Typography.Text strong style={{ fontSize: 20 }}>{product.name}</Typography.Text>
@@ -202,11 +204,19 @@ export default function PricingTable({ title, subtitle }: Props) {
                         </Flex>
                       </Flex>
                     </Card>
-                  )
+                  );
 
-                  if (recommendedSubscription) {
+                  if (mostPopularSubscription) {
                     return (
-                      <Badge.Ribbon key={product.id} text="Best value" color="volcano">
+                      <Badge.Ribbon key={product.id} text="Most popular" color="green">
+                        {pricing}
+                      </Badge.Ribbon>
+                    )
+                  }
+
+                  if (bestValueSubscription) {
+                    return (
+                      <Badge.Ribbon key={product.id} text="Best value" color="gold">
                         {pricing}
                       </Badge.Ribbon>
                     )

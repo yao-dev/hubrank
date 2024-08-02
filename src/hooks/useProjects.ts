@@ -49,31 +49,15 @@ const useGetAll = ({ enabled }: UseGetAll = {}) => {
 
 type Create = {
   name: string;
-  // description?: string;
   target_audience?: string;
   website: string;
-  // seed_keyword: string;
 }
 
 const create = async (data: Create) => {
-  // let metatags = null;
-  // let keywords = null;
-
-  // try {
-  //   const [websiteTagsResponse] = await Promise.all([
-  //     axios.post("/api/get-website-meta", { website: data.website }),
-  //     // getRelatedKeywords({ keyword: data.seed_keyword, depth: 4, limit: 1000 })
-  //   ])
-  //   metatags = websiteTagsResponse.data;
-  //   // keywords = keywordsResponse;
-  // } catch { }
-
   return supabase
     .from('projects')
     .insert({
       ...data,
-      // metatags,
-      // keywords,
       user_id: await getUserId()
     })
     .select()
@@ -99,8 +83,6 @@ type Update = {
   name?: string;
   description?: string;
   sitemap?: string;
-  // target_audience?: string;
-  // seed_keyword?: string;
 }
 
 const update = async ({ project_id, ...data }: Update) => {

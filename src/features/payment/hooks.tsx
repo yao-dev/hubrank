@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { stripeUrls } from './constants';
 import useUser from '@/hooks/useUser';
+import { sortBy } from 'lodash';
 
 // Make sure to call `loadStripe` outside of a component’s render to avoid
 // recreating the `Stripe` object on every render.
@@ -44,7 +45,7 @@ export const useProducts = () => {
       return axios.get(stripeUrls.GET_PRODUCTS)
     },
     select(data) {
-      return data.data.products.data ?? []
+      return sortBy(data.data.products.data, (item) => +item.metadata.credits) ?? []
     },
     gcTime: 0,
   });

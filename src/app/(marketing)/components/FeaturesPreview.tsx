@@ -79,7 +79,7 @@ const FeaturesPreview = () => {
         <div className="flex flex-col gap-24">
           {featuresInAction.map((item) => {
             return (
-              <div className="flex flex-col gap-5">
+              <div key={item.id} className="flex flex-col gap-5">
                 <p className="text-lg font-semibold text-center">{item.title}</p>
                 <div className="p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
                   <video
