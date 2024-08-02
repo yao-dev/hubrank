@@ -461,7 +461,7 @@ export const upsertStripeCustomer = async (userId: string) => {
       return customer;
     }
 
-g    return null;
+    return null;
   } catch {
 
   }
