@@ -453,7 +453,7 @@ export const upsertStripeCustomer = async (userId: string) => {
     }
 
     if (user) {
-      console.log("create new customer"g)
+      console.log("create new customer")
       const customer = await stripe.customers.create({
         email: user.email ?? "",
       });
