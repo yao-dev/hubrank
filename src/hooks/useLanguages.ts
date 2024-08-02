@@ -16,7 +16,6 @@ const useGetOne = (id: number) => {
       return res?.data || null
     },
     gcTime: 0,
-    retry: false,
     placeholderData: keepPreviousData,
   });
 };

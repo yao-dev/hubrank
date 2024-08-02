@@ -24,6 +24,7 @@ const queryClient = new QueryClient({
       refetchOnReconnect: "always",
       // refetchOnMount: true,
       refetchOnWindowFocus: true,
+      retry: 1,
     },
   },
 });
