@@ -30,6 +30,10 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
             })
         });
       } else {
+        console.log('LOGGED IN', {
+          event,
+          session
+        })
         axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then()
         sessionStore.setSession(session);
         queryClient.invalidateQueries({
