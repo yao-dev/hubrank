@@ -40,7 +40,6 @@ const Article = ({
   const [articleTitle, setArticleTitle] = useState(article?.title ?? "")
   const [seoForm] = Form.useForm();
   const drawers = useDrawers();
-  const [updates, setUpdates] = useState({ markdown: "", html: "" });
 
   useEffect(() => {
     if (article) {
@@ -102,7 +101,6 @@ const Article = ({
               </div>
               <EditorBlock
                 articleId={articleId}
-                onChange={setUpdates}
               />
             </>
           )}
@@ -112,9 +110,7 @@ const Article = ({
       <ExportBlogPostDrawer
         open={drawers.exportBlogPost.isOpen}
         onClose={() => drawers.openExportBlogPostDrawer({ isOpen: false })}
-        article={article}
-        markdown={updates.markdown}
-        html={updates.html}
+        articleId={articleId}
       />
     </div>
   )

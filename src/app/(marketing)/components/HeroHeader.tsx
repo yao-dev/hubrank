@@ -83,7 +83,8 @@ const HeroHeader = () => {
           {/* Marketing Toolkit */}
           {/* AI Marketing Toolkit for */}
           {/* AI Powered Content Marketing */}
-          AI Content Marketing Toolkit for
+          {/* AI Content Marketing Toolkit for */}
+          Grow 10x Faster with AI Content Marketing for
           {/* AI Powered Content Marketing Toolkit for */}
           {/* AI Content Marketing for */}
           {/* AI Toolkit */}
@@ -105,7 +106,8 @@ const HeroHeader = () => {
 
         {/* subheadline */}
         <h2 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg lg:text-xl">
-          Create blogs, and socials with no SEO expertise in just few clicks.
+          {/* Create blogs, and socials with no SEO expertise in just few clicks. */}
+          Generate SEO blogs, social captions & replies in just few clicks
         </h2>
 
         {/* get started cta */}

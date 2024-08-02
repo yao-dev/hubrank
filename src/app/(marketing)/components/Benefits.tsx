@@ -39,7 +39,7 @@ const Benefits = () => {
           <div className="flex flex-col lg:w-1/2">
             <h3 className="text-3xl font-semibold mb-4 text-center lg:text-left">With Hubrank</h3>
             <p className="text-base font-light text-zinc-600 mb-8 text-center lg:text-left">
-              We removes the need to be a writer to write expert-level articles.
+              We removes the need to be a writer to write top-level content marketing.
             </p>
 
             <div className="mb-6">

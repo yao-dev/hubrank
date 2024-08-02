@@ -5,8 +5,8 @@ import PainPoints from "./components/PainPoints";
 import Benefits from "./components/Benefits";
 import Features from "./components/Features";
 import FeaturesPreview from "./components/FeaturesPreview";
-import "./style.css";
 import Pricing from "./components/Pricing";
+import "./style.css";
 
 export default function LandingPage() {
   return (
@@ -22,7 +22,9 @@ export default function LandingPage() {
 
       {/* <HowItWorks /> */}
 
-      <Features />
+      <div className="mt-16">
+        <Features />
+      </div>
 
       <FeaturesPreview />
 

@@ -3,8 +3,8 @@ import Logo from "./Logo";
 
 const menu = [
   { href: "#features", link: "Features" },
-  { href: "#testimonials", link: "Testimonials" },
-  { href: "#faq", link: "Faq" },
+  // { href: "#testimonials", link: "Testimonials" },
+  // { href: "#faq", link: "Faq" },
   { href: "#pricing", link: "Pricing" },
 ]
 

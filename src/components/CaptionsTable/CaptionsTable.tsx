@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Typography, Grid } from 'antd';
+import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Grid } from 'antd';
 import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
 import { IconCopy, IconWorld } from '@tabler/icons-react';
@@ -34,9 +34,9 @@ const CaptionsTable = () => {
         },
       },
       {
-        title: 'Caption',
+        title: 'Content',
         dataIndex: 'caption',
-        key: 'caption',
+        key: 'content',
         width: null,
         render: (value: any) => {
           return (

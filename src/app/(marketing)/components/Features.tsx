@@ -112,7 +112,7 @@ const Features = () => {
         <span className="uppercase text-base font-light text-primary-500">features</span>
 
         <div className="flex flex-col gap-4">
-          <h3 className="text-3xl font-semibold text-center mb-8">Your content marketing toolset</h3>
+          <h3 className="text-3xl font-semibold text-center mb-8">Your content marketing toolkit</h3>
           {/* <p className="text-base font-light text-zinc-600 lg:w-1/2 mx-auto text-center mb-8">
             The body text should clarify your main intention. Why should people care about your product? Use this space to clarify your product offering.
           </p> */}

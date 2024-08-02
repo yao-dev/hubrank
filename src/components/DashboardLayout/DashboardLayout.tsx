@@ -5,23 +5,23 @@ import { useMemo, useState } from 'react';
 import {
   IconLogout,
   IconDashboard,
-  IconArticle,
   IconSeo,
   IconWriting,
-  IconSocial,
   IconPigMoney,
   IconCreditCard,
   IconBulb,
   IconCoin,
   IconSettings,
   IconBrain,
+  IconMessage,
+  IconNews,
+  IconTextCaption,
 } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
-import Script from 'next/script';
 import useUser from '@/hooks/useUser';
 import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
@@ -133,8 +133,8 @@ export default function DashboardLayout({
 
     return compact([
       getItem({ key: "dashboard", link: '/dashboard', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
-      getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/projects?tab=blog-posts', label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-      getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/projects?tab=blog-posts', label: 'Blog posts', icon: <IconNews />, onClick: () => setIsMobileMenuOpen(false) }),
+      getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconTextCaption />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "knowledges-base", link: isProjectSelected ? `/projects/${projectId}?tab=knowledges-base` : '/projects?tab=knowledges-base', label: 'Knowledges base', icon: <IconBrain />, onClick: () => setIsMobileMenuOpen(false) }),

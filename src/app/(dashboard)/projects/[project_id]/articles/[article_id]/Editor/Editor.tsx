@@ -4,16 +4,15 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import { useEffect } from "react";
-import "./style.css";
 import { message } from "antd";
 import { debounce } from "lodash";
+import "./style.css";
 
 type Props = {
   articleId: number;
-  onChange: (updates: { markdown: string; html: string }) => void
 }
 
-export default function Editor({ articleId, onChange }: Props) {
+export default function Editor({ articleId }: Props) {
   // Creates a new editor instance.
   const editor = useCreateBlockNote();
   const { getOne, update: updateBlogPost } = useBlogPosts()
@@ -42,7 +41,6 @@ export default function Editor({ articleId, onChange }: Props) {
     const markdown = await exportMarkdown();
     const html = await exportHTML();
     if (article.markdown !== markdown) {
-      onChange({ markdown, html })
       await updateBlogPost.mutateAsync({
         id: article.id,
         markdown,

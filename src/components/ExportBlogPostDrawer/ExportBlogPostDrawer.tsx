@@ -2,7 +2,6 @@
 import {
   Button,
   Drawer,
-  Dropdown,
   Flex,
   Form,
   message,
@@ -11,17 +10,17 @@ import {
   Popconfirm,
   Spin,
   Typography,
-  Skeleton
+  Skeleton,
+  Steps,
 } from "antd";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import useProjectId from "@/hooks/useProjectId";
 import usePricingModal from "@/hooks/usePricingModal";
-import { CopyOutlined } from '@ant-design/icons';
 import { CaretDownOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX } from '@tabler/icons-react';
+import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX, IconCode, IconCopy, IconMarkdown, IconTextCaption } from '@tabler/icons-react';
 import Label from '@/components/Label/Label';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -30,6 +29,9 @@ import queryKeys from "@/helpers/queryKeys";
 import prettify from "pretty";
 import useProjects from "@/hooks/useProjects";
 import { format } from "date-fns";
+import { useState } from "react";
+import useBlogPosts from "@/hooks/useBlogPosts";
+import * as cheerio from "cheerio";
 
 const styles = {
   google: {
@@ -108,20 +110,18 @@ const slugify = (text: string) =>
 type Props = {
   open: boolean;
   onClose: () => void;
-  article: any;
-  markdown: string;
-  html: string;
+  articleId: number;
 }
 
 const ExportBlogPostDrawer = ({
   open,
   onClose,
-  article,
-  html,
-  markdown,
+  articleId,
 }: Props) => {
   const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId);
+  const { getOne, update: updateBlogPost } = useBlogPosts();
+  const { data: article } = getOne(articleId)
   const [form] = Form.useForm();
   const pricingModal = usePricingModal();
   const articleTitle = article?.title ?? ""
@@ -130,6 +130,15 @@ const ExportBlogPostDrawer = ({
   const metaDescription = Form.useWatch("meta_description", form);
   const keywords = Form.useWatch("keywords", form);
   const queryClient = useQueryClient();
+  const [current, setCurrent] = useState(0);
+
+  const next = () => {
+    setCurrent(current + 1);
+  };
+
+  const prev = () => {
+    setCurrent(current - 1);
+  };
 
   const getBlogUrl = () => {
     if (!project) return "";
@@ -143,7 +152,7 @@ const ExportBlogPostDrawer = ({
 
   const code = prettify(`
   {/* <!-- HTML --> */}
-  <title>${articleTitle || article?.title}</title>
+  <title>${articleTitle}</title>
   <meta name="description" content="${metaDescription}">
   <meta name="keywords" content="${keywords}" />
   <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
@@ -184,8 +193,12 @@ ${JSON.stringify(article?.schema_markups ?? {})}
   }
 
   const onSaveForm = async (values: any) => {
-    console.log(values)
-    message.success("Saved.");
+    await updateBlogPost.mutateAsync({
+      ...values,
+      keywords: values.keywords.split(","),
+      id: article.id,
+    })
+    next()
   }
 
   const onGenerateSchemaMarkup = useMutation({
@@ -233,115 +246,168 @@ ${JSON.stringify(article?.schema_markups ?? {})}
       }}
       footer={
         <Flex justify="end" align="center" gap="middle">
-          <Button onClick={onClose}>Cancel</Button>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: '1',
-                  label: "html",
-                  onClick: () => {
-                    navigator.clipboard.writeText(html);
-                    message.success("html copied to clipboard")
-                  }
-                },
-                {
-                  key: '2',
-                  label: "markdown",
-                  onClick: () => {
-                    navigator.clipboard.writeText(markdown);
-                    message.success("markdown copied to clipboard")
-                  }
-                },
-                {
-                  key: '3',
-                  label: ".md",
-                  onClick: () => {
-                    navigator.clipboard.writeText(`---
-                title: "${form.getFieldValue("title") ?? ""}"
-                description: "${form.getFieldValue("meta_description") ?? ""}"
-                image: ${form.getFieldValue("og_image_url") ?? ""}
-                keywords: "${form.getFieldValue("keywords") ?? ""}"
-                date: ${format(new Date(), "yyyy-MM-dd")}
-                modified: ${format(new Date(), "yyyy-MM-dd")}
-                active: true
-                ${article?.schema_markups?.length > 0 ? `schema_markups: ${JSON.stringify(article?.schema_markups, null, 2)}` : ""}
-                ---
-
-                ${markdown}
-`);
-                    message.success("markdown copied to clipboard")
-                  }
-                },
-                {
-                  key: '4',
-                  label: "text",
-                  onClick: () => {
-                    navigator.clipboard.writeText();
-                    message.success("text copied to clipboard")
-                  }
-                },
-              ]
-            }}
-            placement="bottomLeft"
-          >
-            <Button type="primary" icon={<CopyOutlined />}>Export</Button>
-          </Dropdown>
+          {current > 0 && (
+            <Button onClick={() => prev()}>
+              Previous
+            </Button>
+          )}
+          {current === 0 && (
+            <Button type="primary" onClick={() => form.submit()} loading={updateBlogPost.isPending}>
+              Save & Preview
+            </Button>
+          )}
+          {current === 1 && (
+            <Button type="primary" onClick={() => next()}>
+              Next
+            </Button>
+          )}
+          {current === 2 && (
+            <Button type="primary" onClick={onClose}>
+              Done
+            </Button>
+          )}
         </Flex>
       }
     >
-      {!article ? (
-        <Skeleton active loading />
-      ) : (
-        <Form
-          form={form}
-          autoComplete="off"
-          layout="vertical"
-          initialValues={{
-            slug: slugify(articleTitle),
-            meta_description: article.meta_description ?? "",
-            keywords: article.keywords?.slice(0, 9).join(',') ?? "",
-            og_image_url: article.featured_image ?? "",
+      <div className="flex flex-col gap-8">
+        <Steps
+          size="small"
+          current={current}
+          onChange={(newStepNumber) => {
+            if (current === 0 && newStepNumber !== current) {
+              form.submit()
+            } else {
+              setCurrent(newStepNumber)
+            }
           }}
-          onFinish={onSaveForm}
-          scrollToFirstError
-        >
-          <Form.Item style={{ marginBottom: 12 }} label={<Label name="Slug" />} name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
-            <Input addonBefore={getBlogUrl()} placeholder='/article-slug-here' />
-          </Form.Item>
-          <Form.Item style={{ marginBottom: 28 }} label={<Label name="Meta description" />} name="meta_description" help="160 characters max recommended" rules={[{ required: false, type: "string", message: "Add a meta description" }]}>
-            <Input placeholder='Add a meta description' />
-          </Form.Item>
-          <Form.Item style={{ marginBottom: 28 }} label={<Label name="Keywords" />} name="keywords" help="Separate the keywords with a comma" rules={[{ required: false, type: "string", message: "Add keywords" }]}>
-            <Input.TextArea rows={5} placeholder='Add keywords' />
-          </Form.Item>
+          items={[
+            {
+              title: 'Settings',
+            },
+            {
+              title: 'Preview',
+            },
+            {
+              title: 'Export',
+            },
+          ]}
+        />
 
-          <Form.Item style={{ marginBottom: 12 }} label={<Label name="Image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
-            <Input placeholder='https://google.com/image-url' />
-          </Form.Item>
+        {current === 0 && !article && (
+          <Skeleton active loading />
+        )}
 
-          <Form.Item style={{ marginBottom: 24 }}>
+        {current === 0 && article && (
+          <>
+            <Form
+              form={form}
+              autoComplete="off"
+              layout="vertical"
+              initialValues={{
+                slug: slugify(articleTitle),
+                meta_description: article.meta_description ?? "",
+                keywords: article.keywords.join(',') ?? "",
+                og_image_url: article.featured_image ?? "",
+              }}
+              onFinish={onSaveForm}
+              scrollToFirstError
+            >
+              <Form.Item style={{ marginBottom: 12 }} label={<Label name="Slug" />} name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
+                <Input addonBefore={getBlogUrl()} placeholder='/article-slug-here' />
+              </Form.Item>
+              <Form.Item style={{ marginBottom: 28 }} label={<Label name="Meta description" />} name="meta_description" help="160 characters max recommended" rules={[{ required: false, type: "string", message: "Add a meta description" }]}>
+                <Input placeholder='Add a meta description' />
+              </Form.Item>
+              <Form.Item style={{ marginBottom: 28 }} label={<Label name="Keywords" />} name="keywords" help="Separate the keywords with a comma" rules={[{ required: false, type: "string", message: "Add keywords" }]}>
+                <Input.TextArea rows={5} placeholder='Add keywords' />
+              </Form.Item>
+
+              <Form.Item style={{ marginBottom: 12 }} label={<Label name="OG image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+                <Input placeholder='https://google.com/image-url' />
+              </Form.Item>
+            </Form>
+
+            <Flex vertical gap="small" className="relative">
+              <SyntaxHighlighter style={solarizedDark}>
+                {code}
+              </SyntaxHighlighter>
+              <Button
+                onClick={onCopyHTML}
+                icon={<IconCopy />}
+                className="absolute top-2 right-2"
+              />
+            </Flex>
+
+            <div className="flex flex-col gap-4">
+              <Label name="Generate structured data" />
+              <Flex gap="small" style={{ flexWrap: "wrap" }}>
+                {[
+                  "BreadcrumbList",
+                  "VideoObject",
+                  "Recipe",
+                  "Article",
+                  "WebSite",
+                  "WebPage",
+                  "BlogPosting",
+                  "FAQPage",
+                  "Question",
+                ].map((schemaName) => {
+                  return (
+                    <Popconfirm
+                      title="Schema markup"
+                      description={(
+                        <span>Do you want to generate a new <b>{schemaName}</b> schema?</span>
+                      )}
+                      onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
+                      onCancel={() => { }}
+                      okText="Yes (0.25 credit)"
+                      cancelText="No"
+                    >
+                      <Button>{schemaName}</Button>
+                    </Popconfirm>
+                  )
+                })}
+              </Flex>
+
+              <Spin spinning={onGenerateSchemaMarkup.isPending}>
+                <Flex vertical gap="small" className="relative">
+                  <div>
+                    <SyntaxHighlighter style={solarizedDark}>
+                      {schemaMarkup}
+                    </SyntaxHighlighter>
+                  </div>
+                  <Button
+                    onClick={onCopySchemaMarkup}
+                    icon={<IconCopy />}
+                    className="absolute top-2 right-2"
+                  />
+                </Flex>
+              </Spin>
+            </div>
+          </>
+        )}
+
+        {current === 1 && (
+          <>
             <Flex vertical gap="small">
               <IconBrandGoogle />
               <div>
                 <Link href="" style={styles.google.title}>
-                  {articleTitle}
+                  {article.title}
                 </Link>
                 <Flex>
-                  <Typography.Text style={styles.google.url}>{getPreviewUrl("href")}</Typography.Text>
+                  <Typography.Text style={styles.google.url}>{article.slug}</Typography.Text>
                   <CaretDownOutlined style={styles.google.arrow} />
                 </Flex>
-                <Typography.Text style={styles.google.description}>{metaDescription}</Typography.Text>
+                <Typography.Text style={styles.google.description}>{article.meta_description}</Typography.Text>
               </div>
             </Flex>
-          </Form.Item>
 
-          <Form.Item style={{ marginBottom: 24 }}>
             <Flex vertical gap="small">
               <IconBrandX />
               <div style={{ position: "relative", cursor: "pointer" }}>
                 <Image
-                  src={ogImageUrl}
+                  src={article.og_image_url}
                   preview={false}
                   style={{
                     borderRadius: ".85714em",
@@ -365,15 +431,13 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 </div>
               </div>
             </Flex>
-          </Form.Item>
 
-          <Form.Item style={{ marginBottom: 24 }}>
             <Flex vertical gap="small">
               <IconBrandFacebook />
 
               <div style={{ fontFamily: "Helvetica", cursor: "pointer", border: "1px solid rgb(229 231 235/1)" }}>
                 <Image
-                  src={ogImageUrl}
+                  src={article.og_image_url}
                   preview={false}
                 />
 
@@ -383,25 +447,23 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                   >
                     {getPreviewUrl("host")}
                   </Typography.Text>
-                  <Typography.Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginTop: 2, fontSize: 16 }}>{articleTitle}</Typography.Text>
-                  <Typography.Text style={{ color: "rgb(96 103 112/1)", fontSize: 14, marginTop: 3 }}>{metaDescription}</Typography.Text>
+                  <Typography.Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginTop: 2, fontSize: 16 }}>{article.title}</Typography.Text>
+                  <Typography.Text style={{ color: "rgb(96 103 112/1)", fontSize: 14, marginTop: 3 }}>{article.meta_description}</Typography.Text>
                 </Flex>
               </div>
             </Flex>
-          </Form.Item>
 
-          <Form.Item style={{ marginBottom: 24 }}>
             <Flex vertical gap="small">
               <IconBrandLinkedin />
               <div style={{ fontFamily: "Helvetica", cursor: "pointer", borderRadius: 2, boxShadow: "0 0 #0000,0 0 #0000,0 0 #0000,0 0 #0000,0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)" }}>
                 <Image
-                  src={ogImageUrl}
+                  src={article.og_image_url}
                   preview={false}
                   style={{ border: "1px solid rgb(229 231 235/1)" }}
                 />
 
                 <Flex vertical style={{ padding: 10, background: "white", borderTop: "1px solid rgb(229 231 235/1)" }}>
-                  <Typography.Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginBottom: 2, fontSize: 16 }}>{articleTitle}</Typography.Text>
+                  <Typography.Text style={{ color: "rgb(29 33 41/1)", fontWeight: 600, marginBottom: 2, fontSize: 16 }}>{article.title}</Typography.Text>
                   <Typography.Text
                     style={{ fontSize: 12, color: "rgb(96 103 112/1)", textTransform: "uppercase" }}
                   >
@@ -410,80 +472,66 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 </Flex>
               </div>
             </Flex>
-          </Form.Item>
+          </>
+        )}
 
-          <Form.Item>
-            <Flex vertical gap="small">
-              <SyntaxHighlighter style={solarizedDark}>
-                {code}
-              </SyntaxHighlighter>
-              <Button onClick={onCopyHTML} size="large" style={{ width: "100%" }} icon={<CopyOutlined />}>Copy to clipboard</Button>
-            </Flex>
-          </Form.Item>
+        {current === 2 && (
+          <div className="grid grid-cols-2 gap-4">
 
-          <Form.Item label={<Label name="Select a structured data" />}>
-            <Flex gap="small" style={{ flexWrap: "wrap" }}>
-              {[
-                "BreadcrumbList",
-                "VideoObject",
-                "Recipe",
-                "Article",
-                "WebSite",
-                "WebPage",
-                "BlogPosting",
-                "FAQPage",
-                "Question",
-              ].map((schemaName) => {
-                return (
-                  <Popconfirm
-                    title="Schema markup"
-                    description={(
-                      <span>Do you want to generate a new <b>{schemaName}</b> schema?</span>
-                    )}
-                    onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
-                    onCancel={() => { }}
-                    okText="Yes (0.25 credit)"
-                    cancelText="No"
-                  >
-                    <Button>{schemaName}</Button>
-                  </Popconfirm>
-                )
-              })}
-            </Flex>
-          </Form.Item>
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(article.html);
+                message.success("html copied to clipboard")
+              }}
+              className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"
+            >
+              <div className="flex flex-col gap-2 items-center">
+                <IconCode />
+                <p className="text-lg font-medium">HTML</p>
+              </div>
+            </div>
 
-          <Spin spinning={onGenerateSchemaMarkup.isPending}>
-            <Form.Item>
-              <Flex vertical gap="small">
-                <div>
-                  <SyntaxHighlighter style={solarizedDark}>
-                    {schemaMarkup}
-                  </SyntaxHighlighter>
-                </div>
-                <Button onClick={onCopySchemaMarkup} size="large" style={{ width: "100%" }} icon={<CopyOutlined />}>Copy to clipboard</Button>
-              </Flex>
-            </Form.Item>
-          </Spin>
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(`---
+title: "${article.title ?? ""}"
+description: "${article.meta_description ?? ""}"
+image: ${article.og_image_url ?? ""}
+keywords: "${article.keywords.join() ?? ""}"
+date: ${format(article.created_at, "yyyy-MM-dd")}
+modified: ${format(new Date(), "yyyy-MM-dd")}
+active: true
+${article?.schema_markups?.length > 0 ? `schema_markups: ${JSON.stringify(article?.schema_markups, null, 2)}` : ""}
+---
 
-          {/* <Form.Item style={{ marginBottom: 12 }}>
-                <Flex vertical gap="small">
-                  <Texty" style={{fontSize:184}}>X</Text>
-                  <div>
-                    <Card
-                      style={styles.x.card}
-                      cover={<img alt="example" src={ogImageUrl} />}
-                    >
-                      <Flex vertical>
-                        <Text style={styles.x.title}>{article.title}</Text>
-                        <Text style={styles.x.description}>{metaDescription}</Text>
-                        <Texty" style={{fontSize:184}} style={styles.x.url}>{getPreviewUrl()}</Text>
-                      </Flex>
-                    </Card>
-                  </div>
-                </Flex>
-              </Form.Item> */}
-        </Form>
-      )}
+${article.markdown}
+`);
+                message.success("markdown copied to clipboard")
+              }}
+              className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"
+            >
+              <div className="flex flex-col gap-2 items-center">
+                <IconMarkdown />
+                <p className="text-lg font-medium">Markdown</p>
+              </div>
+            </div>
+
+            <div
+              onClick={() => {
+                const $ = cheerio.load(article.html);
+                navigator.clipboard.writeText($.text());
+                message.success("text copied to clipboard")
+              }}
+              className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"
+            >
+              <div className="flex flex-col gap-2 items-center">
+                <IconTextCaption />
+                <p className="text-lg font-medium">Text</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </Drawer>
   )
 }
