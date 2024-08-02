@@ -34,7 +34,9 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
           event,
           session
         })
-        axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then()
+        if (event === 'INITIAL_SESSION') {
+          axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then().catch()
+        }
         sessionStore.setSession(session);
         queryClient.invalidateQueries({
           queryKey: queryKeys.user()
