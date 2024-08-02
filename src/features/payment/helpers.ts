@@ -460,8 +460,8 @@ export const upsertStripeCustomer = async (userId: string) => {
       await supabase.from("users").update({ customer_id: customer.id }).eq("id", userId).throwOnError();
       return customer;
     }
-    g
-    return null;
+
+g    return null;
   } catch {
 
   }
