@@ -625,7 +625,7 @@ export class AI {
 - a section that has more than 200 words should be split into sub-sections or paragraphs`;
 
     if (values.youtube_transcript) {
-      prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 2000)}`
+      prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 10000)}`
     }
 
     prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
@@ -933,9 +933,10 @@ video_url: string;
   }
 
   getCaptionTemplate(values: CaptionTemplate) {
-    let prompt = `Write a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`;
+    const platform = capitalize(values.platform)
+    let prompt = ""
 
-    prompt += `\n- Language: ${values.language}`
+    prompt += `- Language: ${values.language}`
     if (values.tones) prompt += values.tones?.length > 0 ? `\nTones: ${values.tones.join(', ')}` : "";
     if (values.purposes) prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
     if (values.emotions) prompt += values.emotions?.length > 0 ? `\nEmotions: ${values.emotions.join(', ')}` : "";
@@ -954,32 +955,32 @@ video_url: string;
     if (values.with_cta && values.cta) prompt += `\n- CTA: ${values.cta}`
     if (!values.with_cta) prompt += `\n- Do not add any CTA`
 
-    if (values.writingStyle) prompt += `\nHere is my writing style: ${values.writingStyle}\n`;
+    if (values.writingStyle) prompt += `\n\nHere is my writing style: ${values.writingStyle}\n`;
 
     if (values.goal === "write") {
-      prompt += `\n-${capitalize(values.goal)} a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`
+      prompt += `\n-${capitalize(values.goal)} a ${platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`
     }
 
     if (values.goal === "rephrase" && values.caption_source) {
-      prompt += `\n-Rephrase (while keeping the level of similary/duplication low) using my writing style the following ${values.platform} caption to up to ${values.caption_length} characters maximum about, caption source to rephrase: "${values.caption_source}"\n`
+      prompt += `\n-Rephrase (while keeping the level of similary/duplication low) using my writing style the following ${platform} caption to up to ${values.caption_length} characters maximum about, caption source to rephrase: "${values.caption_source}"\n`
       prompt += `\n-Don't copy or add any links you find in the caption source`
       prompt += `\n-Don't add/make up links unless I provide it to you`
     }
 
     if (values.goal === "reply" && values.caption_source) {
-      prompt += `\n-Reply to the following ${values.platform} caption using my writing style to up to ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
+      prompt += `\n-Reply to the following ${platform} caption using my writing style to up to ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
       prompt += `\n-Don't copy or add any links you find in the caption source`
       prompt += `\n-Don't add/make up links unless I provide it to you`
     }
 
 
     if (values.goal === "youtube_to_caption" && values.youtube_transcript) {
-      prompt += `\n-${capitalize(values.goal)} a ${values.platform} caption of up to ${values.caption_length} characters maximum about: ${values.youtube_transcript.slice(0, 2000)}.`
-      prompt += `\n-Don't copy or add any links you find in the caption source`
+      prompt += `\n-Write a ${platform} caption of up to ${values.caption_length} characters maximum about: ${values.youtube_transcript.slice(0, 10000)}.`
+      prompt += `\n\n-Don't copy or add any links you find in the caption source`
       prompt += `\n-Don't add/make up links unless I provide it to you`
     }
 
-    prompt += `\n// output structure
+    prompt += `\n\n// output structure
     \`\`\`ts
     type Result = {
       caption: string;
