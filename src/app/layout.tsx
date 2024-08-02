@@ -47,11 +47,17 @@ export default function RootLayout({
     token,
   } = theme.useToken();
   return (
-    <html lang="en">
+    <html lang="en" className='bg-white'>
       <head>
         <title>Hubrank</title>
       </head>
-      <body className={inter.className} style={{ margin: 0, background: token.colorBgLayout }}>
+      <body
+        className={inter.className}
+        style={{
+          margin: 0,
+          // background: token.colorBgLayout
+        }}
+      >
         <CrispChat />
         <AntdRegistry>
           <ConfigProvider

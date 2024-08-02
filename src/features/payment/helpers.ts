@@ -440,12 +440,15 @@ export const updateUserSubscription = async ({ event_type, subscription_id, cust
 export const upsertStripeCustomer = async (userId: string) => {
   const { data: user } = await supabase.from('users').select().eq("id", userId).maybeSingle().throwOnError();
   try {
-    const existingCustomer = await stripe.customers.retrieve(user?.customer_id);
-    return existingCustomer
+    const customers = await stripe.customers.search({
+      query: `email: '${user.email}'`,
+      limit: 1,
+    });
+    console.log("customers", customers)
+    return customers?.data?.[0]
   } catch {
     if (user) {
       const customer = await stripe.customers.create({
-        // name: user.name ?? "",
         email: user.email ?? "",
       });
       await supabase.from("users").update({ customer_id: customer.id }).eq("id", userId).throwOnError();

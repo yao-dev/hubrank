@@ -9,8 +9,8 @@ const menu = [
 ]
 
 const legals = [
-  { href: "/", link: "Terms of services" },
-  { href: "/", link: "Privacy Policy" },
+  { href: "/terms-and-conditions", link: "Terms & conditions" },
+  { href: "/privacy-policy", link: "Privacy Policy" },
 ]
 
 const Footer = () => {
