@@ -432,7 +432,6 @@ export const updateUserSubscription = async ({ event_type, subscription_id, cust
   }
 
   // TODO: keep the amount of credits the user had if he downgrades (object.amount_due) or if the transation amount is 0
-
   console.log(`[${event_type}] UPSERT`, updatedSubscription)
   await supabase.from("users").update({ subscription: updatedSubscription }).eq("email", customerEmail).throwOnError()
 }
