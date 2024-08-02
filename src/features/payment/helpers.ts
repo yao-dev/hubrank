@@ -37,8 +37,11 @@ export const getCheckoutData = ({
       success_url: getCheckoutReturnUrl({ origin }), // NOTE: ?success=true
       cancel_url: getCheckoutReturnUrl({ origin }), // NOTE: add ?canceled=true
       automatic_tax: { enabled: true },
+      customer: customerId,
+      customer_update: {
+        address: 'auto',
+      },
       metadata,
-      customer: customerId
     }
   }
   return {
@@ -54,8 +57,11 @@ export const getCheckoutData = ({
     success_url: getCheckoutReturnUrl({ origin }), // NOTE: ?success=true
     cancel_url: getCheckoutReturnUrl({ origin }), // NOTE: add ?canceled=true
     automatic_tax: { enabled: true },
+    customer_email: customerEmail,
+    customer_update: {
+      address: 'auto',
+    },
     metadata,
-    customer_email: customerEmail
   }
 }
 

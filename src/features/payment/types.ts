@@ -12,6 +12,9 @@ export type CheckoutData = {
   },
   metadata: any;
   customer: string;
+  customer_update: {
+    address: 'auto',
+  },
 } | {
   line_items: {
     price: string;
@@ -26,6 +29,9 @@ export type CheckoutData = {
   },
   metadata: any;
   customer_email: string;
+  customer_update: {
+    address: 'auto',
+  },
 }
 
 export type GetCheckoutData = {

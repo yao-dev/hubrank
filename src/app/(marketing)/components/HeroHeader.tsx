@@ -106,8 +106,7 @@ const HeroHeader = () => {
 
         {/* subheadline */}
         <h2 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg lg:text-xl">
-          {/* Create blogs, and socials with no SEO expertise in just few clicks. */}
-          Generate SEO blogs, social captions & replies in just few clicks
+          Generate SEO blogs, social media captions & replies in just few clicks
         </h2>
 
         {/* get started cta */}
