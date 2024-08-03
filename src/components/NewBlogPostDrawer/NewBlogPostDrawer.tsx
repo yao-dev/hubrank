@@ -150,8 +150,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         </Flex>
       }
     >
-      <NewBlog
-        PostForm form={form} onSubmit={onSubmit} />
+      <NewBlogPostForm form={form} onSubmit={onSubmit} />
     </Drawer>
   )
 }
