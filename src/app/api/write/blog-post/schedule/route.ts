@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
 import { AI } from "@/app/api/AI";
-import { getHeadlines, getProjectContext, getUpstashDestination, getWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus } from "@/app/api/helpers";
+import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -32,9 +32,9 @@ export async function POST(request: Request) {
   })
 
   // FETCH WRITING STYLE IF IT EXISTS
-  let writingStyle;
+  let writingStyle: any = getManualWritingStyle(body);
   if (body.writing_style_id) {
-    writingStyle = await getWritingStyle(body.writing_style_id)
+    writingStyle = await getSavedWritingStyle(body.writing_style_id)
   }
 
   if (body.title_mode === "custom") {

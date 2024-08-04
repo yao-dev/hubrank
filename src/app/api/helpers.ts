@@ -113,21 +113,35 @@ export const updateBlogPost = async (articleId: number, updates: any) => {
   }
 }
 
-export const getWritingStyle = async (writingStyleId?: number) => {
-  let writing_style = "";
+export const getManualWritingStyle = (body: any) => {
+  return {
+    tones: body.tones,
+    purposes: body.purposes,
+    emotions: body.emotions,
+    vocabularies: body.vocabularies,
+    sentence_structures: body.sentence_structures,
+    perspectives: body.perspectives,
+    writing_structures: body.writing_structures,
+    instructional_elements: body.instructional_elements,
+  };
+}
+
+export const getSavedWritingStyle = async (writingStyleId?: number) => {
+  let writingStyle;
   if (writingStyleId) {
     try {
-      const { data: writingStyle } = await supabase.from("writing_styles").select("text").eq("id", writingStyleId).limit(1).single();
-      writing_style = writingStyle?.text ?? "";
+      const { data } = await supabase.from("writing_styles").select().eq("id", writingStyleId).limit(1).single();
+      writingStyle = data;
     } catch (error) {
       console.error(chalk.bgRed("[Error]: fetching writing style"), error);
       throw error;
     }
   }
-  return writing_style;
+  return writingStyle;
 }
 
 export const setPromptWritingStyle = ({ prompt, writingStyle }: any) => {
+  prompt += writingStyle?.tones?.length > 0 ? `\nTones: ${writingStyle?.tones.join(', ')}` : "";
   prompt += writingStyle?.purposes?.length > 0 ? `\nPurposes: ${writingStyle?.purposes.join(', ')}` : "";
   prompt += writingStyle?.emotions?.length > 0 ? `\nEmotions: ${writingStyle?.emotions.join(', ')}` : "";
   prompt += writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${writingStyle?.vocabularies.join(', ')}` : "";
@@ -143,10 +157,6 @@ export const writeHook = async ({
   outline,
   seed_keyword,
   keywords,
-  perspective,
-  purpose,
-  tones,
-  article_id
 }: any) => {
   console.log(`[start]: hook`);
   try {
@@ -155,16 +165,13 @@ export const writeHook = async ({
       outline,
       seed_keyword,
       keywords,
-      // perspective,
-      // purpose,
-      // tones,
     });
 
     // await saveWritingCost({ articleId: article_id, cost: ai.cost });
     const rephraseInstruction = getRephraseInstruction(hook)
 
     let stats = getSummary(hook);
-    if (stats.FleschKincaidGrade > 12) {
+    if (stats.FleschKincaidGrade > 120) {
       console.log("- rephrase");
       hook = await ai.rephrase(hook, rephraseInstruction);
       console.log("- rephrase done");
@@ -218,17 +225,21 @@ export const writeSection = async ({
     call_to_action?: string;
     call_to_action_example?: string;
     custom_prompt?: string;
-    perspective: string;
     image?: {
       href: string;
       alt: string;
     },
-    youtube_video?: any;
     internal_links?: string[];
-    images?: string[],
-    tones?: any;
-    purpose: string;
+    images?: string[];
     video_url?: string;
+    tones?: string[];
+    purposes?: string[];
+    emotions?: string[];
+    vocabularies?: string[];
+    sentence_structures?: string[];
+    perspectives?: string[];
+    writing_structures?: string[];
+    instructional_elements?: string[];
   };
   title: string;
   outline: string;
@@ -589,9 +600,11 @@ export const getRelevantUrls = async ({
   articleId: number;
   topK?: number
 }): Promise<string[]> => {
+  console.log("urls", urls)
   const namespaceId = getArticleNamespaceId({ userId, articleId });
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const uniqUrls = new Set(urls);
+  console.log("uniq urls", uniqUrls)
   const urlSubsets = Array.from(uniqUrls).slice(0, 1000);
   const promises = urlSubsets.map((url) => {
     return namespace.upsert({
@@ -606,6 +619,8 @@ export const getRelevantUrls = async ({
 
   await Promise.all(promises)
 
+  console.log("query", query)
+
   const result = await namespace.query({
     data: query,
     topK: 500,
@@ -614,6 +629,8 @@ export const getRelevantUrls = async ({
   });
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
+
+  console.log("retrieved urls", result)
 
   return result.filter((item) => item.score >= 0.80).slice(0, topK).map(item => item.data) as string[];
 }
@@ -739,7 +756,7 @@ export const getYoutubeVideosForKeyword = async ({
       language_code: languageCode,
       device: 'desktop',
       os: 'windows',
-      depth: 50,
+      depth: 10,
     }],
     auth: {
       username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",

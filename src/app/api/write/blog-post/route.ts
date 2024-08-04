@@ -18,10 +18,12 @@ import {
   updateBlogPost,
   writeHook,
   writeSection,
-  getYoutubeTranscript,
+  getYoutubeTranscript
 } from "../../helpers";
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
+import { getImages } from "@/helpers/image";
+import { get, shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -147,18 +149,7 @@ export async function POST(request: Request) {
         title: body.title,
         outline,
         seed_keyword: body.seed_keyword,
-        keywords, // TODO: make use of it in ai.hook
-        // perspective: body.perspective,
-        // tones: body.tones,
-        // purpose: body.purpose,
-        // article_id: articleId
-        purposes: body.purposes,
-        emotions: body.emotions,
-        vocabularies: body.vocabularies,
-        sentence_structures: body.sentence_structures,
-        perspectives: body.perspectives,
-        writing_structures: body.writing_structures,
-        instructional_elements: body.instructional_elements,
+        keywords,
       })
     }
 
@@ -177,19 +168,12 @@ export async function POST(request: Request) {
       }
       let image;
       // if (section.media === "image") {
-      //   // TODO: fetch image
-      //   // try {
-      //   //   image = await findImage(section.image_search)
-      //   //   if (!image?.href) {
-      //   //     image = await getImage("unsplash", section.image_search)
-      //   //   }
-      //   // } catch (e) {
-      //   //   if (!image?.href) {
-      //   //     image = await getImage("unsplash", section.image_search)
-      //   //   }
-      //   // }
       //   image = await getImage("unsplash", shuffle(get(section, "keywords", "").split(","))[0])
       // }
+      if (section.image === "image") {
+        const images = await getImages(get(section, "keywords", "").split(","));
+        image = shuffle(images)[0]
+      }
 
       // TODO: add knowledges in writeSection prompt
       const knowledges = await getProjectKnowledges({
@@ -211,13 +195,18 @@ export async function POST(request: Request) {
           call_to_action: section?.call_to_action,
           call_to_action_example: section?.call_to_action_example,
           custom_prompt: section?.custom_prompt,
-          perspective: body.perspective,
-          tones: body.tones,
-          purpose: body.purpose,
           image,
           internal_links: section?.internal_links,
           images: section?.images,
           video_url: section?.video_url,
+          tones: section?.tones,
+          purposes: section?.purposes,
+          emotions: section?.emotions,
+          vocabularies: section?.vocabularies,
+          sentence_structures: section?.sentence_structures,
+          perspectives: section?.perspectives,
+          writing_structures: section?.writing_structures,
+          instructional_elements: section?.instructional_elements,
         },
         outline,
         title: body.title,

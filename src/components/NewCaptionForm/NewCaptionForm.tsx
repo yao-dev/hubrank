@@ -26,10 +26,11 @@ import { capitalize } from "lodash";
 
 type Props = {
   onSubmit: (values: any) => void;
-  form: FormInstance<any>
+  form: FormInstance<any>;
+  isSubmitting: boolean;
 }
 
-const NewCaptionForm = ({ onSubmit, form }: Props) => {
+const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
   const projectId = useProjectId();
   const { data: project, isPending } = useProjects().getOne(projectId)
   const { data: writingStyles } = useWritingStyles().getAll();
@@ -59,6 +60,7 @@ const NewCaptionForm = ({ onSubmit, form }: Props) => {
       />
       <Form
         form={form}
+        disabled={isSubmitting}
         initialValues={{
           writing_mode: "custom",
           with_hashtags: false,

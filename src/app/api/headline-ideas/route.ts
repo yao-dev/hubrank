@@ -2,7 +2,7 @@ import { supabaseAdmin } from "@/helpers/supabase";
 import { getRelatedKeywords } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
-import { getHeadlines, getProjectContext, getWritingStyle } from "../helpers";
+import { getHeadlines, getManualWritingStyle, getProjectContext, getSavedWritingStyle } from "../helpers";
 
 export const maxDuration = 45;
 
@@ -59,9 +59,9 @@ export async function POST(request: Request) {
       lang: language.label,
     })
 
-    let writingStyle;
+    let writingStyle: any = getManualWritingStyle(body);
     if (body.writing_mode === "custom") {
-      writingStyle = await getWritingStyle(body.writing_style_id)
+      writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
     const headlines = await getHeadlines({

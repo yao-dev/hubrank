@@ -3,7 +3,7 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/mantine/style.css";
 import useBlogPosts from "@/hooks/useBlogPosts";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { message } from "antd";
 import { debounce } from "lodash";
 import "./style.css";
@@ -16,7 +16,8 @@ export default function Editor({ articleId }: Props) {
   // Creates a new editor instance.
   const editor = useCreateBlockNote();
   const { getOne, update: updateBlogPost } = useBlogPosts()
-  const { data: article } = getOne(articleId)
+  const { data: article } = getOne(articleId);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const exportHTML = async () => {
     const content = await editor.blocksToHTMLLossy();
@@ -31,8 +32,11 @@ export default function Editor({ articleId }: Props) {
   // For initialization; on mount, convert the initial HTML to blocks and replace the default editor's content
   useEffect(() => {
     async function init() {
-      const blocks = await editor.tryParseMarkdownToBlocks(article.markdown);
+      console.log(article.html);
+      const blocks = await editor.tryParseHTMLToBlocks(article.html);
+      console.log(blocks);
       editor.replaceBlocks(editor.document, blocks);
+      setIsLoaded(true)
     }
     init();
   }, [editor, article]);
@@ -40,7 +44,7 @@ export default function Editor({ articleId }: Props) {
   const debounceUpdate = async () => {
     const markdown = await exportMarkdown();
     const html = await exportHTML();
-    if (article.markdown !== markdown) {
+    if (isLoaded && article.markdown !== markdown) {
       await updateBlogPost.mutateAsync({
         id: article.id,
         markdown,

@@ -6,6 +6,7 @@ import { getUserId } from "@/helpers/user";
 import useProjectId from "@/hooks/useProjectId";
 import axios from "axios";
 import usePricingModal from "@/hooks/usePricingModal";
+import { useState } from "react";
 
 type Props = {
   open: boolean;
@@ -16,21 +17,26 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
   const projectId = useProjectId();
   const [form] = Form.useForm();
   const pricingModal = usePricingModal();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const writeCaption = async (values: any) => {
     try {
+      setIsSubmitting(true)
       const { data } = await axios.post('/api/credits-check', {
         user_id: await getUserId(),
         action: 'write-cpation',
       });
       if (!data.authorized) {
+        setIsSubmitting(false);
         return pricingModal.open(true)
       }
       axios.post('/api/write/caption', values)
       message.success('Caption added in the queue!');
       onClose();
-      form.resetFields()
+      form.resetFields();
+      setIsSubmitting(false)
     } catch (e) {
+      setIsSubmitting(false)
       notification.error({
         message: "We had an issue adding your caption in the queue please try again",
         placement: "bottomRight",
@@ -58,6 +64,7 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
       }}
       open={open}
       destroyOnClose
+      closable={!isSubmitting}
       styles={{
         body: {
           paddingBottom: 80,
@@ -69,8 +76,8 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
           <Button
             onClick={() => form.submit()}
             type="primary"
-            loading={false}
-            disabled={false}
+            loading={isSubmitting}
+            disabled={isSubmitting}
           >
             Write caption (0.5 credit)
           </Button>
@@ -80,6 +87,7 @@ const NewCaptionDrawer = ({ open, onClose }: Props) => {
       <NewCaptionForm
         form={form}
         onSubmit={onFinish}
+        isSubmitting={isSubmitting}
       />
     </Drawer>
   )

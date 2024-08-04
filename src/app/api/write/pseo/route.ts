@@ -12,12 +12,13 @@ import {
   getProjectKnowledges,
   getRelevantKeywords,
   getRelevantUrls,
-  getWritingStyle,
+  getSavedWritingStyle,
   getYoutubeVideosForKeyword,
   markArticleAsReadyToView,
   setPromptWritingStyle,
   updateBlogPost,
   updateBlogPostStatus,
+  getManualWritingStyle,
 } from "../../helpers";
 import { NextResponse } from "next/server";
 import { getSummary } from 'readability-cyr';
@@ -75,9 +76,9 @@ export async function POST(request: Request) {
   });
 
   // FETCH WRITING STYLE IF IT EXISTS
-  let writingStyle;
+  let writingStyle: any = getManualWritingStyle(body);
   if (body.writing_style_id) {
-    writingStyle = await getWritingStyle(body.writing_style_id)
+    writingStyle = await getSavedWritingStyle(body.writing_style_id)
   }
 
   // FETCH THE SITEMAP
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
 
   let prompt = `Now write up to ${body.word_count} words using this template`;
 
-  setPromptWritingStyle({ prompt, writingStyle })
+  setPromptWritingStyle({ prompt, writingStyle });
 
   prompt += body.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
   prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
@@ -145,7 +146,7 @@ export async function POST(request: Request) {
     - up to 1 video per section maximum
     - don't add a list of video at the end of the article
     - don't put more than 1 video together
-    - here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
+    - here is how you embed it in the markdown => <iframe width="560" height="315" src="https://www.youtube.com/embed/REPLACE_WITH_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
     ${JSON.stringify(videos, null, 2)}
     `

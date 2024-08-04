@@ -29,10 +29,11 @@ import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
 
 type Props = {
   onSubmit: (values: any) => void;
-  form: FormInstance<any>
+  form: FormInstance<any>;
+  isSubmitting: boolean
 }
 
-const NewBlogPostForm = ({ form, onSubmit }: Props) => {
+const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
   const projectId = useProjectId();
   const { data: project, isPending } = useProjects().getOne(projectId)
   const { data: writingStyles } = useWritingStyles().getAll();
@@ -165,9 +166,13 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
         autoComplete="off"
         layout="vertical"
         // onFinish={onFinish}
-        onFinish={onSubmit}
+        onFinish={(values) => {
+          console.log("onFinish", values);
+          onSubmit(values)
+        }}
         onError={console.error}
         scrollToFirstError
+        disabled={isSubmitting}
       >
         <Form.Item
           name="language_id"
@@ -442,7 +447,6 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
           </Form.Item>
 
           <Form.Item
-            // hidden
             name="sitemap"
             label={<Label name="Sitemap" />}
             rules={[{
@@ -474,8 +478,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
             />
           </Form.Item>
 
-          <Form.Item
-            hidden
+          {/* <Form.Item
             name="external_sources"
             label={<Label name="External source" />}
             rules={[{ type: "string" }]}
@@ -489,7 +492,7 @@ const NewBlogPostForm = ({ form, onSubmit }: Props) => {
             //   max: 150,
             // }}
             />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item
             hidden

@@ -444,8 +444,6 @@ export const upsertStripeCustomer = async (userId: string) => {
       limit: 1,
     });
 
-    console.log("customers", customers)
-
     const existingCustomer = customers?.data?.[0];
 
     if (existingCustomer) {

@@ -6,7 +6,7 @@ import { normalizePrompt } from "./helpers";
 import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
-import { emotions, perspectives, purposes, sentenceStructures, tones, vocabularies } from "@/options";
+import { emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
 import { capitalize, isEmpty } from "lodash";
 
 export type CaptionTemplate = {
@@ -14,14 +14,6 @@ export type CaptionTemplate = {
   goal: "write" | "rephrase" | "reply" | "youtube_to_caption";
   caption_length: number;
   description: string;
-  tones?: string[];
-  purposes?: string[];
-  emotions?: string[];
-  vocabularies?: string[];
-  sentence_structures?: string[];
-  perspectives?: string[];
-  writing_structures?: string[];
-  instructional_elements?: string[];
   with_hashtags?: boolean;
   with_emojis?: boolean;
   with_single_emoji?: boolean;
@@ -31,7 +23,17 @@ export type CaptionTemplate = {
   cta?: string;
   caption_source?: string;
   language: string;
-  writingStyle?: string;
+  writingStyle?: {
+    text?: string;
+    tones?: string[];
+    purposes?: string[];
+    emotions?: string[];
+    vocabularies?: string[];
+    sentence_structures?: string[];
+    perspectives?: string[];
+    writing_structures?: string[];
+    instructional_elements?: string[];
+  };
   external_sources?: {
     url: string;
     objective: string
@@ -133,7 +135,7 @@ export class AI {
 
     if (opts.context) this.system += `\nProduct info:\n${opts.context}\n===`
     if (opts.writing_style) {
-      this.system += `\nWriting style example to imitate:\n${opts.writing_style}`
+      this.system += `\nWriting style example to imitate:\n${opts.writing_style.text}`
       // this.system += opts.writing_style?.purposes?.length > 0 ? `\nPurposes: ${opts.writing_style?.purposes.join(', ')}` : "";
       // this.system += opts.writing_style?.emotions?.length > 0 ? `\nEmotions: ${opts.writing_style?.emotions.join(', ')}` : "";
       // this.system += opts.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${opts.writing_style?.vocabularies.join(', ')}` : "";
@@ -311,42 +313,25 @@ export class AI {
     const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the 1st page of the SERP for the keyword "${values.seedKeyword}":
 - ${values.competitorsHeadlines.join('\n- ')}`
 
-    let prompt = `${prefix}
+    let prompt = `[headline]
+
+    ${prefix}
 
     Give me ${values.count} unique and SEO friendly ${values.count <= 1 ? "headline" : "headlines"} made for the search intent "${values.seedKeyword}"
-    - your tone is ${values.tone}
-    - your purpose is ${values.purpose}
     - the content type is "${values.contentType}"
-    ${values.clickbait ? "- make it clickbait" : ""}
     - one headline per line
-    - do not prefix with number`;
+    - do not prefix with number
+    ${values.clickbait ? "- make it clickbait" : ""}`;
 
-    if (values.writingStyle) prompt += `\nCopy the tone and writing style of this text: ${values.writingStyle}`;
+    if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
 
-    prompt += `\nStart and end your writing with triple @@@.`
+    prompt += `\n\nStart and end your writing with triple @@@.`
 
     return prompt
   }
 
   async headlines(values: any) {
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: models.opus });
-  }
-
-  titleTemplate({ competitorsHeadlines, seedKeyword, tone, contentType, purpose, clickbait }: any) {
-    return `List of competitors headline ranking in the 1st page of the SERP for the keyword "${seedKeyword}"
-- ${competitorsHeadlines.join('\n- ')}
-
-    Write a unique and SEO friendly headline made for the search intent "${seedKeyword}"
-    - your tone is ${tone}
-    - your purpose is ${purpose}
-    - the content type is "${contentType}"
-    ${clickbait ? "- the headline is a clickbait" : ""}
-    - write in markdown wrapped in \`\`\`markdown\`\`\`
-    `
-  }
-
-  async title(values: any) {
-    return this.ask(this.titleTemplate(values), { type: "markdown", mode: "title", temperature: 0.5, model: models.opus });
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.6, model: models.opus });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -422,29 +407,26 @@ export class AI {
   //   }
 
   hookTemplate(values: any) {
-    let prompt = `
-    Outline: ${values?.outline}
-    Seed keyword: ${values?.seed_keyword}`;
+    let prompt = `[hook]
 
+    Outline: ${values?.outline}
+    Seed keyword: ${values?.seed_keyword}
+    `;
+
+    prompt += this.opts?.writing_style?.tones?.length > 0 ? `\nTones: ${this.opts?.writing_style?.tones.join(', ')}` : "";
     prompt += this.opts?.writing_style?.purposes?.length > 0 ? `\nPurposes: ${this.opts?.writing_style?.purposes.join(', ')}` : "";
     prompt += this.opts?.writing_style?.emotions?.length > 0 ? `\nEmotions: ${this.opts?.writing_style?.emotions.join(', ')}` : "";
     prompt += this.opts?.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${this.opts?.writing_style?.vocabularies.join(', ')}` : "";
-    // prompt += this.opts?.writing_style?.sentence_structures?.length > 0 ? `\nSentence structures: ${this.opts?.writing_style?.sentence_structures.join(', ')}` : "";
     prompt += this.opts?.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${this.opts?.writing_style?.perspectives.join(', ')}` : "";
-    // prompt += this.opts?.writing_style?.writing_structures?.length > 0 ? `\nWriting structures: ${this.opts?.writing_style?.writing_structures.join(', ')}` : "";
-    // prompt += this.opts?.writing_style?.instructional_elements?.length > 0 ? `\nInstructional elements: ${this.opts?.writing_style?.instructional_elements.join(', ')}` : "";
-
-    // if (!isEmpty(values?.tones)) {
-    //   prompt += `\nTones: ${JSON.stringify(values.tones, null, 2)}`
-    // }
 
     if (!isEmpty(values?.keywords)) {
-      prompt += `\nKeywords:\n${values.keywords.join('\n')}`
+      prompt += `\n\nKeywords:\n${values.keywords.join('\n')}\n`
     }
 
     prompt += `
-    Write a hook (typically ranging from one to three sentences or around 20-50 words) for the article "${values?.title}"
-    Choose the hook type that fit the best this article
+    Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
+    Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
+
     write in markdown wrapped in \`\`\`markdown\`\`\`.
     `;
 
@@ -452,36 +434,34 @@ export class AI {
   }
 
   async hook(values: any) {
-    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.3, model: models.opus })
+    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.5, model: models.opus })
   }
 
   writeTemplate(values: any) {
+    const hasImage = !!values?.section?.image;
     const hasImages = values?.section?.images?.length > 0;
-    const hasVideo = !!values?.section?.image_url;
+    const hasVideo = !!values.section?.video_url;
 
-    let prompt = `For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
+    let prompt = `[write]
+
+    For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
     Section heading prefix: ${values?.section?.prefix}
-    Do not add a CTA at the end`
+    Do not add a CTA at the end
+    Do not add heading for the hook if there is any
+    `
 
     // prompt += `Outline: ${values?.outline}`
 
-    prompt += values?.section?.purposes?.length > 0 ? `\nPurposes: ${values?.section?.purposes.join(', ')}` : "";
-    prompt += values?.section?.emotions?.length > 0 ? `\nEmotions: ${values?.section?.emotions.join(', ')}` : "";
-    prompt += values?.section?.vocabularies?.length > 0 ? `\nVocabularies: ${values?.section?.vocabularies.join(', ')}` : "";
-    prompt += values?.section?.sentence_structures?.length > 0 ? `\nSentence structures: ${values?.section?.sentence_structures.join(', ')}` : "";
-    prompt += values?.section?.perspectives?.length > 0 ? `\nPerspectives: ${values?.section?.perspectives.join(', ')}` : "";
-    prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting structures: ${values?.section?.writing_structures.join(', ')}` : "";
-    prompt += values?.section?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values?.section?.instructional_elements.join(', ')}` : "";
+    prompt += values?.section?.tones?.length > 0 ? `\nTones: ${values.section.tones.join(', ')}` : "";
+    prompt += values?.section?.purposes?.length > 0 ? `\nPurposes: ${values.section.purposes.join(', ')}` : "";
+    prompt += values?.section?.emotions?.length > 0 ? `\nEmotions: ${values.section.emotions.join(', ')}` : "";
+    prompt += values?.section?.vocabularies?.length > 0 ? `\nVocabularies: ${values.section.vocabularies.join(', ')}` : "";
+    prompt += values?.section?.sentence_structures?.length > 0 ? `\nSentence structures: ${values.section.sentence_structures.join(', ')}` : "";
+    prompt += values?.section?.perspectives?.length > 0 ? `\nPerspectives: ${values.section.perspectives.join(', ')}` : "";
+    prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting structures: ${values.section.writing_structures.join(', ')}` : "";
+    prompt += values?.section?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.section.instructional_elements.join(', ')}` : "";
 
-    // if (!isEmpty(values?.tones)) {
-    //   prompt += `\nTones: ${JSON.stringify(values.tones, null, 2)}`
-    // }
-
-    // if (values?.purpose) {
-    //   prompt += `\nPurpose: ${values.purpose}`
-    // }
-
-    prompt += `\nRelevant keywords: ${values?.section?.keywords}`
+    prompt += `\n\nRelevant keywords: ${values?.section?.keywords}\n`
 
     if (values?.section?.call_to_action) {
       prompt += `\nCall to action instructions:\n${values.section.call_to_action}`;
@@ -497,35 +477,40 @@ export class AI {
       prompt += `\nInternal links to include:\n${values.section.internal_links?.join('\n')}\n\n`
     }
 
+    if (hasImage) {
+      prompt += `\nImage to include: ${values.section.image}`
+    }
+
     if (hasImages) {
       prompt += `\nImages to include: ${JSON.stringify(values?.section?.images ?? "", null, 2)}`
     }
 
     if (hasVideo) {
       prompt += `\nVideo to include:
-      // here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
+      // here is how you embed it in the markdown => <iframe width="560" height="315" src="https://www.youtube.com/embed/REPLACE_WITH_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
       url: ${values.section.video_url}`
     }
 
+    // - You know how to transition from a section to another at the end of a section.
     prompt += `
     Primary instructions:
     - Leverage markdown syntaxes to make your content appealing and easier to read.
     - Add h3 sub-sections with ### if the content as more than 2 paragraphs.
     - Don't use h1 at all.
-    - You know how to transition from a section to another at the end of a section.
     - Add anchor to the section here is an example for a h2: ## <a name="heading-example"></a>Heading example
     - Prefer Active Voice
     - Avoid the use of adverbs as much as possible
-    - IMPORTANT: Do not use adverbs at all
     - Simplify Words
     - Avoid Hard-to-Read Phrases
     - Avoid Passive Voice
     - Consider Sentence Variety
     - Readability Grade Goal 11
+    - IMPORTANT: Do not use adverbs at all
     - IMPORTANT: Diversify vocabulary
     - IMPORTANT: vary the sentence structure and tone to make it sound more conversational.
     - IMPORTANT: avoid words like "as you", "remember", "embrace", "by", "ready to", "are you tired", "are you struggling"
-    - do not use emojis`
+    - do not use emojis
+    - do not introduce any next section`
 
     if (values?.section?.image?.alt && values?.section?.image?.href) {
       prompt += `\n- Include this image in the content: ![${values.section.image.alt}](${values.section.image.href})`
@@ -535,19 +520,15 @@ export class AI {
       prompt += `\nSecondary instructions (does not override primary instructions):\n${values?.section?.custom_prompt}`
     }
 
-    //     prompt += `Article to expand:
-    // ${this.article}
-    //     `
-
     return prompt
   }
 
   async write(values: any) {
-    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.5, model: models.opus });
+    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.3, model: models.opus });
   }
 
   expandTemplate() {
-    return `Expand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`..`
+    return `[expand]\n\nExpand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`..`
   }
 
   async expand(section: any) {
@@ -560,7 +541,7 @@ export class AI {
 
   rephraseTemplate(content: any) {
     const stats = getSummary(content)
-    return `There is ${stats.difficultWords} difficult words in this text and the Flesch Kincaid Grade is ${parseInt(stats.FleschKincaidGrade)}
+    return `[rephrase]\n\nThere is ${stats.difficultWords} difficult words in this text and the Flesch Kincaid Grade is ${parseInt(stats.FleschKincaidGrade)}
 
     Please rephrase the above text applying Hemingway principles
     - Prefer Active Voice
@@ -600,7 +581,7 @@ export class AI {
   }
 
   paraphraseTemplate(writingStyle = "") {
-    return `Paraphrase the above text using the style of the following text:
+    return `[paraphrase]\n\nParaphrase the above text using the style of the following text:
 
     "${writingStyle}"
 
@@ -619,22 +600,22 @@ export class AI {
     const hasImages = values?.images?.length > 0;
     const hasVideos = values?.videos?.length > 0;
     // - number of heading: ${values.heading_count}
-    let prompt = `Write an article outline for the headline: "${values.title}"
+    let prompt = `[outline plan]\n\nWrite an article outline for the headline: "${values.title}"
 - the content type is ${values.content_type}
-- the article has no more than ${values.words_count} words length
+- the article has no more than ${values.word_count} words length
 - a section that has more than 200 words should be split into sub-sections or paragraphs`;
 
     if (values.youtube_transcript) {
       prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 10000)}`
     }
 
-    prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
-    prompt += values.emotions?.length > 0 ? `\nEmotions: ${values.emotions.join(', ')}` : "";
-    prompt += values.vocabularies?.length > 0 ? `\nVocabularies: ${values.vocabularies.join(', ')}` : "";
-    prompt += values.sentence_structures?.length > 0 ? `\nSentence structures: ${values.sentence_structures.join(', ')}` : "";
-    prompt += values.perspectives?.length > 0 ? `\nPerspectives: ${values.perspectives.join(', ')}` : "";
-    prompt += values.writing_structures?.length > 0 ? `\nWriting structures: ${values.writing_structures.join(', ')}` : "";
-    prompt += values.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.instructional_elements.join(', ')}` : "";
+    prompt += values.writingStyle?.purposes?.length > 0 ? `\nPurposes: ${values.writingStyle.purposes.join(', ')}` : "";
+    prompt += values.writingStyle?.emotions?.length > 0 ? `\nEmotions: ${values.writingStyle.emotions.join(', ')}` : "";
+    prompt += values.writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${values.writingStyle.vocabularies.join(', ')}` : "";
+    prompt += values.writingStyle?.sentence_structures?.length > 0 ? `\nSentence structures: ${values.writingStyle.sentence_structures.join(', ')}` : "";
+    prompt += values.writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${values.writingStyle.perspectives.join(', ')}` : "";
+    prompt += values.writingStyle?.writing_structures?.length > 0 ? `\nWriting structures: ${values.writingStyle.writing_structures.join(', ')}` : "";
+    prompt += values.writingStyle?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.writingStyle.instructional_elements.join(', ')}` : "";
 
     prompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
     prompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
@@ -663,15 +644,6 @@ export class AI {
       prompt += `\n- Videos:\n${JSON.stringify(values.videos, null, 2)}`
     }
 
-    // ## Contents
-    // 1. [Example](#example)
-    //    * [Sub-heading](#sub-heading)
-    // 2. [Example2](#example2)
-    // 3. [Third Example](#third-example)
-    //    * [Sub-heading](#sub-heading)
-    //    * [Sub-heading](#sub-heading)
-    // 4. [Fourth Example](#fourth-example)
-
     prompt += `\nMarkdown Table of content example
 ## Contents
 1. [Example](#example)
@@ -681,25 +653,13 @@ export class AI {
 Write the outline following the structure below
 `;
 
-
-    // if (videos?.length > 0) {
-    // prompt += `\n- Youtube videos (include relevant video(s) only, up to 1 video per section maximum, don't add a list of video at the end of the article):
-    // - include relevant video(s) only
-    // - up to 1 video per section maximum
-    // - don't add a list of video at the end of the article
-    // - don't put more than 1 video together
-    // - here is how you embed it in the markdown => <p><iframe width="560" height="315" src="REPLACE_WITH_YOUTUBE_URL_HERE" title="" frameBorder="0"   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"  allowFullScreen></iframe></p>
-
-    // ${JSON.stringify(videos, null, 2)}
-    // `
-    // }
-
     prompt += `\ntype Outline = {
   table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
   sections: {
     name: string;
     word_count: number;
     keywords: string; // comma separated
+    image: boolean; // true, if we should include an image to the section
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
     // include relevant images in the above list, leave it empty otherwise.`;
 
@@ -709,37 +669,21 @@ Write the outline following the structure below
 
     if (hasVideos) {
       prompt += `\n// youtube video
-// include the most relevant video only (optional), up to 1 video per section
+// include the most relevant video only (optional), up to 2 videos per article
 video_url: string;
 `
     }
 
-    prompt += `purposes?: string[];
-    emotions?: string[];
-    vocabularies?: string[];
-    sentence_structures?: string[];
-    perspectives?: string[];
-    writing_structures?: string[];
-    instructional_elements?: string[];
-}[];`
-
-    prompt += `\ntype Outline = {
-  table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
-  sections: {
-    name: string;
-    word_count: number;
-    keywords: string; // comma separated
-    internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
-    purposes?: string[];
-    emotions?: string[];
-    vocabularies?: string[];
-    sentence_structures?: string[];
-    perspectives?: string[];
-    writing_structures?: string[];
-    instructional_elements?: string[];
-  }[];
-}
-`
+    prompt += `purposes?: string[]; // options: ${purposes.map(i => i.label).join()}
+    emotions?: string[]; // options: ${emotions.map(i => i.label).join()}
+    vocabularies?: string[]; // options: ${vocabularies.map(i => i.label).join()}
+    sentence_structures?: string[]; // options: ${sentenceStructures.map(i => i.label).join()}
+    perspectives?: string[]; // options: ${perspectives.map(i => i.label).join()}
+    writing_structures?: string[]; // options: ${writingStructures.map(i => i.label).join()}
+    instructional_elements?: string[]; // options: ${instructionalElements.map(i => i.label).join()}
+    tones?: string[]; // options: ${tones.map(i => i.label).join()}
+}[];
+  };`
 
     prompt += `\nOutput a JSON array wrapped in \`\`\`json\`\`\``
 
@@ -751,28 +695,28 @@ video_url: string;
   }
 
   metaDescriptionTemplate(values: any) {
-    // Tone: ${values.tone ?? ""}
-    // Purpose: ${values.purpose ?? ""}
-    // Outline: ${values.outline}
-    let prompt = `
+    let prompt = `[description]
+
     Headline: ${values.title}
     Content type: ${values.content_type ?? ""}
-    Seed keyword: ${values.seed_keyword ?? ""}`
+    Seed keyword: ${values.seed_keyword ?? ""}
+    Outline: ${values.outline ?? ""}
+    `
 
 
+    prompt += this.opts?.writing_style?.tones?.length > 0 ? `\nTones: ${this.opts?.writing_style?.tones.join(', ')}` : "";
     prompt += this.opts?.writing_style?.purposes?.length > 0 ? `\nPurposes: ${this.opts?.writing_style?.purposes.join(', ')}` : "";
     prompt += this.opts?.writing_style?.emotions?.length > 0 ? `\nEmotions: ${this.opts?.writing_style?.emotions.join(', ')}` : "";
     prompt += this.opts?.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${this.opts?.writing_style?.vocabularies.join(', ')}` : "";
-    // prompt += this.opts?.writing_style?.sentence_structures?.length > 0 ? `\nSentence structures: ${this.opts?.writing_style?.sentence_structures.join(', ')}` : "";
     prompt += this.opts?.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${this.opts?.writing_style?.perspectives.join(', ')}` : "";
 
     if (values.keywords?.length > 0) {
       prompt += `\n- Keywords (include relevant keywords only):\n${values.keywords.join('\n')}\n\n`
     }
 
-    prompt += `\nWrite a unique description and return a JSON object with the Meta structure.
+    prompt += `\n\nWrite a valuable and search intent driven description for search engine and return a JSON object with the type Description.
     \`\`\`ts
-    type Meta = {
+    type Description = {
       description: string; // max length 160, no emoji.
     }
     \`\`\`
@@ -782,11 +726,12 @@ video_url: string;
   }
 
   async metaDescription(values: any) {
-    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.3, model: models.opus });
+    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models.opus });
   }
 
   schemaMarkupNamesTemplate(values: any) {
-    return `
+    return `[schema markup]
+
     === Article
     ${values.article}
 
@@ -833,7 +778,9 @@ video_url: string;
   }
 
   getWritingCharacteristicsTemplate(text: string) {
-    return `${text}
+    return `[writing characteristics]
+
+    ${text}
 
     ====
 
@@ -848,6 +795,7 @@ video_url: string;
     Output in the form of WritingCharacteristic.
     \`\`\`ts
     type WritingCharacteristic = {
+      tones?: string[];
       purposes?: string[];
       emotions?: string[];
       vocabularies?: string[];
@@ -862,13 +810,11 @@ video_url: string;
   }
 
   async getWritingCharacteristics(text: string) {
-    console.log("ENTER 2", text)
-    console.log("ENTER 3", this.getWritingCharacteristicsTemplate(text))
     return this.ask(this.getWritingCharacteristicsTemplate(text), { type: "json", mode: "get-writing-style", temperature: 0.5, model: models.opus });
   }
 
   getPSeoVariablesValueTemplate(values: any) {
-    let prompt = `Give me a list of variable that will serve to create ${values.article_count} headlines of the following struture: "${values.title_structure}"`;
+    let prompt = `[pseo variables value]\n\nGive me a list of variable that will serve to create ${values.article_count} headlines of the following struture: "${values.title_structure}"`;
 
     prompt += `\nVariables:\n`;
 
@@ -895,7 +841,7 @@ video_url: string;
   }
 
   getPSeoOutlineTemplate(values: any) {
-    let prompt = `Write a generic ${values.content_type} outline for the article structure "${values.title_structure}".
+    let prompt = `[pseo outline]\n\nWrite a generic ${values.content_type} outline for the article structure "${values.title_structure}".
 
     The template should be usable for different interpolation of the variables
     - the article will contains up to ${values.word_count} words
@@ -934,17 +880,17 @@ video_url: string;
 
   getCaptionTemplate(values: CaptionTemplate) {
     const platform = capitalize(values.platform)
-    let prompt = ""
+    let prompt = "[caption]\n\n"
 
     prompt += `- Language: ${values.language}`
-    if (values.tones) prompt += values.tones?.length > 0 ? `\nTones: ${values.tones.join(', ')}` : "";
-    if (values.purposes) prompt += values.purposes?.length > 0 ? `\nPurposes: ${values.purposes.join(', ')}` : "";
-    if (values.emotions) prompt += values.emotions?.length > 0 ? `\nEmotions: ${values.emotions.join(', ')}` : "";
-    if (values.vocabularies) prompt += values.vocabularies?.length > 0 ? `\nVocabularies: ${values.vocabularies.join(', ')}` : "";
-    if (values.sentence_structures) prompt += values.sentence_structures?.length > 0 ? `\nSentence structures: ${values.sentence_structures.join(', ')}` : "";
-    if (values.perspectives) prompt += values.perspectives?.length > 0 ? `\nPerspectives: ${values.perspectives.join(', ')}` : "";
-    if (values.writing_structures) prompt += values.writing_structures?.length > 0 ? `\nWriting structures: ${values.writing_structures.join(', ')}` : "";
-    if (values.instructional_elements) prompt += values.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.instructional_elements.join(', ')}` : "";
+    if (values.writingStyle?.tones) prompt += values.writingStyle.tones?.length > 0 ? `\nTones: ${values.writingStyle.tones.join(', ')}` : "";
+    if (values.writingStyle?.purposes) prompt += values.writingStyle.purposes?.length > 0 ? `\nPurposes: ${values.writingStyle.purposes.join(', ')}` : "";
+    if (values.writingStyle?.emotions) prompt += values.writingStyle.emotions?.length > 0 ? `\nEmotions: ${values.writingStyle.emotions.join(', ')}` : "";
+    if (values.writingStyle?.vocabularies) prompt += values.writingStyle.vocabularies?.length > 0 ? `\nVocabularies: ${values.writingStyle.vocabularies.join(', ')}` : "";
+    if (values.writingStyle?.sentence_structures) prompt += values.writingStyle.sentence_structures?.length > 0 ? `\nSentence structures: ${values.writingStyle.sentence_structures.join(', ')}` : "";
+    if (values.writingStyle?.perspectives) prompt += values.writingStyle.perspectives?.length > 0 ? `\nPerspectives: ${values.writingStyle.perspectives.join(', ')}` : "";
+    if (values.writingStyle?.writing_structures) prompt += values.writingStyle.writing_structures?.length > 0 ? `\nWriting structures: ${values.writingStyle.writing_structures.join(', ')}` : "";
+    if (values.writingStyle?.instructional_elements) prompt += values.writingStyle.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.writingStyle.instructional_elements.join(', ')}` : "";
 
     if (values.with_hook) prompt += "\n- Add a hook";
     if (values.with_question) prompt += "\n- Add a question to engage the readers";
@@ -955,7 +901,7 @@ video_url: string;
     if (values.with_cta && values.cta) prompt += `\n- CTA: ${values.cta}`
     if (!values.with_cta) prompt += `\n- Do not add any CTA`
 
-    if (values.writingStyle) prompt += `\n\nHere is my writing style: ${values.writingStyle}\n`;
+    if (values.writingStyle?.text) prompt += `\n\nHere is my writing style: ${values.writingStyle.text}\n`;
 
     if (values.goal === "write") {
       prompt += `\n-${capitalize(values.goal)} a ${platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`

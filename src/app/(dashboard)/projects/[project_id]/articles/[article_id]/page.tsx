@@ -1,15 +1,16 @@
 'use client';;
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { Button, Flex, Form, Skeleton } from 'antd';
 import { useRouter } from 'next/navigation';
-import "./styles.css";
+// import "./styles.css";
 import useProjects from '@/hooks/useProjects';
 import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
-import EditorBlock from './Editor/Editor';
 import ExportBlogPostDrawer from '@/components/ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
+import { MDXEditorMethods } from '@mdxeditor/editor';
+import MDEditor from './MDEditor/MDEditor';
 
 const slugify = (text: string) =>
   text
@@ -30,20 +31,19 @@ const Article = ({
   const articleId = +params.article_id;
   const projectId = +params.project_id;
   const { getOne, update: updateBlogPost } = useBlogPosts()
-  const {
-    data: article,
-    isError
-  } = getOne(articleId)
+  const { data: article, isError } = getOne(articleId)
   const { data: project } = useProjects().getOne(projectId);
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
-  const [articleTitle, setArticleTitle] = useState(article?.title ?? "")
+  const [articleTitle, setArticleTitle] = useState("")
   const [seoForm] = Form.useForm();
   const drawers = useDrawers();
+  const ref = useRef<MDXEditorMethods>(null)
 
   useEffect(() => {
     if (article) {
       setStats(article.markdown);
+      setArticleTitle(article?.title ?? "")
     }
   }, [article]);
 
@@ -93,14 +93,20 @@ const Article = ({
             <>
               <div
                 placeholder='Add title'
-                className='text-4xl font-extrabold w-full border-none outline-none px-[54px]'
+                className='text-4xl font-extrabold w-full border-none outline-none px-[54px] mb-8'
                 contentEditable
                 onInput={debounce(onChangeTitle, 1500)}
               >
                 {articleTitle}
               </div>
-              <EditorBlock
+              {/* <EditorBlock
                 articleId={articleId}
+              /> */}
+              <MDEditor
+                ref={ref}
+                articleId={articleId}
+                markdown={article?.markdown ?? ""}
+                className='prose px-[54px]'
               />
             </>
           )}

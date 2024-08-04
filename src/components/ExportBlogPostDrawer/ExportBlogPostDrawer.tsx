@@ -151,7 +151,6 @@ const ExportBlogPostDrawer = ({
   }
 
   const code = prettify(`
-  {/* <!-- HTML --> */}
   <title>${articleTitle}</title>
   <meta name="description" content="${metaDescription}">
   <meta name="keywords" content="${keywords}" />
@@ -306,7 +305,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
               initialValues={{
                 slug: slugify(articleTitle),
                 meta_description: article.meta_description ?? "",
-                keywords: article.keywords.join(',') ?? "",
+                keywords: article.keywords ? article.keywords.join(',') ?? "" : "",
                 og_image_url: article.featured_image ?? "",
               }}
               onFinish={onSaveForm}
@@ -480,7 +479,18 @@ ${JSON.stringify(article?.schema_markups ?? {})}
 
             <div
               onClick={() => {
-                navigator.clipboard.writeText(article.html);
+                navigator.clipboard.writeText(prettify(`
+<html>
+<head>
+${code}
+${schemaMarkup}
+<head>
+<body>
+<h1>${article.title ?? ""}</h1>
+${article.html}
+</body>
+</html>
+`));
                 message.success("html copied to clipboard")
               }}
               className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"
@@ -504,6 +514,8 @@ active: true
 ${article?.schema_markups?.length > 0 ? `schema_markups: ${JSON.stringify(article?.schema_markups, null, 2)}` : ""}
 ---
 
+#${article.title ?? ""}
+
 ${article.markdown}
 `);
                 message.success("markdown copied to clipboard")
@@ -519,7 +531,7 @@ ${article.markdown}
             <div
               onClick={() => {
                 const $ = cheerio.load(article.html);
-                navigator.clipboard.writeText($.text());
+                navigator.clipboard.writeText([article?.title ?? "", $.text()].join('\n\n'));
                 message.success("text copied to clipboard")
               }}
               className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"

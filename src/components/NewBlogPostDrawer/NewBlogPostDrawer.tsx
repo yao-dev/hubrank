@@ -18,6 +18,7 @@ type Props = {
 const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const projectId = useProjectId();
   const [form] = Form.useForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [variableSet, setVariableSet] = useState({});
   const pricingModal = usePricingModal();
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
@@ -26,21 +27,25 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
 
   const writeArticle = async (values: any) => {
-    console.log(values)
+    console.log("writeArticle", values)
     try {
+      setIsSubmitting(true)
       const { data } = await axios.post('/api/credits-check', {
         user_id: await getUserId(),
         action: 'write-blog-post',
         extra
       });
       if (!data.authorized) {
+        setIsSubmitting(false)
         return pricingModal.open(true)
       }
       axios.post('/api/write/blog-post/schedule', values)
       message.success('Article added in the queue!');
       onClose();
       form.resetFields();
+      setIsSubmitting(false)
     } catch (e) {
+      setIsSubmitting(false)
       console.error(e)
       notification.error({
         message: "We had an issue adding your article in the queue please try again",
@@ -51,20 +56,25 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   }
 
   const schedulePSeoArticles = async (values: any) => {
+    console.log("schedulePSeoArticles", values)
     try {
+      setIsSubmitting(true)
       const { data } = await axios.post('/api/credits-check', {
         user_id: await getUserId(),
         action: 'write-pseo',
         extra
       });
       if (!data.authorized) {
+        setIsSubmitting(false);
         return pricingModal.open(true)
       }
       axios.post('/api/pseo/schedule', values);
       message.success('Articles added in the queue!');
       onClose();
       form.resetFields();
+      setIsSubmitting(false)
     } catch (e) {
+      setIsSubmitting(false)
       console.error(e)
       notification.error({
         message: "We had an issue adding your articles in the queue please try again",
@@ -75,9 +85,9 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   }
 
   const onSubmit = async (values: any) => {
-    const isProgrammaticSeo = values.title_mode === "programmatic_seo";
+    console.log("NewBlogPostDrawer - onSubmit", values);
 
-    console.log(values)
+    const isProgrammaticSeo = values.title_mode === "programmatic_seo";
 
     if (isProgrammaticSeo) {
       const generateCombinations = () => {
@@ -137,6 +147,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       }}
       open={open}
       destroyOnClose
+      closable={!isSubmitting}
       styles={{
         body: {
           paddingBottom: 80,
@@ -144,13 +155,19 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       }}
       footer={
         <Flex justify="end">
-          <Button onClick={() => form.submit()} type="primary" style={{ width: 150 }}>
+          <Button
+            onClick={() => form.submit()}
+            type="primary"
+            style={{ width: 150 }}
+            loading={isSubmitting}
+            disabled={isSubmitting}
+          >
             Write ({creditsCount} {creditsCount > 1 ? "credits" : "credit "})
           </Button>
         </Flex>
       }
     >
-      <NewBlogPostForm form={form} onSubmit={onSubmit} />
+      <NewBlogPostForm form={form} onSubmit={onSubmit} isSubmitting={isSubmitting} />
     </Drawer>
   )
 }

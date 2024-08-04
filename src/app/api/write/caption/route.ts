@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { AI, CaptionTemplate } from "@/app/api/AI";
-import { checkCredits, deductCredits, getProjectContext, getWritingStyle, getYoutubeTranscript, insertCaption } from "@/app/api/helpers";
+import { deductCredits, getManualWritingStyle, getProjectContext, getSavedWritingStyle, getYoutubeTranscript, insertCaption } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -33,9 +33,9 @@ export async function POST(request: Request) {
     })
 
     // FETCH WRITING STYLE IF IT EXISTS
-    let writingStyle;
+    let writingStyle = getManualWritingStyle(body);
     if (body.writing_style_id) {
-      writingStyle = await getWritingStyle(body.writing_style_id)
+      writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
     const ai = new AI({ context, writing_style: writingStyle });
@@ -50,14 +50,6 @@ export async function POST(request: Request) {
       with_hashtags: body.with_hashtags,
       with_emojis: body.with_emojis,
       caption_source: body.caption_source,
-      tones: body.tones,
-      purposes: body.purposes,
-      emotions: body.emotions,
-      vocabularies: body.vocabularies,
-      sentence_structures: body.sentence_structures,
-      perspectives: body.perspectives,
-      writing_structures: body.writing_structures,
-      instructional_elements: body.instructional_elements,
       caption_length: body.caption_length,
       with_single_emoji: body.with_single_emoji,
       with_question: body.with_question,
