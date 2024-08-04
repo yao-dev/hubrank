@@ -1,7 +1,7 @@
 'use client';;
 import { useEffect, useRef, useState } from 'react';
 import useBlogPosts from '@/hooks/useBlogPosts';
-import { Button, Flex, Form, Skeleton } from 'antd';
+import { Button, Flex, Form, Skeleton, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 // import "./styles.css";
 import useProjects from '@/hooks/useProjects';
@@ -81,36 +81,39 @@ const Article = ({
             onClick={() => drawers.openExportBlogPostDrawer({ isOpen: true })}
             icon={<ExportOutlined />}
             className='w-fit'
+            disabled={article?.status !== "ready_to_view"}
           >
             Export
           </Button>
         </div>
 
-        <div className='w-1/2 mx-auto'>
-          {!article ? (
-            <Skeleton active loading className='px-[54px]' />
-          ) : (
-            <>
-              <div
-                placeholder='Add title'
-                className='text-4xl font-extrabold w-full border-none outline-none px-[54px] mb-8'
-                contentEditable
-                onInput={debounce(onChangeTitle, 1500)}
-              >
-                {articleTitle}
-              </div>
-              {/* <EditorBlock
+        <Spin spinning={article?.status === "writing"} tip="Your content is writing">
+          <div className='w-1/2 mx-auto'>
+            {!article ? (
+              <Skeleton active loading className='px-[54px]' />
+            ) : (
+              <>
+                <div
+                  placeholder='Add title'
+                  className='text-4xl font-extrabold w-full border-none outline-none px-[54px] mb-8'
+                  contentEditable
+                  onInput={debounce(onChangeTitle, 1500)}
+                >
+                  {articleTitle}
+                </div>
+                {/* <EditorBlock
                 articleId={articleId}
               /> */}
-              <MDEditor
-                ref={ref}
-                articleId={articleId}
-                markdown={article?.markdown ?? ""}
-                className='prose px-[54px]'
-              />
-            </>
-          )}
-        </div>
+                <MDEditor
+                  ref={ref}
+                  articleId={articleId}
+                  markdown={article?.markdown ?? ""}
+                  className='prose min-w-full w-fit px-[54px]'
+                />
+              </>
+            )}
+          </div>
+        </Spin>
       </Flex>
 
       <ExportBlogPostDrawer

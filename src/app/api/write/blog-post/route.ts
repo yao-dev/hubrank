@@ -23,7 +23,7 @@ import {
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
 import { getImages } from "@/helpers/image";
-import { get, shuffle } from "lodash";
+import { shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     });
 
     // GET HEADINGS AS A COMMA SEPARATED STRING
-    const outline = outlinePlan.table_of_content_markdown
+    const outline = outlinePlan.table_of_content_markdown;
 
     console.log(chalk.bgMagenta(JSON.stringify(outlinePlan, null, 2)));
 
@@ -114,6 +114,15 @@ export async function POST(request: Request) {
 
     // ADD H1 TITLE TO THE ARTICLE
     // ai.article = `# ${body.title}\n`;
+
+
+    const images = await getImages(keywords.join());
+    console.log("unsplash images", images)
+    const featuredImage = shuffle(images)[0];
+
+    if (featuredImage) {
+      ai.article += `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+    }
 
     // if (body.featuredImage) {
     //   ai.article += `![${body.featuredImage.alt ?? ""}](${body.featuredImage.href})\n`
@@ -170,10 +179,11 @@ export async function POST(request: Request) {
       // if (section.media === "image") {
       //   image = await getImage("unsplash", shuffle(get(section, "keywords", "").split(","))[0])
       // }
-      if (section.image === "image") {
-        const images = await getImages(get(section, "keywords", "").split(","));
-        image = shuffle(images)[0]
-      }
+      // if (section.image) {
+      //   const images = await getImages(get(section, "keywords", ""));
+      //   console.log("unsplash images", images)
+      //   image = shuffle(images)[0]
+      // }
 
       // TODO: add knowledges in writeSection prompt
       const knowledges = await getProjectKnowledges({

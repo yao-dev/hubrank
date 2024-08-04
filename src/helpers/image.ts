@@ -55,22 +55,28 @@ export const getImage = (source: "unsplash" | "pexels", query: string, count?: n
 }
 
 export const getImages = async (query: string, count = 5) => {
-  const { data } = await axios.get("https://api.unsplash.com/search/photos", {
-    params: {
-      query: query,
-      page: 1,
-      per_page: count,
-      order_by: "relevant"
-    },
-    headers: {
-      Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_API_KEY}`
-    }
-  });
+  try {
+    const { data } = await axios.get("https://api.unsplash.com/search/photos", {
+      params: {
+        query: query,
+        page: 1,
+        per_page: count,
+        order_by: "relevant"
+      },
+      headers: {
+        Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_API_KEY}`
+      }
+    });
 
-  return data?.results.map((i) => {
-    return {
-      alt: i.alt_description,
-      href: i?.urls?.full || i?.urls?.raw || i?.urls?.regular
-    }
-  })
+    return data?.results.map((i) => {
+      return {
+        alt: i.alt_description,
+        href: i?.urls?.full || i?.urls?.raw || i?.urls?.regular
+      }
+    })
+  } catch (e) {
+    console.log(e?.message)
+    console.log(e?.response?.data?.errors)
+    return [];
+  }
 }

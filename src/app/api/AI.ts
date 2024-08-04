@@ -6,7 +6,7 @@ import { normalizePrompt } from "./helpers";
 import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
-import { emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
+import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
 import { capitalize, isEmpty } from "lodash";
 
 export type CaptionTemplate = {
@@ -131,7 +131,7 @@ export class AI {
         },
       });
     }
-    this.system = `You are an expert SEO writer who writes using Hemingway principles (grade 10) and writes engaging and punchy content that speak to the right target audience.`
+    this.system = `You are a Storyteller & SEO writer expert who writes engaging content that speak to the right target audience.`
 
     if (opts.context) this.system += `\nProduct info:\n${opts.context}\n===`
     if (opts.writing_style) {
@@ -276,6 +276,7 @@ export class AI {
     } else {
       completion = await this.ai.chat.completions.create({
         // model: opts.model || "claude-3-sonnet-20240229",
+        // model: models["gpt-4-0613"],
         model: models["gpt-4o"],
         max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
@@ -321,6 +322,7 @@ export class AI {
     - the content type is "${values.contentType}"
     - one headline per line
     - do not prefix with number
+    - IMPORTANT: avoid words like: ${avoidWords.join()}
     ${values.clickbait ? "- make it clickbait" : ""}`;
 
     if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
@@ -331,7 +333,7 @@ export class AI {
   }
 
   async headlines(values: any) {
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.6, model: models.opus });
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: models.opus });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -426,6 +428,7 @@ export class AI {
     prompt += `
     Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
     Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
+    - IMPORTANT: avoid words like: ${avoidWords.join()}
 
     write in markdown wrapped in \`\`\`markdown\`\`\`.
     `;
@@ -448,6 +451,7 @@ export class AI {
     Section heading prefix: ${values?.section?.prefix}
     Do not add a CTA at the end
     Do not add heading for the hook if there is any
+    Do not make up fact, statistic or fake story
     `
 
     // prompt += `Outline: ${values?.outline}`
@@ -471,14 +475,12 @@ export class AI {
     }
 
     if (values?.section?.internal_links?.length > 0) {
-      prompt += `\nInternal links to include:\n${JSON.stringify(values.section.internal_links ?? [], null, 2)}`
-    }
-    if (values?.section?.internal_links?.length > 0) {
       prompt += `\nInternal links to include:\n${values.section.internal_links?.join('\n')}\n\n`
     }
 
     if (hasImage) {
-      prompt += `\nImage to include: ${values.section.image}`
+      prompt += `\n- Include @@image@@ as a placeholder for the image: "${values.section.image.alt}" (DO NOT EMBED THE IMAGE)`
+      // prompt += `\nImage to include: ${values.section.image}`
     }
 
     if (hasImages) {
@@ -491,30 +493,34 @@ export class AI {
       url: ${values.section.video_url}`
     }
 
+    if ((hasImage || hasImages) && hasVideo) {
+      prompt += `\nDon't put image and video next to each other, preferrably not both in the same section`
+    }
+
     // - You know how to transition from a section to another at the end of a section.
+    // - Simplify Words
+    // - Avoid Hard-to-Read Phrases
     prompt += `
     Primary instructions:
-    - Leverage markdown syntaxes to make your content appealing and easier to read.
+    - Leverage markdown syntaxes (strikethrough, table, italic, bold, quote, etc.) to make the content appealing and easier to read.
     - Add h3 sub-sections with ### if the content as more than 2 paragraphs.
     - Don't use h1 at all.
     - Add anchor to the section here is an example for a h2: ## <a name="heading-example"></a>Heading example
     - Prefer Active Voice
     - Avoid the use of adverbs as much as possible
-    - Simplify Words
-    - Avoid Hard-to-Read Phrases
     - Avoid Passive Voice
     - Consider Sentence Variety
-    - Readability Grade Goal 11
     - IMPORTANT: Do not use adverbs at all
     - IMPORTANT: Diversify vocabulary
     - IMPORTANT: vary the sentence structure and tone to make it sound more conversational.
-    - IMPORTANT: avoid words like "as you", "remember", "embrace", "by", "ready to", "are you tired", "are you struggling"
+    - IMPORTANT: avoid words like: ${avoidWords.join()}
     - do not use emojis
     - do not introduce any next section`
 
-    if (values?.section?.image?.alt && values?.section?.image?.href) {
-      prompt += `\n- Include this image in the content: ![${values.section.image.alt}](${values.section.image.href})`
-    }
+    // if (values?.section?.image?.alt && values?.section?.image?.href) {
+    //   // prompt += `\n- Include this image in the content: ![${values.section.image.alt}](${values.section.image.href})`
+    //   prompt += `\n- Include @@image@@ as a placeholder for the image: "${values.section.image.alt}" (DO NOT EMBED THE IMAGE)`
+    // }
 
     if (values?.section?.custom_prompt) {
       prompt += `\nSecondary instructions (does not override primary instructions):\n${values?.section?.custom_prompt}`
@@ -524,7 +530,7 @@ export class AI {
   }
 
   async write(values: any) {
-    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.3, model: models.opus });
+    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.4, model: models.opus });
   }
 
   expandTemplate() {
@@ -636,12 +642,12 @@ export class AI {
       prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps?.join('\n')}\n\n`
     }
 
-    if (hasImages) {
-      prompt += `\n- Images:\n${JSON.stringify(values.images, null, 2)}`
-    }
+    // if (hasImages) {
+    //   prompt += `\n- Images:\n${JSON.stringify(values.images.slice(0, 2), null, 2)}`
+    // }
 
     if (hasVideos) {
-      prompt += `\n- Videos:\n${JSON.stringify(values.videos, null, 2)}`
+      prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
     }
 
     prompt += `\nMarkdown Table of content example
@@ -659,17 +665,16 @@ Write the outline following the structure below
     name: string;
     word_count: number;
     keywords: string; // comma separated
-    image: boolean; // true, if we should include an image to the section
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
     // include relevant images in the above list, leave it empty otherwise.`;
 
-    if (hasImages) {
-      prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // ![alt](href)`
-    }
+    // if (hasImages) {
+    //   prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // @@image@@`
+    // }
 
     if (hasVideos) {
       prompt += `\n// youtube video
-// include the most relevant video only (optional), up to 2 videos per article
+// include the most relevant video only (optional), up to 1 video per article
 video_url: string;
 `
     }
@@ -685,7 +690,7 @@ video_url: string;
 }[];
   };`
 
-    prompt += `\nOutput a JSON array wrapped in \`\`\`json\`\`\``
+    prompt += `\nOutput a JSON object wrapped in \`\`\`json\`\`\``
 
     return prompt
   }
@@ -714,7 +719,10 @@ video_url: string;
       prompt += `\n- Keywords (include relevant keywords only):\n${values.keywords.join('\n')}\n\n`
     }
 
-    prompt += `\n\nWrite a valuable and search intent driven description for search engine and return a JSON object with the type Description.
+    prompt += `\n\n
+    - IMPORTANT: avoid words like: ${avoidWords.join()}
+
+    Write a valuable and search intent driven description for search engine and return a JSON object with the type Description.
     \`\`\`ts
     type Description = {
       description: string; // max length 160, no emoji.
@@ -730,7 +738,7 @@ video_url: string;
   }
 
   schemaMarkupNamesTemplate(values: any) {
-    return `[schema markup]
+    return `[schema markup names]
 
     === Article
     ${values.article}
@@ -749,7 +757,8 @@ video_url: string;
 
 
   schemaMarkupTemplate(values: any) {
-    return `
+    return `[schema markup]
+
     === Product info
     name: ${values.project.name}
     description: ${values.project.description}

@@ -3,7 +3,6 @@ import chalk from "chalk";
 import { marked } from "marked";
 import { chromium } from 'playwright';
 import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-client';
-import { getSummary } from 'readability-cyr';
 import { AI } from "./AI";
 import axios from "axios";
 import { compact, isEmpty } from "lodash";
@@ -168,14 +167,14 @@ export const writeHook = async ({
     });
 
     // await saveWritingCost({ articleId: article_id, cost: ai.cost });
-    const rephraseInstruction = getRephraseInstruction(hook)
+    // const rephraseInstruction = getRephraseInstruction(hook)
 
-    let stats = getSummary(hook);
-    if (stats.FleschKincaidGrade > 120) {
-      console.log("- rephrase");
-      hook = await ai.rephrase(hook, rephraseInstruction);
-      console.log("- rephrase done");
-    }
+    // let stats = getSummary(hook);
+    // if (stats.FleschKincaidGrade > 120) {
+    //   console.log("- rephrase");
+    //   hook = await ai.rephrase(hook, rephraseInstruction);
+    //   console.log("- rephrase done");
+    // }
     console.log("- add hook to article");
     // ai.addArticleContent(ai.parse(hook, "markdown"));
     ai.addArticleContent(hook);
@@ -253,16 +252,23 @@ export const writeSection = async ({
       outline,
     });
 
+    if (section?.image?.alt && section?.image?.href) {
+      console.log("image replace", `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
+      content = content.replace('@@image@@', `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
+
+    }
+
+
     // await saveWritingCost({ articleId, cost: ai.cost });
 
-    const rephraseInstruction = getRephraseInstruction(content)
+    // const rephraseInstruction = getRephraseInstruction(content)
 
-    let stats = getSummary(content);
-    if (stats.FleschKincaidGrade > 12) {
-      console.log("- rephrase");
-      content = await ai.rephrase(content, rephraseInstruction);
-      console.log("- rephrase done");
-    }
+    // let stats = getSummary(content);
+    // if (stats.FleschKincaidGrade > 12) {
+    //   console.log("- rephrase");
+    //   content = await ai.rephrase(content, rephraseInstruction);
+    //   console.log("- rephrase done");
+    // }
     console.log("- add section to article");
     // ai.addArticleContent(ai.parse(content, "markdown"));
     ai.addArticleContent(content);
@@ -305,6 +311,10 @@ export const markArticleAsReadyToView = async ({
       featured_image: featuredImage,
       meta_description: metaDescription
     }, null, 2)));
+
+    const $ = cheerio.load(html);
+    const ogImageUrl = $('img').first().attr('src') ?? "";
+
     await supabase
       .from('blog_posts')
       .update({
@@ -314,8 +324,9 @@ export const markArticleAsReadyToView = async ({
         writing_time_sec: writingTimeInSeconds,
         word_count: wordCount,
         cost,
-        featured_image: featuredImage,
-        meta_description: metaDescription
+        featured_image: featuredImage || ogImageUrl,
+        meta_description: metaDescription,
+        og_image_url: ogImageUrl,
       })
       .eq("id", articleId)
       .throwOnError();

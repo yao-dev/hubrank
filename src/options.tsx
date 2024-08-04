@@ -1074,3 +1074,34 @@ export const captionLengthOptions = [
     value: 500
   },
 ]
+
+export const avoidWords = [
+  "as you",
+  "remember",
+  "embrace",
+  "by",
+  "ready to",
+  "are you",
+  "ever wondered",
+  "discover",
+  "let's",
+  "dive",
+  "unlock",
+  "transform",
+  "the secrets",
+  "breeze",
+  "effortlessly",
+  "wondering",
+  "welcome",
+  "journey",
+  "in conclusion",
+  "consequently",
+  "furthermore",
+  "in addition to",
+  "extremely",
+  "significantly",
+  "in today's world",
+  "explore",
+  "Unraveling",
+  "remember"
+]

@@ -1,6 +1,6 @@
 'use client'
 import '@mdxeditor/editor/style.css';
-import { type ForwardedRef } from 'react';
+import { useEffect, useState, type ForwardedRef } from 'react';
 import {
   headingsPlugin,
   listsPlugin,
@@ -31,6 +31,7 @@ import {
 import { message } from 'antd';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { IconBrandYoutube } from '@tabler/icons-react';
+import './style.css'
 
 const YouTubeButton = () => {
   // grab the insertDirective action (a.k.a. publisher) from the
@@ -87,6 +88,13 @@ export default function MDEditor({
 }: { ref: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps & Props) {
   const { getOne, update: updateBlogPost } = useBlogPosts()
   const { data: article } = getOne(articleId);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsLoaded(true)
+    }, 1000)
+  }, []);
 
   const exportHTML = async () => {
     // const content = await editor.blocksToHTMLLossy();
@@ -96,13 +104,6 @@ export default function MDEditor({
   const exportMarkdown = async () => {
     return ref?.current?.getMarkdown()
   }
-
-  // For initialization; on mount, convert the initial HTML to blocks and replace the default editor's content
-  // useEffect(() => {
-  //   if (article?.markdown) {
-  //     ref?.current?.setMarkdown(article.markdown)
-  //   }
-  // }, [article]);
 
   const debounceUpdate = async () => {
     const markdown = await exportMarkdown();
@@ -150,6 +151,10 @@ export default function MDEditor({
         listsPlugin(),
         markdownShortcutPlugin(),
       ]}
+      onChange={(newMarkdown) => {
+        if (isLoaded) {
+        }
+      }}
       {...props}
       ref={ref}
     />
