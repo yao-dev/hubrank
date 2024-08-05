@@ -1,5 +1,5 @@
 'use client';;
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { Button, Flex, Form, message, Skeleton, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,6 @@ import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
 import ExportBlogPostDrawer from '@/components/ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
-import { MDXEditorMethods } from '@mdxeditor/editor';
 import MDEditor from './MDEditor/MDEditor';
 import { IconSparkles } from '@tabler/icons-react';
 // import { FacebookSelector } from 'react-reactions';
@@ -25,17 +24,22 @@ const slugify = (text: string) =>
     .replace(/[^\w-]+/g, '')
     .replace(/--+/g, '-');
 
-function getSelectedText() {
-  var text = "";
-  var activeEl = document.activeElement;
-  if (
-    (typeof activeEl?.selectionStart == "number")
-  ) {
-    text = activeEl.value.slice(activeEl.selectionStart, activeEl.selectionEnd);
-  } else if (window.getSelection) {
-    text = window.getSelection().toString();
+function calculateOffset(container, offset) {
+  // Traverses the DOM to calculate the position within the text
+  let position = 0;
+  const walker = document.createTreeWalker(container.parentNode, NodeFilter.SHOW_TEXT, null, false);
+  let currentNode;
+
+  while (currentNode = walker.nextNode()) {
+    if (currentNode === container) {
+      position += offset;
+      break;
+    } else {
+      position += currentNode.textContent.length;
+    }
   }
-  return text;
+
+  return position;
 }
 
 const Article = ({
@@ -51,6 +55,7 @@ const Article = ({
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
   const [articleTitle, setArticleTitle] = useState("");
+  const [markdown, setMarkdown] = useState("");
   const [selection, setSelection] = useState({
     text: "",
     cursorX: null,
@@ -58,10 +63,10 @@ const Article = ({
   })
   const [seoForm] = Form.useForm();
   const drawers = useDrawers();
-  const ref = useRef<MDXEditorMethods>(null);
 
   useEffect(() => {
     if (article) {
+      setMarkdown(article.markdown)
       setStats(article.markdown);
       setArticleTitle(article?.title ?? "")
     }
@@ -92,42 +97,90 @@ const Article = ({
     return new URL(`${project.blog_path}`, new URL(project.website).href).href
   }
 
-  useEffect(() => {
-    const mouseUpHandler = (event: any) => {
-      const editorContainer = document.getElementById("editor-container");
-      const aiEditor = document.getElementById("ai-editor");
+  // useEffect(() => {
+  //   const mouseUpHandler = (event: any) => {
+  //     const editorContainer = document.getElementById("editor-container");
+  //     const aiEditor = document.getElementById("ai-editor");
 
-      if (aiEditor?.contains(document.activeElement) || aiEditor?.contains(window?.getSelection?.().anchorNode)) {
-        return;
-      } else {
-        setSelection({
-          text: "",
-          cursorX: null,
-          cursorY: null,
-        })
-      }
+  //     if (aiEditor?.contains(document.activeElement) || aiEditor?.contains(window?.getSelection?.().anchorNode)) {
+  //       return;
+  //     } else {
+  //       setSelection({
+  //         text: "",
+  //         cursorX: null,
+  //         cursorY: null,
+  //       })
+  //     }
 
-      if (editorContainer?.contains(document.activeElement) || editorContainer?.contains(window?.getSelection?.().anchorNode)) {
-        const selectedText = getSelectedText();
+  //     if (editorContainer?.contains(document.activeElement) || editorContainer?.contains(window?.getSelection?.().anchorNode)) {
+  //       const windowSelection = window.getSelection()
+  //       const selectedText = windowSelection?.toString() ?? ""
 
-        if (selectedText) {
-          setSelection({
-            text: selectedText,
-            cursorX: event.pageX,
-            cursorY: event.pageY,
-          });
-        }
-      }
-    }
+  //       if (selectedText) {
+  //         // console.log(windowSelection)
+  //         // setSelection({
+  //         //   text: selectedText,
+  //         //   cursorX: event.pageX,
+  //         //   cursorY: event.pageY,
+  //         //   anchorOffset: windowSelection?.anchorOffset,
+  //         //   extentOffset: windowSelection?.extentOffset,
+  //         //   focusOffset: windowSelection?.anchorOffset,
+  //         // });
 
-    document.onmouseup = document.onkeyup = document.onselectionchange = mouseUpHandler
+  //         if (windowSelection?.rangeCount > 0) {
+  //           const range = windowSelection.getRangeAt(0);
+  //           const startContainer = range.startContainer;
+  //           const endContainer = range.endContainer;
+  //           const startOffset = range.startOffset;
+  //           const endOffset = range.endOffset;
 
-    return () => {
-      document.removeEventListener('mouseup', mouseUpHandler)
-      document.removeEventListener('keyup', mouseUpHandler)
-      document.removeEventListener('selectionchange', mouseUpHandler)
-    }
-  }, []);
+  //           // Get full text from the selected node
+  //           const fullText = [startContainer.textContent, endContainer.textContent].join('\n');
+
+  //           // Calculate positions
+  //           const startPosition = calculateOffset(startContainer, startOffset);
+  //           const endPosition = calculateOffset(endContainer, endOffset);
+
+  //           console.log({
+  //             text: selectedText,
+  //             cursorX: event.pageX,
+  //             cursorY: event.pageY,
+  //             startPosition,
+  //             endPosition,
+  //             fullText
+  //           })
+
+  //           setSelection({
+  //             text: selectedText,
+  //             cursorX: event.pageX,
+  //             cursorY: event.pageY,
+  //             startPosition,
+  //             endPosition,
+  //             fullText
+  //           });
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   document.onmouseup = document.onkeyup = document.onselectionchange = mouseUpHandler
+
+  //   return () => {
+  //     document.removeEventListener('mouseup', mouseUpHandler)
+  //     document.removeEventListener('keyup', mouseUpHandler)
+  //     document.removeEventListener('selectionchange', mouseUpHandler)
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (selection.text) {
+  //     setMarkdown((prevMarkdown) => {
+  //       console.log(prevMarkdown.indexOf(selection.fullText))
+  //       // prevMarkdown.replace(selection.fullText, )
+  //       return prevMarkdown
+  //     })
+  //   }
+  // }, [selection.text])
 
   if (isError) return null;
 
@@ -174,24 +227,22 @@ const Article = ({
                 <div>
                   <div id="editor-container">
                     <MDEditor
-                      ref={ref}
                       articleId={articleId}
-                      markdown={article?.markdown ?? ""}
-                      className='px-[54px] mb-12'
+                      markdown={`${article?.markdown}` ?? ""}
+                      className='px-[54px]'
+                    // onChange={setMarkdown}
                     />
                   </div>
                 </div>
 
                 <div className='fixed bottom-0'>
-                  <div className='flex justify-center relative -right-64'>
-                    <div className='flex flex-col gap-1 border rounded-2xl rounded-bl-none rounded-br-none py-3 px-2 w-fit shadow-lg bg-white'>
-                      <p className='text-center'>How do you like this article?</p>
-                      <div className='flex flex-row gap-3 p-2'>
-                        <span onClick={() => sendFeedback("😡")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😡</span>
-                        <span onClick={() => sendFeedback("😕")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😕</span>
-                        <span onClick={() => sendFeedback("😄")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😄</span>
-                        <span onClick={() => sendFeedback("😍")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😍</span>
-                      </div>
+                  <div className='flex flex-col gap-1 items-center relative bottom-20 right-60'>
+                    <p className='text-center'>How do you like this article?</p>
+                    <div className='flex flex-row gap-3 border rounded-full p-2 w-fit shadow-lg bg-white'>
+                      <span onClick={() => sendFeedback("😡")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😡</span>
+                      <span onClick={() => sendFeedback("😕")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😕</span>
+                      <span onClick={() => sendFeedback("😄")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😄</span>
+                      <span onClick={() => sendFeedback("😍")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😍</span>
                     </div>
                   </div>
                 </div>

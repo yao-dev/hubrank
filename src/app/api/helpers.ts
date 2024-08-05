@@ -1103,10 +1103,9 @@ export const getProjectKnowledges = async ({
     includeData: true,
   })
 
-  const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
+  const filteredKnowledgesByScore = orderBy(knowledges.filter((item) => item.score >= minScore), ['score'], ['desc']).slice(0, 5)
   console.log({ filteredKnowledgesByScore });
-
-  return orderBy(filteredKnowledgesByScore, ['score'], ['desc'])
+  return filteredKnowledgesByScore
 }
 
 export const getUpstashDestination = (endpoint: string) => {

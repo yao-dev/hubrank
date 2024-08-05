@@ -1118,5 +1118,8 @@ export const avoidWords = [
   "This comprehensive guide",
   "help you understand",
   "the science behind",
-  "You've got this"
+  "You've got this",
+  "don't worry",
+  "This guide",
+  "You might be thinking"
 ]

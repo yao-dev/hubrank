@@ -205,8 +205,9 @@ export async function POST(request: Request) {
       const knowledges = await getProjectKnowledges({
         userId: body.userId,
         projectId: body.project_id,
-        topK: 5,
-        query: `${section.name} ${section?.keywords ?? ""}`
+        topK: 500,
+        query: `${section.name} ${section?.keywords ?? ""}`,
+        minScore: 0.5
       })
 
       // WRITE EACH SECTION

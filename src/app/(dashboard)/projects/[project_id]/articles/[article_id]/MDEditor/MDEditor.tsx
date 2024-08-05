@@ -1,6 +1,6 @@
-'use client'
+'use client';
 import '@mdxeditor/editor/style.css';
-import { useEffect, useState, type ForwardedRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   headingsPlugin,
   listsPlugin,
@@ -27,13 +27,12 @@ import {
   directivesPlugin,
   DirectiveDescriptor,
   linkPlugin,
-  diffSourcePlugin,
-  DiffSourceToggleWrapper,
 } from '@mdxeditor/editor';
 import { message } from 'antd';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { IconBrandYoutube } from '@tabler/icons-react';
 import './style.css';
+import { marked } from 'marked';
 
 const YouTubeButton = () => {
   // grab the insertDirective action (a.k.a. publisher) from the
@@ -63,7 +62,7 @@ const YouTubeButton = () => {
   )
 }
 
-const CalloutCustomDirectiveDescriptor: DirectiveDescriptor = {
+const YoutubeDirective: DirectiveDescriptor = {
   name: 'youtube',
   testNode(node) {
     return node.name === 'youtube'
@@ -81,16 +80,18 @@ const CalloutCustomDirectiveDescriptor: DirectiveDescriptor = {
 
 type Props = {
   articleId: number;
+  onChange?: (markdown: string) => void
 }
 
-export default function MDEditor({
-  ref,
+const MDEditor = ({
   articleId,
+  onChange,
   ...props
-}: { ref: ForwardedRef<MDXEditorMethods> | null } & MDXEditorProps & Props) {
+}: MDXEditorProps & Props) => {
   const { getOne, update: updateBlogPost } = useBlogPosts()
   const { data: article } = getOne(articleId);
   const [isLoaded, setIsLoaded] = useState(false);
+  const ref = useRef<MDXEditorMethods>(null);
 
   useEffect(() => {
     setTimeout(() => {
@@ -98,38 +99,25 @@ export default function MDEditor({
     }, 1000)
   }, []);
 
-  const exportHTML = async () => {
-    // const content = await editor.blocksToHTMLLossy();
-    // return content
-  }
-
-  const exportMarkdown = async () => {
-    return ref?.current?.getMarkdown()
-  }
-
-  const debounceUpdate = async () => {
-    const markdown = await exportMarkdown();
-    const html = await exportHTML();
-    if (article.markdown !== markdown) {
-      await updateBlogPost.mutateAsync({
+  const debounceUpdate = (newMarkdown: string) => {
+    if (isLoaded && article.markdown !== newMarkdown) {
+      updateBlogPost.mutate({
         id: article.id,
-        markdown,
-        html,
+        markdown: newMarkdown,
+        html: marked.parse(newMarkdown),
       });
+      onChange?.(newMarkdown)
       message.success('Saved.');
     }
   }
 
-  if (!article) return null;
-
   return (
     <MDXEditor
       plugins={[
-        diffSourcePlugin({ diffMarkdown: props.markdown, viewMode: 'rich-text', readOnlyDiff: true }),
-        directivesPlugin({ directiveDescriptors: [CalloutCustomDirectiveDescriptor] }),
+        directivesPlugin({ directiveDescriptors: [YoutubeDirective] }),
         toolbarPlugin({
           toolbarContents: () => (
-            <DiffSourceToggleWrapper>
+            <>
               {' '}
               <UndoRedo />
               <BlockTypeSelect />
@@ -139,7 +127,7 @@ export default function MDEditor({
               <YouTubeButton />
               <InsertImage />
               <CreateLink />
-            </DiffSourceToggleWrapper>
+            </>
           )
         }),
         headingsPlugin(),
@@ -153,14 +141,12 @@ export default function MDEditor({
         listsPlugin(),
         markdownShortcutPlugin(),
       ]}
-      onChange={(newMarkdown) => {
-        if (isLoaded) {
-          console.log({ newMarkdown })
-        }
-      }}
+      onChange={debounceUpdate}
       {...props}
       ref={ref}
       className={`prose min-w-full w-fit ${props.className ?? ""}`}
     />
   );
 }
+
+export default MDEditor
