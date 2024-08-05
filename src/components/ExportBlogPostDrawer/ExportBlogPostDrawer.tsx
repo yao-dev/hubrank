@@ -147,21 +147,21 @@ const ExportBlogPostDrawer = ({
 
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
-    return new URL(slug, getBlogUrl())?.[prop]
+    return new URL(slug ?? article?.slug, getBlogUrl())?.[prop]
   }
 
   const code = prettify(`
   <title>${articleTitle}</title>
-  <meta name="description" content="${metaDescription}">
-  <meta name="keywords" content="${keywords}" />
+  <meta name="description" content="${metaDescription ?? article?.meta_description}">
+  <meta name="keywords" content="${keywords ?? article?.keywords?.join()}" />
   <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
 
   {/* <!-- Facebook / Pinterest --> */}
   <meta property="og:url" content="${getPreviewUrl("href")}">
   <meta property="og:type" content="article">
   <meta property="og:title" content="${articleTitle}">
-  <meta property="og:description" content="${metaDescription}">
-  <meta property="og:image" content="${ogImageUrl}">
+  <meta property="og:description" content="${metaDescription ?? article?.meta_description}">
+  <meta property="og:image" content="${ogImageUrl ?? article?.featured_image}">
   <meta property="og:site_name" content="${getPreviewUrl("host")}" />
 
   {/* <!-- Twitter --> */}
@@ -169,8 +169,8 @@ const ExportBlogPostDrawer = ({
   <meta property="twitter:domain" content="${getPreviewUrl("host")}">
   <meta property="twitter:url" content="${getPreviewUrl("href")}">
   <meta name="twitter:title" content="${articleTitle}">
-  <meta name="twitter:description" content="${metaDescription}">
-  <meta name="twitter:image" content="${ogImageUrl}">
+  <meta name="twitter:description" content="${metaDescription ?? article?.meta_description}">
+  <meta name="twitter:image" content="${ogImageUrl ?? article?.featured_image}">
 
   {/* <!-- Generated via https://usehubrank.com --> */}
 `)
@@ -395,7 +395,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                   {article.title}
                 </Link>
                 <Flex>
-                  <Typography.Text style={styles.google.url}>{article.slug}</Typography.Text>
+                  <Typography.Text style={styles.google.url}>{getPreviewUrl("href")}</Typography.Text>
                   <CaretDownOutlined style={styles.google.arrow} />
                 </Flex>
                 <Typography.Text style={styles.google.description}>{article.meta_description}</Typography.Text>
