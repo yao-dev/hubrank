@@ -5,7 +5,7 @@ import { chromium } from 'playwright';
 import weaviate, { WeaviateClient, ApiKey, generateUuid5 } from 'weaviate-ts-client';
 import { AI } from "./AI";
 import axios from "axios";
-import { compact, isEmpty } from "lodash";
+import { compact, isEmpty, orderBy } from "lodash";
 import { getSerpData } from "@/helpers/seo";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
@@ -255,9 +255,7 @@ export const writeSection = async ({
     if (section?.image?.alt && section?.image?.href) {
       console.log("image replace", `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
       content = content.replace('@@image@@', `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
-
     }
-
 
     // await saveWritingCost({ articleId, cost: ai.cost });
 
@@ -269,7 +267,7 @@ export const writeSection = async ({
     //   content = await ai.rephrase(content, rephraseInstruction);
     //   console.log("- rephrase done");
     // }
-    console.log("- add section to article");
+    console.log("- add section to article", content);
     // ai.addArticleContent(ai.parse(content, "markdown"));
     ai.addArticleContent(content);
   } catch (error) {
@@ -283,9 +281,9 @@ export const cleanArticle = (article: string) => {
   return article.replaceAll("```markdown", "").replaceAll("```", "");
 }
 
-export const convertMarkdownToHTML = (article: string) => {
+export const convertMarkdownToHTML = (markdown: string) => {
   console.log("parse markdown to html");
-  const html = marked.parse(article);
+  const html = marked.parse(markdown);
   console.log("parse markdown to html done");
   return html
 }
@@ -298,7 +296,7 @@ export const markArticleAsReadyToView = async ({
   articleId,
   wordCount,
   metaDescription,
-  featuredImage
+  featuredImage,
 }: any) => {
   try {
     console.log(chalk.yellow(JSON.stringify({
@@ -365,6 +363,7 @@ export const getProjectContext = (values: any) => {
 
 export const normalizePrompt = (prompt: string) => {
   return `${prompt}\n(don't add any text before and after the markdown except the text I request you to write)`
+  // .replaceAll("\t", "")
   // .trim()
   // .replaceAll("\n\n\n\n", "\n")
   // .replaceAll("\n\n\n", "\n")
@@ -643,7 +642,7 @@ export const getRelevantUrls = async ({
 
   console.log("retrieved urls", result)
 
-  return result.filter((item) => item.score >= 0.80).slice(0, topK).map(item => item.data) as string[];
+  return orderBy(result.filter((item) => item.score >= 0.50), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getRelevantKeywords = async ({
@@ -674,18 +673,17 @@ export const getRelevantKeywords = async ({
     })
   });
 
-  await Promise.all(promises)
+  await Promise.all(promises);
 
   const result = await namespace.query({
     data: query,
     topK: 500,
-    // includeMetadata: true,
     includeData: true
   });
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
 
-  return result.filter((item) => item.score >= 0.80).slice(0, topK).map(item => item.data) as string[];
+  return orderBy(result.filter((item) => item.score >= 0.50), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getProjectById = async (projectId: number) => {
@@ -712,7 +710,7 @@ export const getSchemaMarkup = async ({
   const ai = new AI({ context });
   const createdSchema = await ai.schemaMarkup({
     project,
-    article,
+    article: article.text,
     schemaName: schemaName,
     metaDescription: article.meta_description
   });
@@ -782,7 +780,9 @@ export const getYoutubeVideosForKeyword = async ({
   console.log("result", data.tasks[0].result)
 
   return {
-    videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.map((i) => ({
+    videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.filter(i => {
+      return i.url.startsWith('https://www.youtube.com/watch?v=')
+    }).map((i) => ({
       title: i.title,
       url: i.url,
       description: i.description,
@@ -846,16 +846,16 @@ export const getHeadlines = async ({
 export const getAndSaveSchemaMarkup = async ({
   project,
   articleId,
-  cleanedArticle,
+  article,
   lang,
-  structuredSchemas
+  structuredSchemas,
 }: any) => {
   const schemas = [];
 
   for (let schema of structuredSchemas) {
     const createdSchema = await getSchemaMarkup({
       project,
-      article: cleanedArticle,
+      article,
       lang,
       schemaName: schema,
     })
@@ -1078,7 +1078,7 @@ export const queryVector = async ({
   });
 
   const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
-  return filteredKnowledgesByScore
+  return orderBy(filteredKnowledgesByScore, ['score'], ['desc'])
 }
 
 export const getProjectKnowledges = async ({
@@ -1106,7 +1106,7 @@ export const getProjectKnowledges = async ({
   const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
   console.log({ filteredKnowledgesByScore });
 
-  return filteredKnowledgesByScore
+  return orderBy(filteredKnowledgesByScore, ['score'], ['desc'])
 }
 
 export const getUpstashDestination = (endpoint: string) => {
@@ -1123,6 +1123,7 @@ export const insertCaption = async (data: {
   language_id: number;
   writing_style_id?: number;
   metadata: { [key: string]: any };
+  cost: number
 }) => {
   try {
     const { data: queuedCaption } = await supabase.from("captions")

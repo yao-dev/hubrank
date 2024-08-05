@@ -27,11 +27,13 @@ import {
   directivesPlugin,
   DirectiveDescriptor,
   linkPlugin,
+  diffSourcePlugin,
+  DiffSourceToggleWrapper,
 } from '@mdxeditor/editor';
 import { message } from 'antd';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { IconBrandYoutube } from '@tabler/icons-react';
-import './style.css'
+import './style.css';
 
 const YouTubeButton = () => {
   // grab the insertDirective action (a.k.a. publisher) from the
@@ -123,11 +125,11 @@ export default function MDEditor({
   return (
     <MDXEditor
       plugins={[
-        // diffSourcePlugin({ diffMarkdown: props.markdown, viewMode: 'rich-text' }),
+        diffSourcePlugin({ diffMarkdown: props.markdown, viewMode: 'rich-text', readOnlyDiff: true }),
         directivesPlugin({ directiveDescriptors: [CalloutCustomDirectiveDescriptor] }),
         toolbarPlugin({
           toolbarContents: () => (
-            <>
+            <DiffSourceToggleWrapper>
               {' '}
               <UndoRedo />
               <BlockTypeSelect />
@@ -137,7 +139,7 @@ export default function MDEditor({
               <YouTubeButton />
               <InsertImage />
               <CreateLink />
-            </>
+            </DiffSourceToggleWrapper>
           )
         }),
         headingsPlugin(),
@@ -153,10 +155,12 @@ export default function MDEditor({
       ]}
       onChange={(newMarkdown) => {
         if (isLoaded) {
+          console.log({ newMarkdown })
         }
       }}
       {...props}
       ref={ref}
+      className={`prose min-w-full w-fit ${props.className ?? ""}`}
     />
   );
 }

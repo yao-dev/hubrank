@@ -10,15 +10,13 @@ import {
   getSitemapUrls,
   getKeywordsForKeywords,
   getProjectKnowledges,
-  getRelevantKeywords,
-  getRelevantUrls,
   getYoutubeVideosForKeyword,
   markArticleAsFailure,
   markArticleAsReadyToView,
   updateBlogPost,
   writeHook,
   writeSection,
-  getYoutubeTranscript
+  getYoutubeTranscript,
 } from "../../helpers";
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
@@ -42,22 +40,6 @@ export async function POST(request: Request) {
 
     const ai = new AI({ context, writing_style: writingStyle });
 
-    let sitemaps: string[];
-
-    // FETCH THE SITEMAP
-    if (body.sitemap) {
-      const sitemapXml = await fetchSitemapXml(body.sitemap);
-      console.log(chalk.yellow(sitemapXml));
-      sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
-      sitemaps = await getRelevantUrls({
-        query: body.title,
-        urls: sitemaps,
-        userId: body.userId,
-        articleId,
-        topK: 10
-      });
-    }
-
     // TODO: get keywords ideas with search intent based on body.seed_keyword using AI
     // get a string[] of keywords
 
@@ -65,14 +47,45 @@ export async function POST(request: Request) {
       keyword: body.seed_keyword,
       countryCode: language.code
     })
-    const keywords = await getRelevantKeywords({
-      keywords: kw,
-      userId: body.userId,
-      articleId,
-      query: body.title,
-      topK: 30
-    })
+    const keywords = await ai.getRelevantKeywords({
+      title: body.title,
+      seed_keyword: body.seed_keyword,
+      keywords: kw.slice(0, 200),
+      count: 20
+    });
+    // const keywords = await getRelevantKeywords({
+    //   keywords: kw,
+    //   userId: body.userId,
+    //   articleId,
+    //   query: body.seed_keyword,
+    //   topK: 30
+    // });
+    console.log(`relevant keywords for: ${body.seed_keyword}`, keywords)
+
     await updateBlogPost(articleId, { keywords });
+
+    let sitemaps: string[];
+
+    // FETCH THE SITEMAP
+    if (body.sitemap) {
+      const sitemapXml = await fetchSitemapXml(body.sitemap);
+      console.log(chalk.yellow(sitemapXml));
+      sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
+      sitemaps = await ai.getRelevantUrls({
+        title: body.title,
+        seed_keyword: body.seed_keyword,
+        urls: sitemaps,
+        count: 10
+      })
+      console.log(`relevant urls for: ${body.seed_keyword}`, sitemaps)
+      // sitemaps = await getRelevantUrls({
+      // query: body.seed_keyword,
+      // urls: sitemaps,
+      //   userId: body.userId,
+      //   articleId,
+      //   topK: 10
+      // });
+    }
 
     let youtubeTranscript;
     if (body.title_mode === "youtube_to_blog" && body.youtube_url) {
@@ -82,7 +95,7 @@ export async function POST(request: Request) {
     let videos = [];
     if (body.with_youtube_videos) {
       const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
-        keyword: body.title,
+        keyword: keywords.slice(0, 10).join(" OR ") || body.seed_keyword,
         languageCode: language.code,
         locationCode: language.location_code,
       });
@@ -115,13 +128,16 @@ export async function POST(request: Request) {
     // ADD H1 TITLE TO THE ARTICLE
     // ai.article = `# ${body.title}\n`;
 
+    if (body.featured_image) {
+      ai.article += `![featured image](${body.featured_image})\n`
+    } else {
+      const images = await getImages(keywords.join());
+      console.log("unsplash images", images)
+      const featuredImage = shuffle(images)[0];
 
-    const images = await getImages(keywords.join());
-    console.log("unsplash images", images)
-    const featuredImage = shuffle(images)[0];
-
-    if (featuredImage) {
-      ai.article += `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+      if (featuredImage) {
+        ai.article += `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+      }
     }
 
     // if (body.featuredImage) {
@@ -227,54 +243,11 @@ export async function POST(request: Request) {
     // REMOVE UNWANTED CHARACTERS
     ai.article = cleanArticle(ai.article);
 
-    // try {
-    //   const { data: project } = await getProjectById(body.project_id);
-
-    //   if (project) {
-    //     const structuredDataNames = await ai.structuredDataNames({
-    //       article: ai.article
-    //     })
-    //     console.log(chalk.yellow(JSON.stringify(structuredDataNames, null, 2)));
-
-    //     const schemas = [];
-
-    //     for (let schemaName of structuredDataNames) {
-    //       const structuredData = await ai.structuredData({
-    //         project,
-    //         article: ai.article,
-    //         schemaName
-    //       });
-
-    //       console.log(chalk.yellow(JSON.stringify(structuredData, null, 2)));
-    //       schemas.push(structuredData)
-    //     }
-
-    //     // SAVE ALL STRUCTURED DATA
-    //     await saveStructuredData(articleId, schemas)
-    //   }
-    // } catch (e) {
-    //   console.error(chalk.bgRed("[ERROR] generating structured data:", e));
-    // }
-
-    // ADD ARTICLE METADATA COMMENT
-    // ai.article = `
-    // ---
-    // title: ${body.title}
-    // description: ${outlinePlan.meta_description}
-    // image: ${featuredImage}
-    // keywords: ${body.keywords}
-    // date: ${format(new Date() "yyyy-MM-dd")}
-    // modified: ${format(new Date() "yyyy-MM-dd")}
-    // ---
-
-    // ${ai.article}
-    // `
-
-    console.log("full article", chalk.blueBright(ai.article));
+    console.log("full article markdown", chalk.blueBright(ai.article));
 
     // CONVERT MARKDOWN ARTICLE TO HTML
     const html = convertMarkdownToHTML(ai.article);
-    console.log("html", chalk.redBright(ai.article));
+    console.log("html", chalk.redBright(html));
 
     // END PERFORMANCE CALCULATION
     const end = performance.now();
@@ -286,15 +259,19 @@ export async function POST(request: Request) {
     await getAndSaveSchemaMarkup({
       project,
       articleId,
-      cleanedArticle: ai.article,
+      article: {
+        meta_description: metaDescription,
+        text: ai.article
+      },
       lang: language.label,
-      structuredSchemas: body.structured_schemas
+      structuredSchemas: body.structured_schemas,
     });
 
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const cost = 1 + (body.structured_schemas.length * 0.25);
     const creditCheck = {
       userId: body.userId,
-      costInCredits: 1 + (body.structured_schemas.length * 0.25),
+      costInCredits: cost,
       featureName: "write"
     }
     await deductCredits(creditCheck);
@@ -302,13 +279,14 @@ export async function POST(request: Request) {
     // UPDATE ARTICLE STATUS TO READY TO VIEW
     await markArticleAsReadyToView({
       markdown: ai.article,
-      cost: ai.cost,
+      // cost: ai.cost,
       html,
       writingTimeInSeconds,
       articleId,
       wordCount: articleStats.words,
       featuredImage: body.featuredImage?.href ?? "",
       metaDescription,
+      cost
     });
 
     return NextResponse.json({
@@ -318,6 +296,7 @@ export async function POST(request: Request) {
       stats: articleStats,
       featuredImage: body.featuredImage?.href ?? "",
       metaDescription,
+      cost
     }, { status: 200 });
   } catch (error) {
     await markArticleAsFailure({ articleId, error })

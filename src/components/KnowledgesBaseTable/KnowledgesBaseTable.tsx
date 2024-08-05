@@ -10,6 +10,7 @@ import {
   DeleteTwoTone,
 } from '@ant-design/icons';
 import { IconCsv, IconFileTypeDoc, IconHtml, IconJson, IconLink, IconMarkdown, IconPdf, IconTxt } from '@tabler/icons-react';
+import { format } from 'date-fns';
 
 const KnowledgesBaseTable = () => {
   const { delete: deleteKnowledge, getAll } = useKnowledges();
@@ -62,6 +63,17 @@ const KnowledgesBaseTable = () => {
           }
           return (
             <span>{value ?? "-"}</span>
+          )
+        },
+      },
+      {
+        title: 'Date',
+        dataIndex: 'date',
+        key: 'date',
+        width: 175,
+        render: (_value: any, record: any) => {
+          return (
+            <p>{format(record.created_at, 'LLL dd, h:mm aaa')}</p>
           )
         },
       },

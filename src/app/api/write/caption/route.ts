@@ -70,6 +70,8 @@ export async function POST(request: Request) {
       writingStyle
     });
 
+    const cost = 0.5
+
     await insertCaption({
       user_id: body.user_id as string,
       project_id: body.project_id as number,
@@ -77,13 +79,14 @@ export async function POST(request: Request) {
       writing_style_id: body.writing_style_id as number,
       platform: body.platform as string,
       caption: result.caption as string,
-      metadata
+      metadata,
+      cost
     });
 
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
     const creditCheck = {
       userId: body.user_id,
-      costInCredits: 0.5,
+      costInCredits: cost,
       featureName: "caption"
     }
     await deductCredits(creditCheck);

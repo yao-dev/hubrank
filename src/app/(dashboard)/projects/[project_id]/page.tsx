@@ -80,7 +80,7 @@ export default function ProjectDetail({
     },
     {
       key: 'knowledges-base',
-      label: 'Knowledges base',
+      label: 'Knowledge bases',
       children: (
         <KnowledgesBaseTable />
       ),

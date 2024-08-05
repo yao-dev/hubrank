@@ -30,18 +30,21 @@ import {
   IconBrandLinkedin,
   IconBrandPinterest,
   IconBrandX,
+  IconCoin,
   IconCopy,
   IconMail,
   IconWorld,
 } from '@tabler/icons-react';
 import Link from 'next/link';
+import prettify from "pretty";
+import { format } from 'date-fns';
 
 const { useBreakpoint } = Grid
 
 const BlogPostsTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
-  const [htmlPreview, setHtmlPreview] = useState("");
+  const [preview, setPreview] = useState("");
   const [articleId, setArticleId] = useState(null);
   const router = useRouter();
   const projectId = useProjectId();
@@ -86,7 +89,7 @@ const BlogPostsTable = () => {
         title: 'Keyword',
         dataIndex: 'seed_keyword',
         key: 'seed_keyword',
-        width: 350,
+        width: 225,
         render: (value: any) => {
           if (value) {
             return (
@@ -98,6 +101,31 @@ const BlogPostsTable = () => {
           }
           return (
             <span>-</span>
+          )
+        },
+      },
+      {
+        title: 'Date',
+        dataIndex: 'date',
+        key: 'date',
+        width: 175,
+        render: (_value: any, record: any) => {
+          return (
+            <p>{format(record.created_at, 'LLL dd, h:mm aaa')}</p>
+          )
+        },
+      },
+      {
+        title: 'Cost',
+        dataIndex: 'cost',
+        key: 'cost',
+        width: 50,
+        render: (_value: any, record: any) => {
+          return (
+            <div className='flex flex-row gap-2'>
+              <IconCoin stroke={1.5} />
+              <p>{record?.cost ?? 0}</p>
+            </div>
           )
         },
       },
@@ -206,7 +234,7 @@ const BlogPostsTable = () => {
               onClick={(e) => {
                 e.preventDefault();
                 setArticleId(record.id)
-                setHtmlPreview(record.html)
+                setPreview(prettify(`<h1>${record.title}</h1>${record.html}`))
               }}
               // onClick={(e) => {
               //   e.preventDefault();
@@ -271,19 +299,13 @@ const BlogPostsTable = () => {
 
   return (
     <>
-      {/* <Modal
-        title="Preview"
-        open={!!htmlPreview}
-        onCancel={() => setHtmlPreview("")}
-        style={{ top: 20 }}
-        width={800}
-      >
-        <div dangerouslySetInnerHTML={{ __html: `<div style="width:800px;">${htmlPreview}</div>` }} />
-      </Modal> */}
       <Drawer
-        open={!!htmlPreview}
-        width={800}
-        onClose={() => setHtmlPreview("")}
+        open={!!preview}
+        width="auto"
+        onClose={() => {
+          setPreview("")
+          setArticleId(null)
+        }}
         extra={
           <Space>
             <Button style={{ width: 100 }} type="primary" onClick={() => router.push(`/projects/${projectId}/articles/${articleId}`)}>
@@ -292,8 +314,10 @@ const BlogPostsTable = () => {
           </Space>
         }
       >
-        <div dangerouslySetInnerHTML={{
-          __html: `
+        <div
+          className='prose'
+          dangerouslySetInnerHTML={{
+            __html: `
           <style>
           img {
             max-width: 100%;
@@ -302,8 +326,9 @@ const BlogPostsTable = () => {
             margin-top: 0px;
           }
           </style>
-          ${htmlPreview}
-        ` }} />
+          ${preview}
+        ` }}
+        />
       </Drawer>
       <Flex vertical gap="middle" style={{ overflow: "auto" }}>
         <Table

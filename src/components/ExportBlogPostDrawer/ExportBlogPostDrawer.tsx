@@ -321,7 +321,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 <Input.TextArea rows={5} placeholder='Add keywords' />
               </Form.Item>
 
-              <Form.Item style={{ marginBottom: 12 }} label={<Label name="OG image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+              <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
                 <Input placeholder='https://google.com/image-url' />
               </Form.Item>
             </Form>

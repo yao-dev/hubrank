@@ -1,7 +1,7 @@
 'use client';;
 import { useEffect, useRef, useState } from 'react';
 import useBlogPosts from '@/hooks/useBlogPosts';
-import { Button, Flex, Form, Skeleton, Spin } from 'antd';
+import { Button, Flex, Form, message, Skeleton, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 // import "./styles.css";
 import useProjects from '@/hooks/useProjects';
@@ -11,6 +11,8 @@ import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
 import { MDXEditorMethods } from '@mdxeditor/editor';
 import MDEditor from './MDEditor/MDEditor';
+import { IconSparkles } from '@tabler/icons-react';
+// import { FacebookSelector } from 'react-reactions';
 
 const slugify = (text: string) =>
   text
@@ -21,7 +23,20 @@ const slugify = (text: string) =>
     .trim()
     .replace(/\s+/g, '-')
     .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-')
+    .replace(/--+/g, '-');
+
+function getSelectedText() {
+  var text = "";
+  var activeEl = document.activeElement;
+  if (
+    (typeof activeEl?.selectionStart == "number")
+  ) {
+    text = activeEl.value.slice(activeEl.selectionStart, activeEl.selectionEnd);
+  } else if (window.getSelection) {
+    text = window.getSelection().toString();
+  }
+  return text;
+}
 
 const Article = ({
   params,
@@ -35,10 +50,15 @@ const Article = ({
   const { data: project } = useProjects().getOne(projectId);
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
-  const [articleTitle, setArticleTitle] = useState("")
+  const [articleTitle, setArticleTitle] = useState("");
+  const [selection, setSelection] = useState({
+    text: "",
+    cursorX: null,
+    cursorY: null,
+  })
   const [seoForm] = Form.useForm();
   const drawers = useDrawers();
-  const ref = useRef<MDXEditorMethods>(null)
+  const ref = useRef<MDXEditorMethods>(null);
 
   useEffect(() => {
     if (article) {
@@ -57,10 +77,57 @@ const Article = ({
     })
   }
 
+  const sendFeedback = (emoji: string) => {
+    if ($crisp && ["😡", "😕"].includes(emoji)) {
+      $crisp.push(["set", "message:text", [`Reaction: ${emoji}\nID: ${articleId}\nFeedback: `]]);
+      $crisp.push(['do', 'chat:open']);
+      return;
+    } else {
+      message.success('Thanks for your feedback');
+    }
+  }
+
   const getBlogUrl = () => {
     if (!project) return "";
     return new URL(`${project.blog_path}`, new URL(project.website).href).href
   }
+
+  useEffect(() => {
+    const mouseUpHandler = (event: any) => {
+      const editorContainer = document.getElementById("editor-container");
+      const aiEditor = document.getElementById("ai-editor");
+
+      if (aiEditor?.contains(document.activeElement) || aiEditor?.contains(window?.getSelection?.().anchorNode)) {
+        return;
+      } else {
+        setSelection({
+          text: "",
+          cursorX: null,
+          cursorY: null,
+        })
+      }
+
+      if (editorContainer?.contains(document.activeElement) || editorContainer?.contains(window?.getSelection?.().anchorNode)) {
+        const selectedText = getSelectedText();
+
+        if (selectedText) {
+          setSelection({
+            text: selectedText,
+            cursorX: event.pageX,
+            cursorY: event.pageY,
+          });
+        }
+      }
+    }
+
+    document.onmouseup = document.onkeyup = document.onselectionchange = mouseUpHandler
+
+    return () => {
+      document.removeEventListener('mouseup', mouseUpHandler)
+      document.removeEventListener('keyup', mouseUpHandler)
+      document.removeEventListener('selectionchange', mouseUpHandler)
+    }
+  }, []);
 
   if (isError) return null;
 
@@ -104,17 +171,64 @@ const Article = ({
                 {/* <EditorBlock
                 articleId={articleId}
               /> */}
-                <MDEditor
-                  ref={ref}
-                  articleId={articleId}
-                  markdown={article?.markdown ?? ""}
-                  className='prose min-w-full w-fit px-[54px]'
-                />
+                <div>
+                  <div id="editor-container">
+                    <MDEditor
+                      ref={ref}
+                      articleId={articleId}
+                      markdown={article?.markdown ?? ""}
+                      className='px-[54px] mb-12'
+                    />
+                  </div>
+                </div>
+
+                <div className='fixed bottom-0'>
+                  <div className='flex justify-center relative -right-64'>
+                    <div className='flex flex-col gap-1 border rounded-2xl rounded-bl-none rounded-br-none py-3 px-2 w-fit shadow-lg bg-white'>
+                      <p className='text-center'>How do you like this article?</p>
+                      <div className='flex flex-row gap-3 p-2'>
+                        <span onClick={() => sendFeedback("😡")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😡</span>
+                        <span onClick={() => sendFeedback("😕")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😕</span>
+                        <span onClick={() => sendFeedback("😄")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😄</span>
+                        <span onClick={() => sendFeedback("😍")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😍</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
           </div>
         </Spin>
       </Flex>
+
+      {selection.text && selection.cursorX && selection.cursorY && (
+        <div
+          id="ai-editor"
+          className={`absolute z-10 bg-white max-w-[360px] flex flex-col gap-3 p-3 rounded-lg border shadow-xl`}
+          style={{
+            top: selection.cursorY,
+            left: selection.cursorX,
+          }}
+        >
+          <div className='flex flex-row gap-2'>
+            <IconSparkles stroke={1.5} />
+            <p className='text-base font-semibold'>AI Autocomplete</p>
+          </div>
+          <div className='flex flex-row flex-wrap'>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Fix spelling</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Extend text</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Reduce text</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Simplify</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Rephrase</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Paraphrase</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Summarize</Button>
+          </div>
+          <Spin spinning>
+            <p>Suggestions</p>
+            <p></p>
+          </Spin>
+        </div>
+      )}
 
       <ExportBlogPostDrawer
         open={drawers.exportBlogPost.isOpen}

@@ -2,9 +2,10 @@
 import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Grid } from 'antd';
 import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
-import { IconCopy, IconWorld } from '@tabler/icons-react';
+import { IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
 import useCaptions from '@/hooks/useCaptions';
 import { platforms } from '@/options';
+import { format } from 'date-fns';
 
 const { useBreakpoint } = Grid
 
@@ -45,12 +46,36 @@ const CaptionsTable = () => {
         },
       },
       {
-        dataIndex: 'caption',
-        key: 'caption',
+        dataIndex: 'copy',
         width: 50,
         render: (_value: any, record: any) => {
           return (
-            <IconCopy onClick={() => onCopyCaption(value)} stroke={1.5} style={{ cursor: "pointer" }} />
+            <IconCopy onClick={() => onCopyCaption(value)} stroke={1.5} style={{ cursor: "pointer" }} className='mx-auto' />
+          )
+        },
+      },
+      {
+        title: 'Date',
+        dataIndex: 'date',
+        key: 'date',
+        width: 175,
+        render: (_value: any, record: any) => {
+          return (
+            <p>{format(record.created_at, 'LLL dd, h:mm aaa')}</p>
+          )
+        },
+      },
+      {
+        title: 'Cost',
+        dataIndex: 'cost',
+        key: 'cost',
+        width: 50,
+        render: (_value: any, record: any) => {
+          return (
+            <div className='flex flex-row gap-2'>
+              <IconCoin stroke={1.5} />
+              <p>{record?.cost ?? 0}</p>
+            </div>
           )
         },
       },

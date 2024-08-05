@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import { format } from "date-fns";
 import OpenAI from "openai";
 import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
-import { capitalize, isEmpty } from "lodash";
+import { capitalize, isEmpty, shuffle } from "lodash";
 
 export type CaptionTemplate = {
   platform: string;
@@ -39,6 +39,20 @@ export type CaptionTemplate = {
     objective: string
   };
   youtube_transcript?: string
+}
+
+type GetRelevantKeywords = {
+  title: string;
+  seed_keyword: string;
+  keywords: string[];
+  count: number;
+}
+
+type GetRelevantUrls = {
+  title: string;
+  seed_keyword: string;
+  urls: string[],
+  count: number
 }
 
 const costs = {
@@ -232,7 +246,8 @@ export class AI {
   }
 
   addArticleContent(content: any) {
-    this.article += `\n${content.replaceAll(".", ".\n")}\n`;
+    // this.article += `\n${content.replaceAll(".", ".\n")}\n`;
+    this.article += `\n${content}\n`;
     console.log(chalk.cyanBright(this.article))
   }
 
@@ -260,7 +275,7 @@ export class AI {
     if (this.ai_mode === "anthropic") {
       completion = await this.ai.beta.messages.create({
         // model: opts.model || "claude-3-sonnet-20240229",
-        model: models["gpt-4o"],
+        model: opts.model,
         max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
         system: this.system,
@@ -277,7 +292,7 @@ export class AI {
       completion = await this.ai.chat.completions.create({
         // model: opts.model || "claude-3-sonnet-20240229",
         // model: models["gpt-4-0613"],
-        model: models["gpt-4o"],
+        model: opts.model,
         max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
         messages: [
@@ -333,7 +348,8 @@ export class AI {
   }
 
   async headlines(values: any) {
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature: 0.5, model: models.opus });
+    const temperature = shuffle([0.4, 0.5, 0.6])[0]
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature, model: models["gpt-4o"] });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -437,7 +453,8 @@ export class AI {
   }
 
   async hook(values: any) {
-    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 0.5, model: models.opus })
+    const temperature = shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0]
+    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature, model: models["gpt-4-0613"] })
   }
 
   writeTemplate(values: any) {
@@ -453,7 +470,6 @@ export class AI {
     Do not add heading for the hook if there is any
     Do not make up fact, statistic or fake story
     `
-
     // prompt += `Outline: ${values?.outline}`
 
     prompt += values?.section?.tones?.length > 0 ? `\nTones: ${values.section.tones.join(', ')}` : "";
@@ -490,7 +506,7 @@ export class AI {
     if (hasVideo) {
       prompt += `\nVideo to include:
       // here is how you embed it in the markdown => <iframe width="560" height="315" src="https://www.youtube.com/embed/REPLACE_WITH_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-      url: ${values.section.video_url}`
+      video url: ${values.section.video_url}\n`
     }
 
     if ((hasImage || hasImages) && hasVideo) {
@@ -530,19 +546,9 @@ export class AI {
   }
 
   async write(values: any) {
-    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature: 0.4, model: models.opus });
-  }
-
-  expandTemplate() {
-    return `[expand]\n\nExpand the text above by 50 to 150 words, write in markdown wrapped in \`\`\`markdown\`\`\`..`
-  }
-
-  async expand(section: any) {
-    return this.ask(`
-    "${section}"
-
-    ${this.expandTemplate()}
-  `, { type: "markdown", mode: "expand", temperature: 0 });
+    const model = shuffle([models["gpt-4o"], models["gpt-4-0613"]])[0];
+    const temperature = shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0]
+    return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature, model });
   }
 
   rephraseTemplate(content: any) {
@@ -578,7 +584,7 @@ export class AI {
     Keep all links and images if there are any.
 
     Write in markdown wrapped in \`\`\`markdown\`\`\`.
-  `, { type: "markdown", mode: "rephrase", temperature: 0, model: models.haiku });
+  `, { type: "markdown", mode: "rephrase", temperature: 0, model: models["gpt-4-0613"] });
     //   return this.ask(`
     //   "${section}"
 
@@ -599,7 +605,7 @@ export class AI {
     "${section}"
 
     ${this.paraphraseTemplate(writingStyle)}
-  `, { type: "markdown", mode: "paraphrase", temperature: 0.4 });
+  `, { type: "markdown", mode: "paraphrase", temperature: 0.4, model: models["gpt-4-0613"] });
   }
 
   outlinePlanTemplate(values: any) {
@@ -696,7 +702,7 @@ video_url: string;
   }
 
   async outlinePlan(values: any) {
-    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models.opus });
+    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models["gpt-4o"] });
   }
 
   metaDescriptionTemplate(values: any) {
@@ -707,7 +713,6 @@ video_url: string;
     Seed keyword: ${values.seed_keyword ?? ""}
     Outline: ${values.outline ?? ""}
     `
-
 
     prompt += this.opts?.writing_style?.tones?.length > 0 ? `\nTones: ${this.opts?.writing_style?.tones.join(', ')}` : "";
     prompt += this.opts?.writing_style?.purposes?.length > 0 ? `\nPurposes: ${this.opts?.writing_style?.purposes.join(', ')}` : "";
@@ -734,25 +739,7 @@ video_url: string;
   }
 
   async metaDescription(values: any) {
-    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models.opus });
-  }
-
-  schemaMarkupNamesTemplate(values: any) {
-    return `[schema markup names]
-
-    === Article
-    ${values.article}
-
-    === Instructions
-    Give me a list of names of up to 5 structured json+ld schema that fit the best this article
-    Output a json array
-
-    Wrap your output in \`\`\`json\`\`\`
-    `
-  }
-
-  async schemaMarkupNames(values: any) {
-    return this.ask(this.schemaMarkupNamesTemplate(values), { type: "json", mode: "ld+json", temperature: 0.5, model: models.opus });
+    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models["gpt-4-0613"] });
   }
 
 
@@ -774,7 +761,7 @@ video_url: string;
     ${values.article}
 
     === Instructions
-    Write the structured data (ld+json) schema: ${values.schemaName}
+    Write the structured data (ld+json) schema type: ${values.schemaName}
     Your output is a json object and contains only this, no comment or text surrounding the json
     Never add the whole article in any of the properties of the markup
 
@@ -783,7 +770,7 @@ video_url: string;
   }
 
   async schemaMarkup(values: any) {
-    return this.ask(this.schemaMarkupTemplate(values), { type: "json", mode: "ld+json", temperature: 0.5, model: models.opus });
+    return this.ask(this.schemaMarkupTemplate(values), { type: "json", mode: "ld+json", temperature: 0.5, model: models["gpt-4o"] });
   }
 
   getWritingCharacteristicsTemplate(text: string) {
@@ -819,34 +806,7 @@ video_url: string;
   }
 
   async getWritingCharacteristics(text: string) {
-    return this.ask(this.getWritingCharacteristicsTemplate(text), { type: "json", mode: "get-writing-style", temperature: 0.5, model: models.opus });
-  }
-
-  getPSeoVariablesValueTemplate(values: any) {
-    let prompt = `[pseo variables value]\n\nGive me a list of variable that will serve to create ${values.article_count} headlines of the following struture: "${values.title_structure}"`;
-
-    prompt += `\nVariables:\n`;
-
-    values.variables.forEach((i) => {
-      prompt += `${i.variable}\n`
-    })
-
-    prompt += `\`\`\`ts
-    type VariableName = string;
-    type Variables = {
-      [key: VariableName]: string;
-    }[];
-    // Example: [{variable_name: "value"}] (each object represent the variables of each article)
-    \`\`\`
-    `;
-
-    prompt += `Wrap your output in \`\`\`json\`\`\``
-
-    return prompt
-  }
-
-  async getPSeoVariablesValue(values: any) {
-    return this.ask(this.getPSeoVariablesValueTemplate(values), { type: "json", mode: "get-programmatic-seo-variables", temperature: 0.1, model: models.opus });
+    return this.ask(this.getWritingCharacteristicsTemplate(text), { type: "json", mode: "get-writing-style", temperature: 0.5, model: models["gpt-4o"] });
   }
 
   getPSeoOutlineTemplate(values: any) {
@@ -884,7 +844,7 @@ video_url: string;
   }
 
   async getPSeoOutline(values: any) {
-    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-outline", temperature: 0.1, model: models.opus });
+    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-outline", temperature: 0.1, model: models["gpt-4-0613"] });
   }
 
   getCaptionTemplate(values: CaptionTemplate) {
@@ -948,7 +908,34 @@ video_url: string;
   }
 
   async getCaption(values: CaptionTemplate): Promise<{ caption: string }> {
-    return this.ask(this.getCaptionTemplate(values), { type: "json", mode: "get-caption", temperature: 0.7, model: models.opus });
+    const model = values.goal === "youtube_to_caption" && values.youtube_transcript ? models["gpt-4o"] : models["gpt-4-0613"]
+    return this.ask(this.getCaptionTemplate(values), { type: "json", mode: "get-caption", temperature: 0.7, model });
+  }
+
+  getRelevantKeywordsTemplate(values: GetRelevantKeywords) {
+    return [
+      '[relevant keywords]',
+      `Give me the ${values.count} most sementically relevants (min >70% relevancy percentage) keywords in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
+      `keywords list:\n- ${values.keywords.join('\n- ')}`,
+      `Return an json array and wrap your output in \`\`\`json\`\`\``
+    ].join('\n\n')
+  }
+
+  async getRelevantKeywords(values: GetRelevantKeywords) {
+    return this.ask(this.getRelevantKeywordsTemplate(values), { type: "json", mode: "get-relevant-keywords", temperature: 0.3, model: models["gpt-4o"] });
+  }
+
+  getRelevantUrlsTemplate(values: GetRelevantUrls) {
+    return [
+      '[relevant urls]',
+      `Give me the ${values.count} most sementically relevants (min >70% relevancy percentage) urls in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
+      `urls list:\n- ${values.urls.join('\n- ')}`,
+      `Return an json array and wrap your output in \`\`\`json\`\`\``
+    ].join('\n\n')
+  }
+
+  async getRelevantUrls(values: GetRelevantUrls) {
+    return this.ask(this.getRelevantUrlsTemplate(values), { type: "json", mode: "get-relevant-urls", temperature: 0.3, model: models["gpt-4o"] });
   }
 }
 

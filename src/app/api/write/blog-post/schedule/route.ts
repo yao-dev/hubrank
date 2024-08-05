@@ -11,68 +11,73 @@ export async function POST(request: Request) {
   const ai = new AI();
 
   // CREATE NEW ARTICLE WITH QUEUE STATUS
-  const articleId = await insertBlogPost(body)
+  const articleId = await insertBlogPost(body);
 
-  // CHANGE STATUS TO WRITING
-  await updateBlogPostStatus(articleId, "writing")
+  try {
+    // CHANGE STATUS TO WRITING
+    await updateBlogPostStatus(articleId, "writing")
 
-  const [
-    { data: project },
-    { data: language },
-  ] = await Promise.all([
-    supabase.from("projects").select("*").eq("id", body.project_id).single(),
-    supabase.from("languages").select("*").eq("id", body.language_id).single()
-  ]);
+    const [
+      { data: project },
+      { data: language },
+    ] = await Promise.all([
+      supabase.from("projects").select("*").eq("id", body.project_id).single(),
+      supabase.from("languages").select("*").eq("id", body.language_id).single()
+    ]);
 
-  const context = getProjectContext({
-    name: project.name,
-    website: project.website,
-    description: project.metatags?.description || project?.description,
-    lang: language.label,
-  })
+    const context = getProjectContext({
+      name: project.name,
+      website: project.website,
+      description: project.metatags?.description || project?.description,
+      lang: language.label,
+    })
 
-  // FETCH WRITING STYLE IF IT EXISTS
-  let writingStyle: any = getManualWritingStyle(body);
-  if (body.writing_style_id) {
-    writingStyle = await getSavedWritingStyle(body.writing_style_id)
-  }
+    // FETCH WRITING STYLE IF IT EXISTS
+    let writingStyle: any = getManualWritingStyle(body);
+    if (body.writing_style_id) {
+      writingStyle = await getSavedWritingStyle(body.writing_style_id)
+    }
 
-  if (body.title_mode === "custom") {
-    body.title = body.custom_title;
-  } else {
-    const headlines = await getHeadlines({
-      language,
-      context,
-      writingStyle,
-      seedKeyword: body.seed_keyword,
-      purpose: body.purpose,
-      tone: body.tones,
-      contentType: body.content_type,
-      clickbait: body.clickbait,
-      isInspo: body.title_mode === "inspo",
-      inspoTitle: body.title_mode === "inspo" && body.inspo_title,
-      count: 1
+    if (body.title_mode === "custom") {
+      body.title = body.custom_title;
+    } else {
+      const headlines = await getHeadlines({
+        language,
+        context,
+        writingStyle,
+        seedKeyword: body.seed_keyword,
+        purpose: body.purpose,
+        tone: body.tones,
+        contentType: body.content_type,
+        clickbait: body.clickbait,
+        isInspo: body.title_mode === "inspo",
+        inspoTitle: body.title_mode === "inspo" && body.inspo_title,
+        count: 1
+      });
+
+      body.title = headlines?.[0];
+
+      // CHANGE STATUS TO WRITING
+      await updateBlogPost(articleId, { title: body.title })
+    }
+
+    await createSchedule({
+      destination: getUpstashDestination("api/write/blog-post"),
+      body: {
+        ...body,
+        articleId,
+        context,
+        writingStyle,
+        language,
+        project
+      },
     });
 
-    body.title = headlines?.[0];
-
-    // CHANGE STATUS TO WRITING
-    await updateBlogPost(articleId, { title: body.title })
+    return NextResponse.json({ scheduled: true }, { status: 200 });
+  } catch (e) {
+    console.log(e?.message)
+    // CHANGE STATUS TO ERROR
+    await updateBlogPostStatus(articleId, "error");
+    return NextResponse.json({ scheduled: false }, { status: 500 });
   }
-
-  await createSchedule({
-    destination: getUpstashDestination("api/write/blog-post"),
-    body: {
-      ...body,
-      articleId,
-      context,
-      writingStyle,
-      language,
-      project
-    },
-  });
-
-  return NextResponse.json({
-    success: true
-  }, { status: 200 });
 }

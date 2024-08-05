@@ -161,7 +161,8 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
           language_id: null,
           with_hook: false,
           structured_schemas: [],
-          youtube_url: ""
+          youtube_url: "",
+          featured_image: ""
         }}
         autoComplete="off"
         layout="vertical"
@@ -191,6 +192,10 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
           <AutoComplete options={savedKeywordsOptions}>
             <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
           </AutoComplete>
+        </Form.Item>
+
+        <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+          <Input placeholder='https://google.com/image-url' />
         </Form.Item>
 
         <Form.Item

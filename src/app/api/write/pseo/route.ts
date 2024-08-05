@@ -172,8 +172,10 @@ export async function POST(request: Request) {
 
   await getAndSaveSchemaMarkup({
     project,
-    pendingArticle,
-    cleanedArticle,
+    article: {
+      meta_description: metaDescription,
+      text: cleanedArticle
+    },
     lang: language.label,
     structuredSchemas: body.structured_schemas
   })
@@ -181,6 +183,8 @@ export async function POST(request: Request) {
   // GET ARTICLE STATS
   const articleStats = getSummary(cleanedArticle);
   // UPDATE ARTICLE STATUS TO READY TO VIEW
+
+  const cost = 1 + (body.structured_schemas.length * 0.25);
   await markArticleAsReadyToView({
     markdown: cleanedArticle,
     // cost: ai.cost,
@@ -190,13 +194,14 @@ export async function POST(request: Request) {
     wordCount: articleStats.words,
     // featuredImage: body.featuredImage?.href ?? "",
     metaDescription,
-    keywords
+    keywords,
+    cost
   });
 
   // DEDUCTS CREDITS FROM USER SUBSCRIPTION
   const creditCheck = {
     userId: body.userId,
-    costInCredits: 1 + (body.structured_schemas.length * 0.25),
+    costInCredits: cost,
     featureName: "pseo/write"
   }
   await deductCredits(creditCheck);

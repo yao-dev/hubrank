@@ -1080,6 +1080,7 @@ export const avoidWords = [
   "remember",
   "embrace",
   "by",
+  "by incorporating",
   "ready to",
   "are you",
   "ever wondered",
@@ -1103,5 +1104,19 @@ export const avoidWords = [
   "in today's world",
   "explore",
   "Unraveling",
-  "remember"
+  "remember",
+  "check out",
+  "debunked",
+  "myths",
+  "good luck",
+  "efficiently",
+  "Demystified",
+  "embark",
+  "However",
+  "Unleash",
+  "enjoyable",
+  "This comprehensive guide",
+  "help you understand",
+  "the science behind",
+  "You've got this"
 ]
