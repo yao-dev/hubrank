@@ -173,7 +173,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                                 boxShadow: "0 2px 0 rgba(5, 55, 255, 0.06)"
                               }}
                             >
-                              {hasSubscription ? "Switch plan" : "Subscribe"}
+                              {hasSubscription ? "Switch plan" : !user ? "Try for FREE" : "Subscribe"}
                             </Button>
                             // <Button onClick={products[2].selectedPricing.onSelectPricing}>
                             //   switch plan

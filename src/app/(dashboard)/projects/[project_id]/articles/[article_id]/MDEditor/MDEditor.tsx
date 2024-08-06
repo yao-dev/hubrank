@@ -33,6 +33,7 @@ import useBlogPosts from '@/hooks/useBlogPosts';
 import { IconBrandYoutube } from '@tabler/icons-react';
 import './style.css';
 import { marked } from 'marked';
+import { debounce } from 'lodash';
 
 const YouTubeButton = () => {
   // grab the insertDirective action (a.k.a. publisher) from the
@@ -141,7 +142,7 @@ const MDEditor = ({
         listsPlugin(),
         markdownShortcutPlugin(),
       ]}
-      onChange={debounceUpdate}
+      onChange={debounce(debounceUpdate, 1500)}
       {...props}
       ref={ref}
       className={`prose min-w-full w-fit ${props.className ?? ""}`}

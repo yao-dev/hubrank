@@ -206,7 +206,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
           <Segmented
             options={[
               { label: "AI", value: "ai" },
-              { label: "Inspo", value: "inspo" },
+              // { label: "Inspo", value: "inspo" },
               { label: "Custom title", value: "custom" },
               { label: "Programmatic SEO", value: "programmatic_seo" },
               { label: "Youtube to blog", value: "youtube_to_blog" },
