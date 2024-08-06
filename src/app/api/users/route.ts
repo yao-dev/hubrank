@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/helpers/supabase";
+import { updateCredits } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -10,6 +11,7 @@ export async function POST(request: Request) {
   try {
     switch (body.type) {
       case 'INSERT': {
+        await updateCredits({ userId: body.record.id, credits: 5, action: 'replace' })
         break;
       }
     }
