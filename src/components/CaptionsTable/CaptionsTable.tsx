@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Grid } from 'antd';
+import { Button, Flex, Popconfirm, Space, Table, Image, message, Empty, Grid, Spin } from 'antd';
 import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
 import { IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
@@ -72,10 +72,14 @@ const CaptionsTable = () => {
         width: 50,
         render: (_value: any, record: any) => {
           return (
-            <div className='flex flex-row gap-2'>
-              <IconCoin stroke={1.5} />
-              <p>{record?.cost ?? 0}</p>
-            </div>
+            ["writing", "queue"].includes(record.status) ? (
+              <Spin size="small" />
+            ) : (
+              <div className='flex flex-row items-center gap-2'>
+                <IconCoin stroke={1.5} />
+                <p>{record?.cost ?? 0}</p>
+              </div>
+            )
           )
         },
       },
