@@ -9,8 +9,8 @@ import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
 import ExportBlogPostDrawer from '@/components/ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
-import MDEditor from './MDEditor/MDEditor';
 import { IconSparkles } from '@tabler/icons-react';
+import TiptapEditor from './TiptapEditor/TiptapEditor';
 // import { FacebookSelector } from 'react-reactions';
 
 const slugify = (text: string) =>
@@ -221,17 +221,14 @@ const Article = ({
                 >
                   {articleTitle}
                 </div>
-                {/* <EditorBlock
-                articleId={articleId}
-              /> */}
                 <div>
                   <div id="editor-container">
-                    <MDEditor
-                      articleId={articleId}
-                      markdown={`${article?.markdown}` ?? ""}
-                      className='px-[54px]'
-                    // onChange={setMarkdown}
-                    />
+                    <div className='px-[54px] outline-0'>
+                      <TiptapEditor
+                        articleId={articleId}
+                        content={`${article?.html}` ?? ""}
+                      />
+                    </div>
                   </div>
                 </div>
 
