@@ -1,6 +1,4 @@
 import { contentTypes, purposes } from "@/components/NewHeadlinesModal/options";
-import { StructuredOutputParser } from "langchain/output_parsers";
-import { z } from "zod";
 
 const context = `Mealful is a mobile app for people who wants to lose weight without restricting themselves or counting their calories.
 We don't support the idea of counting calories or restrictive ways/diets of losing weight will works in the long term, but instead supports the idea of mindful eating, eating high-density foods, choosing the right foods, reduce bad sugar, knowing healthy alternatives to certain foods, changing the relationship you have with foods for the better, behavior change and growth mindset techniques (CBT) on yourself.
