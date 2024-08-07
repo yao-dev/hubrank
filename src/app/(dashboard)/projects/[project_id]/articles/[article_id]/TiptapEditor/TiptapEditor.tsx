@@ -314,12 +314,14 @@ type Props = {
   articleId: number;
   onChange?: (markdown: string) => void;
   content: string;
+  readOnly: boolean;
 }
 
 const TiptapEditor = ({
   articleId,
   onChange,
-  content
+  content,
+  readOnly
 }: Props) => {
   const { update: updateBlogPost } = useBlogPosts()
 
@@ -390,7 +392,7 @@ const TiptapEditor = ({
   return (
     <>
       <EditorProvider
-        slotBefore={<MenuBar />}
+        slotBefore={readOnly ? null : <MenuBar />}
         extensions={extensions}
         content={content}
         editorProps={{
@@ -399,6 +401,7 @@ const TiptapEditor = ({
           },
         }}
         onUpdate={debounce(onEditorChange, 500) as any}
+        editable={!readOnly}
       >
         <FloatingMenus />
       </EditorProvider>

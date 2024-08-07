@@ -39,6 +39,7 @@ import {
 import Link from 'next/link';
 import prettify from "pretty";
 import { format } from 'date-fns';
+import TiptapEditor from '@/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor';
 
 const { useBreakpoint } = Grid
 
@@ -46,7 +47,7 @@ const BlogPostsTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
   const [preview, setPreview] = useState("");
-  const [articleId, setArticleId] = useState(null);
+  const [articleId, setArticleId] = useState();
   const router = useRouter();
   const projectId = useProjectId();
   const screens = useBreakpoint();
@@ -319,21 +320,13 @@ const BlogPostsTable = () => {
           </Space>
         }
       >
-        <div
-          className='prose'
-          dangerouslySetInnerHTML={{
-            __html: `
-          <style>
-          img {
-            max-width: 100%;
-          }
-          h1 {
-            margin-top: 0px;
-          }
-          </style>
-          ${preview}
-        ` }}
-        />
+        {articleId && (
+          <TiptapEditor
+            articleId={articleId}
+            content={preview}
+            readOnly
+          />
+        )}
       </Drawer>
       <Flex vertical gap="middle" style={{ overflow: "auto" }}>
         <Table

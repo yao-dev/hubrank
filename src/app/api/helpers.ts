@@ -41,7 +41,7 @@ export const insertBlogPost = async (data: any) => {
   try {
     const { data: queuedArticle } = await supabase.from("blog_posts")
       .insert({
-        title: data.title,
+        title: data.title_mode === "custom" ? data.custom_title : data.title,
         seed_keyword: data.seed_keyword,
         status: "queue",
         keywords: data.keywords,
@@ -255,6 +255,7 @@ export const writeSection = async ({
       // console.log("image replace", `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
       content = content.replace('@@image@@', `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
     }
+    content = content.replaceAll("https://www.youtube.com/watch?v=", "https://www.youtube.com/embed/")
 
     // await saveWritingCost({ articleId, cost: ai.cost });
 
