@@ -4,6 +4,7 @@ import useProjects from "@/hooks/useProjects";
 import {
   Alert,
   AutoComplete,
+  Button,
   Flex,
   Form,
   FormInstance,
@@ -26,6 +27,8 @@ import Label from "../Label/Label";
 import { contentTypes, structuredSchemas } from "@/options";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
+import AddImageModal from "../AddImageModal/AddImageModal";
+import { SearchOutlined } from '@ant-design/icons';
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -44,6 +47,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
   const dynamic = Form.useWatch("external_source", form);
   const [variableSet, setVariableSet] = useState({});
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const drawers = useDrawers();
 
   useEffect(() => {
@@ -119,6 +123,13 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
   return (
     <Flex vertical gap="large" style={{ height: "100%" }}>
       {contextHolder}
+      <AddImageModal
+        open={isImageModalOpen}
+        onClose={() => setIsImageModalOpen(false)}
+        onSubmit={(image) => {
+          form.setFieldValue("featured_image", image.src)
+        }}
+      />
       <Form
         form={form}
         initialValues={{
@@ -197,6 +208,10 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
         <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
           <Input placeholder='https://google.com/image-url' />
         </Form.Item>
+
+        <Button className="mb-6" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
+          Search image
+        </Button>
 
         <Form.Item
           name="title_mode"

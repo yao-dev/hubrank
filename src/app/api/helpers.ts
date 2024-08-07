@@ -252,7 +252,7 @@ export const writeSection = async ({
     });
 
     if (section?.image?.alt && section?.image?.href) {
-      console.log("image replace", `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
+      // console.log("image replace", `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
       content = content.replace('@@image@@', `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
     }
 
