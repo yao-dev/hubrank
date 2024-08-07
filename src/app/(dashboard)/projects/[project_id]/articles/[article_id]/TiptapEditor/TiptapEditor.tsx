@@ -73,10 +73,13 @@ const useMenuButtons = () => {
 
   useEffect(() => {
     setImageTab("upload")
+  }, [isImageModalOpen])
+
+  useEffect(() => {
     setImageLink("");
     setSelectedImage({ href: "", alt: "" })
     setImages([]);
-  }, [imageTab, isImageModalOpen])
+  }, [imageTab])
 
   if (!editor) {
     return {}
@@ -100,7 +103,7 @@ const useMenuButtons = () => {
   const onSearchImage = async (e: any) => {
     try {
       setIsSearchingImage(true)
-      const imagesFound = await getImages(e.currentTarget.value, 10);
+      const imagesFound = await getImages(e.currentTarget.value, 12);
       setImages(imagesFound);
       setIsSearchingImage(false)
     } catch {
@@ -134,6 +137,7 @@ const useMenuButtons = () => {
             src={image.href}
             alt={image.alt}
             className={`absolute w-full h-full object-cover rounded-md`}
+            loading="lazy"
           />
           <div
             className={`cursor-pointer absolute z-10 w-full h-full rounded-md opacity-0 hover:opacity-100 flex items-center justify-center hover:bg-primary-500/50 transition-all ${selectedImage.href === image.href ? "bg-primary-500/50 opacity-100" : ""}`}
@@ -311,14 +315,12 @@ const useMenuButtons = () => {
                   accept={"jpg,png,gif"}
                   maxCount={1}
                   onChange={(info) => {
-                    console.log(info)
                     const { status } = info.file;
                     if (status === 'done') {
                       const reader = new FileReader();
                       reader.addEventListener(
                         "load",
                         () => {
-                          // convert image file to base64 string
                           if (typeof reader.result === "string") {
                             console.log('reader.result', reader.result)
                             setImageLink(reader.result);
@@ -327,16 +329,12 @@ const useMenuButtons = () => {
                         false,
                       );
                       reader.readAsDataURL(info.file.originFileObj);
-                      //   message.success(`${info.file.name} file uploaded successfully.`);
-                      // closeDrawer();
-                    } else if (status === 'error') {
-                      // message.error(info?.file?.response?.error ?? "We couldn't upload your file, please try again.");
                     }
                   }}
                 >
                   <p className="ant-upload-text">Click or drag your image to this area to upload</p>
                   <p className="ant-upload-hint">
-                    Supported files (<b>jpg,png,gif</b>) with up to <b>10MB</b>.
+                    Supported images (<b>jpg,png,gif</b>).
                   </p>
                 </Upload.Dragger>
 
