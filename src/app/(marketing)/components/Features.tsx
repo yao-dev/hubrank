@@ -107,8 +107,8 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="bg-[#f9f9ff] pt-14">
-      <div className="container flex flex-col mx-auto items-center gap-4 px-4 lg:px-40 mb-12">
+    <section id="features" className="bg-[#f9f9ff] pt-14 mb-12">
+      <div className="container flex flex-col mx-auto items-center gap-4 px-4 lg:px-40">
         <span className="uppercase text-base font-light text-primary-500">features</span>
 
         <div className="flex flex-col gap-4">

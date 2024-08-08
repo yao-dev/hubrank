@@ -1,5 +1,4 @@
-'use client';
-import { Segmented } from "antd";
+'use client';;
 import { useEffect, useState } from "react";
 
 const featuresInAction = [
@@ -45,25 +44,29 @@ const FeaturesPreview = () => {
   }, [featureInActionVideo]);
 
   return (
-    <section className="container mx-auto px-4 lg:px-40 flex flex-col items-center gap-12">
-      <div className="hidden lg:flex flex-col items-center gap-6">
+    <section className="container mx-auto px-4 lg:px-40 flex flex-col items-center gap-6 mb-16">
+      <div className="flex flex-col items-center gap-6">
         <h3 className="text-3xl font-semibold">See for yourself</h3>
-        <Segmented
-          size="large"
-          options={featuresInAction.map((item) => ({
-            label: item.title,
-            value: item.id,
-          }))}
-          style={{ width: "fit-content" }}
-          onChange={(id) => setFeatureInActionVideo(featuresInAction.find(item => item.id === id))}
-        />
+        <div className="flex flex-wrap gap-1 lg:gap-2 justify-center">
+          {featuresInAction.map((item) => {
+            return (
+              <div
+                onClick={() => setFeatureInActionVideo(item)}
+                className={`cursor-pointer rounded-full py-2 px-4 border transition hover:border-primary-500 ${featureInActionVideo.id === item.id ? "bg-primary-500 text-white" : ""}`}
+              >
+                <p>{item.title}</p>
+              </div>
+            )
+          })}
+        </div>
+
         <p className="text-zinc-600 text-base font-light text-center w-2/3">
           {featureInActionVideo.description}
         </p>
       </div>
 
       {featureInActionVideo && (
-        <div className="hidden lg:flex p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
+        <div className="transition-all p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
           <video
             src={featureInActionVideo.video}
             loop
@@ -73,28 +76,6 @@ const FeaturesPreview = () => {
           />
         </div>
       )}
-
-      <div className="flex flex-col gap-12 lg:hidden mt-8 mb-16">
-        <h3 className="text-3xl font-semibold text-center">See for yourself</h3>
-        <div className="flex flex-col gap-24">
-          {featuresInAction.map((item) => {
-            return (
-              <div key={item.id} className="flex flex-col gap-5">
-                <p className="text-lg font-semibold text-center">{item.title}</p>
-                <div className="p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
-                  <video
-                    src={item.video}
-                    loop
-                    autoPlay
-                    // className="rounded-lg border-2 border-slate-200 w-full h-full object-cover"
-                    className="rounded-lg border-2 border-slate-200 w-full h-full"
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
     </section>
   )
 }
