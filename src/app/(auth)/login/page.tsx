@@ -23,7 +23,7 @@ export default function Login() {
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false)
-    }, 750);
+    }, 250);
   }, []);
 
   useEffect(() => {
