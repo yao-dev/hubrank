@@ -20,6 +20,7 @@ import {
   CloseCircleOutlined,
   SyncOutlined,
   DeleteTwoTone,
+  ExportOutlined
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import { useRouter } from 'next/navigation';
@@ -40,17 +41,19 @@ import Link from 'next/link';
 import prettify from "pretty";
 import { format } from 'date-fns';
 import TiptapEditor from '@/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor';
+import ExportBlogPostDrawer from '../ExportBlogPostDrawer/ExportBlogPostDrawer';
+import useDrawers from '@/hooks/useDrawers';
 
 const { useBreakpoint } = Grid
 
 const BlogPostsTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
-  const [preview, setPreview] = useState("");
-  const [articleId, setArticleId] = useState();
+  const [selectedArticle, setSelectedArticle] = useState();
   const router = useRouter();
   const projectId = useProjectId();
   const screens = useBreakpoint();
+  const drawers = useDrawers();
 
   const getIsDisabled = (status: string) => {
     return ["queue", "writing", "error"].includes(status)
@@ -239,8 +242,7 @@ const BlogPostsTable = () => {
               disabled={getIsDisabled(record.status)}
               onClick={(e) => {
                 e.preventDefault();
-                setArticleId(record.id)
-                setPreview(prettify(`<h1>${record.title}</h1>${record.html}`))
+                setSelectedArticle(record)
               }}
               // onClick={(e) => {
               //   e.preventDefault();
@@ -306,26 +308,42 @@ const BlogPostsTable = () => {
   return (
     <>
       <Drawer
-        open={!!preview}
-        width="auto"
+        open={!!selectedArticle}
+        width={700}
         onClose={() => {
-          setPreview("")
-          setArticleId(null)
+          setSelectedArticle(undefined)
         }}
         extra={
           <Space>
-            <Button style={{ width: 100 }} type="primary" onClick={() => router.push(`/projects/${projectId}/articles/${articleId}`)}>
-              Edit
+            <Button
+              onClick={() => drawers.openExportBlogPostDrawer({ isOpen: true })}
+              icon={<ExportOutlined />}
+              className='w-fit'
+              disabled={selectedArticle?.status !== "ready_to_view"}
+            >
+              Export
+            </Button>
+
+            <Button href={`/projects/${projectId}/articles/${selectedArticle?.id}`} style={{ width: 100 }} type="primary">
+              Open
             </Button>
           </Space>
         }
       >
-        {articleId && (
-          <TiptapEditor
-            articleId={articleId}
-            content={preview}
-            readOnly
-          />
+        {selectedArticle && (
+          <div className='flex flex-col gap-4'>
+            <h1 className='text-4xl font-extrabold'>{selectedArticle.title}</h1>
+            <TiptapEditor
+              articleId={selectedArticle.id}
+              content={prettify(selectedArticle.html)}
+              readOnly={false}
+            />
+            <ExportBlogPostDrawer
+              open={drawers.exportBlogPost.isOpen}
+              onClose={() => drawers.openExportBlogPostDrawer({ isOpen: false })}
+              articleId={selectedArticle.id}
+            />
+          </div>
         )}
       </Drawer>
       <Flex vertical gap="middle" style={{ overflow: "auto" }}>

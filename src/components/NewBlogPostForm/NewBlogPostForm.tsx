@@ -14,7 +14,7 @@ import {
   Switch,
   message,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useDrawers from "@/hooks/useDrawers";
 import useWritingStyles from "@/hooks/useWritingStyles";
 import useLanguages from "@/hooks/useLanguages";
@@ -33,10 +33,11 @@ import { SearchOutlined } from '@ant-design/icons';
 type Props = {
   onSubmit: (values: any) => void;
   form: FormInstance<any>;
-  isSubmitting: boolean
+  isSubmitting: boolean;
+  setEstimatedPseoCreditsCount: any
 }
 
-const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
+const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCreditsCount }: Props) => {
   const projectId = useProjectId();
   const { data: project, isPending } = useProjects().getOne(projectId)
   const { data: writingStyles } = useWritingStyles().getAll();
@@ -46,6 +47,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
   const fieldTitleStructure = Form.useWatch("title_structure", form) ?? "";
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
   const dynamic = Form.useWatch("external_source", form);
+  const titleMode = Form.useWatch("title_mode", form);
   const [variableSet, setVariableSet] = useState({});
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const drawers = useDrawers();
@@ -118,7 +120,14 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
     return [...variables]
   }
 
-  const estimatedPSeoArticlesCount = isEmpty(variableSet) ? 0 : Object.values(variableSet).map((i) => i.split('\n').length).reduce((a, b) => a * b)
+  const estimatedPSeoArticlesCount = useMemo(() => {
+    return isEmpty(variableSet) ? 0 : Object.values(variableSet).map((i) => i.split('\n').length).reduce((a, b) => a * b)
+  }, [variableSet])
+
+  useEffect(() => {
+    const structuredSchemaCreditsCount = ((fieldStructuredSchemas?.length ?? 0) / 4);
+    setEstimatedPseoCreditsCount(estimatedPSeoArticlesCount + (estimatedPSeoArticlesCount * structuredSchemaCreditsCount))
+  }, [fieldStructuredSchemas, estimatedPSeoArticlesCount])
 
   return (
     <Flex vertical gap="large" style={{ height: "100%" }}>
@@ -177,10 +186,8 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
         }}
         autoComplete="off"
         layout="vertical"
-        // onFinish={onFinish}
         onFinish={(values) => {
-          console.log("onFinish", values);
-          onSubmit(values)
+          onSubmit({ ...values, variableSet })
         }}
         onError={console.error}
         scrollToFirstError
@@ -198,20 +205,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
-
-        <Form.Item name="seed_keyword" label={<Label name="Main keyword" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
-          <AutoComplete options={savedKeywordsOptions}>
-            <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
-          </AutoComplete>
-        </Form.Item>
-
-        <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
-          <Input placeholder='https://google.com/image-url' />
-        </Form.Item>
-
-        <Button className="mb-6" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
-          Search image
-        </Button>
 
         <Form.Item
           name="title_mode"
@@ -371,6 +364,36 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting }: Props) => {
             }
           }}
         </Form.Item>
+
+        {titleMode === "programmatic_seo" ? (
+          <Form.Item name="seed_keyword" label={<Label name="Main keyword group" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+            <Select
+              placeholder="Select main keyword group"
+              options={[...getVariables()].map((item) => ({
+                label: item,
+                value: item,
+              }))}
+            />
+          </Form.Item>
+        ) : (
+          <Form.Item name="seed_keyword" label={<Label name="Main keyword" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+            <AutoComplete options={savedKeywordsOptions}>
+              <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
+            </AutoComplete>
+          </Form.Item>
+        )}
+
+        {titleMode !== "programmatic_seo" && (
+          <>
+            <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+              <Input placeholder='https://google.com/image-url' />
+            </Form.Item>
+
+            <Button className="mb-6" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
+              Search image
+            </Button>
+          </>
+        )}
 
         <Form.Item name="content_type" label={<Label name="Content type" />} rules={[{ required: true, type: "string", message: "Select a content type" }]} hasFeedback>
           <Select

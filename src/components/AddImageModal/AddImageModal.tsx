@@ -3,14 +3,16 @@ import { IconCircleCheckFilled } from '@tabler/icons-react';
 import { debounce } from 'lodash';
 import { Button, Input, Modal, Spin, Upload } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { getImages } from '@/helpers/image';
+import { getAiImage, getImages } from '@/helpers/image';
 
 const AddImageModal = ({ open, onClose, onSubmit }) => {
   const [imageTab, setImageTab] = useState("upload");
   const [images, setImages] = useState([]);
   const [isSearchingImage, setIsSearchingImage] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ href: "", alt: "" });
   const [imageLink, setImageLink] = useState("");
+  const [generatedImageLink, setGeneratedImageLink] = useState("");
 
   useEffect(() => {
     setImageTab("upload")
@@ -18,8 +20,11 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
 
   useEffect(() => {
     setImageLink("");
-    setSelectedImage({ href: "", alt: "" })
+    setSelectedImage({ href: "", alt: "" });
+    setGeneratedImageLink("");
     setImages([]);
+    setIsSearchingImage(false);
+    setIsGeneratingImage(false)
   }, [imageTab])
 
   const onSearchImage = async (e: any) => {
@@ -33,6 +38,30 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
     }
   }
 
+  const onGeneratingImage = async (e: any) => {
+    try {
+      const query = e.currentTarget.value
+      if (!query) return;
+      setIsGeneratingImage(true)
+      const generatedImageBlob = await getAiImage(query);
+      const reader = new FileReader();
+      reader.addEventListener(
+        "load",
+        () => {
+          if (typeof reader.result === "string") {
+            console.log('reader.result', reader.result)
+            setGeneratedImageLink(reader.result)
+          }
+        },
+        false,
+      );
+      reader.readAsDataURL(generatedImageBlob);
+      setIsGeneratingImage(false)
+    } catch {
+      setIsGeneratingImage(false)
+    }
+  }
+
   const onSubmitImage = () => {
     if (imageTab === "upload" || imageTab === "link") {
       if (imageLink) {
@@ -43,6 +72,12 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
     if (imageTab === "unsplash") {
       if (selectedImage.href) {
         onSubmit({ src: selectedImage.href, alt: selectedImage.alt })
+      }
+    }
+
+    if (imageTab === "ai") {
+      if (generatedImageLink) {
+        onSubmit({ src: generatedImageLink, alt: "" })
       }
     }
 
@@ -82,7 +117,7 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
       onOk={onSubmitImage}
       destroyOnClose
       okButtonProps={{
-        disabled: imageTab === "link" && !imageLink || imageTab === "unsplash" && !selectedImage.href
+        disabled: imageTab === "link" && !imageLink || imageTab === "unsplash" && !selectedImage.href || imageTab === "ai" && !generatedImageLink || isSearchingImage || isGeneratingImage
       }}
     >
       <div className='flex flex-col gap-4 w-full mt-2'>
@@ -104,6 +139,12 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
             onClick={() => setImageTab("unsplash")}
           >
             Unsplash
+          </Button>
+          <Button
+            type={imageTab === "ai" ? "primary" : "default"}
+            onClick={() => setImageTab("ai")}
+          >
+            AI
           </Button>
         </div>
 
@@ -163,6 +204,31 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
             {images.length > 0 && (
               <div className='columns-4 gap-2'>
                 {imageGallery}
+              </div>
+            )}
+          </div>
+        )}
+
+        {imageTab === "ai" && (
+          <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4'>
+              <Input
+                placeholder="Describe the image to generate"
+                onChange={debounce(onGeneratingImage, 1000)}
+                allowClear
+                disabled={isGeneratingImage}
+              />
+              {isGeneratingImage && (
+                <Spin spinning />
+              )}
+            </div>
+            {generatedImageLink && (
+              <div className='columns-2'>
+                <img
+                  src={generatedImageLink}
+                  className={`h-[250px] rounded-md`}
+                  loading="lazy"
+                />
               </div>
             )}
           </div>

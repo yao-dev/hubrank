@@ -9,8 +9,9 @@ export async function POST(request: Request) {
 
     switch (body.action) {
       case 'write-blog-post':
-      case 'write-pseo':
         creditsRequired = 1 + (body.extra ?? 0)
+      case 'write-pseo':
+        creditsRequired = body.extra ?? 0
       case 'write-caption':
         creditsRequired = 0.5
       case 'schema-markup':

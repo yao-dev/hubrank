@@ -8,205 +8,233 @@ import {
   getAndSaveSchemaMarkup,
   getSitemapUrls,
   getKeywordsForKeywords,
-  getProjectContext,
   getProjectKnowledges,
-  getRelevantKeywords,
-  getRelevantUrls,
-  getSavedWritingStyle,
-  getYoutubeVideosForKeyword,
   markArticleAsReadyToView,
-  setPromptWritingStyle,
   updateBlogPost,
   updateBlogPostStatus,
-  getManualWritingStyle,
+  markArticleAsFailure,
+  writeHook,
+  writeSection,
 } from "../../helpers";
 import { NextResponse } from "next/server";
 import { getSummary } from 'readability-cyr';
 import { supabaseAdmin } from "@/helpers/supabase";
+import { getImages } from "@/helpers/image";
+import { shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 180;
 
 export async function POST(request: Request) {
   const body = await request.json();
+  const context = body.context;
+  const writingStyle = body.writingStyle;
+  const language = body.language;
+  const project = body.project;
+  const articleId = body.articleId;
 
-  const [
-    { data: project },
-    { data: pendingArticle },
-    { data: language },
-  ] = await Promise.all([
-    supabase.from("projects").select("*").eq("id", body.project_id).maybeSingle(),
-    supabase.from("blog_posts").select("*").eq("id", body.articleId).maybeSingle(),
-    supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
-  ]);
+  try {
+    // CHANGE STATUS TO WRITING
+    await updateBlogPostStatus(articleId, "writing");
 
-  const context = getProjectContext({
-    name: project.name,
-    website: project.website,
-    description: project.metatags?.description || project?.description,
-    lang: language.label,
-  })
+    const ai = new AI({ context, writing_style: writingStyle });
 
-  const ai = new AI({ context });
+    const seedKeyword = body.variables[body.seed_keyword]
 
-  // ADD H1 TITLE TO THE ARTICLE
-  // ai.article = `# ${body.headline}\n`;
+    const { keywords: kw } = await getKeywordsForKeywords({
+      keyword: seedKeyword,
+      countryCode: language.code
+    })
+    const keywords = await ai.getRelevantKeywords({
+      title: body.title,
+      seed_keyword: seedKeyword,
+      keywords: kw.slice(0, 200),
+      count: 20
+    });
 
-  // CHANGE STATUS TO WRITING
-  await updateBlogPostStatus(body.articleId, "writing");
+    console.log(`relevant keywords for: ${seedKeyword}`, keywords)
 
-  const { keywords: kw } = await getKeywordsForKeywords({
-    keyword: body.seed_keyword,
-    countryCode: language.code
-  });
-  const keywords = await getRelevantKeywords({
-    query: body.headline,
-    keywords: kw,
-    userId: body.userId,
-    articleId: body.articleId,
-    topK: 30
-  });
-  await updateBlogPost(body.articleId, { keywords })
+    await updateBlogPost(articleId, { keywords })
 
-  // WRITE META DESCRIPTION
-  const { description: metaDescription } = await ai.metaDescription({
-    ...body,
-    title: body.headline,
-    keywords
-  });
+    let sitemaps: string[];
 
-  // FETCH WRITING STYLE IF IT EXISTS
-  let writingStyle: any = getManualWritingStyle(body);
-  if (body.writing_style_id) {
-    writingStyle = await getSavedWritingStyle(body.writing_style_id)
-  }
+    // FETCH THE SITEMAP
+    if (body.sitemap) {
+      const sitemapXml = await fetchSitemapXml(body.sitemap);
+      console.log(chalk.yellow(sitemapXml));
+      sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
+      sitemaps = await ai.getRelevantUrls({
+        title: body.title,
+        seed_keyword: seedKeyword,
+        urls: sitemaps,
+        count: 10
+      })
+      console.log(`relevant urls for: ${seedKeyword}`, sitemaps)
+    }
 
-  // FETCH THE SITEMAP
-  let sitemaps;
-  if (body.sitemap) {
-    const sitemapXml = await fetchSitemapXml(body.sitemap);
-    console.log(chalk.yellow(sitemapXml));
-    sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
-    sitemaps = await getRelevantUrls({
-      query: body.headline,
-      urls: sitemaps,
+    // let videos = [];
+    // if (body.with_youtube_videos) {
+    //   const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
+    //     keyword: keywords.slice(0, 10).join(" OR ") || seedKeyword,
+    //     languageCode: language.code,
+    //     locationCode: language.location_code,
+    //   });
+    //   videos = youtubeVideos;
+    // }
+
+    let outline = body.outline.table_of_content_markdown;
+
+    // Interpolate variables
+    Object.entries(body.variables).forEach(([variable, value]) => {
+      console.log(`[${variable}, ${value}]`)
+      outline = outline.replaceAll(`{${variable}}`, value);
+    })
+
+    console.log("outline interpolation", outline)
+
+    // WRITE META DESCRIPTION
+    const { description: metaDescription } = await ai.metaDescription({
+      ...body,
+      keywords,
+      outline
+    });
+
+    // SET FEATURED IMAGE
+    const images = await getImages(keywords.join());
+    console.log("unsplash images", images)
+    const featuredImage = shuffle(images)[0];
+
+    if (featuredImage) {
+      ai.article = `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+    }
+
+    // WRITE HOOK
+    if (body.with_hook) {
+      await writeHook({
+        ai,
+        title: body.title,
+        outline,
+        seed_keyword: seedKeyword,
+        keywords,
+      })
+    }
+
+    ai.article = [
+      ai.article,
+      outline,
+      ""
+    ].join('\n\n');
+
+    for (const [index, section] of Object.entries(body.outline.sections) as any) {
+      if (!section) {
+        throw new Error(`No section found for index: ${index}`)
+      }
+      let image;
+      // if (section.media === "image") {
+      //   image = await getImage("unsplash", shuffle(get(section, "keywords", "").split(","))[0])
+      // }
+      // if (section.image) {
+      //   const images = await getImages(get(section, "keywords", ""));
+      //   console.log("unsplash images", images)
+      //   image = shuffle(images)[0]
+      // }
+
+      // TODO: add knowledges in writeSection prompt
+      const knowledges = await getProjectKnowledges({
+        userId: body.userId,
+        projectId: body.project_id,
+        topK: 500,
+        query: `${section.name} ${section?.keywords ?? ""}`,
+        minScore: 0.5
+      })
+
+      // prompt += `\nHeadline structure: ${body.title_structure}`;
+      // prompt += `\nHeadline (do not add it in the output): ${body.title}`;
+      // prompt += `\nReplace all variables with their respective value.`;
+
+      // WRITE EACH SECTION
+      await writeSection({
+        pseo: true,
+        ai,
+        index,
+        outline,
+        title: body.title,
+        title_structure: body.title_structure,
+        variables: body.variables,
+        section: {
+          prefix: "##",
+          keywords: section?.keywords ?? "",
+          word_count: section?.word_count ?? 250,
+          name: section.name,
+          call_to_action: section?.call_to_action,
+          call_to_action_example: section?.call_to_action_example,
+          custom_prompt: section?.custom_prompt,
+          image,
+          internal_links: section?.internal_links,
+          images: section?.images,
+          video_url: section?.video_url,
+          tones: section?.tones,
+          purposes: section?.purposes,
+          emotions: section?.emotions,
+          vocabularies: section?.vocabularies,
+          sentence_structures: section?.sentence_structures,
+          perspectives: section?.perspectives,
+          writing_structures: section?.writing_structures,
+          instructional_elements: section?.instructional_elements,
+        },
+      })
+    }
+
+    // REMOVE UNWANTED CHARACTERS
+    ai.article = cleanArticle(ai.article);
+    console.log("full article markdown", chalk.blueBright(ai.article));
+
+    // CONVERT MARKDOWN ARTICLE TO HTML
+    const html = convertMarkdownToHTML(ai.article);
+    console.log("html", chalk.redBright(html));
+
+    await getAndSaveSchemaMarkup({
+      project,
+      article: {
+        meta_description: metaDescription,
+        text: ai.article
+      },
+      lang: language.label,
+      structuredSchemas: body.structured_schemas
+    })
+
+    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const cost = 1 + (body.structured_schemas.length * 0.25);
+    const creditCheck = {
       userId: body.userId,
-      articleId: body.articleId,
-      topK: 10
+      costInCredits: cost,
+      featureName: "pseo/write"
+    }
+    await deductCredits(creditCheck);
+
+    // GET ARTICLE STATS
+    const articleStats = getSummary(ai.article);
+
+    await markArticleAsReadyToView({
+      markdown: ai.article,
+      html,
+      articleId: articleId,
+      wordCount: articleStats.words,
+      featuredImage: featuredImage?.href ?? "",
+      metaDescription,
+      cost
     });
+
+    return NextResponse.json({
+      markdown: ai.article,
+      html,
+      stats: articleStats,
+      featuredImage: featuredImage ?? "",
+      metaDescription,
+      cost
+    }, { status: 200 });
+  } catch (error) {
+    await markArticleAsFailure({ articleId, error })
+    return NextResponse.json(error, { status: 500 });
   }
-
-  // TODO: add knowledges in the prompt
-  const knowledges = await getProjectKnowledges({
-    userId: body.userId,
-    projectId: body.project_id,
-    topK: 8,
-    query: body.headline
-  })
-
-  let prompt = `Now write up to ${body.word_count} words using this template`;
-
-  setPromptWritingStyle({ prompt, writingStyle });
-
-  prompt += body.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
-  prompt += body.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
-  prompt += body.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
-  prompt += body.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
-  prompt += `\n- Language: ${language.label}`;
-
-  if (body.additional_information) {
-    prompt += `\n${body.additional_information}`;
-  }
-
-  // if (body.keywords?.length > 0) {
-  //   prompt += `\n- List of keywords to include (avoid keywords stuffing): ${body.keywords}`
-  // }
-
-  if (sitemaps?.length > 0) {
-    prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${sitemaps?.join('\n')}\n\n`
-  }
-
-  if (keywords?.length > 0) {
-    prompt += `\n- Keywords (include relevant keywords only, up to 15 keywords):\n${keywords.join('\n')}\n\n`
-  }
-
-  let videos = [];
-  if (body.with_youtube_videos) {
-    const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
-      keyword: body.headline,
-      languageCode: language.code,
-      locationCode: language.location_code,
-    });
-    videos = youtubeVideos;
-  }
-
-  if (videos?.length > 0) {
-    prompt += `\n- Youtube videos (include relevant video(s) only, up to 1 video per section maximum, don't add a list of video at the end of the article):
-    - include relevant video(s) only
-    - up to 1 video per section maximum
-    - don't add a list of video at the end of the article
-    - don't put more than 1 video together
-    - here is how you embed it in the markdown => <iframe width="560" height="315" src="https://www.youtube.com/embed/REPLACE_WITH_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-
-    ${JSON.stringify(videos, null, 2)}
-    `
-  }
-
-  prompt += `\nHeadline structure: ${body.title_structure}`;
-  prompt += `\nHeadline: ${body.headline}`;
-  prompt += `\nOutline:\n${JSON.stringify(body.outline, null, 2)}`;
-  prompt += `\nReplace all variables with their respective value.`;
-
-  prompt += `\n\nWrap your output in \`\`\`markdown\`\`\``
-
-  const articleContent = await ai.ask(prompt, { type: "markdown", mode: "PSEO article", temperature: 0.5 });
-
-  ai.article += `\n\n${articleContent}`
-
-  const cleanedArticle = cleanArticle(ai.article)
-  console.log(chalk.yellow(cleanedArticle, null, 2));
-
-  // CONVERT MARKDOWN ARTICLE TO HTML
-  const html = convertMarkdownToHTML(cleanedArticle);
-  console.log("html", chalk.redBright(cleanedArticle));
-
-  await getAndSaveSchemaMarkup({
-    project,
-    article: {
-      meta_description: metaDescription,
-      text: cleanedArticle
-    },
-    lang: language.label,
-    structuredSchemas: body.structured_schemas
-  })
-
-  // GET ARTICLE STATS
-  const articleStats = getSummary(cleanedArticle);
-  // UPDATE ARTICLE STATUS TO READY TO VIEW
-
-  const cost = 1 + (body.structured_schemas.length * 0.25);
-  await markArticleAsReadyToView({
-    markdown: cleanedArticle,
-    // cost: ai.cost,
-    html,
-    // writingTimeInSeconds,
-    articleId: body.articleId,
-    wordCount: articleStats.words,
-    // featuredImage: body.featuredImage?.href ?? "",
-    metaDescription,
-    keywords,
-    cost
-  });
-
-  // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-  const creditCheck = {
-    userId: body.userId,
-    costInCredits: cost,
-    featureName: "pseo/write"
-  }
-  await deductCredits(creditCheck);
-
-  return NextResponse.json({
-    article: cleanedArticle
-  }, { status: 200 });
 }

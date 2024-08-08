@@ -9,6 +9,7 @@ import useProjectId from "@/hooks/useProjectId";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import { useState } from "react";
 import usePricingModal from "@/hooks/usePricingModal";
+import { isEmpty } from "lodash";
 
 type Props = {
   open: boolean;
@@ -22,9 +23,11 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const [variableSet, setVariableSet] = useState({});
   const pricingModal = usePricingModal();
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
+  const titleMode = Form.useWatch("title_mode", form);
+  const estimatedPSeoArticlesCount = Form.useWatch("estimated_pseo_articles_count", form);
   const extra = ((fieldStructuredSchemas?.length ?? 0) / 4);
-  const creditsCount = 1 + extra
-
+  const [estimatedPseoCreditsCount, setEstimatedPseoCreditsCount] = useState(0)
+  const creditsCount = titleMode === "programmatic_seo" ? estimatedPseoCreditsCount : 1 + extra
 
   const writeArticle = async (values: any) => {
     console.log("writeArticle", values)
@@ -62,14 +65,14 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       const { data } = await axios.post('/api/credits-check', {
         user_id: await getUserId(),
         action: 'write-pseo',
-        extra
+        extra: estimatedPseoCreditsCount
       });
       if (!data.authorized) {
         setIsSubmitting(false);
         return pricingModal.open(true)
       }
-      axios.post('/api/pseo/schedule', values);
-      message.success('Articles added in the queue!');
+      axios.post('/api/write/pseo/schedule', values);
+      message.success('Articles will added in the queue shortly!');
       onClose();
       form.resetFields();
       setIsSubmitting(false)
@@ -91,8 +94,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
     if (isProgrammaticSeo) {
       const generateCombinations = () => {
-        const keys = Object.keys(variableSet);
-        const vSet = keys.map(key => variableSet[key].split('\n'));
+        const keys = Object.keys(values.variableSet);
+        const vSet = keys.map(key => values.variableSet[key].split('\n'));
         const results = [];
 
         function combine(prefix, index) {
@@ -123,7 +126,6 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         userId: await getUserId(),
         project_id: projectId,
         headlines,
-        variableSet,
         ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
       });
     }
@@ -167,7 +169,12 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         </Flex>
       }
     >
-      <NewBlogPostForm form={form} onSubmit={onSubmit} isSubmitting={isSubmitting} />
+      <NewBlogPostForm
+        form={form}
+        onSubmit={onSubmit}
+        isSubmitting={isSubmitting}
+        setEstimatedPseoCreditsCount={setEstimatedPseoCreditsCount}
+      />
     </Drawer>
   )
 }

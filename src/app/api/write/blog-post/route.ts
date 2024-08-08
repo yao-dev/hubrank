@@ -53,13 +53,7 @@ export async function POST(request: Request) {
       keywords: kw.slice(0, 200),
       count: 20
     });
-    // const keywords = await getRelevantKeywords({
-    //   keywords: kw,
-    //   userId: body.userId,
-    //   articleId,
-    //   query: body.seed_keyword,
-    //   topK: 30
-    // });
+
     console.log(`relevant keywords for: ${body.seed_keyword}`, keywords)
 
     await updateBlogPost(articleId, { keywords });
@@ -78,13 +72,6 @@ export async function POST(request: Request) {
         count: 10
       })
       console.log(`relevant urls for: ${body.seed_keyword}`, sitemaps)
-      // sitemaps = await getRelevantUrls({
-      // query: body.seed_keyword,
-      // urls: sitemaps,
-      //   userId: body.userId,
-      //   articleId,
-      //   topK: 10
-      // });
     }
 
     let youtubeTranscript;
@@ -120,53 +107,23 @@ export async function POST(request: Request) {
     console.log(chalk.bgMagenta(JSON.stringify(outlinePlan, null, 2)));
 
     // WRITE META DESCRIPTION
-    const { description: metaDescription } = await ai.metaDescription({ ...body, outline });
+    const { description: metaDescription } = await ai.metaDescription({ ...body, keywords, outline });
 
-    // UPDATE WRITE COST
-    // await saveWritingCost({ articleId, cost: ai.cost });
 
-    // ADD H1 TITLE TO THE ARTICLE
-    // ai.article = `# ${body.title}\n`;
-
+    // SET FEATURED IMAGE
+    let featuredImage = body.featured_image;
     if (body.featured_image) {
       ai.article += `![featured image](${body.featured_image})\n`
     } else {
       const images = await getImages(keywords.join());
       console.log("unsplash images", images)
-      const featuredImage = shuffle(images)[0];
+      const foundFeaturedImage = shuffle(images)[0];
 
-      if (featuredImage) {
-        ai.article += `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+      if (foundFeaturedImage) {
+        featuredImage = foundFeaturedImage.href;
+        ai.article += `![${foundFeaturedImage.alt ?? ""}](${foundFeaturedImage.href})\n`
       }
     }
-
-    // if (body.featuredImage) {
-    //   ai.article += `![${body.featuredImage.alt ?? ""}](${body.featuredImage.href})\n`
-    // }
-
-    // let featuredImage = ""
-    // if (body.with_featured_image) {
-    //   // try {
-    //   //   const featured_image = await findImage(body.title);
-    //   //   if (featured_image && featured_image.alt && featured_image.href) {
-    //   //     ai.article += `![${featured_image.alt}](${featured_image.href})\n`;
-    //   //     featuredImage = featured_image.href;
-    //   //   }
-    //   // } catch (e) {
-    //   //   const unplashImg = await getImage("unsplash", body.title);
-    //   //   if (unplashImg) {
-    //   //     ai.article += `![${unplashImg.alt}](${unplashImg.href})\n`;
-    //   //     featuredImage = unplashImg.href;
-    //   //   }
-    //   // }
-    //   if (!featuredImage) {
-    //     const unplashImg = await getImage("unsplash", body.seed_keyword);
-    //     if (unplashImg) {
-    //       ai.article += `![${unplashImg.alt}](${unplashImg.href})\n`;
-    //       featuredImage = unplashImg.href;
-    //     }
-    //   }
-    // }
 
     if (body.with_hook) {
       await writeHook({
@@ -180,7 +137,7 @@ export async function POST(request: Request) {
 
     ai.article = [
       ai.article,
-      outlinePlan.table_of_content_markdown,
+      outline,
       ""
     ].join('\n\n');
 
@@ -214,6 +171,8 @@ export async function POST(request: Request) {
       await writeSection({
         ai,
         index,
+        outline,
+        title: body.title,
         section: {
           prefix: "##",
           keywords: section?.keywords ?? "",
@@ -235,9 +194,6 @@ export async function POST(request: Request) {
           writing_structures: section?.writing_structures,
           instructional_elements: section?.instructional_elements,
         },
-        outline,
-        title: body.title,
-        articleId,
       })
     }
 
@@ -253,9 +209,6 @@ export async function POST(request: Request) {
     // END PERFORMANCE CALCULATION
     const end = performance.now();
     const writingTimeInSeconds = (end - start) / 1000;
-
-    // GET ARTICLE STATS
-    const articleStats = getSummary(ai.article);
 
     await getAndSaveSchemaMarkup({
       project,
@@ -277,15 +230,17 @@ export async function POST(request: Request) {
     }
     await deductCredits(creditCheck);
 
+    // GET ARTICLE STATS
+    const articleStats = getSummary(ai.article);
+
     // UPDATE ARTICLE STATUS TO READY TO VIEW
     await markArticleAsReadyToView({
       markdown: ai.article,
-      // cost: ai.cost,
       html,
       writingTimeInSeconds,
       articleId,
       wordCount: articleStats.words,
-      featuredImage: body.featuredImage?.href ?? "",
+      featuredImage: featuredImage ?? "",
       metaDescription,
       cost
     });
@@ -295,7 +250,7 @@ export async function POST(request: Request) {
       html,
       writingTimeInSeconds,
       stats: articleStats,
-      featuredImage: body.featuredImage?.href ?? "",
+      featuredImage: featuredImage ?? "",
       metaDescription,
       cost
     }, { status: 200 });

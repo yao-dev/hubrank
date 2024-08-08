@@ -98,7 +98,7 @@ const costs = {
   },
 }
 
-const models = {
+export const models = {
   opus: "claude-3-opus-20240229",
   sonnet: "claude-3-sonnet-20240229",
   haiku: "claude-3-haiku-20240307",
@@ -462,6 +462,10 @@ export class AI {
     const hasImages = values?.section?.images?.length > 0;
     const hasVideo = !!values.section?.video_url;
 
+    // prompt += `\nHeadline structure: ${body.title_structure}`;
+    // prompt += `\nHeadline (do not add it in the output): ${body.title}`;
+    // prompt += `\nReplace all variables with their respective value.`;
+
     let prompt = `[write]
 
     For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
@@ -470,6 +474,22 @@ export class AI {
     Do not add heading for the hook if there is any
     Do not make up fact, statistic or fake story
     `
+
+    if (values.pseo) {
+      prompt = `[write/pseo]
+
+      For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
+      Title structure: ${values.title_structure}
+      Replace all variables with their respective value.
+      Section heading prefix: ${values?.section?.prefix}
+      Do not add a CTA at the end
+      Do not add heading for the hook if there is any
+      Do not make up fact, statistic or fake story
+
+      Variables:
+      ${JSON.stringify(values.variables, null, 2)}
+    `
+    }
     // prompt += `Outline: ${values?.outline}`
 
     prompt += values?.section?.tones?.length > 0 ? `\nTones: ${values.section.tones.join(', ')}` : "";
@@ -542,7 +562,7 @@ export class AI {
       prompt += `\nSecondary instructions (does not override primary instructions):\n${values?.section?.custom_prompt}`
     }
 
-    return prompt
+    return prompt.replaceAll("\t", "")
   }
 
   async write(values: any) {
@@ -810,17 +830,31 @@ video_url: string;
   }
 
   getPSeoOutlineTemplate(values: any) {
-    let prompt = `[pseo outline]\n\nWrite a generic ${values.content_type} outline for the article structure "${values.title_structure}".
+    const hasVideos = values?.videos?.length > 0;
 
-    The template should be usable for different interpolation of the variables
-    - the article will contains up to ${values.word_count} words
-    - don't write the content
-    - keep the variables`;
+    let prompt = `[pseo outline]\n\nWrite a generic ${values.content_type} outline for the article structure "${values.title_structure}".
+- The template should be usable for different interpolation of the variables
+- keep the variables
+- the content type is ${values.content_type}
+- the article has no more than ${values.word_count} words length
+- a section that has more than 200 words should be split into sub-sections or paragraphs`;
+
+    if (values.youtube_transcript) {
+      prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 10000)}`
+    }
+
+    prompt += values.writingStyle?.purposes?.length > 0 ? `\nPurposes: ${values.writingStyle.purposes.join(', ')}` : "";
+    prompt += values.writingStyle?.emotions?.length > 0 ? `\nEmotions: ${values.writingStyle.emotions.join(', ')}` : "";
+    prompt += values.writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${values.writingStyle.vocabularies.join(', ')}` : "";
+    prompt += values.writingStyle?.sentence_structures?.length > 0 ? `\nSentence structures: ${values.writingStyle.sentence_structures.join(', ')}` : "";
+    prompt += values.writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${values.writingStyle.perspectives.join(', ')}` : "";
+    prompt += values.writingStyle?.writing_structures?.length > 0 ? `\nWriting structures: ${values.writingStyle.writing_structures.join(', ')}` : "";
+    prompt += values.writingStyle?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.writingStyle.instructional_elements.join(', ')}` : "";
 
     prompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
     prompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
     prompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
-    prompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ\n";
+    prompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
 
     prompt += `\n- Language: ${values.language}`
 
@@ -828,23 +862,73 @@ video_url: string;
       prompt += `\n-Additional information: ${values.additional_information}`
     }
 
-    prompt += `\nVariables:
-    ${JSON.stringify(values.variables, null, 2)}`
-
-    prompt += `\n// output structure
-    \`\`\`ts
-    type Template = {
-      headings: string[];
+    if (values.keywords?.length > 0) {
+      prompt += `\n- Keywords (include relevant keywords only, avoid keywords stuffing):\n${values.keywords.join('\n')}\n\n`
     }
-    \`\`\`
-    Wrap your output in \`\`\`json\`\`\`
-    `;
 
-    return prompt;
+    if (values.sitemaps?.length > 0) {
+      prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps?.join('\n')}\n\n`
+    }
+
+    // if (hasImages) {
+    //   prompt += `\n- Images:\n${JSON.stringify(values.images.slice(0, 2), null, 2)}`
+    // }
+
+    if (hasVideos) {
+      prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
+    }
+
+
+    prompt += `\nVariables:\n${JSON.stringify(values.variables, null, 2)}`
+
+    prompt += `\nMarkdown Table of content example
+## Contents
+1. [Example](#example)
+2. [Example2](#example2)
+3. [Third Example](#third-example)
+
+Write the outline following the structure below
+`;
+
+    prompt += `\ntype Outline = {
+  heading: string;
+  table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
+  sections: {
+    name: string;
+    word_count: number;
+    keywords: string; // comma separated
+    internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
+    // include relevant images in the above list, leave it empty otherwise.`;
+
+    // if (hasImages) {
+    //   prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // @@image@@`
+    // }
+
+    if (hasVideos) {
+      prompt += `\n// youtube video
+// include the most relevant video only (optional), up to 1 video per article
+video_url: string;
+`
+    }
+
+    prompt += `purposes?: string[]; // options: ${purposes.map(i => i.label).join()}
+    emotions?: string[]; // options: ${emotions.map(i => i.label).join()}
+    vocabularies?: string[]; // options: ${vocabularies.map(i => i.label).join()}
+    sentence_structures?: string[]; // options: ${sentenceStructures.map(i => i.label).join()}
+    perspectives?: string[]; // options: ${perspectives.map(i => i.label).join()}
+    writing_structures?: string[]; // options: ${writingStructures.map(i => i.label).join()}
+    instructional_elements?: string[]; // options: ${instructionalElements.map(i => i.label).join()}
+    tones?: string[]; // options: ${tones.map(i => i.label).join()}
+}[];
+  };`
+
+    prompt += `\nOutput a JSON object wrapped in \`\`\`json\`\`\``
+
+    return prompt
   }
 
   async getPSeoOutline(values: any) {
-    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-programmatic-seo-outline", temperature: 0.1, model: models["gpt-4-0613"] });
+    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-pseo-outline", temperature: 0.2, model: models["gpt-4o"] });
   }
 
   getCaptionTemplate(values: CaptionTemplate) {
@@ -917,7 +1001,7 @@ video_url: string;
       '[relevant keywords]',
       `Give me the ${values.count} most sementically relevants (min >70% relevancy percentage) keywords in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
       `keywords list:\n- ${values.keywords.join('\n- ')}`,
-      `Return an json array and wrap your output in \`\`\`json\`\`\``
+      `Return an json array (string[]) and wrap your output in \`\`\`json\`\`\``
     ].join('\n\n')
   }
 
@@ -930,7 +1014,7 @@ video_url: string;
       '[relevant urls]',
       `Give me the ${values.count} most sementically relevants (min >70% relevancy percentage) urls in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
       `urls list:\n- ${values.urls.join('\n- ')}`,
-      `Return an json array and wrap your output in \`\`\`json\`\`\``
+      `Return an json array (string[]) and wrap your output in \`\`\`json\`\`\``
     ].join('\n\n')
   }
 

@@ -100,7 +100,7 @@ const SettingsForm = ({
 
   const schedulePSeoArticles = (values: any) => {
     try {
-      axios.post('/api/pseo/schedule', values)
+      axios.post('/api/write/pseo/schedule', values)
       message.success('Articles added in the queue!');
       router.replace(`/projects/${projectId}/articles`)
     } catch (e) {

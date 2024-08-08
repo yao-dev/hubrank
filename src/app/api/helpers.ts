@@ -211,10 +211,15 @@ export const writeSection = async ({
   section,
   title,
   outline,
-  articleId
+  pseo,
+  title_structure,
+  variables
 }: {
   ai: any;
   index: number;
+  title: string;
+  outline: string;
+  pseo?: boolean;
   section: {
     prefix: string;
     keywords: string;
@@ -239,9 +244,6 @@ export const writeSection = async ({
     writing_structures?: string[];
     instructional_elements?: string[];
   };
-  title: string;
-  outline: string;
-  articleId: number;
 }) => {
   console.log(`[start]: ${index}) ${section.name}`);
   try {
@@ -249,6 +251,9 @@ export const writeSection = async ({
       title,
       section,
       outline,
+      pseo,
+      title_structure,
+      variables
     });
 
     if (section?.image?.alt && section?.image?.href) {
@@ -256,8 +261,6 @@ export const writeSection = async ({
       content = content.replace('@@image@@', `<img src="${section.image.href}" alt="${section.image.alt}" width="600" height="auto" />`)
     }
     content = content.replaceAll("https://www.youtube.com/watch?v=", "https://www.youtube.com/embed/")
-
-    // await saveWritingCost({ articleId, cost: ai.cost });
 
     // const rephraseInstruction = getRephraseInstruction(content)
 

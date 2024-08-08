@@ -80,3 +80,31 @@ export const getImages = async (query: string, count = 5) => {
     return [];
   }
 }
+
+export const getAiImage = async (query: string) => {
+  const details = "detailed, commercial, high resolution, 8k UHD, DSLR, professional photography"
+  // const details = "color scheme: pastel orange and faded turquoise"
+  const formData = {
+    prompt: `${query}`,
+    output_format: "webp",
+    style_preset: "cinematic",
+    aspect_ratio: "1:1",
+    negative_prompt: "no script, no text, no brand name, Avoid indoor settings,un-detailed skin.",
+    seed: 0,
+  };
+
+  const response = await axios.postForm(
+    `https://api.stability.ai/v2beta/stable-image/generate/core`,
+    axios.toFormData(formData, new FormData()),
+    {
+      validateStatus: undefined,
+      responseType: "blob",
+      headers: {
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STABLE_DIFFUSION_API_KEY ?? ""}`,
+        Accept: "image/*"
+      },
+    },
+  );
+
+  return response?.data
+}
