@@ -3,7 +3,7 @@ import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
-import { Form, Alert, Input, Button, Card, Flex, Typography, Image, Spin, Row, Col } from 'antd';
+import { Form, Alert, Input, Button, Card, Typography, Image, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
@@ -111,87 +111,91 @@ export default function Login() {
   }
 
   return (
-    <Flex vertical align="center" justify="center" style={{ height: '85dvh' }}>
-      {isLoading ? (
-        <Spin />
-      ) : (
-        <Row justify="center" style={{ width: "100%" }}>
-          <Col xs={20} sm={13} md={9} xl={6} xxl={5}>
-            <Card bordered style={{ borderRadius: 10, marginTop: 32 }}>
-              <p style={{ margin: 0, textAlign: "center" }}>
-                <Image
-                  src="/brand-logo-short.png"
-                  width={35}
-                  preview={false}
-                  style={{ marginBottom: 24 }}
+    <div className='flex flex-row h-screen'>
+      <div className='hidden md:flex bg-[#001727] md:w-1/2 text-center items-center justify-center'>
+        <h1 className="lg:w-2/3 w-full text-4xl lg:text-6xl font-black mb-4 text-white">
+          Grow 10x Faster with <span className='text-primary-500 rotate-45'>Hubrank</span>
+        </h1>
+      </div>
+
+      <div className='w-full md:w-1/2 flex items-center justify-center'>
+        {isLoading ? (
+          <Spin />
+        ) : (
+          <Card className='border lg:border-none w-3/4 lg:w-2/3 xl:w-1/2'>
+            <p style={{ margin: 0, textAlign: "center" }}>
+              <Image
+                src="/brand-logo-short.png"
+                width={35}
+                preview={false}
+                style={{ marginBottom: 24 }}
+              />
+            </p>
+
+            <Typography.Title level={4} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
+              Log in or sign up
+            </Typography.Title>
+            <Typography.Paragraph style={{ marginTop: 6, textAlign: "center", fontWeight: 400, marginBottom: 32, color: "#4B5563" }}>
+              Enter your email to get a login code
+            </Typography.Paragraph>
+
+            <Form
+              form={form}
+              onFinish={onSubmit}
+              layout="vertical"
+              initialValues={{
+                email: "",
+                otp: ""
+              }}
+              autoComplete='off'
+            >
+              {error && (
+                <Alert
+                  type="error"
+                  message={typeof error === "string" ? error : "Something went wrong! Try again please."}
+                  showIcon
+                  style={{ marginBottom: 12 }}
                 />
-              </p>
+              )}
 
-              <Typography.Title level={4} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
-                Log in or sign up
-              </Typography.Title>
-              <Typography.Paragraph style={{ marginTop: 6, textAlign: "center", fontWeight: 400, marginBottom: 32, color: "#4B5563" }}>
-                Enter your email to get a login code
-              </Typography.Paragraph>
+              <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
+                <Input size="large" placeholder="john@xample.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
+              </Form.Item>
 
-              <Form
-                form={form}
-                onFinish={onSubmit}
-                layout="vertical"
-                initialValues={{
-                  email: "",
-                  otp: ""
+              <Form.Item
+                noStyle
+                shouldUpdate={(prevValues, currentValues) => {
+                  return prevValues.email !== currentValues.email
                 }}
-                autoComplete='off'
               >
-                {error && (
-                  <Alert
-                    type="error"
-                    message={typeof error === "string" ? error : "Something went wrong! Try again please."}
-                    showIcon
-                    style={{ marginBottom: 12 }}
-                  />
-                )}
+                {() => {
+                  return type === "otp" ? (
+                    <>
+                      <Form.Item
+                        name="otp"
+                        label={<Label name="One-time login code" />}
+                        validateTrigger="onSubmit"
+                        rules={[{ required: true, message: 'One-time login code is invalid or expired', len: 6 }]}
+                      >
+                        <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.25} />} />
+                      </Form.Item>
 
-                <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
-                  <Input size="large" placeholder="john@xample.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
-                </Form.Item>
+                      <Typography.Text onClick={resendOtp} style={{ cursor: !count ? 'pointer' : "default", textAlign: 'center', display: "inline-block", width: "100%" }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>
+                    </>
+                  ) : null
 
-                <Form.Item
-                  noStyle
-                  shouldUpdate={(prevValues, currentValues) => {
-                    return prevValues.email !== currentValues.email
-                  }}
-                >
-                  {() => {
-                    return type === "otp" ? (
-                      <>
-                        <Form.Item
-                          name="otp"
-                          label={<Label name="One-time login code" />}
-                          validateTrigger="onSubmit"
-                          rules={[{ required: true, message: 'One-time login code is invalid or expired', len: 6 }]}
-                        >
-                          <Input autoFocus size="large" placeholder="Enter your login code" prefix={<IconLock stroke={1.25} />} />
-                        </Form.Item>
+                }}
+              </Form.Item>
 
-                        <Typography.Text onClick={resendOtp} style={{ cursor: !count ? 'pointer' : "default", textAlign: 'center', display: "inline-block", width: "100%" }}>Resend login code {interval.active ? `(${count}s)` : ''}</Typography.Text>
-                      </>
-                    ) : null
-
-                  }}
-                </Form.Item>
-
-                <Form.Item style={{ margin: 0, marginTop: 24 }}>
-                  <Button size="large" block type="primary" htmlType="submit" loading={isAuthLoading}>
-                    {type === "otp" ? "Login" : "Get login in code"}
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-      )}
-    </Flex>
+              <Form.Item style={{ margin: 0, marginTop: 24 }}>
+                <Button size="large" block type="primary" htmlType="submit" loading={isAuthLoading}>
+                  {type === "otp" ? "Login" : "Get login in code"}
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

@@ -63,10 +63,6 @@ const ProjectSelect = () => {
     return renderProjectFavicon(selectedProject.website)
   }, [selectedProject])
 
-  if (!projects?.length) {
-    return null
-  }
-
   return (
     <>
       <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />

@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import useProjects from "@/hooks/useProjects";
-import { Image, Form, Input, Modal, Alert, Select, Space } from "antd";
+import { Form, Input, Modal, Alert } from "antd";
 import useLanguages from "@/hooks/useLanguages";
 import Label from "../Label/Label";
 import axios from "axios";
@@ -61,7 +61,6 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       okText="Create"
       confirmLoading={isSaving}
       closable={!projects.create.isPending}
-
     >
       <Form
         form={form}

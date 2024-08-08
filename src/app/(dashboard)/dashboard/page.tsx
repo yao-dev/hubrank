@@ -2,7 +2,19 @@
 import { useState } from "react";
 import { IconSettings, IconTrash } from '@tabler/icons-react';
 import useProjects from "@/hooks/useProjects";
-import { Typography, Button, Row, Col, Card, Image, Flex, Popconfirm, Spin, Empty, Grid } from "antd";
+import {
+  Typography,
+  Button,
+  Row,
+  Col,
+  Card,
+  Image,
+  Flex,
+  Popconfirm,
+  Spin,
+  Empty,
+  Grid,
+} from "antd";
 import {
   PlusOutlined
 } from '@ant-design/icons';
@@ -59,11 +71,11 @@ export default function Dashboard() {
   if (!isPending && isFetched && !projectList?.length) {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
+        <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
         <Empty
           // TODO: replace with a folder image
           image="/empty-state/empty-blog-posts.png"
           imageStyle={{ height: screens.xs ? 125 : 200 }}
-          // description="You have no projects yet"
           description={(
             <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>
               You have no projects yet
@@ -87,7 +99,6 @@ export default function Dashboard() {
     <Spin spinning={isPending}>
       <div>
         <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
-
         <div>
           <Flex
             gap="middle"
@@ -96,7 +107,12 @@ export default function Dashboard() {
             style={{ marginBottom: 24 }}
           >
             <PageTitle title="Dashboard" />
-            <Button disabled={projectList?.length >= 5} type="primary" onClick={onOpenNewProject} icon={<PlusOutlined />}>
+            <Button
+              disabled={projectList?.length >= 5}
+              type="primary"
+              onClick={onOpenNewProject}
+              icon={<PlusOutlined />}
+            >
               {screens.xs ? "New" : "New project"}
             </Button>
           </Flex>
