@@ -120,7 +120,7 @@ const FeaturesPreview = () => {
       </div>
 
       {featureInActionVideo && (
-        <div className="transition-all p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
+        <div className="transition-all lg:p-3 lg:bg-white rounded-lg lg:rounded-xl border-none lg:border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
           {/* <video
             src={featureInActionVideo.video}
             loop

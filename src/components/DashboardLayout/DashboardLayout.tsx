@@ -1,7 +1,7 @@
 'use client';;
-import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer, Typography, Badge } from 'antd';
+import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer, Typography, Badge, Spin } from 'antd';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   IconLogout,
   IconDashboard,
@@ -16,7 +16,7 @@ import {
   IconTextCaption,
   IconSpeakerphone,
 } from '@tabler/icons-react';
-import { useParams, usePathname, useSearchParams } from 'next/navigation';
+import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
@@ -25,6 +25,7 @@ import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
 import { compact } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
+import useSession from '@/hooks/useSession';
 
 const { Sider, Content } = Layout;
 
@@ -121,7 +122,24 @@ export default function DashboardLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const user = useUser();
   const pricingModal = usePricingModal();
-  const logout = useLogout()
+  const logout = useLogout();
+  const { session } = useSession();
+
+  useEffect(() => {
+    if (!session) {
+      redirect('/');
+    }
+  }, [session])
+
+  if (!session) {
+    return (
+      <div style={{ width: "100%", height: "100vh" }}>
+        <Flex style={{ height: "inherit" }} align="center" justify="center">
+          <Spin spinning />
+        </Flex>
+      </div>
+    )
+  }
 
   // const getMenuLink = (projectId, link) => {
   //   const isProjectSelected = typeof projectId === "number" && projectId !== 0;
