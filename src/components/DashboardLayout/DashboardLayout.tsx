@@ -126,6 +126,7 @@ export default function DashboardLayout({
   const { session } = useSession();
 
   useEffect(() => {
+    console.log("dashboard layout - session", session)
     if (!session) {
       redirect('/');
     }

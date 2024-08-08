@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
@@ -27,6 +27,7 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
+    console.log("login - session", session)
     if (session) {
       router.replace('/dashboard');
     }
