@@ -63,7 +63,7 @@ const Article = ({
   }
 
   const sendFeedback = (emoji: string) => {
-    if ($crisp && ["😡", "😕"].includes(emoji)) {
+    if (window.$crisp && ["😡", "😕"].includes(emoji)) {
       $crisp.push(["set", "message:text", [`Reaction: ${emoji}\nID: ${articleId}\nFeedback: `]]);
       $crisp.push(['do', 'chat:open']);
       return;

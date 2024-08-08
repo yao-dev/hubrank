@@ -18,7 +18,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
         queryClient.invalidateQueries({
           queryKey: queryKeys.user()
         });
-        if ($crisp) {
+        if (window.$crisp) {
           $crisp.push(["set", "user:email", [session?.user.email]]);
         }
       }

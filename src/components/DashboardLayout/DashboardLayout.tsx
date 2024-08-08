@@ -281,7 +281,7 @@ export default function DashboardLayout({
                 getItem({ key: "subscriptions", link: '/subscriptions', label: 'Subscriptions', icon: <IconCreditCard /> }),
                 getItem({
                   key: "feedback", link: '', label: 'Feature request', onClick: () => {
-                    if ($crisp) {
+                    if (window.$crisp) {
                       $crisp.push(["set", "message:text", ["Feature request: "]]);
                       $crisp.push(['do', 'chat:open']);
                     }
