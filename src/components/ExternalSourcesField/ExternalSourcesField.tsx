@@ -30,7 +30,7 @@ const ExternalSourcesField = ({ name }: Props) => {
                     validateTrigger={['onChange', 'onBlur']}
                     rules={[{ required: false, message: 'Please enter a valid url', type: "url" }]}
                     noStyle
-                    hasFeedback
+
                   >
                     <Input placeholder="Url" />
                   </Form.Item>
@@ -40,7 +40,7 @@ const ExternalSourcesField = ({ name }: Props) => {
                     name={[field.name, 'objective']}
                     validateTrigger={['onChange', 'onBlur']}
                     noStyle
-                    hasFeedback
+
                   >
                     <Input placeholder="Objective" />
                   </Form.Item>

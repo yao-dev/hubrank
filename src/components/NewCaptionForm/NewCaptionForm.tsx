@@ -101,7 +101,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
             type: "number",
             message: "Select a language"
           }]}
-          hasFeedback
+
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
@@ -114,7 +114,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
             type: "string",
             message: "Select a platform"
           }]}
-          hasFeedback
+
         >
           <Select
             placeholder="Platform"
@@ -159,7 +159,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
             name="description"
             label={<Label name="What do you want to write about?" />}
             rules={[{ type: "string", max: 150, required: true }]}
-            hasFeedback
+
           >
             <Input.TextArea
               placeholder=""
@@ -177,7 +177,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
             name="caption_source"
             label={<Label name={`${capitalize(goal)} caption`} />}
             rules={[{ type: "string", max: 500 }]}
-            hasFeedback
+
           >
             <Input.TextArea
               placeholder={`Type the caption you want to ${goal}`}
@@ -209,7 +209,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
               },
             }),
             ]}
-            hasFeedback
+
           >
             <Input placeholder="Youtube URL" />
           </Form.Item>
@@ -219,7 +219,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
           name="caption_length"
           label={<Label name="Caption length" />}
           rules={[{ required: true, type: "number" }]}
-          hasFeedback
+
         >
           <Segmented
             options={captionLengthOptions}
@@ -310,7 +310,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
         </Flex>
 
         {withCta && (
-          <Form.Item name="cta" label="CTA" rules={[{ required: true, type: "string", max: 150 }]} hasFeedback>
+          <Form.Item name="cta" label="CTA" rules={[{ required: true, type: "string", max: 150 }]} >
             <Input placeholder="CTA" count={{ show: true, max: 150 }} />
           </Form.Item>
         )}

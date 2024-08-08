@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 const CrispChat = () => {
   useEffect(() => {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "development") {
       window.$crisp = [];
       window.CRISP_WEBSITE_ID = "5b146ecd-fddb-4b61-9486-ac5772f1a26a";
 

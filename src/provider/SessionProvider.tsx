@@ -1,10 +1,8 @@
 import SessionContext from "@/context/SessionContext";
-import { stripeUrls } from "@/features/payment/constants";
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import useSession from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { ReactNode, useEffect } from "react";
 
 const SessionProvider = ({ children }: { children: ReactNode }) => {
@@ -16,9 +14,6 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== 'SIGNED_OUT') {
-        if (event === 'INITIAL_SESSION') {
-          axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then().catch()
-        }
         sessionStore.setSession(session);
         queryClient.invalidateQueries({
           queryKey: queryKeys.user()

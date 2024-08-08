@@ -344,7 +344,7 @@ const OutlineForm = ({
           }}
         >
           <div>
-            <Form.Item name="title" label={<Label name="Article title" />} rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} hasFeedback>
+            <Form.Item name="title" label={<Label name="Article title" />} rules={[{ required: true, type: "string", max: 75, message: "Add an article title" }]} >
               <Input placeholder="Article title" />
             </Form.Item>
 
@@ -624,7 +624,7 @@ const OutlineForm = ({
               name="name"
               label={<Label name="Heading" />}
               rules={[{ required: true, type: "string", max: 75, message: "Enter a heading name" }]}
-              hasFeedback
+
             >
               <Input
                 placeholder="Heading name"
@@ -639,7 +639,7 @@ const OutlineForm = ({
               name="custom_prompt"
               label={<Label name="Custom prompt" />}
               rules={[{ type: "string", max: 300 }]}
-              hasFeedback
+
               help="Provide any context or information we should consider for writing this section"
               style={{ marginBottom: 38 }}
             >
@@ -680,7 +680,7 @@ const OutlineForm = ({
             )}
 
 
-            {/* <Form.Item name="media" label="Media" rules={[{ required: false, type: "string", message: "Select a media" }]} hasFeedback>
+            {/* <Form.Item name="media" label="Media" rules={[{ required: false, type: "string", message: "Select a media" }]} >
               <Select
                 defaultActiveFirstOption
                 placeholder="Select a media"
@@ -692,7 +692,7 @@ const OutlineForm = ({
               name="external_source"
               label="External source"
               rules={[{ type: "string", max: 300 }]}
-              hasFeedback
+
               help="Provide one url only + explain what information you'd like to extract"
               style={{ marginBottom: 38 }}
             >
@@ -711,7 +711,7 @@ const OutlineForm = ({
               label={<Label name="External source" />}
               rules={[{ type: "url", max: 150, message: "Enter a valid url" }]}
               help="Add a source to help the AI write content with real time data that it might not have knowledge of"
-              hasFeedback
+
               validateTrigger="onBlur"
               style={{ marginBottom: 48 }}
             >
@@ -729,7 +729,7 @@ const OutlineForm = ({
               label={<Label name="External source instruction" />}
               rules={[{ type: "string", max: 300, message: "Add instructions" }]}
               help="Explain how to use the information found in the url you provided (external without instruction will be ignored)"
-              hasFeedback
+
               style={{ marginBottom: 48 }}
             >
               <Input.TextArea
@@ -746,7 +746,7 @@ const OutlineForm = ({
               name="call_to_action"
               label={<Label name="CTA" />}
               rules={[{ type: "string", max: 300 }]}
-              hasFeedback
+
             >
               <Input.TextArea
                 placeholder="Describe your call to action"
@@ -762,7 +762,7 @@ const OutlineForm = ({
               name="call_to_action_example"
               label={<Label name="CTA example" />}
               rules={[{ type: "string", max: 300 }]}
-              hasFeedback
+
             >
               <Input.TextArea
                 autoSize={{ minRows: 1, maxRows: 5 }}

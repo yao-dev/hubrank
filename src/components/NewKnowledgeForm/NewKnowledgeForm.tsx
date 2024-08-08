@@ -251,7 +251,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
           <Form.Item
             name="text"
             rules={[{ type: "string", max: 10000, required: true }]}
-            hasFeedback
+
           >
             <Input.TextArea
               placeholder="Add any text as a knowledge resource to train the AI on"
@@ -270,7 +270,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
               name="url"
               validateTrigger={['onChange', 'onBlur']}
               rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
-              hasFeedback
+
               help="Website, sitemap, youtube url."
             >
               <Input placeholder="Url" />
@@ -297,7 +297,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
             name="files"
             validateTrigger="onChange"
             rules={[{ required: true }]}
-            hasFeedback
+
           >
             <Upload.Dragger {...draggerProps}>
               <p className="ant-upload-drag-icon">

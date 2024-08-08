@@ -88,7 +88,7 @@ const WritingStyleSelect = ({ form }: any) => {
                 <Form.Item
                   name="writing_style_id"
                   validateTrigger="onBlur" rules={[{ required: true, type: "number", message: "Select a writing style" }]}
-                  hasFeedback
+
                   style={{ marginBottom: 12 }}
                 >
                   <Select
@@ -122,7 +122,7 @@ const WritingStyleSelect = ({ form }: any) => {
 
           return (
             <>
-              <Form.Item name="tones" label={<Label name="Tones" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="tones" label={<Label name="Tones" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="tones"
                   options={tones}
@@ -130,7 +130,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="purposes" label={<Label name="Purposes" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="purposes" label={<Label name="Purposes" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="purposes"
                   options={purposes}
@@ -138,7 +138,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="emotions" label={<Label name="Emotions" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="emotions" label={<Label name="Emotions" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="emotions"
                   options={emotions}
@@ -146,7 +146,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="vocabularies" label={<Label name="Vocabularies" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="vocabularies" label={<Label name="Vocabularies" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="vocabularies"
                   options={vocabularies}
@@ -154,7 +154,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="sentence_structures" label={<Label name="Sentence sturctures" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="sentence_structures" label={<Label name="Sentence sturctures" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="sentence_structures"
                   options={sentenceStructures}
@@ -162,7 +162,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="perspectives" label={<Label name="Perspectives" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="perspectives" label={<Label name="Perspectives" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="perspectives"
                   options={perspectives}
@@ -170,7 +170,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="writing_structures" label={<Label name="Writing structures" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="writing_structures" label={<Label name="Writing structures" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="writing_structures"
                   options={writingStructures}
@@ -178,7 +178,7 @@ const WritingStyleSelect = ({ form }: any) => {
                   onAddTag={onAddTag}
                 />
               </Form.Item>
-              <Form.Item name="instructional_elements" label={<Label name="Instructional elements" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} hasFeedback>
+              <Form.Item name="instructional_elements" label={<Label name="Instructional elements" />} validateTrigger="onBlur" rules={[{ type: "array", message: "Select at least a tone" }]} >
                 <MultiSelectTagList
                   field="instructional_elements"
                   options={instructionalElements}

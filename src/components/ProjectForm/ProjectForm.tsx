@@ -135,12 +135,12 @@ const ProjectForm = () => {
           type: "number",
           message: "Select a language"
         }]}
-        hasFeedback
+
       >
         <LanguageSelect languages={languages} />
       </Form.Item>
 
-      <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+      <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} >
         <Input placeholder="Name" count={{ show: true, max: 50 }} />
       </Form.Item>
 
@@ -159,7 +159,7 @@ const ProjectForm = () => {
             return new URL(url).origin
           }
         }]}
-        hasFeedback
+
       >
         <Input placeholder="https://google.com" />
       </Form.Item>
@@ -167,7 +167,7 @@ const ProjectForm = () => {
         name="description"
         label={<Label name="Description" />}
         rules={[{ required: false, type: "string", max: 700 }]}
-        hasFeedback
+
       >
         <Input.TextArea
           placeholder="Description"
@@ -179,11 +179,11 @@ const ProjectForm = () => {
         />
       </Form.Item>
 
-      <Form.Item name="blog_path" label={<Label name="Blog path" />} tooltip="Defaults to /" rules={[{ required: false, type: "string", message: "Enter a valid blog path" }]} hasFeedback>
+      <Form.Item name="blog_path" label={<Label name="Blog path" />} tooltip="Defaults to /" rules={[{ required: false, type: "string", message: "Enter a valid blog path" }]} >
         <Input placeholder="ex: /, /blog" />
       </Form.Item>
 
-      <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} hasFeedback>
+      <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} >
         <Input placeholder="Sitemap" />
       </Form.Item>
 

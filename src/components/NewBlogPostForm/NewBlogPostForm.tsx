@@ -201,7 +201,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             type: "number",
             message: "Select a language"
           }]}
-          hasFeedback
+
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
@@ -230,7 +230,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           {({ getFieldValue }) => {
             if (getFieldValue('title_mode') === "custom") {
               return (
-                <Form.Item name="custom_title" label="Custom title" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
+                <Form.Item name="custom_title" label="Custom title" rules={[{ required: true, type: "string", max: 75 }]} >
                   <Input placeholder="Custom title" count={{ show: true, max: 75 }} />
                 </Form.Item>
               )
@@ -239,7 +239,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             if (getFieldValue('title_mode') === "inspo") {
               return (
                 <>
-                  <Form.Item name="inspo_title" label={<Label name="Inspo title" />} help="" rules={[{ required: true, type: "string", max: 75 }]} hasFeedback>
+                  <Form.Item name="inspo_title" label={<Label name="Inspo title" />} help="" rules={[{ required: true, type: "string", max: 75 }]} >
                     <Input placeholder="Inspo title" count={{ show: true, max: 75 }} />
                   </Form.Item>
                   <Flex gap="small" align="center" style={{ marginBottom: 24 }}>
@@ -283,7 +283,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
                     name="title_structure"
                     label={<Label name="Title structure" />}
                     rules={[{ required: true, type: "string", max: 150 }]}
-                    hasFeedback
+
                     help="ex: How to {action} in {city} will generate => How to Hike in Zurich"
                   >
                     <Input
@@ -355,7 +355,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
                     },
                   }),
                   ]}
-                  hasFeedback
+
                   style={{ marginBottom: 24 }}
                 >
                   <Input placeholder="Youtube URL" />
@@ -366,7 +366,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
         </Form.Item>
 
         {titleMode === "programmatic_seo" ? (
-          <Form.Item name="seed_keyword" label={<Label name="Main keyword group" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+          <Form.Item name="seed_keyword" label={<Label name="Main keyword group" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} >
             <Select
               placeholder="Select main keyword group"
               options={[...getVariables()].map((item) => ({
@@ -376,7 +376,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             />
           </Form.Item>
         ) : (
-          <Form.Item name="seed_keyword" label={<Label name="Main keyword" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+          <Form.Item name="seed_keyword" label={<Label name="Main keyword" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} >
             <AutoComplete options={savedKeywordsOptions}>
               <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
             </AutoComplete>
@@ -395,7 +395,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           </>
         )}
 
-        <Form.Item name="content_type" label={<Label name="Content type" />} rules={[{ required: true, type: "string", message: "Select a content type" }]} hasFeedback>
+        <Form.Item name="content_type" label={<Label name="Content type" />} rules={[{ required: true, type: "string", message: "Select a content type" }]} >
           <Select
             showSearch
             placeholder="Select a content type"
@@ -403,7 +403,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           />
         </Form.Item>
 
-        {/* <Form.Item name="purpose" label="Purpose" rules={[{ required: true, type: "string", message: "Select a purpose" }]} hasFeedback>
+        {/* <Form.Item name="purpose" label="Purpose" rules={[{ required: true, type: "string", message: "Select a purpose" }]} >
           <Select
             showSearch
             placeholder="Select a purpose"
@@ -436,7 +436,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           name="perspective"
           label="Perspective"
           rules={[{ required: true, message: "Select a perspective" }]}
-          hasFeedback
+
         >
           <Segmented
 
@@ -467,7 +467,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             name="word_count"
             label={<Label name="Words count" />}
             rules={[]}
-            hasFeedback
+
             help="More or less the amount of words the article will contains"
           >
             <Segmented options={[500, 750, 1000, 1500, 2000]} style={{ width: "fit-content" }} />
@@ -477,7 +477,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             name="additional_information"
             label={<Label name="Additional information" />}
             rules={[{ type: "string", max: 150 }]}
-            hasFeedback
+
           >
             <Input.TextArea
               placeholder="Provide any context or information we should consider while writing your article"
@@ -504,7 +504,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
               }
             }]}
             help="We'll use this sitemap to include internal links in the article"
-            hasFeedback
+
             style={{ marginBottom: 42 }}
           >
             <Input placeholder="Sitemap url" />
@@ -549,7 +549,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
                   label={<Label name="External sources objective" />}
                   rules={[{ required: true, type: "string", max: 500 }]}
                   help="Simply describe what you want to do with the content we scrape"
-                  hasFeedback
+
                 >
                   <Input.TextArea
                     placeholder="Type here"

@@ -77,7 +77,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         {error && (
           <Alert message="Something went wrong! Try again please." type="error" showIcon style={{ marginBottom: 12 }} />
         )}
-        <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} hasFeedback>
+        <Form.Item name="name" label={<Label name="Name" />} rules={[{ required: true, type: "string", max: 50, message: "Enter a project name" }]} >
           <Input placeholder="Name" count={{ show: true, max: 50 }} />
         </Form.Item>
 
@@ -89,12 +89,12 @@ const NewProjectModal = ({ opened, onClose }: any) => {
             type: "number",
             message: "Select a language"
           }]}
-          hasFeedback
+
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
         {/*
-      <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} hasFeedback>
+      <Form.Item name="seed_keyword" label="Main keyword" rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} >
         <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />
       </Form.Item> */}
 
@@ -113,7 +113,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
               return new URL(url).origin
             }
           }]}
-          hasFeedback
+
         >
           <Input placeholder="https://google.com" />
         </Form.Item>
@@ -126,7 +126,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
           type: "string",
           max: 200,
         }]}
-        hasFeedback
+
       >
         <Input placeholder="Description" count={{ show: true, max: 200 }} />
       </Form.Item> */}
