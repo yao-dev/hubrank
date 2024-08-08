@@ -32,11 +32,9 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         language_id: +values.language_id,
         user_id: userId,
       })
-      console.log(data)
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),
       });
-      console.log(data)
       onCloseCreateProject()
       router.push(`/projects/${data.projectId}/settings`)
       setIsSaving(false)
@@ -60,7 +58,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       onOk={() => form.submit()}
       okText="Create"
       confirmLoading={isSaving}
-      closable={!projects.create.isPending}
+      closable={!projects.create.isPending || !isSaving}
     >
       <Form
         form={form}

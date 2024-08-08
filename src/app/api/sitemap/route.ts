@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const sitemapXml = await fetchSitemapXml(body.url);
-    const urls = getSitemapUrls({ websiteUrl: body.website_url, sitemapXml });
+    const urls = getSitemapUrls({ websiteUrl: body.website_url, sitemapXml, count: 1000 });
     return NextResponse.json({ urls }, { status: 200 })
   } catch (e) {
     console.log(e)

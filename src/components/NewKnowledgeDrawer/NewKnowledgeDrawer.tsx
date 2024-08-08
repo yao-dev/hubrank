@@ -62,7 +62,6 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
             type: "url",
           }
         })
-        console.log(data)
         await scheduleKnowledgeTraining(data);
       }
 

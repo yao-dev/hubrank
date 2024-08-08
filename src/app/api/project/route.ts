@@ -1,7 +1,5 @@
 import { fetchWebsiteMetadata } from "@/helpers/metadata";
 import { supabaseAdmin } from "@/helpers/supabase";
-import { getUpstashDestination } from "../helpers";
-import { createBackgroundJob } from "@/helpers/qstash";
 import { NextResponse } from "next/server";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -42,15 +40,15 @@ export async function PUT(request: Request) {
       .eq('id', project_id)
       .throwOnError();
 
-    await createBackgroundJob({
-      destination: getUpstashDestination("api/url-to-vector/schedule"),
-      body: {
-        website: data.website,
-        sitemap: data.sitemap,
-        projectId: project_id,
-        userId: user_id,
-      }
-    })
+    // await createBackgroundJob({
+    //   destination: getUpstashDestination("api/url-to-vector/schedule"),
+    //   body: {
+    //     website: data.website,
+    //     sitemap: data.sitemap,
+    //     projectId: project_id,
+    //     userId: user_id,
+    //   }
+    // })
 
     return NextResponse.json({ messgae: "Project updated" }, { status: 200 })
   } catch (e) {
