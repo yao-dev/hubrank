@@ -19,10 +19,10 @@ export default {
   upsertStripeCustomer: async (req: NextRequest): Promise<Response> => {
     const body = await req.json()
     try {
-      if (!body.user_id) {
+      if (!body.id) {
         throw new Error('Cannot create stripe customer, user id is missing.')
       }
-      const customer = await upsertStripeCustomer(body.user_id);
+      const customer = await upsertStripeCustomer(body.id);
       return NextResponse.json({ customer });
     } catch (e: any) {
       const errorMessage = `❌ Error (upsertStripeCustomer): ${e?.message}`
