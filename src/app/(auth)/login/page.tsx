@@ -159,7 +159,7 @@ export default function Login() {
               )}
 
               <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
-                <Input size="large" placeholder="john@example.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
+                <Input size="large" placeholder="name@example.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
               </Form.Item>
 
               <Form.Item

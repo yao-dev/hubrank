@@ -1,5 +1,4 @@
-'use client';
-import useUser from "@/hooks/useUser";
+'use client';;
 import { Button } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
@@ -15,7 +14,6 @@ const menu = [
 ]
 
 const Navbar = () => {
-  const user = useUser();
   const ref = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [top, setTop] = useState(true);
@@ -37,13 +35,13 @@ const Navbar = () => {
   const loginButton = useCallback((className?: string, text?: boolean) => {
     return (
       <Button
-        href={user ? "/dashboard" : "/login"}
+        href="/login"
         className={`bg-black text-white hover:border-transparent ${className}`}
       >
-        {user ? "Dashboard" : "Login"}
+        Login
       </Button>
     )
-  }, [user])
+  }, [])
 
   return (
     <nav className={`sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>

@@ -12,7 +12,34 @@ const featuresInAction = [
     id: 2,
     title: "Match your brand voice",
     // description: "Upload samples of existing content to have Hubrank mimic your tone and style. The AI will ensure articles sound as if your marketing team wrote them.",
-    video: "/marketing/demo-writing-style.mp4"
+    video: "/marketing/demo-writing-style.mp4",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/NgZQUaQ5zn4QMTNitpYl?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+
+    )
   },
   {
     id: 3,
@@ -87,20 +114,21 @@ const FeaturesPreview = () => {
           })}
         </div>
 
-        <p className="text-zinc-600 text-base font-light text-center w-2/3">
+        {/* <p className="text-zinc-600 text-base font-light text-center w-2/3">
           {featureInActionVideo.description}
-        </p>
+        </p> */}
       </div>
 
       {featureInActionVideo && (
         <div className="transition-all p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full lg:w-4/5">
-          <video
+          {/* <video
             src={featureInActionVideo.video}
             loop
             autoPlay
             // className="rounded-lg border-2 border-slate-200 w-full h-full object-cover"
             className="rounded-lg border-2 border-slate-200 w-full h-full"
-          />
+          /> */}
+          {featureInActionVideo.content}
         </div>
       )}
     </section>
