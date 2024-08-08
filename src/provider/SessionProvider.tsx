@@ -15,21 +15,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') {
-        sessionStore.setSession(null);
-        // clear local and session storage
-        const storage = [
-          window.localStorage,
-          window.sessionStorage,
-        ]
-
-        storage.forEach((storage) => {
-          Object.entries(storage)
-            .forEach(([key]) => {
-              storage.removeItem(key)
-            })
-        });
-      } else {
+      if (event !== 'SIGNED_OUT') {
         if (event === 'INITIAL_SESSION') {
           axios.post(stripeUrls.CREATE_CUSTOMER, { user_id: session?.user.id }).then().catch()
         }

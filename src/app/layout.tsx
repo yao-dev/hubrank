@@ -1,5 +1,4 @@
 'use client';;
-import { QueryClient } from '@tanstack/react-query';
 import { Inter } from 'next/font/google';
 import SessionProvider from '@/provider/SessionProvider';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
@@ -11,23 +10,10 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import "./global.css";
 import CrispChat from '@/components/CrispChat/CrispChat';
+import { queryClient } from '@/helpers/reactQuery';
 
 
 const inter = Inter({ subsets: ['latin'] })
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // staleTime: 60 * 1000 * 60 * 24, // 23h
-      // staleTime: Infinity,
-      // gcTime: Infinity,
-      gcTime: 60 * 1000 * 60 * 24, // 23h,
-      refetchOnReconnect: "always",
-      // refetchOnMount: true,
-      refetchOnWindowFocus: true,
-      retry: 1,
-    },
-  },
-});
 
 let persister: any;
 
