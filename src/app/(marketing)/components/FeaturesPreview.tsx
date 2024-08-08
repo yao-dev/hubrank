@@ -27,7 +27,34 @@ const featuresInAction = [
   {
     id: 5,
     title: "Knowledge base",
-    video: "/marketing/demo-knowledge-base.mp4"
+    video: "/marketing/demo-knowledge-base.mp4",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/g92uiyqfxX5QYiMJeQJR?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+
+    )
   },
 ]
 

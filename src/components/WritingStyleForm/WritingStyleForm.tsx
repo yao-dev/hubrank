@@ -299,13 +299,13 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
                 <Flex vertical gap="small">
                   <Form.Item
                     name="text"
-                    rules={[{ required: true, message: 'Please enter a text', type: "string", max: 750 }]}
+                    rules={[{ required: true, message: 'Please enter a text', type: "string", max: 1500 }]}
 
                     help="Create your own writing style based on a custom text."
                   >
                     <Input.TextArea
                       placeholder="Type anything"
-                      count={{ show: true, max: 750 }}
+                      count={{ show: true, max: 1500 }}
                       autoSize={{ minRows: 5, maxRows: 8 }}
                     />
                   </Form.Item>
