@@ -16,7 +16,6 @@ import {
   IconTextCaption,
   IconSpeakerphone,
 } from '@tabler/icons-react';
-import supabase from '@/helpers/supabase';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
@@ -25,6 +24,7 @@ import useUser from '@/hooks/useUser';
 import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
 import { compact } from 'lodash';
+import { useLogout } from '@/hooks/useLogout';
 
 const { Sider, Content } = Layout;
 
@@ -120,7 +120,8 @@ export default function DashboardLayout({
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const user = useUser();
-  const pricingModal = usePricingModal()
+  const pricingModal = usePricingModal();
+  const logout = useLogout()
 
   // const getMenuLink = (projectId, link) => {
   //   const isProjectSelected = typeof projectId === "number" && projectId !== 0;
@@ -279,7 +280,7 @@ export default function DashboardLayout({
                 key: 'logout',
                 icon: <IconLogout />,
                 label: (
-                  <span onClick={() => logout}>Logout</span>
+                  <span onClick={logout}>Logout</span>
                 ),
               }
             ]}
