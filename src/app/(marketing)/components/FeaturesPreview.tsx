@@ -6,7 +6,34 @@ const featuresInAction = [
     id: 1,
     title: "Keyword research",
     // description: "Keyword research is key to write articles optimised for search intent, with Hubrank you get just that!",
-    video: "/marketing/demo-keyword-research.mp4"
+    video: "/marketing/demo-keyword-research.mp4",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/H8aUVtESQ7BckCqYygyI?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+
+    )
   },
   {
     id: 2,
@@ -44,12 +71,65 @@ const featuresInAction = [
   {
     id: 3,
     title: "Programmatic SEO",
-    video: "/marketing/demo-pseo.mp4"
+    video: "/marketing/demo-pseo.mp4",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/M2RkMOP3v1rWqcYXa55o?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+
+    )
   },
   {
     id: 4,
     title: "Captions",
-    video: "/marketing/demo-caption.mp4"
+    video: "/marketing/demo-caption.mp4",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/GL7XYzrzz400gjNVcBLB?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+    )
   },
   {
     id: 5,
@@ -80,9 +160,39 @@ const featuresInAction = [
           }}
         />
       </div>
-
     )
   },
+  {
+    id: 6,
+    title: "Schema markup",
+    content: (
+      <div
+        style={{
+          position: "relative",
+          paddingBottom: "calc(57.46527777777778% + 41px)",
+          height: 0,
+          width: "100%"
+        }}
+      >
+        <iframe
+          src="https://demo.arcade.software/zHkHvD469VX0Bv0zAnRc?embed&show_copy_link=true"
+          title="Hubrank"
+          loading="lazy"
+          allowFullScreen
+          allow="clipboard-write"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            colorScheme: "light"
+          }}
+        />
+      </div>
+
+    )
+  }
 ]
 
 const FeaturesPreview = () => {

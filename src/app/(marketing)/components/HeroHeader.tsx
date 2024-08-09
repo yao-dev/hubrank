@@ -130,18 +130,30 @@ const HeroHeader = () => {
         {/* demo/screenshot */}
         <div
           className='relative h-0 w-full rounded-lg'
-          style={{ paddingBottom: "calc(57.46527777777778% + 41px)" }}
+          style={{
+            position: "relative",
+            paddingBottom: "calc(57.46527777777778% + 41px)",
+            height: 0,
+            width: "100%"
+          }}
         >
           <iframe
-            src="https://demo.arcade.software/2RrMy2TbmYfLqH6KKKvu?embed&show_copy_link=true"
+            src="https://demo.arcade.software/763cH6cTNhQqOcymMZWs?embed&show_copy_link=true"
             title="Hubrank"
             loading="lazy"
             allowFullScreen
             allow="clipboard-write"
-            className='absolute top-0 left-0 w-full h-full rounded-lg'
-            style={{ colorScheme: "light" }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              colorScheme: "light"
+            }}
           />
         </div>
+
 
         {/* <div className="p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full">
           <img

@@ -70,6 +70,7 @@ export async function POST(request: Request) {
           language,
           project,
           variables,
+          seed_keyword: variables[body.seed_keyword] ?? ""
         },
         headers: {
           "Upstash-Delay": `${(index || 0) as number * 10}s`,

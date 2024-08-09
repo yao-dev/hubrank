@@ -9,7 +9,6 @@ import useProjectId from "@/hooks/useProjectId";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import { useState } from "react";
 import usePricingModal from "@/hooks/usePricingModal";
-import { isEmpty } from "lodash";
 
 type Props = {
   open: boolean;
@@ -72,7 +71,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         return pricingModal.open(true)
       }
       axios.post('/api/write/pseo/schedule', values);
-      message.success('Articles will added in the queue shortly!');
+      message.success('Articles will be added in the queue shortly!');
       onClose();
       form.resetFields();
       setIsSubmitting(false)
