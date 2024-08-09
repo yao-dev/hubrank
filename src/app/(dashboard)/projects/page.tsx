@@ -1,9 +1,10 @@
 'use client';;
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useProjectId from "@/hooks/useProjectId";
-import { Flex, Typography } from "antd";
+import { Flex, Modal } from "antd";
 import ProjectSelect from "@/components/ProjectSelect";
+import Label from "@/components/Label/Label";
+import { useEffect } from "react";
 
 export default function Projects() {
   const router = useRouter();
@@ -17,8 +18,16 @@ export default function Projects() {
 
   return (
     <Flex vertical gap="middle" align="center" justify="center">
-      <Typography.Title level={1}>Select or create a project</Typography.Title>
-      <ProjectSelect />
+      <Modal
+        open
+        centered
+        footer={null}
+        width="auto"
+      >
+        <ProjectSelect
+          label={<Label name="Select a project" />}
+        />
+      </Modal>
     </Flex>
   )
 }

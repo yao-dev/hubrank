@@ -15,6 +15,7 @@ import {
   IconMessage,
   IconTextCaption,
   IconSpeakerphone,
+  IconLink,
 } from '@tabler/icons-react';
 import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
@@ -126,7 +127,6 @@ export default function DashboardLayout({
   const { session } = useSession();
 
   useEffect(() => {
-    console.log("dashboard layout - session", session)
     if (!session) {
       redirect('/');
     }
@@ -157,6 +157,7 @@ export default function DashboardLayout({
       getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
       getItem({ key: "knowledges-base", link: isProjectSelected ? `/projects/${projectId}?tab=knowledges-base` : '/projects?tab=knowledges-base', label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
+      projectId > 0 ? getItem({ key: "index-urls", link: isProjectSelected ? `/projects/${projectId}/index-urls` : '/projects/index-urls', label: 'Index urls', icon: <IconLink />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/projects', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
     ])

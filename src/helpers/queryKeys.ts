@@ -41,7 +41,7 @@ const queryKeys = {
   captions: (project_id: number, queue?: boolean) => ["captions", { project_id, queue }] as const,
   knowledge: (id: number) => ["knowledges", id] as const,
   knowledges: (project_id: number, queue?: boolean) => ["knowledges", { project_id, queue }] as const,
-
+  sitemap: (sitemap: string) => ["sitemap", sitemap] as const,
 };
 
 export default queryKeys;

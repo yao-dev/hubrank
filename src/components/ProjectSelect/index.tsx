@@ -8,7 +8,7 @@ import NewProjectModal from "../NewProjectModal";
 import useUser from "@/hooks/useUser";
 import usePricingModal from "@/hooks/usePricingModal";
 
-const ProjectSelect = () => {
+const ProjectSelect = (props = {}) => {
   const projectId = useProjectId();
   const { getAll } = useProjects()
   const { data: projects } = getAll();
@@ -66,46 +66,49 @@ const ProjectSelect = () => {
   return (
     <>
       <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
-      <Select
-        placeholder="Select or create a project"
-        style={{ width: 200 }}
-        value={selectedProject}
-        onChange={(value) => {
-          if (projectId && value !== null) {
-            const newPath = pathname.replace(`${projectId}`, `${value}`)
-            router.push(newPath);
-          } else if (!projectId) {
-            const newPath = window.location.href.replace("/projects", `/projects/${value}`)
-            router.push(newPath);
-          }
-        }}
-        options={projects?.map((p) => {
-          return {
-            label: (
-              <>
-                {renderProjectFavicon(p.website)}
-                <span style={{ position: "relative", left: 10 }}>{p.name}</span>
-              </>
-            ),
-            value: p.id.toString(),
-            website: p.website
-          }
-        })}
-        suffixIcon={suffixIcon}
-        dropdownRender={(menu) => (
-          <>
-            {menu}
-            {projects?.length < 5 && (
-              <>
-                <Divider style={{ margin: '8px 0' }} />
-                <Button type="text" block icon={<PlusOutlined />} onClick={onOpenNewProject}>
-                  New project
-                </Button>
-              </>
-            )}
-          </>
-        )}
-      />
+      <div className="flex flex-col gap-2">
+        {props.label && props.label}
+        <Select
+          placeholder="Select or create a project"
+          style={{ width: 200 }}
+          value={selectedProject}
+          onChange={(value) => {
+            if (projectId && value !== null) {
+              const newPath = pathname.replace(`${projectId}`, `${value}`)
+              router.push(newPath);
+            } else if (!projectId) {
+              const newPath = window.location.href.replace("/projects", `/projects/${value}`)
+              router.push(newPath);
+            }
+          }}
+          options={projects?.map((p) => {
+            return {
+              label: (
+                <>
+                  {renderProjectFavicon(p.website)}
+                  <span style={{ position: "relative", left: 10 }}>{p.name}</span>
+                </>
+              ),
+              value: p.id.toString(),
+              website: p.website
+            }
+          })}
+          suffixIcon={suffixIcon}
+          dropdownRender={(menu) => (
+            <>
+              {menu}
+              {projects?.length < 5 && (
+                <>
+                  <Divider style={{ margin: '8px 0' }} />
+                  <Button type="text" block icon={<PlusOutlined />} onClick={onOpenNewProject}>
+                    New project
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        />
+      </div>
     </>
   )
 }

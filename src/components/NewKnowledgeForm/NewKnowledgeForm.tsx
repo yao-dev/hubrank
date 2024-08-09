@@ -13,6 +13,7 @@ import {
   Space,
   Switch,
   Table,
+  TableColumnType,
   Upload,
   UploadProps,
   message,
