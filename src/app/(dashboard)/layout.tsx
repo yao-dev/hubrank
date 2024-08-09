@@ -1,11 +1,14 @@
 import DashboardLayout from "@/components/DashboardLayout/DashboardLayout";
-import { ReactNode } from "react";
+import { Spin } from "antd";
+import { ReactNode, Suspense } from "react";
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DashboardLayout>
-      {children}
-    </DashboardLayout>
+    <Suspense fallback={<Spin />}>
+      <DashboardLayout>
+        {children}
+      </DashboardLayout>
+    </Suspense>
   )
 
 }
