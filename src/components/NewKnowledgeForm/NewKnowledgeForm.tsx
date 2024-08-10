@@ -180,7 +180,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
       setDraggerProps({
         name: 'file',
         multiple: false,
-        accept: "pdf,doc,csv,txt,html,json,md",
+        accept: ".pdf,.doc,.csv,.txt,.html,.json,.md,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         action: '/api/upload',
         maxCount: 1,
         headers: {

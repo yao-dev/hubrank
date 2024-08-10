@@ -21,7 +21,6 @@ import useLanguages from "@/hooks/useLanguages";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
 import supabase from "@/helpers/supabase";
-import { useRouter } from "next/navigation";
 import MultiSelectTagList from "../MultiSelectTagList/MultiSelectTagList";
 import Label from "../Label/Label";
 import { contentTypes, structuredSchemas } from "@/options";
@@ -43,10 +42,10 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
   const { data: writingStyles } = useWritingStyles().getAll();
   const { data: languages } = useLanguages().getAll();
   const [, contextHolder] = message.useMessage();
-  const router = useRouter();
   const fieldTitleStructure = Form.useWatch("title_structure", form) ?? "";
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
-  const dynamic = Form.useWatch("external_source", form);
+  const featuredImage = Form.useWatch("featured_image", form);
+  // const dynamic = Form.useWatch("external_source", form);
   const titleMode = Form.useWatch("title_mode", form);
   const [variableSet, setVariableSet] = useState({});
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -385,19 +384,24 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
 
         {titleMode !== "programmatic_seo" && (
           <>
-            <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+            <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="featured_image" rules={[{ required: false, type: "string" }]}>
               <Input placeholder='https://google.com/image-url' />
             </Form.Item>
 
-            <Button className="mb-6" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
-              Search image
-            </Button>
+            <div className="flex flex-col gap-3 mb-6">
+              <Button className="w-fit" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
+                Search image
+              </Button>
+
+              {featuredImage && (
+                <img src={featuredImage} className="w-[150px] aspect-square object-cover rounded-lg" />
+              )}
+            </div>
           </>
         )}
 
         <Form.Item name="content_type" label={<Label name="Content type" />} rules={[{ required: true, type: "string", message: "Select a content type" }]} >
           <Select
-            showSearch
             placeholder="Select a content type"
             options={contentTypes}
           />

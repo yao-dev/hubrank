@@ -10,6 +10,7 @@ import queryKeys from "@/helpers/queryKeys";
 import { getUserId } from "@/helpers/user";
 import { useState } from "react";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
+import useActiveProject from "@/hooks/useActiveProject";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -20,10 +21,7 @@ const ProjectForm = () => {
   const router = useRouter()
   const { data: languages } = useLanguages().getAll();
   const [isSaving, setIsSaving] = useState(false)
-
-  // if (projectId === null || tab !== "settings") {
-  //   return null;
-  // }
+  const activeProject = useActiveProject()
 
   if (!project) {
     return null;
@@ -35,77 +33,21 @@ const ProjectForm = () => {
       const userId = await getUserId()
       await axios.put('/api/project', {
         ...values,
-        blog_path: values.blog_path.startsWith("/") ? values.blog_path : `/${values.blog_path}`,
+        blog_path: values.blog_path.endsWith("/") ? values.blog_path : `${values.blog_path}/`,
         project_id: projectId,
         user_id: userId
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(projectId),
       });
-      // await update.mutateAsync({
-      //   ...values,
-      //   blog_path: values.blog_path.startsWith("/") ? values.blog_path : `/${values.blog_path}`,
-      //   project_id: projectId
-      // });
       message.success("Project updated!");
       setIsSaving(false)
-
     } catch (e) {
       setIsSaving(false)
       console.log(e);
       message.error("We are unable to save your update!")
     }
   }
-
-  // const onDeleteProject = () => {
-  //   modals.openConfirmModal({
-  //     title: <Text size="xl" fw="bold">Delete project</Text>,
-  //     withCloseButton: false,
-  //     labels: {
-  //       cancel: 'Cancel',
-  //       confirm: 'Confirm'
-  //     },
-  //     onConfirm() {
-  //       deleteProject.mutate(projectId);
-  //       notifications.show({
-  //         title: 'All good!',
-  //         message: 'Your project was deleted.',
-  //         color: 'green',
-  //         icon: <IconCheck size="1rem" />
-  //       })
-  //       // router.replace('/projects')
-  //     },
-  //     confirmProps: {
-  //       color: 'red'
-  //     },
-  //     children: (
-  //       <Text size="sm">Are you sure you want to delete <b>{project?.name}</b>?</Text>
-  //     )
-  //   })
-  // }
-
-  // const onSubmit = async (values) => {
-  //   try {
-  //     await update.mutateAsync({
-  //       ...values,
-  //       project_id: projectId
-  //     })
-  //     notifications.show({
-  //       message: 'Project updated.',
-  //       color: 'green',
-  //       icon: <IconCheck size="1rem" />
-  //     })
-
-  //   } catch (e) {
-  //     console.error(e)
-  //     notifications.show({
-  //       message: 'Project not updated.',
-  //       color: 'red',
-  //       icon: <IconX size="1rem" />
-  //     })
-  //   }
-  // }
-
 
   return (
     <Form
@@ -159,7 +101,6 @@ const ProjectForm = () => {
             return new URL(url).origin
           }
         }]}
-
       >
         <Input placeholder="https://google.com" />
       </Form.Item>
@@ -179,7 +120,21 @@ const ProjectForm = () => {
         />
       </Form.Item>
 
-      <Form.Item name="blog_path" label={<Label name="Blog path" />} tooltip="Defaults to /" rules={[{ required: false, type: "string", message: "Enter a valid blog path" }]} >
+      <Form.Item
+        name="blog_path"
+        label={<Label name="Blog url" />}
+        rules={[{
+          required: true,
+          type: "url",
+          message: "Enter a valid url",
+          transform: (url: any) => {
+            if (!url?.startsWith('https://')) {
+              url = `https://${url}`
+            }
+            return new URL(url).origin
+          }
+        }]}
+      >
         <Input placeholder="ex: /, /blog" />
       </Form.Item>
 
@@ -195,7 +150,9 @@ const ProjectForm = () => {
             onConfirm={(e) => {
               e?.preventDefault()
               deleteProject.mutate(projectId)
-              router.replace("/projects?tab=articles")
+              router.replace("/dashboard")
+              activeProject.setProjectId(0);
+              message.success('Your project was deleted.')
             }}
             onCancel={(e) => {
               e?.preventDefault()

@@ -21,7 +21,7 @@ const headline = (keyword: string) => {
   Write a clickbait headline based on the keyword: ${keyword}.
 
   Don't add date.
-  Avoid words like "Expert, World, Authorities, etc..."
+  avoid words like the following or write their alternative "Expert, World, Authorities, etc..."
   Don't prefix the headline.
   max 10 words.
   `

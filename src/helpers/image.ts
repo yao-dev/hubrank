@@ -10,7 +10,7 @@ const getUnsplashImages = async (query: string, count = 5) => {
       order_by: "relevant"
     },
     headers: {
-      Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_API_KEY}`
+      Authorization: `Client-ID ${process.env.UNSPLASH_API_KEY}`
     }
   });
 
@@ -38,7 +38,7 @@ const getUnsplashImages = async (query: string, count = 5) => {
 }
 
 const getPexelsImages = async (query: string) => {
-  const client = createClient(process.env.NEXT_PUBLIC_PEXELS_API_KEY || "");
+  const client = createClient(process.env.PEXELS_API_KEY || "");
   const result: any = await client.photos.search({ query, per_page: 5 });
   const firstImage = result?.photos?.[0];
 
@@ -64,14 +64,16 @@ export const getImages = async (query: string, count = 5) => {
         order_by: "relevant"
       },
       headers: {
-        Authorization: `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_API_KEY}`
+        Authorization: `Client-ID ${process.env.UNSPLASH_API_KEY}`
       }
     });
 
     return data?.results.map((i) => {
       return {
         alt: i.alt_description,
-        href: i?.urls?.full || i?.urls?.raw || i?.urls?.regular
+        href: i?.urls?.full || i?.urls?.raw || i?.urls?.regular,
+        hash: i?.blur_hash,
+        thumb: i?.urls?.small
       }
     })
   } catch (e) {
@@ -100,7 +102,7 @@ export const getAiImage = async (query: string) => {
       validateStatus: undefined,
       responseType: "blob",
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_STABLE_DIFFUSION_API_KEY ?? ""}`,
+        Authorization: `Bearer ${process.env.STABLE_DIFFUSION_API_KEY ?? ""}`,
         Accept: "image/*"
       },
     },

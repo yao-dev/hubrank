@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
 import { AI } from "@/app/api/AI";
-import { getManualWritingStyle, getProjectContext, getSavedWritingStyle, getUpstashDestination, insertBlogPost } from "@/app/api/helpers";
+import { getManualWritingStyle, getProjectContext, getSavedWritingStyle, getUpstashDestination, insertBlogPost, updateBlogPostStatus } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 import { omit } from "lodash";
 
@@ -39,11 +39,6 @@ export async function POST(request: Request) {
       language: language.label,
     });
 
-    // const variableSet = {
-    //   goal: "goal_1\ngoal_2",
-    //   workout: "workout_1\nworkout_2",
-    // }
-
     for (let [index, title] of Object.entries(body.headlines)) {
       // CREATE NEW ARTICLE WITH QUEUE STATUS
       let articleId = await insertBlogPost({
@@ -57,7 +52,12 @@ export async function POST(request: Request) {
         variables[key] = body.variableSet[key].split("\n")[index];
       })
 
-      await createSchedule({
+      // TODO:
+      // - enrich the outline by interpolating the variables using AI
+      // - ask the AI to add which sections should have a video
+      // - use section keywords to search youtube videos
+
+      const scheduleId = await createSchedule({
         destination: getUpstashDestination("api/write/pseo"),
         body: {
           ...omit(body, ['variableSet']),
@@ -76,6 +76,10 @@ export async function POST(request: Request) {
           "Upstash-Delay": `${(index || 0) as number * 10}s`,
         }
       });
+
+      if (!scheduleId) {
+        await updateBlogPostStatus(articleId, "error");
+      }
     }
 
     return NextResponse.json({ scheduled: true }, { status: 200 });

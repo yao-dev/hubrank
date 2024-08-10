@@ -163,7 +163,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
             loading={isSubmitting}
             disabled={isSubmitting}
           >
-            Write ({creditsCount} {creditsCount > 1 ? "credits" : "credit "})
+            Write ({creditsCount} {creditsCount > 1 ? "credits" : "credit"})
           </Button>
         </Flex>
       }

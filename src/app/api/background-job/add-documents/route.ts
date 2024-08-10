@@ -5,11 +5,13 @@ export const maxDuration = 60;
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const data = {
+  const data: any = {
     id: body.document.id,
-    data: body.document.data,
     metadata: body.document.metadata
   }
+
+  if (body.document.data) data.data = body.document.data
+  if (body.document.vector) data.vector = body.document.vector
 
   try {
     const namespace = upstashVectorIndex.namespace(body.namespaceId);

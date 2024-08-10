@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       ai.article += `![featured image](${body.featured_image})\n`
     } else {
       const images = await getImages(keywords.join());
-      console.log("unsplash images", images)
+      console.log(`unsplash images for keywords: ${keywords.join()}`, images)
       const foundFeaturedImage = shuffle(images)[0];
 
       if (foundFeaturedImage) {

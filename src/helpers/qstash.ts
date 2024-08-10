@@ -2,9 +2,9 @@ import { Client, PublishToUrlResponse } from "@upstash/qstash";
 import axios from "axios";
 
 const client = new Client({
-  token: process.env.NEXT_PUBLIC_QSTASH_TOKEN || "",
+  token: process.env.QSTASH_TOKEN || "",
   retry: {
-    retries: 0,
+    retries: 1,
     backoff: undefined
   }
 });
@@ -24,15 +24,20 @@ export const createBackgroundJob = async ({ body, destination, timeoutSec }: any
   return response
 }
 
-export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string> => {
-  const { data } = await axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(body), {
+export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string | null> => {
+  const { data, status } = await axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(body), {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_QSTASH_TOKEN}`,
+      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
       "Upstash-Retries": 0,
       ...headers,
     },
   });
+
+  if (status >= 400) {
+    console.log("schedule response", { status })
+    return null;
+  }
 
   return data.scheduleId
 }
@@ -40,7 +45,7 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
 export const deleteSchedule = async (scheduleId: string) => {
   return axios.delete(`https://qstash.upstash.io/v2/schedules/${scheduleId}`, {
     headers: {
-      Authorization: `Bearer ${process.env.NEXT_PUBLIC_QSTASH_TOKEN}`,
+      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
     }
   })
 }

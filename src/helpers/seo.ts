@@ -3,8 +3,8 @@ import axios from "axios";
 const dataforseo = axios.create({
   baseURL: 'https://api.dataforseo.com/v3/',
   auth: {
-    username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
-    password: process.env.NEXT_PUBLIC_DATAFORSEO_PASSWORD || ""
+    username: process.env.DATAFORSEO_USERNAME || "",
+    password: process.env.DATAFORSEO_PASSWORD || ""
   },
   headers: {
     "Content-Type": "application/json"

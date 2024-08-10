@@ -165,6 +165,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
         )}
         <Table
           size="small"
+          virtual
           dataSource={data?.data}
           columns={columns}
           loading={false}

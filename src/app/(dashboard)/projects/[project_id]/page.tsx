@@ -3,7 +3,6 @@ import { Button, Tabs, TabsProps } from 'antd';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import { useRouter, useSearchParams } from 'next/navigation';
-import KeywordsTable from '@/components/KeywordsTable/KeywordsTable';
 import BlogPostsTable from '@/components/BlogPostsTable/BlogPostsTable';
 import { PlusOutlined } from '@ant-design/icons';
 import WritingStyleForm from '@/components/WritingStyleForm/WritingStyleForm';
@@ -16,6 +15,7 @@ import PageTitle from '@/components/PageTitle/PageTitle';
 import { capitalize } from 'lodash';
 import KnowledgesBaseTable from '@/components/KnowledgesBaseTable/KnowledgesBaseTable';
 import NewKnowledgeDrawer from '@/components/NewKnowledgeDrawer/NewKnowledgeDrawer';
+import KeywordsTable from '@/components/KeywordsTable/KeywordsTable';
 
 export default function ProjectDetail({
   params,

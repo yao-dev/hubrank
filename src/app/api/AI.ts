@@ -131,17 +131,17 @@ export class AI {
     if (this.ai_mode === "anthropic") {
       this.ai = new Anthropic({
         baseURL: "https://anthropic.hconeai.com/",
-        apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
+        apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
         defaultHeaders: {
-          "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+          "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
         },
       });
     } else {
       this.ai = new OpenAI({
-        apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+        apiKey: process.env.OPENAI_API_KEY,
         baseURL: "https://oai.hconeai.com/v1",
         defaultHeaders: {
-          "Helicone-Auth": `Bearer ${process.env.NEXT_PUBLIC_HELICONE_AUTH}`,
+          "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
         },
       });
     }
@@ -337,7 +337,7 @@ export class AI {
     - the content type is "${values.contentType}"
     - one headline per line
     - do not prefix with number
-    - IMPORTANT: avoid words like: ${avoidWords.join()}
+    - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
     ${values.clickbait ? "- make it clickbait" : ""}`;
 
     if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
@@ -444,7 +444,7 @@ export class AI {
     prompt += `
     Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
     Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
-    - IMPORTANT: avoid words like: ${avoidWords.join()}
+    - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
 
     write in markdown wrapped in \`\`\`markdown\`\`\`.
     `;
@@ -549,7 +549,7 @@ export class AI {
     - IMPORTANT: Do not use adverbs at all
     - IMPORTANT: Diversify vocabulary
     - IMPORTANT: vary the sentence structure and tone to make it sound more conversational.
-    - IMPORTANT: avoid words like: ${avoidWords.join()}
+    - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
     - do not use emojis
     - do not introduce any next section`
 
@@ -692,15 +692,14 @@ Write the outline following the structure below
     word_count: number;
     keywords: string; // comma separated
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
-    // include relevant images in the above list, leave it empty otherwise.`;
+    `;
 
     // if (hasImages) {
     //   prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // @@image@@`
     // }
 
     if (hasVideos) {
-      prompt += `\n// youtube video
-// include the most relevant video only (optional), up to 1 video per article
+      prompt += `\n// include the most relevant youtube video, up to 1 video per article
 video_url: string;
 `
     }
@@ -745,7 +744,7 @@ video_url: string;
     }
 
     prompt += `\n\n
-    - IMPORTANT: avoid words like: ${avoidWords.join()}
+    - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
 
     Write a valuable and search intent driven description for search engine and return a JSON object with the type Description.
     \`\`\`ts

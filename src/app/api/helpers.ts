@@ -22,8 +22,8 @@ import { join } from "path";
 import { tmpdir } from "os";
 
 export const upstashVectorIndex = new Index({
-  url: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_URL || "",
-  token: process.env.NEXT_PUBLIC_UPSTASH_VECTOR_TOKEN || "",
+  url: process.env.UPSTASH_VECTOR_URL || "",
+  token: process.env.UPSTASH_VECTOR_TOKEN || "",
 })
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -410,6 +410,22 @@ export const getArticleNamespaceId = ({ userId, articleId }: { userId: string; a
   return namespaceId;
 }
 
+export const getEmbeddings = async (input: string): Promise<number[]> => {
+  const { data } = await axios.post('https://api.voyageai.com/v1/embeddings', {
+    input,
+    model: "voyage-lite-02-instruct",
+    input_type: "document",
+    truncation: true,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.VOYAGE_AI_API_KEY ?? ""}`
+    }
+  });
+
+  return data?.[0]?.embedding ?? []
+}
+
 export const getRelevantUrls = async ({
   query,
   urls,
@@ -429,15 +445,22 @@ export const getRelevantUrls = async ({
   const uniqUrls = new Set(urls);
   console.log("uniq urls", uniqUrls)
   const urlSubsets = Array.from(uniqUrls).slice(0, 1000);
-  const promises = urlSubsets.map((url) => {
-    return namespace.upsert({
-      id: url,
-      data: url,
-      metadata: {
-        article_id: articleId,
-        url
-      },
-    })
+  const promises = urlSubsets.map(async (url) => {
+    try {
+      const embeddings = await getEmbeddings(url);
+      return namespace.upsert({
+        id: url,
+        vector: embeddings,
+        metadata: {
+          article_id: articleId,
+          url
+        },
+      });
+    } catch (error) {
+      console.error(`Failed to get embeddings for URL: ${url}`, error);
+      // Handle the error according to your needs, e.g., return null or a default value
+      return null;
+    }
   });
 
   await Promise.all(promises)
@@ -445,10 +468,10 @@ export const getRelevantUrls = async ({
   console.log("query", query)
 
   const result = await namespace.query({
-    data: query,
+    vector: await getEmbeddings(query),
     topK: 500,
-    // includeMetadata: true,
-    includeData: true
+    includeMetadata: true,
+    // includeData: true
   });
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
@@ -475,21 +498,28 @@ export const getRelevantKeywords = async ({
   const namespace = upstashVectorIndex.namespace(namespaceId);
   const uniqs = new Set(keywords);
   const subset = Array.from(uniqs).slice(0, 1000);
-  const promises = subset.map((keyword) => {
-    return namespace.upsert({
-      id: keyword,
-      data: keyword,
-      metadata: {
-        article_id: articleId,
-        keyword
-      },
-    })
+  const promises = subset.map(async (keyword) => {
+    try {
+      const embeddings = await getEmbeddings(keyword)
+      return namespace.upsert({
+        id: keyword,
+        vector: embeddings,
+        metadata: {
+          article_id: articleId,
+          keyword
+        },
+      })
+    } catch (error) {
+      console.error(`Failed to get embeddings for keyword: ${keyword}`, error);
+      // Handle the error according to your needs, e.g., return null or a default value
+      return null;
+    }
   });
 
   await Promise.all(promises);
 
   const result = await namespace.query({
-    data: query,
+    vector: await getEmbeddings(query),
     topK: 500,
     includeData: true
   });
@@ -541,8 +571,8 @@ export const getKeywordsForKeywords = async ({
     url: "https://api.dataforseo.com/v3/keywords_data/google/keywords_for_keywords/live",
     data: [{ "search_partners": false, "keywords": [keyword], "language_code": countryCode || "en", "sort_by": "relevance", "date_interval": "next_month", "include_adult_keywords": false }],
     auth: {
-      username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
-      password: process.env.NEXT_PUBLIC_DATAFORSEO_PASSWORD || ""
+      username: process.env.DATAFORSEO_USERNAME || "",
+      password: process.env.DATAFORSEO_PASSWORD || ""
     },
     headers: {
       "Content-Type": "application/json"
@@ -581,8 +611,8 @@ export const getYoutubeVideosForKeyword = async ({
       depth: 10,
     }],
     auth: {
-      username: process.env.NEXT_PUBLIC_DATAFORSEO_USERNAME || "",
-      password: process.env.NEXT_PUBLIC_DATAFORSEO_PASSWORD || ""
+      username: process.env.DATAFORSEO_USERNAME || "",
+      password: process.env.DATAFORSEO_PASSWORD || ""
     },
     headers: {
       "Content-Type": "application/json"
@@ -591,6 +621,7 @@ export const getYoutubeVideosForKeyword = async ({
 
   console.log("youtube video for keyword", `site:youtube.com ${keyword}`)
   console.log("result", data.tasks[0].result)
+  console.log("items", data.tasks[0].result[0]?.items)
 
   return {
     videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.filter(i => {
@@ -732,17 +763,24 @@ export const urlToVector = async ({
     chunkOverlap: 50,
   });
   const output = await splitter.createDocuments([markdown]);
-  const promises = output.map((document, index) => {
-    console.log("Training document number:", index + 1)
-    return namespace.upsert({
-      id: generateUuid5(document.pageContent),
-      data: document.pageContent,
-      metadata: {
-        ...metadata,
-        userId,
-        content: document.pageContent
-      }
-    })
+  const promises = output.map(async (document, index) => {
+    try {
+      const embeddings = await getEmbeddings(document.pageContent)
+      console.log("Training document number:", index + 1)
+      return namespace.upsert({
+        id: generateUuid5(document.pageContent),
+        vector: embeddings,
+        metadata: {
+          ...metadata,
+          userId,
+          content: document.pageContent
+        }
+      })
+    } catch (error) {
+      console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+      // Handle the error according to your needs, e.g., return null or a default value
+      return null;
+    }
   });
 
   await Promise.all(promises)
@@ -766,17 +804,24 @@ export const textToVector = async ({
     chunkOverlap: 50,
   });
   const output = await splitter.createDocuments([text]);
-  const promises = output.map((document, index) => {
-    console.log("Training document number:", index + 1)
-    return namespace.upsert({
-      id: generateUuid5(document.pageContent),
-      data: document.pageContent,
-      metadata: {
-        ...metadata,
-        userId,
-        content: document.pageContent,
-      }
-    })
+  const promises = output.map(async (document, index) => {
+    try {
+      const embeddings = await getEmbeddings(document.pageContent)
+      console.log("Training document number:", index + 1)
+      return namespace.upsert({
+        id: generateUuid5(document.pageContent),
+        vector: embeddings,
+        metadata: {
+          ...metadata,
+          userId,
+          content: document.pageContent,
+        }
+      })
+    } catch (error) {
+      console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+      // Handle the error according to your needs, e.g., return null or a default value
+      return null;
+    }
   });
 
   return Promise.all(promises)
@@ -797,39 +842,53 @@ export const docsToVector = async ({
 
   if (docs.length < 500) {
     const namespace = upstashVectorIndex.namespace(namespaceId);
-    promises = docs.map((document, index) => {
-      console.log("Training document number:", index + 1);
-      return namespace.upsert({
-        id: generateUuid5(document.pageContent),
-        data: document.pageContent,
-        metadata: {
-          ...metadata,
-          userId,
-          content: document.pageContent,
-        }
-      })
+    promises = docs.map(async (document, index) => {
+      try {
+        const embeddings = await getEmbeddings(document.pageContent)
+        console.log("Training document number:", index + 1);
+        return namespace.upsert({
+          id: generateUuid5(document.pageContent),
+          vector: embeddings,
+          metadata: {
+            ...metadata,
+            userId,
+            content: document.pageContent,
+          }
+        })
+      } catch (error) {
+        console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+        // Handle the error according to your needs, e.g., return null or a default value
+        return null;
+      }
     });
     await Promise.all(promises);
   } else {
-    promises = docs.map((document, index) => {
-      console.log("Training document number:", index + 1);
-      return createBackgroundJob({
-        timeoutSec: 30,
-        destination: getUpstashDestination("api/background-job/add-documents"),
-        body: {
-          namespaceId,
-          index,
-          document: {
-            id: generateUuid5(document.pageContent),
-            data: document.pageContent,
-            metadata: {
-              ...metadata,
-              userId,
-              content: document.pageContent,
+    promises = docs.map(async (document, index) => {
+      try {
+        const embeddings = await getEmbeddings(document.pageContent)
+        console.log("Training document number:", index + 1);
+        return createBackgroundJob({
+          timeoutSec: 30,
+          destination: getUpstashDestination("api/background-job/add-documents"),
+          body: {
+            namespaceId,
+            index,
+            document: {
+              id: generateUuid5(document.pageContent),
+              vector: embeddings,
+              metadata: {
+                ...metadata,
+                userId,
+                content: document.pageContent,
+              }
             }
           }
-        }
-      })
+        })
+      } catch (error) {
+        console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+        // Handle the error according to your needs, e.g., return null or a default value
+        return null;
+      }
     });
     await Promise.all(promises);
     await new Promise((resolve) => setTimeout(resolve, 15000))
@@ -883,10 +942,10 @@ export const queryVector = async ({
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId)
   const knowledges = await namespace.query({
-    data: query,
+    vector: await getEmbeddings(query),
     topK,
     includeMetadata: true,
-    includeData: true,
+    // includeData: true,
     filter
   });
 
@@ -910,10 +969,10 @@ export const getProjectKnowledges = async ({
   const namespaceId = getProjectNamespaceId({ userId, projectId });
   const namespace = upstashVectorIndex.namespace(namespaceId)
   const knowledges = await namespace.query({
-    data: query,
+    vector: await getEmbeddings(query),
     topK,
     includeMetadata: true,
-    includeData: true,
+    // includeData: true,
   })
 
   const filteredKnowledgesByScore = orderBy(knowledges.filter((item) => item.score >= minScore), ['score'], ['desc']).slice(0, 5)
@@ -1054,7 +1113,7 @@ export const deleteVectors = async (ids: string[] | number[]) => {
   return upstashVectorIndex.delete(ids);
 }
 
-export const getIsYoutubeUrl = (url: string) => {
+export const getIsYoutubeUrl = (url: string = "") => {
   return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/")
 }
 

@@ -208,8 +208,9 @@ const CaptionsTable = () => {
     <Flex vertical gap="middle" style={{ overflow: "auto" }}>
       <Table
         size="small"
-        dataSource={captions?.data}
-        columns={columns}
+        // virtual
+        dataSource={captions?.data ?? []}
+        columns={columns ?? []}
         loading={false}
         // pagination={{
         //   pageSizeOptions: [10, 25, 50],

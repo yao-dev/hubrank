@@ -111,7 +111,7 @@ const create = async (data: Create) => {
   if (data.default) {
     await supabase
       .from('writing_styles')
-      .update({ default: true })
+      .update({ default: false })
       .eq("project_id", data.project_id)
       .throwOnError()
     await supabase

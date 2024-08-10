@@ -131,6 +131,7 @@ const ExportBlogPostDrawer = ({
   const keywords = Form.useWatch("keywords", form);
   const queryClient = useQueryClient();
   const [current, setCurrent] = useState(0);
+  const [isUpdatingFeaturedImage, setIsUpdatingFeaturedImage] = useState(false);
 
   const next = () => {
     setCurrent(current + 1);
@@ -141,13 +142,12 @@ const ExportBlogPostDrawer = ({
   };
 
   const getBlogUrl = () => {
-    if (!project) return "";
-    return new URL(`${project.blog_path}`, new URL(project.website).href).href
+    return project?.blog_path ?? ""
   }
 
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
-    return new URL(slug ?? article?.slug, getBlogUrl())?.[prop]
+    return new URL(slug ?? article?.slug, project?.blog_path ?? "")?.[prop]
   }
 
   const code = prettify(`
@@ -321,9 +321,34 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 <Input.TextArea rows={5} placeholder='Add keywords' />
               </Form.Item>
 
-              <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
-                <Input placeholder='https://google.com/image-url' />
-              </Form.Item>
+              <Spin spinning={isUpdatingFeaturedImage}>
+                <Form.Item style={{ marginBottom: 12 }} label={<Label name="Featured image" />} name="og_image_url" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+                  <Input placeholder='https://google.com/image-url' disabled={isUpdatingFeaturedImage} />
+                </Form.Item>
+
+                <div className="flex flex-col gap-2">
+                  {ogImageUrl && (
+                    <img src={ogImageUrl} className="w-[150px] aspect-square object-cover rounded-lg" />
+                  )}
+
+                  <Button
+                    onClick={() => {
+                      try {
+                        setIsUpdatingFeaturedImage(true)
+                        const $ = cheerio.load(article.html);
+                        const firstImageInArticle = $('img').first().attr('src') ?? "";
+                        form.setFieldValue("og_image_url", firstImageInArticle)
+                        setIsUpdatingFeaturedImage(false)
+                      } catch {
+                        setIsUpdatingFeaturedImage(false)
+                      }
+                    }}
+                    className="w-fit"
+                  >
+                    Use 1st image in content
+                  </Button>
+                </div>
+              </Spin>
             </Form>
 
             <Flex vertical gap="small" className="relative">
@@ -411,6 +436,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                   style={{
                     borderRadius: ".85714em",
                   }}
+                  className="max-h-[500px] object-cover"
                 />
 
                 <div
@@ -438,6 +464,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                 <Image
                   src={article.og_image_url}
                   preview={false}
+                  className="max-h-[500px] object-cover"
                 />
 
                 <Flex vertical style={{ padding: 12, background: "rgb(242 243 245 / 1)", borderTop: "1px solid rgb(229 231 235/1)" }}>
@@ -459,6 +486,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                   src={article.og_image_url}
                   preview={false}
                   style={{ border: "1px solid rgb(229 231 235/1)" }}
+                  className="max-h-[500px] object-cover"
                 />
 
                 <Flex vertical style={{ padding: 10, background: "white", borderTop: "1px solid rgb(229 231 235/1)" }}>

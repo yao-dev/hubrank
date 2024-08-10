@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     const ai = new AI({ context, writing_style: writingStyle });
 
-    const seedKeyword = body.variables[body.seed_keyword]
+    const seedKeyword = body.seed_keyword
 
     const { keywords: kw } = await getKeywordsForKeywords({
       keyword: seedKeyword,
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
     // SET FEATURED IMAGE
     const images = await getImages(keywords.join());
-    console.log("unsplash images", images)
+    console.log(`unsplash images for keywords: ${keywords.join()}`, images)
     const featuredImage = shuffle(images)[0];
 
     if (featuredImage) {
@@ -147,10 +147,6 @@ export async function POST(request: Request) {
         query: `${section.name} ${section?.keywords ?? ""}`,
         minScore: 0.5
       })
-
-      // prompt += `\nHeadline structure: ${body.title_structure}`;
-      // prompt += `\nHeadline (do not add it in the output): ${body.title}`;
-      // prompt += `\nReplace all variables with their respective value.`;
 
       // WRITE EACH SECTION
       await writeSection({

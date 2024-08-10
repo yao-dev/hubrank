@@ -23,7 +23,6 @@ import {
   ExportOutlined
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
-import { useRouter } from 'next/navigation';
 import useProjectId from '@/hooks/useProjectId';
 import {
   IconArticle,
@@ -50,7 +49,6 @@ const BlogPostsTable = () => {
   const { getAll, delete: deleteArticle } = useBlogPosts()
   const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
   const [selectedArticle, setSelectedArticle] = useState();
-  const router = useRouter();
   const projectId = useProjectId();
   const screens = useBreakpoint();
   const drawers = useDrawers();
@@ -81,7 +79,7 @@ const BlogPostsTable = () => {
         title: 'Title',
         dataIndex: 'title',
         key: 'title',
-        width: !screens.lg ? 800 : null,
+        width: 600,
         render: (value: any, record: any) => {
           return (
             <Link href={`/projects/${projectId}/articles/${record.id}`} className='w-full inline-block'>
@@ -349,8 +347,9 @@ const BlogPostsTable = () => {
       <Flex vertical gap="middle" style={{ overflow: "auto" }}>
         <Table
           size="small"
-          dataSource={articles?.data}
-          columns={columns}
+          virtual
+          dataSource={articles?.data ?? []}
+          columns={columns ?? []}
           loading={isPending}
           // pagination={{
           //   pageSizeOptions: [10, 25, 50],

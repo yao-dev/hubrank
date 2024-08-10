@@ -194,8 +194,9 @@ const KnowledgesBaseTable = () => {
       {contextHolder}
       <Table
         size="small"
-        dataSource={knowledges?.data}
-        columns={columns}
+        virtual
+        dataSource={knowledges?.data ?? []}
+        columns={columns ?? []}
         loading={false}
         // pagination={{
         //   pageSizeOptions: [10, 25, 50],

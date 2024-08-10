@@ -430,6 +430,7 @@ const KeywordsTable = () => {
       ) : (
         <Table
           size="small"
+          virtual
           dataSource={showSavedKeywords ? savedKeywords : keywords}
           columns={columns}
           loading={isFetchingKeywords}

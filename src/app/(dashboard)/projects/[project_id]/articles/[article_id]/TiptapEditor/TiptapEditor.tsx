@@ -367,6 +367,7 @@ const TiptapEditor = ({
     }),
     Image.configure({
       inline: true,
+      allowBase64: true,
       HTMLAttributes: {
         class: 'rounded-lg m-0 w-full',
       },
@@ -385,7 +386,7 @@ const TiptapEditor = ({
       });
       onChange?.(markdown)
     } catch (e) {
-      console.log("onEditorChange error:", e)
+      console.log("onEditorChange error:", e);
     }
   }
 

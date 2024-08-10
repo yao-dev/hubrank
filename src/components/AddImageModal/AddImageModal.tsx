@@ -1,9 +1,10 @@
 'use client';;
-import { IconCircleCheckFilled } from '@tabler/icons-react';
 import { debounce } from 'lodash';
-import { Button, Input, Modal, Spin, Upload } from 'antd';
+import { Button, Image, Input, message, Modal, Spin, Upload } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
-import { getAiImage, getImages } from '@/helpers/image';
+import { Blurhash } from "react-blurhash";
+import axios from 'axios';
+import { SearchOutlined } from '@ant-design/icons';
 
 const AddImageModal = ({ open, onClose, onSubmit }) => {
   const [imageTab, setImageTab] = useState("upload");
@@ -14,23 +15,30 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
   const [imageLink, setImageLink] = useState("");
   const [generatedImageLink, setGeneratedImageLink] = useState("");
 
-  useEffect(() => {
-    setImageTab("upload")
-  }, [open])
-
-  useEffect(() => {
+  const resetModal = () => {
     setImageLink("");
     setSelectedImage({ href: "", alt: "" });
     setGeneratedImageLink("");
     setImages([]);
     setIsSearchingImage(false);
     setIsGeneratingImage(false)
+  }
+
+  useEffect(() => {
+    setImageTab("upload")
+  }, [open])
+
+  useEffect(() => {
+    resetModal()
   }, [imageTab])
 
   const onSearchImage = async (e: any) => {
     try {
       setIsSearchingImage(true)
-      const imagesFound = await getImages(e.currentTarget.value, 12);
+      const { data: imagesFound } = await axios.post('/api/images/search', {
+        query: e.currentTarget.value,
+        count: 12,
+      })
       setImages(imagesFound);
       setIsSearchingImage(false)
     } catch {
@@ -38,12 +46,16 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
     }
   }
 
-  const onGeneratingImage = async (e: any) => {
+  const onGeneratingImage = async (query: string) => {
     try {
-      const query = e.currentTarget.value
       if (!query) return;
       setIsGeneratingImage(true)
-      const generatedImageBlob = await getAiImage(query);
+      const { data: generatedImageBlob } = await axios.post('/api/images/generate', { query })
+      if (!generatedImageBlob) {
+        message.info('We couldn\'t generate an image from your query')
+        setIsGeneratingImage(false);
+        return;
+      }
       const reader = new FileReader();
       reader.addEventListener(
         "load",
@@ -81,7 +93,8 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
       }
     }
 
-    onClose()
+    onClose();
+    resetModal();
   }
 
   const imageGallery = useMemo(() => {
@@ -90,18 +103,25 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
     return images.map((image) => {
       return (
         <div key={image.href} className='relative mb-2 h-[128px]'>
-          <img
-            src={image.href}
+          <Image
+            src={image.thumb}
             alt={image.alt}
-            className={`absolute w-full h-full object-cover rounded-md`}
-            loading="lazy"
-          />
-          <div
-            className={`cursor-pointer absolute z-10 w-full h-full rounded-md opacity-0 hover:opacity-100 flex items-center justify-center hover:bg-primary-500/50 transition-all ${selectedImage.href === image.href ? "bg-primary-500/50 opacity-100" : ""}`}
+            className={`w-full h-full object-cover rounded-md hover:border-2 hover:border-primary-500 hover:p-1 transition-all ${selectedImage.href === image.href ? "border-2 border-primary-500 p-1" : ""}`}
+            preview={false}
+            width="100%"
+            height="100%"
             onClick={() => setSelectedImage(image)}
-          >
-            <IconCircleCheckFilled className='text-white' />
-          </div>
+            placeholder={(
+              <Blurhash
+                hash={image.hash}
+                width="100%"
+                height="100%"
+                resolutionX={32}
+                resolutionY={32}
+                punch={1}
+              />
+            )}
+          />
         </div>
 
       )
@@ -116,8 +136,9 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
       title="Add image"
       onOk={onSubmitImage}
       destroyOnClose
+      okText="Add"
       okButtonProps={{
-        disabled: imageTab === "link" && !imageLink || imageTab === "unsplash" && !selectedImage.href || imageTab === "ai" && !generatedImageLink || isSearchingImage || isGeneratingImage
+        disabled: imageTab === "upload" && !imageLink || imageTab === "link" && !imageLink || imageTab === "unsplash" && !selectedImage.href || imageTab === "ai" && !generatedImageLink || isSearchingImage || isGeneratingImage
       }}
     >
       <div className='flex flex-col gap-4 w-full mt-2'>
@@ -153,7 +174,7 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
             <Upload.Dragger
               name={'image'}
               multiple={false}
-              accept={"jpg,png,gif"}
+              accept={"image/jpg,image/png,image/gif"}
               maxCount={1}
               onChange={(info) => {
                 const { status } = info.file;
@@ -212,14 +233,25 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
         {imageTab === "ai" && (
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-4'>
-              <Input
-                placeholder="Describe the image to generate"
-                onChange={debounce(onGeneratingImage, 1000)}
-                allowClear
-                disabled={isGeneratingImage}
-              />
+              <div className='flex flex-row gap-2'>
+                <Input
+                  id="input-ai-image"
+                  placeholder="Describe the image you want to generate"
+                  allowClear
+                  disabled={isGeneratingImage}
+                />
+                <Button
+                  onClick={() => onGeneratingImage(document.getElementById('input-ai-image').value)}
+                  icon={<SearchOutlined />}
+                  className='w-fit'
+                  disabled={isGeneratingImage}
+                >
+                  Search
+                </Button>
+              </div>
+
               {isGeneratingImage && (
-                <Spin spinning />
+                <Spin spinning tip="This can take few seconds" />
               )}
             </div>
             {generatedImageLink && (

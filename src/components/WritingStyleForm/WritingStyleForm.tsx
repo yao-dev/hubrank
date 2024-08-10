@@ -68,10 +68,11 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
   const fieldPerspectives = Form.useWatch("perspectives", form);
   const fieldWritingStructures = Form.useWatch("writing_structures", form);
   const fieldInstructionalElements = Form.useWatch("instructional_elements", form);
+  const fieldDefault = Form.useWatch("default", form);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!writingStyles?.count) {
+    if (!writingStyles?.data?.length) {
       form.setFieldValue("default", true)
     }
   }, [writingStyles]);
@@ -316,7 +317,7 @@ const WritingStyleForm = ({ opened, setModalOpen, initialValues }: Props) => {
 
           <Form.Item name="default" style={{ marginTop: 12 }}>
             <Flex gap="small">
-              <Switch size="small" />
+              <Switch size="small" value={fieldDefault} />
               <span
                 className="cursor-pointer"
                 onClick={() => form.setFieldValue("default", !form.getFieldValue("default"))}
