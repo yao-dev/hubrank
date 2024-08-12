@@ -11,6 +11,7 @@ import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persist
 import "./global.css";
 import CrispChat from '@/components/CrispChat/CrispChat';
 import { queryClient } from '@/helpers/reactQuery';
+import Script from 'next/script';
 
 
 const inter = Inter({ subsets: ['latin'] })

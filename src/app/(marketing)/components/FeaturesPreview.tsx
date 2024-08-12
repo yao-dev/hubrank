@@ -1,4 +1,5 @@
 'use client';;
+import Chip from "@/components/Chip/Chip";
 import { useEffect, useState } from "react";
 
 const featuresInAction = [
@@ -214,12 +215,13 @@ const FeaturesPreview = () => {
         <div className="flex flex-wrap gap-1 lg:gap-2 justify-center">
           {featuresInAction.map((item) => {
             return (
-              <div
+              <Chip
+                key={item.id}
                 onClick={() => setFeatureInActionVideo(item)}
-                className={`cursor-pointer rounded-full py-2 px-4 border transition hover:border-primary-500 ${featureInActionVideo.id === item.id ? "bg-primary-500 text-white" : ""}`}
+                isSelected={featureInActionVideo.id === item.id}
               >
                 <p>{item.title}</p>
-              </div>
+              </Chip>
             )
           })}
         </div>

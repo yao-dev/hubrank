@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
-import { AI, CaptionTemplate } from "@/app/api/AI";
-import { deductCredits, getManualWritingStyle, getProjectContext, getSavedWritingStyle, getYoutubeTranscript, insertCaption } from "@/app/api/helpers";
+import { models } from "@/app/api/AI";
+import {
+  deductCredits,
+  getManualWritingStyle,
+  getSavedWritingStyle,
+  getYoutubeTranscript,
+} from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
+import Anthropic from "@anthropic-ai/sdk";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -10,27 +16,24 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const [
-      { data: project },
-      { data: language },
-    ] = await Promise.all([
-      supabase.from("projects").select("*").eq("id", body.project_id).single(),
-      supabase.from("languages").select("*").eq("id", body.language_id).single()
-    ])
+    // const { data: project } = await supabase.from("projects").select("*").eq("id", body.project_id).single();
 
-    if (!project) {
-      return NextResponse.json({ message: "project not found" }, { status: 500 })
-    }
-    if (!language) {
-      return NextResponse.json({ message: "language not found" }, { status: 500 })
-    }
+    // if (!project) {
+    //   return NextResponse.json({ message: "project not found" }, { status: 500 })
+    // }
 
-    const context = getProjectContext({
-      name: project.name,
-      website: project.website,
-      description: project.metatags?.description || project?.description,
-      lang: language.label,
-    })
+    // const { data: language } = await supabase.from("languages").select("*").eq("id", project.language_id).single()
+
+    // if (!language) {
+    //   return NextResponse.json({ message: "language not found" }, { status: 500 })
+    // }
+
+    // const context = getProjectContext({
+    //   name: project.name,
+    //   website: project.website,
+    //   description: project.metatags?.description || project?.description,
+    //   lang: language.label,
+    // })
 
     // FETCH WRITING STYLE IF IT EXISTS
     let writingStyle = getManualWritingStyle(body);
@@ -38,50 +41,81 @@ export async function POST(request: Request) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
-    const ai = new AI({ context, writing_style: writingStyle });
-
     let youtubeTranscript;
     if (body.goal === "youtube_to_caption" && body.youtube_url) {
       youtubeTranscript = await getYoutubeTranscript(body.youtube_url)
     }
 
-    const metadata: CaptionTemplate = {
-      goal: body.goal,
-      with_hashtags: body.with_hashtags,
-      with_emojis: body.with_emojis,
-      caption_source: body.caption_source,
-      caption_length: body.caption_length,
-      with_single_emoji: body.with_single_emoji,
-      with_question: body.with_question,
-      with_hook: body.with_hook,
-      with_cta: body.with_cta,
-      cta: body.cta,
-      language: language.label,
-      platform: body.platform,
-      description: body.description,
-      external_sources: body.external_sources,
-      youtube_transcript: youtubeTranscript
-    }
+    // const metadata: CaptionTemplate = {
+    //   goal: body.goal,
+    //   with_hashtags: body.with_hashtags,
+    //   with_emojis: body.with_emojis,
+    //   caption_source: body.caption_source,
+    //   caption_length: body.caption_length,
+    //   with_single_emoji: body.with_single_emoji,
+    //   with_question: body.with_question,
+    //   with_hook: body.with_hook,
+    //   with_cta: body.with_cta,
+    //   cta: body.cta,
+    //   language: language.label,
+    //   platform: body.platform,
+    //   description: body.description,
+    //   external_sources: body.external_sources,
+    //   youtube_transcript: youtubeTranscript
+    // }
 
-    const result = await ai.getCaption({
-      ...metadata,
-      platform: body.platform,
-      description: body.description,
-      writingStyle
+    // const ai = new AI({
+    //   ai_mode: "anthropic",
+    //   system: "You write like we would talk in a conversation (like a human)",
+    //   writing_style: writingStyle,
+    // });
+
+    // const result = await ai.getCaption({
+    //   ...metadata,
+    //   platform: body.platform,
+    //   description: body.description,
+    //   writingStyle,
+    // });
+
+    const ai = new Anthropic({
+      baseURL: "https://anthropic.hconeai.com/",
+      apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
+      defaultHeaders: {
+        "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
+      },
     });
+
+    const completion = await ai.messages.create({
+      // model: opts.model || "claude-3-5-sonnet-20240620",
+      model: models.sonnet,
+      max_tokens: 1000,
+      temperature: body.type === "Comment" ? 0.3 : 0.1,
+      system: "Act as a social media marketer",
+      messages: [{
+        role: 'user',
+        content: [
+          JSON.stringify(body, null, 2),
+          body.type === "Comment" ? "Write 5 comments in response to the source" : "Write 5 captions",
+          "Your writing is well formatted with paragraphs, tabs, list, etc.\nOutput only a JSON array string[] with the results nothing else",
+        ].join('\n\n')
+      }]
+    });
+
+    console.log(completion);
+    const captions = JSON.parse(completion.content[0].text)
 
     const cost = 0.5
 
-    await insertCaption({
-      user_id: body.user_id as string,
-      project_id: body.project_id as number,
-      language_id: body.language_id as number,
-      writing_style_id: body.writing_style_id as number,
-      platform: body.platform as string,
-      caption: result.caption as string,
-      metadata,
-      cost
-    });
+    // await insertCaption({
+    //   user_id: body.user_id as string,
+    //   project_id: body.project_id as number,
+    //   language_id: body.language_id as number,
+    //   writing_style_id: body.writing_style_id as number,
+    //   platform: body.platform as string,
+    //   caption: result.caption as string,
+    //   metadata,
+    //   cost
+    // });
 
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
     const creditCheck = {
@@ -91,8 +125,9 @@ export async function POST(request: Request) {
     }
     await deductCredits(creditCheck);
 
-    return NextResponse.json(body, { status: 200 });
+    return NextResponse.json({ captions }, { status: 200 });
   } catch (e: any) {
+    console.log(e?.message)
     return NextResponse.json(e, { status: 500 });
   }
 }

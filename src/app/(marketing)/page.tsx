@@ -15,10 +15,10 @@ export default function LandingPage() {
 
       <HeroHeader />
 
-      <div>
+      {/* <div>
         <PainPoints />
         <Benefits />
-      </div>
+      </div> */}
 
       {/* <HowItWorks /> */}
 
@@ -26,7 +26,7 @@ export default function LandingPage() {
         <Features />
       </div>
 
-      <FeaturesPreview />
+      {/* <FeaturesPreview /> */}
 
       {/* <Testimonials /> */}
 

@@ -1075,6 +1075,21 @@ export const captionLengthOptions = [
   },
 ]
 
+// export const captionLengthOptions = [
+//   {
+//     label: "Short",
+//     value: 150
+//   },
+//   {
+//     label: "Normal",
+//     value: 250
+//   },
+//   {
+//     label: "Long",
+//     value: 400
+//   },
+// ]
+
 export const avoidWords = [
   "as you",
   "remember",
@@ -1122,4 +1137,48 @@ export const avoidWords = [
   "don't worry",
   "This guide",
   "You might be thinking"
+]
+
+export const captionTypes = [
+  "Comment",
+  "Rephrase post",
+  "Motivational",
+  "Networking",
+  "Question for engaement",
+  "List & Tips",
+  "Ask a Poll",
+  "Personal Insight",
+  // "News/Updates",
+  "Humor",
+  "Call to Action",
+  "Workplace Advice",
+  "Leadership Insight",
+  "Inspirational Quote",
+  // "Customer Testimonial",
+  "Industry Insight",
+  "Challenge or Competition",
+  "Behind the Scenes",
+  "Opinion or Hot Take",
+  "Shoutout or Appreciation",
+  "Event Announcement"
+]
+
+export const captionCallToActions = [
+  "DM me",
+  "Subscribe",
+  "Comment below",
+  "Give a like",
+  "Share this post",
+  "Tag a friend",
+  "Follow for more",
+  "Click the link in bio",
+  "Retweet",
+  "Save this post",
+  "Join the conversation",
+  "Send me a message",
+  "Sign up",
+  "Leave a review",
+  "Ask me anything",
+  "Visit my website",
+  "Watch my video"
 ]

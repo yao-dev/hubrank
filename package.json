@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ant-design/nextjs-registry": "^1.0.0",
-    "@anthropic-ai/sdk": "^0.12.4",
+    "@anthropic-ai/sdk": "^0.25.1",
     "@billing-js/react-billing-js": "^1.1.18",
     "@langchain/community": "^0.2.20",
     "@langchain/core": "^0.2.18",

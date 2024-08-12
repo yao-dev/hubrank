@@ -61,7 +61,7 @@ const costs = {
     output: 75,
     calculation_based_on_token_count: 1000000,
   },
-  "claude-3-sonnet-20240229": {
+  "claude-3-5-sonnet-20240620": {
     input: 3,
     output: 15,
     calculation_based_on_token_count: 1000000,
@@ -100,7 +100,7 @@ const costs = {
 
 export const models = {
   opus: "claude-3-opus-20240229",
-  sonnet: "claude-3-sonnet-20240229",
+  sonnet: "claude-3-5-sonnet-20240620",
   haiku: "claude-3-haiku-20240307",
   "gpt-4o": "gpt-4o",
   "gpt-4-0613": "gpt-4-0613"
@@ -108,13 +108,16 @@ export const models = {
 
 type TokenCountArgs = {
   text: string,
-  model: "claude-3-opus-20240229" | "claude-3-sonnet-20240229" | "claude-2.1" | "claude-2.0" | "claude-instant-1.2" | "claude-3-haiku-20240307" | "gpt-4o" | "gpt-4-0613",
+  model: "claude-3-opus-20240229" | "claude-3-5-sonnet-20240620" | "claude-2.1" | "claude-2.0" | "claude-instant-1.2" | "claude-3-haiku-20240307" | "gpt-4o" | "gpt-4-0613",
   mode: "input" | "output"
 }
 
 type Opts = {
   context?: string,
-  writing_style?: any
+  writing_style?: any;
+  ai_mode?: "openai" | "anthropic";
+  disable_system?: boolean;
+  system?: string;
 }
 
 export class AI {
@@ -127,8 +130,10 @@ export class AI {
   opts: Opts;
 
   constructor(opts: Opts = {}) {
-    this.opts = opts
-    if (this.ai_mode === "anthropic") {
+    this.opts = opts;
+    this.ai_mode = opts.ai_mode ?? "openai";
+
+    if (opts.ai_mode === "anthropic") {
       this.ai = new Anthropic({
         baseURL: "https://anthropic.hconeai.com/",
         apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
@@ -145,7 +150,12 @@ export class AI {
         },
       });
     }
-    this.system = `You are a Storyteller & SEO writer expert who writes engaging content that speak to the right target audience.`
+    if (!opts.disable_system) {
+      this.system = `You are a Storyteller & SEO writer expert who writes engaging content that speak to the right target audience.`
+    }
+    if (opts.system) {
+      this.system = opts.system
+    }
 
     if (opts.context) this.system += `\nProduct info:\n${opts.context}\n===`
     if (opts.writing_style) {
@@ -251,16 +261,6 @@ export class AI {
     console.log(chalk.cyanBright(this.article))
   }
 
-  // addTokenCost({ text, model, mode }: TokenCountArgs) {
-  //   const modelCost = costs[model][mode];
-  //   const tokens = countTokens(text);
-  //   const modelCostPerToken = (modelCost / costs[model].calculation_based_on_token_count)
-  //   const totalCost = tokens * modelCostPerToken;
-
-  //   this.cost += totalCost;
-  //   console.log(chalk.blueBright(`[AI]: tokens: ${tokens} | cost: ${totalCost}`));
-  // }
-
   async ask(prompt: any, opts: any = {}) {
     prompt = normalizePrompt(prompt);
     console.log(chalk.blueBright(`[AI]: ${opts.mode || "ask"}`));
@@ -268,29 +268,35 @@ export class AI {
 
     const start = performance.now();
 
-    // this.addTokenCost({ text: `${this.system} ${prompt}`, model: opts.model, mode: "input" });
-
     let completion;
 
     if (this.ai_mode === "anthropic") {
-      completion = await this.ai.beta.messages.create({
-        // model: opts.model || "claude-3-sonnet-20240229",
+      completion = await this.ai.messages.create({
+        // model: opts.model || "claude-3-5-sonnet-20240620",
         model: opts.model,
         max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
         temperature: opts.temperature || 0.7,
         system: this.system,
-        messages: [
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
+        messages: [{ role: 'user', content: prompt }],
+        // messages: [
+        //   {
+        //     role: "user",
+        //     content: [
+        //       {
+        //         type: "text",
+        //         text: prompt
+        //       }
+        //     ]
+        //   }
+        // ],
         // top_k: 0,
         // metadata: {user_id: ""}
       });
+
+      console.log(completion)
     } else {
       completion = await this.ai.chat.completions.create({
-        // model: opts.model || "claude-3-sonnet-20240229",
+        // model: opts.model || "claude-3-5-sonnet-20240620",
         // model: models["gpt-4-0613"],
         model: opts.model,
         max_tokens: opts.word_count ? Math.min(opts.word_count * 3, 4096) : 4096,
@@ -309,8 +315,6 @@ export class AI {
         // metadata: {user_id: ""}
       });
     }
-
-    // this.addTokenCost({ text: completion.content[0].text, model: opts.model, mode: "output" });
 
     const end = performance.now();
     console.log(chalk.blueBright(`[AI]: duration: ${(end - start) / 1000}`));
@@ -923,7 +927,7 @@ video_url: string;
 
     prompt += `\nOutput a JSON object wrapped in \`\`\`json\`\`\``
 
-    return prompt
+    return prompt;
   }
 
   async getPSeoOutline(values: any) {
@@ -931,57 +935,58 @@ video_url: string;
   }
 
   getCaptionTemplate(values: CaptionTemplate) {
-    const platform = capitalize(values.platform)
     let prompt = "[caption]\n\n"
 
     prompt += `- Language: ${values.language}`
-    if (values.writingStyle?.tones) prompt += values.writingStyle.tones?.length > 0 ? `\nTones: ${values.writingStyle.tones.join(', ')}` : "";
-    if (values.writingStyle?.purposes) prompt += values.writingStyle.purposes?.length > 0 ? `\nPurposes: ${values.writingStyle.purposes.join(', ')}` : "";
-    if (values.writingStyle?.emotions) prompt += values.writingStyle.emotions?.length > 0 ? `\nEmotions: ${values.writingStyle.emotions.join(', ')}` : "";
-    if (values.writingStyle?.vocabularies) prompt += values.writingStyle.vocabularies?.length > 0 ? `\nVocabularies: ${values.writingStyle.vocabularies.join(', ')}` : "";
-    if (values.writingStyle?.sentence_structures) prompt += values.writingStyle.sentence_structures?.length > 0 ? `\nSentence structures: ${values.writingStyle.sentence_structures.join(', ')}` : "";
-    if (values.writingStyle?.perspectives) prompt += values.writingStyle.perspectives?.length > 0 ? `\nPerspectives: ${values.writingStyle.perspectives.join(', ')}` : "";
-    if (values.writingStyle?.writing_structures) prompt += values.writingStyle.writing_structures?.length > 0 ? `\nWriting structures: ${values.writingStyle.writing_structures.join(', ')}` : "";
-    if (values.writingStyle?.instructional_elements) prompt += values.writingStyle.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.writingStyle.instructional_elements.join(', ')}` : "";
+    if (this.opts?.writing_style?.tones) prompt += this.opts?.writing_style.tones?.length > 0 ? `\n- Tones: ${this.opts?.writing_style.tones.join(', ')}` : "";
+    if (this.opts?.writing_style?.purposes) prompt += this.opts?.writing_style.purposes?.length > 0 ? `\n- Purposes: ${this.opts?.writing_style.purposes.join(', ')}` : "";
+    if (this.opts?.writing_style?.emotions) prompt += this.opts?.writing_style.emotions?.length > 0 ? `\n- Emotions: ${this.opts?.writing_style.emotions.join(', ')}` : "";
+    if (this.opts?.writing_style?.vocabularies) prompt += this.opts?.writing_style.vocabularies?.length > 0 ? `\n- Vocabularies: ${this.opts?.writing_style.vocabularies.join(', ')}` : "";
+    if (this.opts?.writing_style?.sentence_structures) prompt += this.opts?.writing_style.sentence_structures?.length > 0 ? `\n- Sentence structures: ${this.opts?.writing_style.sentence_structures.join(', ')}` : "";
+    if (this.opts?.writing_style?.perspectives) prompt += this.opts?.writing_style.perspectives?.length > 0 ? `\n- Perspectives: ${this.opts?.writing_style.perspectives.join(', ')}` : "";
+    if (this.opts?.writing_style?.writing_structures) prompt += this.opts?.writing_style.writing_structures?.length > 0 ? `\n- Writing structures: ${this.opts?.writing_style.writing_structures.join(', ')}` : "";
+    if (this.opts?.writing_style?.instructional_elements) prompt += this.opts?.writing_style.instructional_elements?.length > 0 ? `\n- Instructional elements: ${this.opts?.writing_style.instructional_elements.join(', ')}` : "";
 
     if (values.with_hook) prompt += "\n- Add a hook";
     if (values.with_question) prompt += "\n- Add a question to engage the readers";
-    prompt += values.with_hashtags ? "\n- Add hashtags" : "\n- do not add hashtags"
+    prompt += values.with_hashtags ? "\n- Add hashtags" : "\n- Do not add hashtags"
     if (values.with_emojis && !values.with_single_emoji) prompt += "\n- Add emojis"
     if (values.with_single_emoji && !values.with_emojis) prompt += "\n- Add one emoji"
     if (!values.with_single_emoji && !values.with_emojis) prompt += "\n- Do not add emojis"
     if (values.with_cta && values.cta) prompt += `\n- CTA: ${values.cta}`
     if (!values.with_cta) prompt += `\n- Do not add any CTA`
 
-    if (values.writingStyle?.text) prompt += `\n\nHere is my writing style: ${values.writingStyle.text}\n`;
+    if (this.opts?.writing_style?.text) prompt += `\n\nHere is my writing style: ${this.opts?.writing_style.text}\n`;
 
     if (values.goal === "write") {
-      prompt += `\n-${capitalize(values.goal)} a ${platform} caption of up to ${values.caption_length} characters maximum about: ${values.description}.`
+      prompt += `\n-${capitalize(values.goal)} a caption of less than ${values.caption_length} characters maximum about: ${values.description}.`
     }
 
     if (values.goal === "rephrase" && values.caption_source) {
-      prompt += `\n-Rephrase (while keeping the level of similary/duplication low) using my writing style the following ${platform} caption to up to ${values.caption_length} characters maximum about, caption source to rephrase: "${values.caption_source}"\n`
-      prompt += `\n-Don't copy or add any links you find in the caption source`
-      prompt += `\n-Don't add/make up links unless I provide it to you`
+      prompt += `\n- Rephrase (while keeping the level of similary/duplication low) using my writing style the following caption to less than ${values.caption_length} characters maximum about, caption source to rephrase: "${values.caption_source}"\n`
+      prompt += `\n- Don't copy or add any links you find in the caption source`
+      prompt += `\n- Don't add/make up links unless I provide it to you`
     }
 
     if (values.goal === "reply" && values.caption_source) {
-      prompt += `\n-Reply to the following ${platform} caption using my writing style to up to ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
-      prompt += `\n-Don't copy or add any links you find in the caption source`
-      prompt += `\n-Don't add/make up links unless I provide it to you`
+      prompt += `\n- Reply to the following caption using my writing style to less than ${values.caption_length} characters maximum about, caption source to reply: "${values.caption_source}"\n`
+      prompt += `\n- Don't copy or add any links you find in the caption source`
+      prompt += `\n- Don't add/make up links unless I provide it to you`
     }
 
 
     if (values.goal === "youtube_to_caption" && values.youtube_transcript) {
-      prompt += `\n-Write a ${platform} caption of up to ${values.caption_length} characters maximum about: ${values.youtube_transcript.slice(0, 10000)}.`
-      prompt += `\n\n-Don't copy or add any links you find in the caption source`
-      prompt += `\n-Don't add/make up links unless I provide it to you`
+      prompt += `\n- Write a caption of less than ${values.caption_length} characters maximum about: ${values.youtube_transcript.slice(0, 10000)}.`
+      prompt += `\n\n- Don't copy or add any links you find in the caption source`
+      prompt += `\n- Don't add/make up links unless I provide it to you`
     }
+
+    prompt += `\n- Give me 5 variants`
 
     prompt += `\n\n// output structure
     \`\`\`ts
     type Result = {
-      caption: string;
+      captions: string[];
     }
     \`\`\`
     Wrap your output in \`\`\`json\`\`\`
@@ -990,9 +995,9 @@ video_url: string;
     return prompt;
   }
 
-  async getCaption(values: CaptionTemplate): Promise<{ caption: string }> {
-    const model = values.goal === "youtube_to_caption" && values.youtube_transcript ? models["gpt-4o"] : models["gpt-4-0613"]
-    return this.ask(this.getCaptionTemplate(values), { type: "json", mode: "get-caption", temperature: 0.7, model });
+  async getCaption(values: CaptionTemplate): Promise<{ captions: string[] }> {
+    // const model = values.goal === "youtube_to_caption" && values.youtube_transcript ? models["gpt-4o"] : models["gpt-4-0613"]
+    return this.ask(this.getCaptionTemplate(values), { type: "json", mode: "get-caption", temperature: 0, model: models.sonnet, word_count: values.caption_length });
   }
 
   getRelevantKeywordsTemplate(values: GetRelevantKeywords) {
