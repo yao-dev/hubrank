@@ -128,8 +128,7 @@ export default function ProjectDetail({
               Write caption (0.5 credit)
             </Button>
           </div>
-          {/* <CaptionsTable /> */}
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-4 w-3/5'>
             {isSubmitting && (
               <>
                 <Skeleton active loading />
@@ -144,7 +143,7 @@ export default function ProjectDetail({
                 <div className='grid grid-cols-2 gap-4'>
                   {captions.map((caption, index) => {
                     return (
-                      <div key={index} contentEditable onInput={console.log} className='relative border rounded-lg p-4 pr-8 whitespace-pre-line outline-none'>
+                      <div key={index} contentEditable onInput={console.log} className='prose relative border rounded-lg p-4 pr-8 whitespace-pre-line outline-none'>
                         {caption}
                         <Button
                           onClick={() => onCopyCaption(caption)}

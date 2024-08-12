@@ -6,11 +6,11 @@ import {
   Form,
   FormInstance,
   Input,
+  InputNumber,
   Radio,
   RadioChangeEvent,
   Segmented,
   Select,
-  Slider,
   Switch,
   message,
 } from "antd";
@@ -342,9 +342,9 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
           cta: "",
           hashtags: "",
           additional_information: "",
-          max_sentences: 1,
-          max_paragraphs: 0,
-          max_emojis: 0
+          max_sentences: 3,
+          max_paragraphs: 3,
+          max_emojis: 2
         }}
         autoComplete="off"
         layout="vertical"
@@ -456,35 +456,37 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
           />
         </Form.Item>
 
-        <Form.Item
-          name="max_sentences"
-          label={<Label name="Sentences" />}
-          rules={[{ type: "number", max: 20, required: false }]}
-
-        >
-          <Slider min={1} max={20} />
-        </Form.Item>
-
-        {/* hide for comments */}
-        {type !== "Comment" && (
+        <div className="grid grid-cols-3">
           <Form.Item
-            name="max_paragraphs"
-            label={<Label name="Paragraphs" />}
+            name="max_sentences"
+            label={<Label name="Sentences" />}
+            rules={[{ type: "number", max: 20, required: false }]}
+
+          >
+            <InputNumber min={1} max={20} />
+          </Form.Item>
+
+          {/* hide for comments */}
+          {type !== "Comment" && (
+            <Form.Item
+              name="max_paragraphs"
+              label={<Label name="Paragraphs" />}
+              rules={[{ type: "number", max: 5, required: false }]}
+
+            >
+              <InputNumber min={0} max={5} />
+            </Form.Item>
+          )}
+
+          <Form.Item
+            name="max_emojis"
+            label={<Label name="Emojis" />}
             rules={[{ type: "number", max: 5, required: false }]}
 
           >
-            <Slider min={0} max={5} />
+            <InputNumber min={0} max={5} />
           </Form.Item>
-        )}
-
-        <Form.Item
-          name="max_emojis"
-          label={<Label name="Emojis" />}
-          rules={[{ type: "number", max: 5, required: false }]}
-
-        >
-          <Slider min={0} max={5} />
-        </Form.Item>
+        </div>
       </Form>
     </Flex>
   )

@@ -30,7 +30,7 @@ const featuresInAction = [
   {
     id: 4,
     title: "Social media",
-    demo: "https://demo.arcade.software/GL7XYzrzz400gjNVcBLB?embed&show_copy_link=true",
+    demo: "https://demo.arcade.software/OOY9fgTvkc5uCumcttbr?embed&show_copy_link=true",
   },
   {
     id: 5,
