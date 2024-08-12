@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
 import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
@@ -111,6 +112,19 @@ export default function Login() {
     }
   }
 
+  const renderBackButton = (cls: string = "") => {
+    return (
+      <Button
+        type="text"
+        onClick={() => router.push("/")}
+        icon={<ArrowLeftOutlined />}
+        className={`absolute top-6 left-6 ${cls}`}
+      >
+        Back
+      </Button>
+    )
+  }
+
   if (isLoading) {
     return (
       <div className='flex flex-row h-screen items-center justify-center'>
@@ -121,13 +135,15 @@ export default function Login() {
 
   return (
     <div className='flex flex-row h-screen'>
-      <div className='hidden md:flex bg-[#001727] md:w-1/2 text-center items-center justify-center'>
+      <div className='relative hidden md:flex bg-[#001727] md:w-1/2 text-center items-center justify-center'>
+        {renderBackButton("text-white hidden md:inline")}
         <h1 className="lg:w-2/3 w-full text-4xl lg:text-6xl font-black mb-4 text-white">
           Grow 10x Faster with <span className='text-primary-500 rotate-45'>Hubrank</span>
         </h1>
       </div>
 
-      <div className='w-full bg-[#001727] md:bg-white md:w-1/2 flex items-center justify-center'>
+      <div className='relative w-full bg-[#001727] md:bg-white md:w-1/2 flex items-center justify-center'>
+        {renderBackButton("text-white md:hidden")}
         <Card className='border bg-white lg:border-none w-3/4 lg:w-2/3 xl:w-1/2'>
           <p style={{ margin: 0, textAlign: "center" }}>
             <Image
@@ -200,7 +216,7 @@ export default function Login() {
               </Button>
             </Form.Item>
 
-            <Divider />
+            <Divider plain>or</Divider>
 
             <Form.Item style={{ margin: 0, marginTop: 24 }}>
               <GoogleSignInButton />

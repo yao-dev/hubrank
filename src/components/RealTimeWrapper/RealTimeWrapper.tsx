@@ -1,5 +1,6 @@
+"use client";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import supabase from "../../helpers/supabase";
 import useSession from "@/hooks/useSession";
 import Link from "next/link";
@@ -20,7 +21,7 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 	const projectId = useProjectId();
 	const pricingModal = usePricingModal();
 
-	React.useEffect(() => {
+	useEffect(() => {
 		if (sessionStore.session?.user?.id) {
 			users = supabase
 				.channel('users')

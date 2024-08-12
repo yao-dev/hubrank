@@ -1,3 +1,4 @@
+"use client";
 import SessionContext from "@/context/SessionContext";
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
