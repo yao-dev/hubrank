@@ -77,7 +77,7 @@ const ProjectSelect = (props = {}) => {
               const newPath = pathname.replace(`${projectId}`, `${value}`)
               router.push(newPath);
             } else if (!projectId) {
-              const newPath = window.location.href.replace("/projects", `/projects/${value}`)
+              const newPath = window.location.href.replace("/projects", `/projects/${value}?tab=blog-posts`)
               router.push(newPath);
             }
           }}

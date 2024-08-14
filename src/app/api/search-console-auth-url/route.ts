@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
-import serviceAccount from "../../../../service-account.json";
+// import serviceAccount from "../../../../service-account.json";
 
 export const getGoogleClient = (origin: string) => {
+  const serviceAccount = {
+    web: {
+      client_id: "",
+      client_secret: "",
+    }
+  }
   const oauth2Client = new google.auth.OAuth2(
     serviceAccount.web.client_id,
     serviceAccount.web.client_secret,
