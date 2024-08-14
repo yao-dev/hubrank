@@ -9,8 +9,17 @@ import AntdProvider from '@/components/AntdProvider/AntdProvider';
 import { Metadata } from 'next';
 import "./global.css";
 
+const url = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://usehubrank.com";
+
 const siteConfig = {
-  name: "Hubrank"
+  name: "Hubrank",
+  short_description: '',
+  description: "",
+  url,
+  locale: "en_US",
+  keywords: [],
+  og_url: `${url}/assets/marketing/og-image.webp`,
+  author: "@usehubrank"
 }
 
 export const metadata: Metadata = {
@@ -25,6 +34,23 @@ export const metadata: Metadata = {
   },
   verification: {
     google: "Rygtep62kwXT58VICywsuxgr1PaASqdfBPn7r9VNlsc"
+  },
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    url: siteConfig.url,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: siteConfig.og_url,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+    images: siteConfig.og_url,
+    creator: siteConfig.author,
+    site: siteConfig.url,
   },
 }
 
