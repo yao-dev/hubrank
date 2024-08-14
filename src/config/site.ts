@@ -7,6 +7,6 @@ export const siteConfig = {
   url,
   locale: "en_US",
   keywords: [],
-  og_url: `${url}/assets/marketing/og-image.webp`,
+  og_url: `${url}/marketing/og-image.webp`,
   author: "@usehubrank"
 }
