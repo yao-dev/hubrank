@@ -1,8 +1,8 @@
 'use client';;
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { Button, Flex, Input, InputRef, Space, Table, TableColumnType } from "antd";
-import { useMemo, useRef, useState } from "react";
+import { Button, Flex, Input, InputRef, message, Space, Table, TableColumnType } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SearchOutlined } from '@ant-design/icons';
 import axios from "axios";
 import Highlighter from 'react-highlight-words';
@@ -12,22 +12,38 @@ import PageTitle from "@/components/PageTitle/PageTitle";
 import Label from "@/components/Label/Label";
 import { useQuery } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
+import GoogleSearchConsoleSignInButton from "@/components/GoogleSearchConsoleSignInButton/GoogleSearchConsoleSignInButton";
+import { useRouter, useSearchParams } from "next/navigation";
+import useGoogleSearchConsole from "@/hooks/useGoogleSearchConsole";
 
-export default function IndexUrls({
-  params,
-}: {
-  params: { project_id: number }
-}) {
+export default function Analytics() {
   const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId)
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef<InputRef>(null);
   const [selectedUrls, setSelectedUrls] = useState([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const googleSearchConsole = useGoogleSearchConsole();
+
+  useEffect(() => {
+    const error = searchParams.get("error") ?? "";
+    const accessToken = searchParams.get("access_token") ?? "";
+    if (error) {
+      message.error("You need to give access to the permissions requested");
+      router.replace("/analytics");
+    } else if (accessToken) {
+      console.log(accessToken)
+      googleSearchConsole.setAccessToken(accessToken)
+      router.replace("/analytics");
+    }
+  }, [searchParams]);
 
   const { data: sitemapUrls = [], isPending } = useQuery({
-    enabled: !!project.sitemap,
-    queryKey: queryKeys.sitemap(project.sitemap),
+    // enabled: !!project.sitemap,
+    enabled: false,
+    queryKey: queryKeys.sitemap(project?.sitemap),
     queryFn: async () => {
       const { data } = await axios.post("/api/sitemap", {
         website_url: project?.website,
@@ -136,7 +152,7 @@ export default function IndexUrls({
       className="relative flex flex-col h-full"
     >
       <div className="flex flex-row items-center justify-between">
-        <PageTitle title="Index urls" />
+        <PageTitle title="Analytics" />
         <Button
           type="primary"
           disabled={!selectedUrls.length}
@@ -145,6 +161,8 @@ export default function IndexUrls({
           Index {selectedUrls.length ?? 0} {selectedUrls.length > 1 ? "urls" : "url"}
         </Button>
       </div>
+
+      <GoogleSearchConsoleSignInButton />
 
       <Flex vertical gap={12}>
         <Label name="Select urls you want to index" />

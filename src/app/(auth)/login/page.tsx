@@ -9,6 +9,7 @@ import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
 import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import Link from 'next/link';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +50,8 @@ export default function Login() {
       const { error } = await supabase.auth.signInWithOtp({
         email: values.email,
         options: {
-          shouldCreateUser: true
-        }
+          shouldCreateUser: true,
+        },
       });
 
       setIsAuthLoading(false);
@@ -223,6 +224,10 @@ export default function Login() {
             </Form.Item>
           </Form>
         </Card>
+
+        <p className='text-white md:text-black text-xs absolute bottom-6 mx-auto'>
+          By continuing, you agree to our <Link href="/terms-and-conditions" className='underline text-white md:text-black'>Terms and conditions</Link>
+        </p>
       </div>
     </div>
   );

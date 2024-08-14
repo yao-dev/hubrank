@@ -20,7 +20,14 @@ const NewProjectModal = ({ opened, onClose }: any) => {
   const [isSaving, setIsSaving] = useState(false);
 
   const [form] = Form.useForm();
-  const { data: languages } = useLanguages().getAll()
+  const { data: languages } = useLanguages().getAll();
+
+  const transformUrl = (url: any) => {
+    if (!url?.startsWith('https://')) {
+      url = `https://${url}`
+    }
+    return new URL(url).origin
+  }
 
   const onCreateProject = async (values: any) => {
     try {
@@ -31,6 +38,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         ...values,
         language_id: +values.language_id,
         user_id: userId,
+        website: transformUrl(values.website)
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),
@@ -106,16 +114,11 @@ const NewProjectModal = ({ opened, onClose }: any) => {
             required: true,
             type: "url",
             message: "Enter a valid url",
-            transform: (url: any) => {
-              if (!url?.startsWith('https://')) {
-                url = `https://${url}`
-              }
-              return new URL(url).origin
-            }
+            transform: transformUrl
           }]}
 
         >
-          <Input placeholder="https://google.com" />
+          <Input addonBefore="https://" placeholder="google.com" />
         </Form.Item>
         {/* <Form.Item
         name="description"

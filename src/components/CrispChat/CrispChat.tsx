@@ -1,15 +1,9 @@
-"use client";
+"use client";;
 import { useEffect } from 'react';
 
 const CrispChat = () => {
   useEffect(() => {
-    const shouldShow = [
-      "/projects",
-      "/dashboard",
-      "/subscriptions"
-    ].includes(window.location.pathname)
-    window.location.pathname
-    if (process.env.NODE_ENV === "production" && shouldShow) {
+    if (process.env.NODE_ENV === "production") {
       window.$crisp = [];
       window.CRISP_WEBSITE_ID = "5b146ecd-fddb-4b61-9486-ac5772f1a26a";
 

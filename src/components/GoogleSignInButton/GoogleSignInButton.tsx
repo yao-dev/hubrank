@@ -7,7 +7,8 @@ const GoogleSignInButton = () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        scopes: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/indexing",
+        scopes: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+        // scopes: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/indexing",
         redirectTo: `${location.origin}/auth/callback`,
         queryParams: {
           access_type: 'offline',

@@ -15,7 +15,7 @@ import {
   IconMessage,
   IconTextCaption,
   IconSpeakerphone,
-  IconLink,
+  IconTimeline,
 } from '@tabler/icons-react';
 import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
 import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
@@ -132,16 +132,6 @@ export default function DashboardLayout({
     }
   }, [session])
 
-  if (!session) {
-    return (
-      <div style={{ width: "100%", height: "100vh" }}>
-        <Flex style={{ height: "inherit" }} align="center" justify="center">
-          <Spin spinning />
-        </Flex>
-      </div>
-    )
-  }
-
   // const getMenuLink = (projectId, link) => {
   //   const isProjectSelected = typeof projectId === "number" && projectId !== 0;
 
@@ -156,10 +146,10 @@ export default function DashboardLayout({
       projectId > 0 ? getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconMessage />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "knowledges-base", link: isProjectSelected ? `/projects/${projectId}?tab=knowledges-base` : '/projects?tab=knowledges-base', label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "index-urls", link: isProjectSelected ? `/projects/${projectId}/index-urls` : '/projects/index-urls', label: 'Index urls', icon: <IconLink />, onClick: () => setIsMobileMenuOpen(false) }) : null,
+      projectId > 0 ? getItem({ key: "knowledge-bases", link: isProjectSelected ? `/projects/${projectId}?tab=knowledge-bases` : '/projects?tab=knowledge-bases', label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/projects', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+      // getItem({ key: "analytics", link: '/analytics', label: 'Analytics', icon: <IconTimeline />, onClick: () => setIsMobileMenuOpen(false) }),
     ])
 
 
@@ -211,11 +201,14 @@ export default function DashboardLayout({
     if (tab === "writing-styles") {
       return ["writing-styles"]
     }
-    if (tab === "knowledges-base") {
-      return ["knowledges-base"]
+    if (tab === "knowledge-bases") {
+      return ["knowledge-bases"]
     }
     if (pathname.startsWith('/integrations')) {
       return ["integrations"]
+    }
+    if (pathname.startsWith('/analytics')) {
+      return ["analytics"]
     }
     if (!pathname.startsWith('/settings') && pathname.endsWith('/settings')) {
       return ["project-settings"]
@@ -310,7 +303,17 @@ export default function DashboardLayout({
         </Flex>
       </Flex>
     )
-  }, [data, selectedKeys, user])
+  }, [data, selectedKeys, user]);
+
+  if (!session) {
+    return (
+      <div style={{ width: "100%", height: "100vh" }}>
+        <Flex style={{ height: "inherit" }} align="center" justify="center">
+          <Spin spinning />
+        </Flex>
+      </div>
+    )
+  }
 
   return (
     <>

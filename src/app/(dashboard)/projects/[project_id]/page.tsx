@@ -173,7 +173,7 @@ export default function ProjectDetail({
       children: <WritingStylesTable setModalOpen={setIsWritingStyleModalOpened} />,
     },
     {
-      key: 'knowledges-base',
+      key: 'knowledge-bases',
       label: 'Knowledge bases',
       children: (
         <KnowledgesBaseTable />
@@ -227,7 +227,7 @@ export default function ProjectDetail({
           icon: <PlusOutlined />,
           text: "Writing style"
         })
-      case "knowledges-base":
+      case "knowledge-bases":
         return getActionButton({
           onClick: () => drawers.openKnowledgeDrawer({ isOpen: true }),
           icon: <PlusOutlined />,
