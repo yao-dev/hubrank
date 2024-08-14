@@ -7,27 +7,15 @@ import CrispChat from '@/components/CrispChat/CrispChat';
 import ReactQueryProvider from '@/components/ReactQueryProvider/ReactQueryProvider';
 import AntdProvider from '@/components/AntdProvider/AntdProvider';
 import { Metadata } from 'next';
+import { siteConfig } from '@/config/site';
 import "./global.css";
-
-const url = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://usehubrank.com";
-
-const siteConfig = {
-  name: "Hubrank",
-  short_description: "Generate SEO blogs, social media captions & replies in just few clicks.",
-  description: "Grow 10x Faster with AI Content Marketing for Your Business. Boost your SEO, Create Social Captions & Replies and more.",
-  url,
-  locale: "en_US",
-  keywords: [],
-  og_url: `${url}/assets/marketing/og-image.webp`,
-  author: "@usehubrank"
-}
 
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
-  // viewport: 'initial-scale=1, minimum-scale=1, maximum-scale=5, width=device-width, height=device-height, shrink-to-fit=no, viewport-fit=cover',
+  viewport: "width=device-width, initial-scale=1",
   robots: {
     follow: true,
     index: true
