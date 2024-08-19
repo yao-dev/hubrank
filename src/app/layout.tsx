@@ -15,7 +15,8 @@ export const metadata: Metadata = {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
-  viewport: "width=device-width, initial-scale=1",
+  description: siteConfig.description,
+  // viewport: "width=device-width, initial-scale=1",
   robots: {
     follow: true,
     index: true
@@ -40,6 +41,13 @@ export const metadata: Metadata = {
     creator: siteConfig.author,
     site: siteConfig.url,
   },
+  icons: [
+    {
+      rel: "icon",
+      url: "/favicon.ico",
+      sizes: "28x28"
+    },
+  ]
 }
 
 const inter = Inter({ subsets: ['latin'] });
