@@ -47,6 +47,11 @@ export const metadata: Metadata = {
       url: "/favicon.ico",
       sizes: "28x28"
     },
+    {
+      rel: "shortcut icon",
+      url: "/favicon.ico",
+      sizes: "28x28"
+    },
   ]
 }
 
@@ -59,9 +64,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className='bg-white'>
-      <head>
-        <title>Hubrank</title>
-      </head>
       <body
         className={inter.className}
         style={{

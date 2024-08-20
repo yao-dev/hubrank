@@ -7,10 +7,10 @@ import { useOnClickOutside } from 'usehooks-ts';
 import Logo from "./Logo";
 
 const menu = [
-  { href: "#features", link: "Features" },
+  { href: "/#features", link: "Features" },
   // { href: "#testimonials", link: "Testimonials" },
   // { href: "#faq", link: "Faq" },
-  { href: "#pricing", link: "Pricing" },
+  { href: "/#pricing", link: "Pricing" },
 ]
 
 const Navbar = () => {
@@ -32,37 +32,37 @@ const Navbar = () => {
 
   useOnClickOutside(ref, handleClickOutside);
 
-  const loginButton = useCallback((className?: string, text?: boolean) => {
+  const loginButton = useCallback((className?: string, textClassName?: string) => {
     return (
       <Button
         href="/login"
-        className={`bg-black text-white hover:border-transparent ${className}`}
+        className={`bg-black text-white ${className}`}
       >
-        Login
+        <Link href="/login" className={textClassName}>Login</Link>
       </Button>
     )
   }, [])
 
   return (
-    <nav className={`sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>
+    <nav className={`navbar sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>
       <div className="container flex flex-row justify-between items-center">
         {/* logo */}
         <Logo />
 
         {/* menu */}
-        <div className="hidden lg:flex flex-row gap-4">
+        <div className="navbar-links hidden lg:flex flex-row gap-10">
           {menu.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:text-primary-500 text-base font-medium"
+              className="navbar-link hover:text-primary-500 text-lg font-medium"
             >
               {item.link}
             </Link>
           ))}
         </div>
 
-        {loginButton("hidden lg:block")}
+        {loginButton("hidden lg:block w-[144px] border-primary-500 bg-white hover:border-primary-500 hover:scale-105", "text-primary-500")}
 
         {/* mobile menu trigger */}
         <IconMenu2 id="menu" onClick={() => {
@@ -73,12 +73,12 @@ const Navbar = () => {
 
       {/* mobile menu */}
       {isMenuOpen && (
-        <div ref={ref} className="lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
+        <div ref={ref} className="navbar-links lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
           {menu.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="hover:bg-primary-500 hover:text-white transition inline-block text-center px-2 py-3 border-b last:border-b-0 uppercase"
+              className="navbar-link hover:bg-primary-500 hover:text-white transition inline-block text-center px-2 py-3 border-b last:border-b-0 uppercase"
               onClick={handleClickOutside}
             >
               {item.link}

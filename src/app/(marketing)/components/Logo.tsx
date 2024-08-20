@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const Logo = ({ className }: { className?: string }) => {
   return (
-    <Link href="/">
+    <Link href="/" className="website-logo">
       <Image
         src="/brand-logo-black.png"
         preview={false}
