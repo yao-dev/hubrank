@@ -317,7 +317,6 @@ export default function DashboardLayout({
 
   return (
     <>
-      <InitClarityTracking />
       <Drawer
         open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}

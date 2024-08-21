@@ -2,8 +2,14 @@
 import { useState, useEffect } from 'react';
 import { IconCircleCheckFilled, IconStarFilled } from "@tabler/icons-react";
 import GetStarted from "./GetStarted";
-import FeaturesPreview from './FeaturesPreview';
 import ProductHuntBadge from '@/components/ProductHuntBadge/ProductHuntBadge';
+import dynamic from 'next/dynamic';
+import { Spin } from 'antd';
+
+const FeaturesPreview = dynamic(() => import('./FeaturesPreview'), {
+  loading: () => <Spin spinning />,
+})
+
 
 function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, delay = 2000) {
   const [text, setText] = useState('');
@@ -67,7 +73,7 @@ const HeroHeader = () => {
           <ProductHuntBadge />
         </div>
 
-        <div className="flex gap-12 mx-auto mb-6">
+        {/* <div className="flex gap-12 mx-auto mb-6">
           <div className="flex flex-col gap-1 items-center">
             {fiveStars}
             <span className='text-zinc-600 italic'>"This is a game-changer!"</span>
@@ -80,7 +86,7 @@ const HeroHeader = () => {
             {fiveStars}
             <span className='text-zinc-600 italic'>"I'm blown away by the results!"</span>
           </div>
-        </div>
+        </div> */}
 
         {/* headline */}
         <h1 className="lg:w-2/3 w-full text-4xl lg:text-6xl font-black mb-4 text-center">

@@ -3,12 +3,12 @@ import SessionProvider from '@/provider/SessionProvider';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
 import { App } from 'antd';
-import CrispChat from '@/components/CrispChat/CrispChat';
 import ReactQueryProvider from '@/components/ReactQueryProvider/ReactQueryProvider';
 import AntdProvider from '@/components/AntdProvider/AntdProvider';
 import { Metadata } from 'next';
 import { siteConfig } from '@/config/site';
 import "./global.css";
+import InitClarityTracking from '@/components/InitClarityTracking/InitClarityTracking';
 
 export const metadata: Metadata = {
   title: {
@@ -71,7 +71,6 @@ export default function RootLayout({
           // background: token.colorBgLayout
         }}
       >
-        <CrispChat />
         <AntdRegistry>
           <AntdProvider>
             <App>
@@ -85,6 +84,7 @@ export default function RootLayout({
             </App>
           </AntdProvider>
         </AntdRegistry>
+        <InitClarityTracking />
       </body>
     </html >
   )

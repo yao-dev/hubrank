@@ -72,7 +72,7 @@ const FeaturesPreview = () => {
         <iframe
           src={featureInActionVideo.demo}
           title="Hubrank"
-          loading="lazy"
+          loading="eager"
           allowFullScreen
           allow="clipboard-write"
           style={{
