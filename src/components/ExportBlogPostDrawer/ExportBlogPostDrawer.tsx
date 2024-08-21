@@ -32,6 +32,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import * as cheerio from "cheerio";
+import { structuredSchemas } from "@/options";
 
 const styles = {
   google: {
@@ -365,7 +366,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
             <div className="flex flex-col gap-4">
               <Label name="Generate structured data" />
               <Flex gap="small" style={{ flexWrap: "wrap" }}>
-                {[
+                {/* [
                   "BreadcrumbList",
                   "VideoObject",
                   "Recipe",
@@ -375,7 +376,8 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                   "BlogPosting",
                   "FAQPage",
                   "Question",
-                ].map((schemaName) => {
+                ] */}
+                {structuredSchemas.map(({ label: schemaName }) => {
                   return (
                     <Popconfirm
                       title="Schema markup"

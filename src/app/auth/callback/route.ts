@@ -1,10 +1,13 @@
 import supabase from '@/helpers/supabase';
+import chalk from 'chalk';
 import { NextResponse } from 'next/server';
 // The client you created from the Server-Side Auth instructions
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
+  const code = searchParams.get('code');
+
+  console.log(chalk.bgBlue(request.url))
 
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get('next') ?? '/';

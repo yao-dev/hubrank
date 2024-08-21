@@ -1,4 +1,4 @@
-'use client';
+'use client';;
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
@@ -7,9 +7,9 @@ import { Form, Alert, Input, Button, Card, Typography, Image, Spin, Divider } fr
 import { useRouter } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
-import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);

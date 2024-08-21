@@ -66,7 +66,7 @@ const HowItWorks = () => {
         />
       </div>
 
-      <GetStarted className='w-fit' />
+      <GetStarted title="Get 5 Free Credits" className='w-fit' />
     </section>
   )
 }

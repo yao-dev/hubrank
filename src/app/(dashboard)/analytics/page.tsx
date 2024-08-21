@@ -1,7 +1,7 @@
 'use client';;
 import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
-import { Button, Flex, Input, InputRef, message, Space, Table, TableColumnType } from "antd";
+import { Button, Flex, Input, InputRef, message, Space, Spin, Table, TableColumnType } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SearchOutlined } from '@ant-design/icons';
 import axios from "axios";
@@ -15,6 +15,8 @@ import queryKeys from "@/helpers/queryKeys";
 import GoogleSearchConsoleSignInButton from "@/components/GoogleSearchConsoleSignInButton/GoogleSearchConsoleSignInButton";
 import { useRouter, useSearchParams } from "next/navigation";
 import useGoogleSearchConsole from "@/hooks/useGoogleSearchConsole";
+import useSession from "@/hooks/useSession";
+import supabase from "@/helpers/supabase";
 
 export default function Analytics() {
   const projectId = useProjectId();
@@ -26,19 +28,37 @@ export default function Analytics() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const googleSearchConsole = useGoogleSearchConsole();
+  const sessionStore = useSession()
+  const [isFetchingScopes, setIsFetchingScopes] = useState(false)
 
   useEffect(() => {
-    const error = searchParams.get("error") ?? "";
-    const accessToken = searchParams.get("access_token") ?? "";
-    if (error) {
-      message.error("You need to give access to the permissions requested");
-      router.replace("/analytics");
-    } else if (accessToken) {
-      console.log(accessToken)
-      googleSearchConsole.setAccessToken(accessToken)
-      router.replace("/analytics");
+    setIsFetchingScopes(true);
+    axios.post('/api/token-info', {
+      access_token: sessionStore.session.access_token
+    })
+      .then(({ data: tokenInfo }) => {
+        console.log(tokenInfo)
+      })
+      .finally(() => {
+        setIsFetchingScopes(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!isFetchingScopes) {
+      const error = searchParams.get("error") ?? "";
+      const accessToken = searchParams.get("access_token") ?? "";
+      if (error) {
+        message.error("You need to give access to the permissions requested");
+        router.replace("/analytics");
+      } else if (accessToken) {
+        supabase.auth.refreshSession({ refresh_token: accessToken }).then(console.log);
+        console.log(accessToken)
+        googleSearchConsole.setAccessToken(accessToken)
+        router.replace("/analytics");
+      }
     }
-  }, [searchParams]);
+  }, [isFetchingScopes, searchParams]);
 
   const { data: sitemapUrls = [], isPending } = useQuery({
     // enabled: !!project.sitemap,
@@ -147,6 +167,14 @@ export default function Analytics() {
     selectedRowKeys: selectedUrls,
   };
 
+  if (isFetchingScopes) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spin spinning />
+      </div>
+    )
+  }
+
   return (
     <div
       className="relative flex flex-col h-full"
@@ -164,7 +192,7 @@ export default function Analytics() {
 
       <GoogleSearchConsoleSignInButton />
 
-      <Flex vertical gap={12}>
+      <Flex hidden vertical gap={12}>
         <Label name="Select urls you want to index" />
         <Table
           rowSelection={{

@@ -30,7 +30,7 @@ const Faq = () => {
           Ranking high on Google is way harder than it looks, you've written countless articles and got no traffic or got stuck in the ideation phase.
         </p>
       </div>
-      <GetStarted className="w-fit" />
+      <GetStarted title="Get 5 Free Credits" className="w-fit" />
     </div>
   )
 

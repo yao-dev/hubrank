@@ -1,5 +1,6 @@
 import { IconBrandFacebook, IconBrandInstagram, IconBrandLinkedin, IconBrandPinterest, IconBrandThreads, IconBrandTiktok, IconBrandX } from "@tabler/icons-react";
 import { Flex } from "antd";
+import Link from "next/link";
 
 export const headlineCount = [
   { value: '1', label: '1' },
@@ -972,6 +973,18 @@ export const structuredSchemas = [
     label: "Question",
     value: "Question",
   },
+  {
+    label: "Product",
+    value: "Product",
+  },
+  {
+    label: "Table",
+    value: "Table",
+  },
+  {
+    label: "Review",
+    value: "Review",
+  },
 ];
 
 export const platforms = {
@@ -1182,3 +1195,127 @@ export const captionCallToActions = [
   "Visit my website",
   "Watch my video"
 ]
+
+
+export const competitors = {
+  "jasper.ai": {
+    logo: "https://cdn.prod.website-files.com/60e5f2de011b86acebc30db7/665dd9c1792c38c09c7d74ec_Jasper%20Logo%20Lockup%20-%20Dark%20Khaki.svg",
+    name: "Jasper.ai",
+    url: "https://jasper.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://jasper.ai" className="text-primary-500 font-semibold">Jasper.ai</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "copy.ai": {
+    logo: "https://cdn.prod.website-files.com/628288c5cd3e8411b90a36a4/659e8f4c92a0028e36e42623_logo_kerning-fix.svg",
+    name: "Copy.ai",
+    url: "https://copy.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://copy.ai" className="text-primary-500 font-semibold">Copy.ai</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "reword": {
+    logo: "https://cdn.prod.website-files.com/634d41276b882236cc52de2c/634d904513981b61b7129694_Reword%20Small.svg",
+    name: "Reword",
+    url: "https://reword.com",
+    description: (
+      <p className="text-lg">
+        <Link href="https://reword.com" className="text-primary-500 font-semibold">Reword.com</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "copysmith.ai": {
+    logo: "",
+    whiteLogo: true,
+    name: "Copysmith.ai",
+    url: "https://copysmith.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://copysmith.ai" className="text-primary-500 font-semibold">Copysmith.ai</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "machined.ai": {
+    logo: "https://cdn.sanity.io/images/u0v1th4q/production/feaf8d47262cf58f407f442366295c55b7f09d0d-256x256.svg?fp-x=0.5&fp-y=0.5&w=256&sharp=100&q=75&auto=format",
+    name: "Machined.ai",
+    url: "https://machined.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://machined.ai" className="text-primary-500 font-semibold">Machined.ai</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "tryjournalist.com": {
+    logo: "",
+    whiteLogo: true,
+    name: "Journalist AI",
+    url: "https://tryjournalist.com",
+    description: (
+      <p className="text-lg">
+        <Link href="https://tryjournalist.com" className="text-primary-500 font-semibold">Journalist AI</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "alliai.com": {
+    logo: "https://www.alliai.com/wp-content/uploads/2022/08/Alli-AI-logo.svg",
+    name: "Alli AI",
+    url: "https://alliai.com",
+    description: (
+      <p className="text-lg">
+        <Link href="https://alliai.com" className="text-primary-500 font-semibold">Alli AI</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "anyword.com": {
+    logo: "https://cdn.prod.website-files.com/65a5365ee6f4219bc2d2f822/65ae548143e3b5eca08c4093_Logo.svg",
+    name: "Anyword",
+    url: "https://anyword.com",
+    description: (
+      <p className="text-lg">
+        <Link href="https://anyword.com" className="text-primary-500 font-semibold">Anyword</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "seo.ai": {
+    logo: "https://cdn.prod.website-files.com/627a5f467d5ec9539d88f0bc/6572cbbe08213b709d66714d_SEO-AI-logo-white.svg",
+    whiteLogo: true,
+    name: "SEO AI",
+    url: "https://seo.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://seo.ai" className="text-primary-500 font-semibold">SEO AI</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "frase.io": {
+    logo: "https://www.frase.io/wp-content/uploads/2020/11/cropped-frase-logo-white.png",
+    whiteLogo: true,
+    name: "Frase.io",
+    url: "https://frase.io",
+    description: (
+      <p className="text-lg">
+        <Link href="https://frase.io" className="text-primary-500 font-semibold">Frase.io</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+  "blogseo.ai": {
+    logo: "https://cdn.prod.website-files.com/6481bb338e41f40e20299ed3/6492d52c3a91a848827bda61_logo%20V3.svg",
+    whiteLogo: true,
+    name: "Blog SEO AI",
+    url: "https://blogseo.ai",
+    description: (
+      <p className="text-lg">
+        <Link href="https://blogseo.ai" className="text-primary-500 font-semibold">Blog SEO AI</Link> is another popular AI writing tool after Writesonic among blog writers, social media managers, and email marketers. The platform is known for its short-form content generation. You can use this Jasper alternative for creating engaging social media posts, email subject lines, and email marketing copies.
+      </p>
+    )
+  },
+}
+
+export const competitorList = Object.entries(competitors).map(([key, value]) => ({
+  ...value,
+  slug: key
+}))

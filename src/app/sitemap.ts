@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { MetadataRoute } from "next";
+import { keywords } from "./(marketing)/glossary/[keyword]/constants";
 
 const getSitemapRoute = (url: string) => {
   return {
@@ -16,5 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getSitemapRoute(`${siteConfig.url}/login`),
     getSitemapRoute(`${siteConfig.url}/privacy-policy`),
     getSitemapRoute(`${siteConfig.url}/terms-and-conditions`),
+    getSitemapRoute(`${siteConfig.url}/glossary`),
+    ...keywords.map((keyword) => getSitemapRoute(`${siteConfig.url}/glossary/${keyword.slug}`))
   ]
 }

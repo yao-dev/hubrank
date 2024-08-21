@@ -1,5 +1,6 @@
 "use client";;
 import supabase from "@/helpers/supabase";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 
 const GoogleSearchConsoleSignInButton = () => {
@@ -18,20 +19,20 @@ const GoogleSearchConsoleSignInButton = () => {
     //     },
     //   },
     // });
-    // const { data } = await axios.get("/api/search-console-auth-url")
-    // router.push(data.url)
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        // scopes: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-        scopes: "https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/indexing",
-        redirectTo: `${location.origin}/auth/callback`,
-        queryParams: {
-          access_type: 'online',
-          prompt: 'consent',
-        },
-      },
-    });
+    const { data } = await axios.get("/api/search-console-auth-url")
+    router.push(data.url)
+    // await supabase.auth.signInWithOAuth({
+    //   provider: 'google',
+    //   options: {
+    //     // scopes: "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+    //     scopes: "https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/indexing",
+    //     redirectTo: `${location.origin}/auth/callback`,
+    //     queryParams: {
+    //       access_type: 'online',
+    //       prompt: 'consent',
+    //     },
+    //   },
+    // });
   }
 
   return (

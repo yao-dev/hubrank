@@ -2,8 +2,7 @@
 import { Button } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useOnClickOutside } from 'usehooks-ts';
+import { useCallback, useRef, useState } from "react";
 import Logo from "./Logo";
 
 const menu = [
@@ -16,21 +15,10 @@ const menu = [
 const Navbar = () => {
   const ref = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [top, setTop] = useState(true);
-
-  useEffect(() => {
-    const scrollHandler = () => {
-      window.scrollY > 75 ? setTop(false) : setTop(true)
-    };
-    window.addEventListener('scroll', scrollHandler);
-    return () => window.removeEventListener('scroll', scrollHandler);
-  }, [top]);
 
   const handleClickOutside = () => {
     setIsMenuOpen(false)
   }
-
-  useOnClickOutside(ref, handleClickOutside);
 
   const loginButton = useCallback((className?: string, textClassName?: string) => {
     return (
@@ -44,8 +32,8 @@ const Navbar = () => {
   }, [])
 
   return (
-    <nav className={`navbar sticky top-0 flex flex-col items-center py-4 lg:py-4 px-4 lg:px-40 bg-white z-50 ${!top && `shadow-md`}`}>
-      <div className="container flex flex-row justify-between items-center">
+    <div>
+      <nav className="navbar flex flex-row gap-16 container mx-auto py-4 px-6 lg:px-40 justify-between">
         {/* logo */}
         <Logo />
 
@@ -65,15 +53,12 @@ const Navbar = () => {
         {loginButton("hidden lg:block w-[144px] border-primary-500 bg-white hover:border-primary-500 hover:scale-105", "text-primary-500")}
 
         {/* mobile menu trigger */}
-        <IconMenu2 id="menu" onClick={() => {
-          console.log("click burger menu")
-          setIsMenuOpen(isMenuOpen ? false : true);
-        }} className="lg:hidden cursor-pointer z-20" />
-      </div>
+        <IconMenu2 id="menu" onClick={() => setIsMenuOpen(isMenuOpen ? false : true)} className="lg:hidden cursor-pointer z-20" />
+      </nav>
 
       {/* mobile menu */}
       {isMenuOpen && (
-        <div ref={ref} className="navbar-links lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
+        <nav ref={ref} className="navbar-links lg:hidden flex flex-col absolute top-[56px] border w-[96%] bg-white transition z-10 shadow-md rounded-lg overflow-hidden">
           {menu.map((item) => (
             <Link
               key={item.href}
@@ -86,9 +71,9 @@ const Navbar = () => {
           ))}
 
           {loginButton("m-2 py-2 h-fit bg-primary-500")}
-        </div>
+        </nav>
       )}
-    </nav>
+    </div>
   )
 }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { google } from "googleapis";
 // import serviceAccount from "../../../../service-account.json";
+import chalk from "chalk";
 
 export const getGoogleClient = (origin: string) => {
   const serviceAccount = {
@@ -24,21 +25,17 @@ export async function GET(req: NextRequest) {
     const oauth2Client = getGoogleClient(origin)
 
     // generate a url that asks permissions for Blogger and Google Calendar scopes
-    const scopes = [
-      "https://www.googleapis.com/auth/webmasters",
-      "https://www.googleapis.com/auth/indexing",
-      // "openid",
-      // "https://www.googleapis.com/auth/userinfo.email",
-      // "https://www.googleapis.com/auth/userinfo.profile"
-    ];
+    const scopes = "openid email profile https://www.googleapis.com/auth/webmasters https://www.googleapis.com/auth/indexing";
 
     const url = oauth2Client.generateAuthUrl({
       // 'online' (default) or 'offline' (gets refresh_token)
-      access_type: 'online',
+      access_type: 'offline',
       response_type: "code",
-      // If you only need one scope you can pass it as a string
+      include_granted_scopes: true,
       scope: scopes
     });
+
+    console.log(chalk.bgBlue(url))
 
     return NextResponse.json({ url })
   } catch (e) {

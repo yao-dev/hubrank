@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import ProductHuntBadge from "@/components/ProductHuntBadge/ProductHuntBadge";
 
 const menu = [
   { href: "#features", link: "Features" },
   // { href: "#testimonials", link: "Testimonials" },
   // { href: "#faq", link: "Faq" },
   { href: "#pricing", link: "Pricing" },
+  { href: "/glossary", link: "Glossary" },
 ]
 
 const legals = [
@@ -20,8 +22,10 @@ const Footer = () => {
         <div className="flex flex-col gap-6">
           <Logo />
 
+          <ProductHuntBadge />
+
           <p className="font-light text-zinc-600 w-72">
-            Create blogs, and socials with no SEO expertise in just few clicks.
+            Generate SEO blogs, social media captions & replies in just few clicks.
           </p>
 
           <div className="flex flex-row gap-6">
@@ -31,10 +35,10 @@ const Footer = () => {
         </div>
 
         <div className="flex gap-12">
-          <div className="flex flex-col gap-6">
-            <p className="uppercase font-semibold">links</p>
+          <div className="flex flex-col gap-4">
+            <p className="font-semibold">Links</p>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               {menu.map((item) => {
                 return (
                   <Link
@@ -55,10 +59,28 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6">
-            <p className="uppercase font-semibold text-xs">legal</p>
+          {/* <div className="flex flex-col gap-4">
+            <p className="font-semibold">Alternatives</p>
 
-            <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-2">
+              {competitorList.map((item) => {
+                return (
+                  <Link
+                    key={item.slug}
+                    href={`/alternatives/${item.slug}`}
+                    className="hover:text-primary-500 font-light"
+                  >
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </div>
+          </div> */}
+
+          <div className="flex flex-col gap-4">
+            <p className="font-semibold">Legal</p>
+
+            <div className="flex flex-col gap-2">
               {legals.map((item) => {
                 return (
                   <Link
