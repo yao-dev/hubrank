@@ -148,7 +148,7 @@ export default function Login() {
         <Card className='border bg-white lg:border-none w-3/4 lg:w-2/3 xl:w-1/2'>
           <p style={{ margin: 0, textAlign: "center" }}>
             <Image
-              src="/brand-logo-short.png"
+              src="/brand-logo-short.webp"
               width={35}
               preview={false}
               style={{ marginBottom: 24 }}

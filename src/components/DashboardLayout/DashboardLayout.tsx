@@ -15,10 +15,8 @@ import {
   IconMessage,
   IconTextCaption,
   IconSpeakerphone,
-  IconTimeline,
 } from '@tabler/icons-react';
 import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
-import InitClarityTracking from '../InitClarityTracking/InitClarityTracking';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
@@ -228,7 +226,7 @@ export default function DashboardLayout({
           <Flex align='center' style={{ padding: 16, paddingLeft: 28 }}>
             <Link href="/dashboard" prefetch>
               <Image
-                src="/brand-logo-white.png"
+                src="/brand-logo-white.webp"
                 preview={false}
                 width={125}
               />

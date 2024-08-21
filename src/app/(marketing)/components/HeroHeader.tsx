@@ -139,14 +139,6 @@ const HeroHeader = () => {
 
         {/* demo/screenshot */}
         <FeaturesPreview />
-
-
-        {/* <div className="p-2 lg:p-3 bg-white rounded-xl border-2 border-slate-200 shadow-lg w-full">
-          <img
-            src="/screenshot-blog-posts.png"
-            className="rounded-lg border-2 border-slate-200 w-full object-cover"
-          />
-        </div> */}
       </div>
     </header>
   )

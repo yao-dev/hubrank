@@ -1,9 +1,14 @@
+import dynamic from "next/dynamic";
+import { Spin } from "antd";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HeroHeader from "./components/HeroHeader";
 import Features from "./components/Features";
-import Pricing from "./components/Pricing";
 import "./style.css";
+
+const Pricing = dynamic(() => import('./components/Pricing'), {
+  loading: () => <Spin spinning />,
+})
 
 export default function LandingPage() {
   return (
