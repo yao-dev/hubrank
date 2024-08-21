@@ -601,10 +601,6 @@ export const keywordsMap = {
     keyword: "Content Gap Analysis",
     definition: "The process of identifying content that is missing or underperforming on your site compared to competitors, and creating new content to fill those gaps."
   },
-  "content-optimization": {
-    keyword: "Content Optimization",
-    definition: "The process of making your content as effective as possible, often through SEO, keyword targeting, and improving user engagement."
-  },
   "content-personalization": {
     keyword: "Content Personalization",
     definition: "The practice of tailoring content to individual users based on their preferences, behaviors, and demographics, often using data and automation tools."
@@ -636,10 +632,6 @@ export const keywordsMap = {
   "click-through-rate": {
     keyword: "Click-Through Rate (CTR)",
     definition: "The percentage of users who click on a specific link or ad, used to measure the effectiveness of marketing efforts."
-  },
-  "bounce-rate": {
-    keyword: "Bounce Rate",
-    definition: "The percentage of visitors who leave a website after viewing only one page, often used as a measure of site engagement."
   },
   "conversion-tracking": {
     keyword: "Conversion Tracking",
@@ -764,6 +756,326 @@ export const keywordsMap = {
   "welcome-email": {
     keyword: "Welcome Email",
     definition: "An email sent to new subscribers or customers, typically to introduce them to your brand and encourage engagement."
+  },
+  "follow-up-email": {
+    keyword: "Follow-Up Email",
+    definition: "An email sent after an initial contact or transaction, often to nurture leads, confirm purchases, or encourage further engagement."
+  },
+  "email-segmentation": {
+    keyword: "Email Segmentation",
+    definition: "The practice of dividing your email list into smaller groups based on criteria like behavior, demographics, or purchase history, allowing for more targeted campaigns."
+  },
+  "email-automation": {
+    keyword: "Email Automation",
+    definition: "The use of software to automatically send emails based on triggers, such as user behavior or specific dates."
+  },
+  "email-newsletter": {
+    keyword: "Email Newsletter",
+    definition: "A regularly scheduled email sent to subscribers that typically includes content updates, news, and promotions."
+  },
+  "mobile-marketing": {
+    keyword: "Mobile Marketing",
+    definition: "A multi-channel digital marketing strategy aimed at reaching users on their smartphones, tablets, and other mobile devices."
+  },
+  "sms-marketing": {
+    keyword: "SMS Marketing",
+    definition: "The use of text messages to deliver marketing messages, promotions, and alerts to customers' mobile phones."
+  },
+  "app-marketing": {
+    keyword: "App Marketing",
+    definition: "The process of promoting a mobile app to increase downloads, user engagement, and retention."
+  },
+  "push-notifications": {
+    keyword: "Push Notifications",
+    definition: "Messages sent to a user's device from an app or website, often used to engage users and drive them back to the app or site."
+  },
+  "location-based-services": {
+    keyword: "Location-Based Services (LBS)",
+    definition: "Services that use a user's physical location to deliver personalized content, offers, or information, often through mobile apps."
+  },
+  "qr-code-marketing": {
+    keyword: "QR Code Marketing",
+    definition: "The use of QR codes in marketing campaigns to direct users to specific content, offers, or landing pages when scanned with a smartphone."
+  },
+  "mobile-app": {
+    keyword: "Mobile App",
+    definition: "A software application designed to run on mobile devices, often used for delivering content, services, or functionality to users on the go."
+  },
+  "mobile-ads": {
+    keyword: "Mobile Ads",
+    definition: "Advertisements designed to be displayed on mobile devices, often using formats like banners, interstitials, and in-app ads."
+  },
+  "omni-channel-marketing": {
+    keyword: "Omni-Channel Marketing",
+    definition: "A strategy that integrates multiple marketing channels to provide a seamless customer experience across all touchpoints."
+  },
+  "multi-channel-marketing": {
+    keyword: "Multi-Channel Marketing",
+    definition: "A strategy that uses multiple marketing channels to reach customers, often including online, offline, and mobile channels."
+  },
+  "cross-channel-marketing": {
+    keyword: "Cross-Channel Marketing",
+    definition: "A strategy that ensures consistency and integration across multiple marketing channels, creating a cohesive brand experience."
+  },
+  "integrated-marketing": {
+    keyword: "Integrated Marketing",
+    definition: "A strategy that combines various marketing methods, channels, and tools to deliver a unified and consistent message to the target audience."
+  },
+  "marketing-analytics": {
+    keyword: "Marketing Analytics",
+    definition: "The practice of measuring, managing, and analyzing marketing performance to maximize effectiveness and optimize return on investment (ROI)."
+  },
+  "customer-insights": {
+    keyword: "Customer Insights",
+    definition: "Data-driven understanding of your customers' behaviors, preferences, and needs, used to inform marketing strategies and product development."
+  },
+  "kpi": {
+    keyword: "Key Performance Indicator (KPI)",
+    definition: "A measurable value that demonstrates how effectively a company is achieving key business objectives, often used to track the success of marketing campaigns."
+  },
+  "roi": {
+    keyword: "Return on Investment (ROI)",
+    definition: "A performance metric used to evaluate the efficiency or profitability of an investment, calculated by dividing the net profit by the cost of the investment."
+  },
+  "customer-retention": {
+    keyword: "Customer Retention",
+    definition: "The ability of a company to retain its customers over time, often measured by repeat purchase rates and customer loyalty metrics."
+  },
+  "customer-acquisition-cost": {
+    keyword: "Customer Acquisition Cost (CAC)",
+    definition: "The cost associated with acquiring a new customer, often calculated by dividing the total marketing and sales expenses by the number of new customers acquired."
+  },
+  "customer-lifetime-value": {
+    keyword: "Customer Lifetime Value (CLTV)",
+    definition: "The total revenue a company can expect to earn from a customer over the course of their relationship, often used to guide marketing and retention strategies."
+  },
+  "customer-experience": {
+    keyword: "Customer Experience (CX)",
+    definition: "The overall perception a customer has of their interactions with a brand, from awareness to post-purchase support."
+  },
+  "customer-journey-mapping": {
+    keyword: "Customer Journey Mapping",
+    definition: "The process of creating a visual representation of the steps a customer takes when interacting with your brand, used to identify opportunities for improvement."
+  },
+  "voice-search": {
+    keyword: "Voice Search",
+    definition: "The use of voice recognition technology to search the web, often through devices like smartphones, smart speakers, and virtual assistants."
+  },
+  "conversational-marketing": {
+    keyword: "Conversational Marketing",
+    definition: "A personalized approach to marketing that uses real-time conversations, often through chatbots or messaging apps, to engage customers and drive conversions."
+  },
+  "chatbot-marketing": {
+    keyword: "Chatbot Marketing",
+    definition: "The use of automated chatbots to engage with customers, answer questions, and guide them through the buying process."
+  },
+  "voice-assistant-marketing": {
+    keyword: "Voice Assistant Marketing",
+    definition: "Marketing strategies that leverage voice-activated assistants, like Amazon's Alexa or Google Assistant, to deliver content, offers, or information to users."
+  },
+  "augmented-reality-marketing": {
+    keyword: "Augmented Reality Marketing",
+    definition: "The use of AR technology to create interactive and immersive experiences for customers, often through mobile apps or in-store displays."
+  },
+  "virtual-reality-marketing": {
+    keyword: "Virtual Reality Marketing",
+    definition: "The use of VR technology to create immersive and engaging marketing experiences, often through branded virtual environments or experiences."
+  },
+  "interactive-content": {
+    keyword: "Interactive Content",
+    definition: "Content that requires user participation, such as quizzes, polls, surveys, and interactive videos, often used to increase engagement and personalization."
+  },
+  "experiential-marketing": {
+    keyword: "Experiential Marketing",
+    definition: "A strategy that creates immersive and memorable experiences for customers, often through events, pop-ups, or interactive installations."
+  },
+  "gamification-marketing": {
+    keyword: "Gamification Marketing",
+    definition: "The use of game-like elements, such as points, rewards, and challenges, in marketing campaigns to engage and motivate customers."
+  },
+  "micro-moments": {
+    keyword: "Micro-Moments",
+    definition: "Instances when consumers turn to their devices to learn, do, buy, or discover something quickly, often used to inform mobile marketing strategies."
+  },
+  "moment-marketing": {
+    keyword: "Moment Marketing",
+    definition: "A strategy that involves creating and delivering relevant content based on current events, trends, or consumer behavior in real-time."
+  },
+  "proximity-marketing": {
+    keyword: "Proximity Marketing",
+    definition: "A strategy that uses technologies like Bluetooth, Wi-Fi, and beacons to deliver targeted content or offers to users based on their physical location."
+  },
+  "hyperlocal-marketing": {
+    keyword: "Hyperlocal Marketing",
+    definition: "A strategy that focuses on targeting customers in a very specific, geographically limited area, often through local SEO, social media, and mobile marketing."
+  },
+  "online-reputation-management": {
+    keyword: "Online Reputation Management (ORM)",
+    definition: "The practice of monitoring and managing how your brand is perceived online, often through social media monitoring, review management, and content creation."
+  },
+  "brand-monitoring": {
+    keyword: "Brand Monitoring",
+    definition: "The process of tracking and analyzing mentions of your brand online, often used to manage reputation and gather customer insights."
+  },
+  "sentiment-analysis": {
+    keyword: "Sentiment Analysis",
+    definition: "The use of natural language processing and machine learning to analyze the sentiment behind online mentions, such as social media posts or reviews."
+  },
+  "community-management": {
+    keyword: "Community Management",
+    definition: "The practice of building and maintaining relationships with your audience or customer base, often through social media, forums, and online communities."
+  },
+  "customer-advocacy": {
+    keyword: "Customer Advocacy",
+    definition: "A strategy that focuses on building strong relationships with customers to turn them into advocates who promote your brand through word-of-mouth and testimonials."
+  },
+  "advocacy-marketing": {
+    keyword: "Advocacy Marketing",
+    definition: "A strategy that leverages satisfied customers to promote your brand, often through testimonials, reviews, and word-of-mouth."
+  },
+  "brand-ambassadors": {
+    keyword: "Brand Ambassadors",
+    definition: "Individuals who represent and promote your brand, often through social media, events, and other public appearances, helping to build brand awareness and credibility."
+  },
+  "micro-influencers": {
+    keyword: "Micro-Influencers",
+    definition: "Influencers with a smaller but highly engaged following, often used in marketing campaigns to reach niche audiences."
+  },
+  "nano-influencers": {
+    keyword: "Nano-Influencers",
+    definition: "Influencers with a very small but highly engaged following, often used for hyper-targeted marketing campaigns."
+  },
+  "ugc": {
+    keyword: "User-Generated Content (UGC)",
+    definition: "Content created by users or customers, often shared on social media, and used by brands to promote products, build trust, and engage with their audience."
+  },
+  "content-moderation": {
+    keyword: "Content Moderation",
+    definition: "The practice of monitoring and managing user-generated content on your platforms, ensuring it meets community guidelines and brand standards."
+  },
+  "social-monitoring": {
+    keyword: "Social Monitoring",
+    definition: "The process of tracking and analyzing social media activity related to your brand, often used to measure engagement and identify opportunities."
+  },
+  "social-media-crisis-management": {
+    keyword: "Social Media Crisis Management",
+    definition: "The process of managing and mitigating the impact of negative events or backlash on social media, often through timely and strategic communication."
+  },
+  "social-media-engagement": {
+    keyword: "Social Media Engagement",
+    definition: "The level of interaction and involvement your audience has with your social media content, often measured by likes, comments, shares, and other actions."
+  },
+  "social-media-integration": {
+    keyword: "Social Media Integration",
+    definition: "The practice of incorporating social media elements into your website, apps, or other platforms, often to encourage sharing and increase engagement."
+  },
+  "social-media-management": {
+    keyword: "Social Media Management",
+    definition: "The practice of creating, scheduling, and publishing content on social media platforms, often including community management and analytics."
+  },
+  "social-media-advertising": {
+    keyword: "Social Media Advertising",
+    definition: "The use of paid promotions on social media platforms to reach a targeted audience, often using formats like sponsored posts, banners, and video ads."
+  },
+  "sponsored-content": {
+    keyword: "Sponsored Content",
+    definition: "Content that is created or promoted in partnership with a brand, often appearing as a native part of the platform's experience."
+  },
+  "social-selling": {
+    keyword: "Social Selling",
+    definition: "The practice of using social media to connect with potential customers, build relationships, and guide them through the sales process."
+  },
+  "e-commerce": {
+    keyword: "E-Commerce",
+    definition: "The buying and selling of goods or services online, often through a dedicated website or platform."
+  },
+  "online-marketplace": {
+    keyword: "Online Marketplace",
+    definition: "A website or app that allows multiple vendors to sell their products or services to customers, often acting as a third-party platform."
+  },
+  "ecommerce-platform": {
+    keyword: "E-commerce Platform",
+    definition: "A software solution that enables businesses to build and manage an online store, often including tools for product listing, payment processing, and order management."
+  },
+  "product-listing": {
+    keyword: "Product Listing",
+    definition: "The process of adding products to an online store or marketplace, often including descriptions, images, prices, and other details."
+  },
+  "product-descriptions": {
+    keyword: "Product Descriptions",
+    definition: "The written content that describes the features, benefits, and details of a product, often used to inform and persuade potential customers."
+  },
+  "product-visuals": {
+    keyword: "Product Visuals",
+    definition: "The images, videos, and other visual elements used to showcase a product online, often aimed at providing a clear and appealing representation."
+  },
+  "ecommerce-optimization": {
+    keyword: "E-commerce Optimization",
+    definition: "The process of improving various aspects of an online store to increase sales, often including SEO, UX design, and conversion rate optimization."
+  },
+  "checkout-process": {
+    keyword: "Checkout Process",
+    definition: "The series of steps a customer takes to complete a purchase online, often including payment and shipping details."
+  },
+  "payment-gateway": {
+    keyword: "Payment Gateway",
+    definition: "A service that processes credit card payments for e-commerce transactions, often providing a secure connection between the customer and the merchant."
+  },
+  "shopping-cart": {
+    keyword: "Shopping Cart",
+    definition: "A feature on e-commerce websites that allows customers to select and store items they wish to purchase, often leading to the checkout process."
+  },
+  "product-reviews": {
+    keyword: "Product Reviews",
+    definition: "Customer feedback on a product, often displayed on the product page to help inform potential buyers."
+  },
+  "customer-reviews": {
+    keyword: "Customer Reviews",
+    definition: "Feedback from customers about their experience with a product or service, often used to build trust and influence future purchases."
+  },
+  "user-generated-reviews": {
+    keyword: "User-Generated Reviews",
+    definition: "Reviews and ratings created by customers, often shared on e-commerce platforms or review sites, and used to inform other potential buyers."
+  },
+  "ecommerce-conversion-rate": {
+    keyword: "E-commerce Conversion Rate",
+    definition: "The percentage of website visitors who complete a purchase, often used as a key metric to measure the success of an online store."
+  },
+  "average-order-value": {
+    keyword: "Average Order Value (AOV)",
+    definition: "The average amount of money spent by customers per transaction, often used to measure the effectiveness of marketing efforts and upselling strategies."
+  },
+  "customer-loyalty": {
+    keyword: "Customer Loyalty",
+    definition: "The likelihood of customers returning to make repeat purchases, often influenced by factors like product satisfaction, customer service, and brand trust."
+  },
+  "loyalty-program": {
+    keyword: "Loyalty Program",
+    definition: "A marketing strategy that rewards repeat customers with discounts, points, or other incentives, aimed at increasing customer retention and lifetime value."
+  },
+  "subscription-model": {
+    keyword: "Subscription Model",
+    definition: "A business model where customers pay a recurring fee to access products or services, often used in e-commerce for items like subscription boxes."
+  },
+  "dropshipping": {
+    keyword: "Dropshipping",
+    definition: "A fulfillment method where an online store sells products without holding inventory, instead relying on third-party suppliers to ship directly to customers."
+  },
+  "online-payment": {
+    keyword: "Online Payment",
+    definition: "The process of making a payment for goods or services over the internet, often through credit cards, digital wallets, or bank transfers."
+  },
+  "digital-wallets": {
+    keyword: "Digital Wallets",
+    definition: "Electronic devices or software that allow users to store and manage payment information, often used for online and mobile payments."
+  },
+  "shipping-methods": {
+    keyword: "Shipping Methods",
+    definition: "The options available for delivering products to customers, often including standard, expedited, and international shipping."
+  },
+  "order-fulfillment": {
+    keyword: "Order Fulfillment",
+    definition: "The process of receiving, processing, and delivering orders to customers, often including inventory management, packaging, and shipping."
   },
 }
 
