@@ -10,7 +10,6 @@ const FeaturesPreview = dynamic(() => import('./FeaturesPreview'), {
   loading: () => <Spin spinning />,
 })
 
-
 function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, delay = 2000) {
   const [text, setText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);

@@ -1,10 +1,15 @@
 import type { Metadata, ResolvingMetadata } from 'next';
-import FeaturesPreview from "../../components/FeaturesPreview";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import GetStarted from "../../components/GetStarted";
 import { competitors } from "@/options";
 import CallToActionBanner from '@/components/CallToActionBanner/CallToActionBanner';
+import dynamic from 'next/dynamic';
+import { Spin } from 'antd';
+
+const FeaturesPreview = dynamic(() => import('../../components/FeaturesPreview'), {
+  loading: () => <Spin spinning />,
+})
 
 type Props = {
   params: { competitor: string }

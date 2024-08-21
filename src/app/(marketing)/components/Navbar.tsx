@@ -1,9 +1,13 @@
 'use client';;
-import { Button } from "antd";
+import { Button, Spin } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
-import Logo from "./Logo";
+import dynamic from "next/dynamic";
+
+const Logo = dynamic(() => import('./Logo'), {
+  loading: () => <Spin spinning />,
+})
 
 const menu = [
   { href: "/#features", link: "Features" },

@@ -1,6 +1,11 @@
 import Link from "next/link";
-import Logo from "./Logo";
 import ProductHuntBadge from "@/components/ProductHuntBadge/ProductHuntBadge";
+import dynamic from "next/dynamic";
+import { Spin } from "antd";
+
+const Logo = dynamic(() => import('./Logo'), {
+  loading: () => <Spin spinning />,
+})
 
 const menu = [
   { href: "#features", link: "Features" },
