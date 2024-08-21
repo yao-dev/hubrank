@@ -1,4 +1,4 @@
-const url = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://usehubrank.com";
+const url = process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://www.usehubrank.com";
 
 export const siteConfig = {
   name: "Hubrank",
