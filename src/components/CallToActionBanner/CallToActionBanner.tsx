@@ -29,7 +29,7 @@ const CallToActionBanner = ({
         )}
       </div>
 
-      <div className='hidden xl:flex absolute -right-[600px] bottom-[50px] p-2 bg-white/10 rounded-lg w-fit h-fit -rotate-12'>
+      <div className='hidden xl:flex absolute -right-[600px] bottom-0 p-2 bg-white/10 rounded-lg w-fit h-fit -rotate-12'>
         <img src={`/marketing/${imageName}.png`} className='rounded-md w-[1000px]' />
       </div>
     </div>
