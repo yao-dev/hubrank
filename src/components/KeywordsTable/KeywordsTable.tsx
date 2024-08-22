@@ -149,13 +149,33 @@ const KeywordsTable = () => {
         key: 'language',
         width: 50,
         render: (_value: any, record: any) => {
+          const StarComponent = savedKeywordsString?.includes(record.keyword) ? IconStarFilled : IconStar;
+          const favoriteIcon = !showSavedKeywords && (
+            <Button
+              icon={(
+                <StarComponent
+                  size={16}
+                  style={{ color: savedKeywordsString?.includes(record.keyword) ? "#5D5FEF" : undefined }}
+                />
+              )}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+              onClick={() => toggleSaveKeyword.mutate(record)}
+            />
+          )
+
           if (showSavedKeywords && !record?.languages?.image || !showSavedKeywords && !activeLanguage?.image) {
             return (
-              <span>-</span>
+              <div className='flex flex-row items-center gap-2'>
+                {favoriteIcon}
+                <span>-</span>
+              </div>
             )
           }
           return (
-            <Image src={showSavedKeywords ? record.languages.image : activeLanguage?.image} width={25} height={25} preview={false} />
+            <div className='flex flex-row items-center gap-2'>
+              {favoriteIcon}
+              <Image src={showSavedKeywords ? record.languages.image : activeLanguage?.image} width={25} height={25} preview={false} />
+            </div>
           )
         },
       },
@@ -267,7 +287,7 @@ const KeywordsTable = () => {
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => {
-          const StarComponent = savedKeywordsString?.includes(record.keyword) ? IconStarFilled : IconStar;
+          // const StarComponent = savedKeywordsString?.includes(record.keyword) ? IconStarFilled : IconStar;
           return (
             <Space size="small" align='center'>
               <Button
@@ -281,7 +301,8 @@ const KeywordsTable = () => {
               >
                 use keyword
               </Button>
-              {showSavedKeywords ? (
+              {showSavedKeywords && <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />}
+              {/* {showSavedKeywords ? (
                 <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
               ) : (
                 <Button
@@ -294,7 +315,7 @@ const KeywordsTable = () => {
                   style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
                   onClick={() => toggleSaveKeyword.mutate(record)}
                 />
-              )}
+              )} */}
             </Space>
           )
         },

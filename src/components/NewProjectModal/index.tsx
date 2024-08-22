@@ -38,7 +38,8 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         ...values,
         language_id: +values.language_id,
         user_id: userId,
-        website: transformUrl(values.website)
+        website: transformUrl(values.website),
+        blog_path: `${transformUrl(values.website)}/`,
       })
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),

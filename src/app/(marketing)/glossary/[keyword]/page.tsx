@@ -24,7 +24,8 @@ export async function generateMetadata(
   const data = keywordsMap[keyword.toLowerCase()];
 
   return {
-    title: data ? `${data.keyword} definition` : "Definition",
+    title: data?.keyword ?? undefined,
+    description: data?.definition ?? undefined,
     openGraph: {
       images: previousImages
     },

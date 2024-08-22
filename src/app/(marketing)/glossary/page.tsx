@@ -6,7 +6,8 @@ import KeywordList from "./[keyword]/keyword-list";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Glossary"
+  title: "Glossary",
+  description: "Essential terms related to SEO, content marketing, and social media. This glossary offers clear definitions to help you master key digital marketing concepts."
 }
 
 export default function Glossary() {
