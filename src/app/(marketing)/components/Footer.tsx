@@ -5,6 +5,7 @@ import { Spin } from "antd";
 import { siteConfig } from "@/config/site";
 import forms from "../tools/[keyword]/forms";
 import { slugify } from "@/helpers/text";
+import { competitorList } from "@/options";
 
 const Logo = dynamic(() => import('./Logo'), {
   loading: () => <Spin spinning />,
@@ -67,7 +68,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
             <p className="font-semibold">Alternatives</p>
 
             <div className="grid grid-cols-2 gap-2">
@@ -83,7 +84,7 @@ const Footer = () => {
                 )
               })}
             </div>
-          </div> */}
+          </div>
 
           <div className="flex flex-col gap-4">
             <p className="font-semibold">Free tools</p>
