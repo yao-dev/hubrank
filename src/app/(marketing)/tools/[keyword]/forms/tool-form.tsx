@@ -1,11 +1,12 @@
 "use client";
 import { ReactNode, useState } from "react";
-import { Alert, Button, Form, Input, message, Select } from "antd";
+import { Alert, Button, Form, Input, message, Select, Skeleton } from "antd";
 import Label from "@/components/Label/Label";
 import { headingsCount, headlineTypes } from "@/options";
 import axios from "axios";
 import GoogleSignInButton from "@/components/GoogleSignInButton/GoogleSignInButton";
 import { useReCaptcha } from "next-recaptcha-v3";
+import { IconCopy } from "@tabler/icons-react";
 
 type Props = {
   name: "hashtags" | "headlines" | "content_ideas" | "meta_description" | "backlink_checker" | "outline";
@@ -17,13 +18,14 @@ const ToolForm = ({ children, name, submitText }: Props) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRateLimited, setIsRateLimited] = useState(false);
-  const [data, setData] = useState();
+  const [data, setData] = useState([]);
   const { executeRecaptcha } = useReCaptcha();
 
   const onSubmit = async (values: any) => {
     try {
       setIsRateLimited(false);
       setIsSubmitting(true);
+      setData([]);
 
       const token = await executeRecaptcha(`form_${name}`);
       const { data: recaptcha } = await axios.post("/api/recaptcha", { token });
@@ -95,7 +97,34 @@ const ToolForm = ({ children, name, submitText }: Props) => {
         </div>
       </div>
 
-      {/* TODO show data/result here */}
+      {isSubmitting && (
+        <Skeleton active loading />
+      )}
+
+      {/* TODO show data/result here per form type */}
+      <div className="grid grid-cols-2 gap-4 text-normal">
+        {data.map((item) => {
+          return (
+            <div>
+              <div key={item} className="relative p-4 border rounded-lg overflow-hidden">
+                <p className="p-4">
+                  {item}
+                </p>
+
+                <div
+                  onClick={() => {
+                    navigator.clipboard.writeText(item);
+                    message.success("Copied to clipboard!");
+                  }}
+                  className="absolute z-10 top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-primary-500/70 cursor-pointer transition-all"
+                >
+                  <IconCopy stroke={1.2} className="w-10 h-10" />
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -104,15 +133,15 @@ export const InputTopic = () => (
   <Form.Item
     name="topic"
     label={<Label name="Enter your topic or keyword" />}
-    rules={[{ type: "string", max: 50, required: true, message: "Add a topic or keyword" }]}
+    rules={[{ type: "string", max: 100, required: true, message: "Add a topic or keyword" }]}
 
   >
     <Input
       placeholder="Enter a topic"
       allowClear
       count={{
-        show: false,
-        max: 50,
+        show: true,
+        max: 100,
       }}
     />
   </Form.Item>
