@@ -69,24 +69,6 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col gap-4">
-            <p className="font-semibold">Alternatives</p>
-
-            <div className="grid grid-cols-2 gap-2">
-              {competitorList.map((item) => {
-                return (
-                  <Link
-                    key={item.slug}
-                    href={`/alternatives/${item.slug}`}
-                    className="hover:text-primary-500"
-                  >
-                    {item.name}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
             <p className="font-semibold">Free tools</p>
 
             <div className="flex flex-col gap-2">
@@ -98,6 +80,24 @@ const Footer = () => {
                     className="hover:text-primary-500"
                   >
                     {form.title}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <p className="font-semibold">Alternatives</p>
+
+            <div className="grid grid-cols-2 gap-2">
+              {competitorList.map((item) => {
+                return (
+                  <Link
+                    key={item.slug}
+                    href={`/alternatives/${item.slug}`}
+                    className="hover:text-primary-500"
+                  >
+                    {item.name}
                   </Link>
                 )
               })}
