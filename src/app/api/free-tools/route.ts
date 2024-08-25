@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 import Anthropic from "@anthropic-ai/sdk";
 import dJSON from "dirty-json";
 import { models } from "../AI";
+import { getCompetitors } from "@/helpers/seo";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_URL ?? "",
@@ -42,8 +43,16 @@ export async function POST(req: NextRequest) {
         prompt = `Write 10 hashtags for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the hashtags (string) only`;
         break;
       case 'outline':
-        prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the headings (string) only`
+        prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\nOutput the outline using a html ul list (no heading tags) wrapped in \`\`\`html\`\`\`.\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
         break;
+      case 'meta_description':
+        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description} with ${body.headings}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the descriptions (string) only`;
+        break;
+      case 'website_competitors': {
+        const competitors = await getCompetitors(body.website_url);
+        console.log(competitors)
+        return NextResponse.json(competitors, { headers });
+      }
     }
 
     console.log({ body, prompt })
@@ -65,10 +74,23 @@ export async function POST(req: NextRequest) {
       metadata: { user_id: ip }
     });
 
-    const content = completion.content[0].text
-    console.log(content)
+    let content = completion.content[0].text
 
-    return NextResponse.json(dJSON.parse(content).values, { headers })
+    switch (body.name) {
+      case 'headlines':
+      case 'hashtags':
+      case 'meta_description':
+        content = dJSON.parse(content).values;
+        break;
+      case 'outline': {
+        const markup = "html";
+        const html = content.slice(content.indexOf(markup) + markup.length, content.lastIndexOf("```"));
+        content = [html];
+        break;
+      }
+    }
+
+    return NextResponse.json(content, { headers });
   } catch (e) {
     console.log(e)
     return NextResponse.json(e)

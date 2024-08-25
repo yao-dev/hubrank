@@ -2,6 +2,7 @@ import { siteConfig } from "@/config/site";
 import { MetadataRoute } from "next";
 import { keywords } from "./(marketing)/glossary/[keyword]/constants";
 import { formSlugs } from "./(marketing)/tools/[keyword]/forms";
+import { competitorList } from "@/options";
 
 const getSitemapRoute = (path?: string) => {
   return {
@@ -21,6 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     getSitemapRoute("/glossary"),
     ...keywords.map((keyword) => getSitemapRoute(`/glossary/${keyword.slug}`)),
     ...formSlugs.map((keyword: string) => getSitemapRoute(`/tools/${keyword}`)),
+    ...competitorList.map((competitor) => getSitemapRoute(`/alternatives/${competitor.slug}`)),
     // TODO: add alternatives urls
   ]
 }

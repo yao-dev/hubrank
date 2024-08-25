@@ -6,13 +6,12 @@ import {
   IconBrandYoutube,
   IconH1,
   IconHeading,
-  IconLink,
   IconSignature,
 } from "@tabler/icons-react";
 import { IconHash } from "@tabler/icons-react";
 import { slugify } from '@/helpers/text';
 import GetStarted from '@/app/(marketing)/components/GetStarted';
-import ToolForm, { InputHeadings, InputHeadlineType, InputTopic, InputWebsiteUrl } from './tool-form';
+import ToolForm, { InputDescription, InputHeadings, InputHeadlineType, InputTopic } from './tool-form';
 
 // TODO:
 // dynamic metadata
@@ -228,9 +227,9 @@ const forms = [
     title: "Linkedin headline generator",
     subtitle: "Stand out on LinkedIn with compelling headlines. Create professional, attention-grabbing headlines that enhance your profile and attract connections.",
     form: (
-      <ToolForm name="headlines" submitText='Get headlines ✨'>
+      <ToolForm name="headlines" submitText='Get headlines ✨' initialValues={{ headline_type: "linkedin" }}>
         <InputTopic />
-        <InputHeadlineType />
+        <InputHeadlineType hidden />
         {/* <InputEmail /> */}
       </ToolForm>
     ),
@@ -258,7 +257,7 @@ const forms = [
     subtitle: "Generate SEO-optimized meta descriptions that drive clicks. Improve your website's search engine visibility with concise, engaging descriptions.",
     form: (
       <ToolForm name="meta_description" submitText='Get meta description ✨'>
-        <InputTopic />
+        <InputDescription />
         {/* <InputEmail /> */}
       </ToolForm>
     ),
@@ -274,47 +273,69 @@ const forms = [
       "youtube description generator",
     ],
   },
-  {
-    id: "backlinks_checker",
-    icon: (props: any) => <IconLink {...props} />,
-    title: "Backlinks checker",
-    subtitle: "Analyze your website’s backlink profile with precision, find opportunities, and improve your SEO strategy with our backlinks checker.",
-    form: (
-      <ToolForm name="backlink_checker" submitText='Get backlinks ✨'>
-        <InputWebsiteUrl />
-        {/* <InputEmail /> */}
-      </ToolForm>
-    ),
-    cta: (
-      <CallToActionBanner
-        title="Boost your website's ranking today with Hubrank"
-        imageName="blog-post"
-        CallToAction={<GetStarted title="Try Now" className='mb-0 mx-auto xl:mx-0' />}
-      />
-    ),
-    keywords: [
-      "website backlinks",
-      "backlinks checker",
-      "website analyzer",
-      "keyword research tool",
-      "keyword generator",
-      "keyword research",
-      "google keyword research tool",
-      "backlink checker free",
-      "free backlink checker",
-      "ahrefs backlink checker",
-      "website backlink",
-      "backlinks websites",
-      "backlinks in seo",
-      "google backlink checker",
-      "free backlinks",
-      "moz backlink checker",
-      "backlink checker moz",
-      "backlink generator",
-      "backlink generation",
-      "best backlink checker"
-    ],
-  },
+  // {
+  //   id: "backlinks_checker",
+  //   icon: (props: any) => <IconLink {...props} />,
+  //   title: "Backlinks checker",
+  //   subtitle: "Analyze your website’s backlink profile with precision, find opportunities, and improve your SEO strategy with our backlinks checker.",
+  //   form: (
+  //     <ToolForm name="backlink_checker" submitText='Get backlinks ✨'>
+  //       <InputWebsiteUrl />
+  //       {/* <InputEmail /> */}
+  //     </ToolForm>
+  //   ),
+  //   cta: (
+  //     <CallToActionBanner
+  //       title="Boost your website's ranking today with Hubrank"
+  //       imageName="blog-post"
+  //       CallToAction={<GetStarted title="Try Now" className='mb-0 mx-auto xl:mx-0' />}
+  //     />
+  //   ),
+  //   keywords: [
+  //     "website backlinks",
+  //     "backlinks checker",
+  //     "website analyzer",
+  //     "keyword research tool",
+  //     "keyword generator",
+  //     "keyword research",
+  //     "google keyword research tool",
+  //     "backlink checker free",
+  //     "free backlink checker",
+  //     "ahrefs backlink checker",
+  //     "website backlink",
+  //     "backlinks websites",
+  //     "backlinks in seo",
+  //     "google backlink checker",
+  //     "free backlinks",
+  //     "moz backlink checker",
+  //     "backlink checker moz",
+  //     "backlink generator",
+  //     "backlink generation",
+  //     "best backlink checker"
+  //   ],
+  // },
+  // {
+  //   id: "website_competitors",
+  //   icon: (props: any) => <IconTournament {...props} />,
+  //   title: "Website competitors",
+  //   subtitle: "Identify and analyze your competitors alongside their ranking.",
+  //   form: (
+  //     <ToolForm name="website_competitors" submitText='Get competitors ✨'>
+  //       <InputWebsiteUrl />
+  //       {/* <InputEmail /> */}
+  //     </ToolForm>
+  //   ),
+  //   cta: (
+  //     <CallToActionBanner
+  //       title="Boost your website's ranking today with Hubrank"
+  //       imageName="blog-post"
+  //       CallToAction={<GetStarted title="Try Now" className='mb-0 mx-auto xl:mx-0' />}
+  //     />
+  //   ),
+  //   keywords: [
+  //     "website competitors"
+  //   ],
+  // },
 ];
 
 export const formSlugs = forms.map((item) => item.keywords).flat(2).map((keyword) => slugify(keyword))

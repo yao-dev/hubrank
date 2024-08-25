@@ -1,20 +1,22 @@
 "use client";
 import { ReactNode, useState } from "react";
-import { Alert, Button, Form, Input, message, Select, Skeleton } from "antd";
+import { Alert, Button, Form, Image, Input, message, Select, Skeleton } from "antd";
 import Label from "@/components/Label/Label";
 import { headingsCount, headlineTypes } from "@/options";
 import axios from "axios";
 import GoogleSignInButton from "@/components/GoogleSignInButton/GoogleSignInButton";
 import { useReCaptcha } from "next-recaptcha-v3";
-import { IconCopy } from "@tabler/icons-react";
+import { IconCopy, IconHash } from "@tabler/icons-react";
+import TiptapEditor from "@/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor";
 
 type Props = {
-  name: "hashtags" | "headlines" | "content_ideas" | "meta_description" | "backlink_checker" | "outline";
+  name: "hashtags" | "headlines" | "content_ideas" | "meta_description" | "backlink_checker" | "outline" | "website_competitors";
   children: ReactNode;
-  submitText?: string
+  submitText?: string;
+  initialValues?: any
 }
 
-const ToolForm = ({ children, name, submitText }: Props) => {
+const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => {
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRateLimited, setIsRateLimited] = useState(false);
@@ -69,6 +71,7 @@ const ToolForm = ({ children, name, submitText }: Props) => {
             onFinish={onSubmit}
             scrollToFirstError
             size="large"
+            initialValues={initialValues}
           >
             {children}
 
@@ -101,30 +104,102 @@ const ToolForm = ({ children, name, submitText }: Props) => {
         <Skeleton active loading />
       )}
 
-      {/* TODO show data/result here per form type */}
-      <div className="grid grid-cols-2 gap-4 text-normal">
-        {data.map((item) => {
-          return (
-            <div>
-              <div key={item} className="relative p-4 border rounded-lg overflow-hidden">
-                <p className="p-4">
-                  {item}
-                </p>
+      {name === "outline" && (
+        <div className="text-normal">
+          {data.map((item) => {
+            return (
+              <div className="flex justify-center">
+                <div key={item} className="relative p-4 border rounded-lg w-fit overflow-hidden">
+                  <TiptapEditor
+                    articleId={0}
+                    content={item}
+                    readOnly
+                  />
 
-                <div
-                  onClick={() => {
-                    navigator.clipboard.writeText(item);
-                    message.success("Copied to clipboard!");
-                  }}
-                  className="absolute z-10 top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-primary-500/70 cursor-pointer transition-all"
-                >
-                  <IconCopy stroke={1.2} className="w-10 h-10" />
+                  <div
+                    onClick={() => {
+                      navigator.clipboard.writeText(item);
+                      message.success("Copied to clipboard!");
+                    }}
+                    className="absolute z-10 top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-primary-500/70 cursor-pointer transition-all"
+                  >
+                    <IconCopy stroke={1.2} className="w-10 h-10" />
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
+
+
+      {name === "website_competitors" && (
+        <div className="grid grid-cols-2 gap-4 text-normal">
+          {data.map((item) => {
+            return (
+              <div>
+                <div key={item.target} className="relative p-4 border rounded-lg overflow-hidden">
+                  <div className="flex flex-row items-center justify-between gap-4">
+                    <div className="flex flex-row items-center gap-4">
+                      <Image
+                        src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://${item.target}&size=128`}
+                        width={20}
+                        height={20}
+                        preview={false}
+                      />
+                      <p className="p-4">
+                        {item.target}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-row items-center gap-2">
+                      <IconHash />
+                      <p>{item.rank}</p>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => {
+                      navigator.clipboard.writeText(item.target);
+                      message.success("Copied to clipboard!");
+                    }}
+                    className="absolute z-10 top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-primary-500/70 cursor-pointer transition-all"
+                  >
+                    <IconCopy stroke={1.2} className="w-10 h-10" />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* TODO show data/result here per form type */}
+      {name !== "outline" && name !== "website_competitors" && (
+        <div className="grid grid-cols-2 gap-4 text-normal">
+          {data.map((item) => {
+            return (
+              <div>
+                <div key={item} className="relative p-4 border rounded-lg overflow-hidden">
+                  <p className="p-4">
+                    {item}
+                  </p>
+
+                  <div
+                    onClick={() => {
+                      navigator.clipboard.writeText(item);
+                      message.success("Copied to clipboard!");
+                    }}
+                    className="absolute z-10 top-0 left-0 right-0 bottom-0 flex items-center justify-center opacity-0 hover:opacity-100 bg-primary-500/70 cursor-pointer transition-all"
+                  >
+                    <IconCopy stroke={1.2} className="w-10 h-10" />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -147,6 +222,24 @@ export const InputTopic = () => (
   </Form.Item>
 )
 
+export const InputDescription = () => (
+  <Form.Item
+    name="product_description"
+    label={<Label name="Describe your product" />}
+    rules={[{ type: "string", max: 250, required: true, message: "Add a product description" }]}
+
+  >
+    <Input
+      placeholder="Enter a product description"
+      allowClear
+      count={{
+        show: true,
+        max: 250,
+      }}
+    />
+  </Form.Item>
+)
+
 export const InputEmail = () => (
   <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Enter your email" }]}>
     <Input size="large" placeholder="Enter your email" autoComplete="on" />
@@ -163,8 +256,8 @@ export const InputHeadings = () => (
   </Form.Item>
 )
 
-export const InputHeadlineType = () => (
-  <Form.Item name="headline_type" label={<Label name="Headline type" />} rules={[{ required: true, type: "string", message: "Select a type" }]} >
+export const InputHeadlineType = (props: any = {}) => (
+  <Form.Item name="headline_type" label={<Label name="Headline type" />} rules={[{ required: true, type: "string", message: "Select a type" }]} {...props} >
     <Select
       placeholder="Headline type"
       options={headlineTypes}
