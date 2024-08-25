@@ -10,17 +10,7 @@ import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
 import { IconSparkles } from '@tabler/icons-react';
 import TiptapEditor from './TiptapEditor/TiptapEditor';
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
+import { slugify } from '@/helpers/text';
 
 const Article = ({
   params,
@@ -125,7 +115,7 @@ const Article = ({
 
                 <div className='fixed bottom-0'>
                   <div className='flex flex-col gap-1 items-center relative bottom-20 right-60'>
-                    <p className='text-center'>How do you like this article?</p>
+                    <p className='text-center'>Did you like this article?</p>
                     <div className='flex flex-row gap-3 border rounded-full p-2 w-fit shadow-lg bg-white'>
                       <span onClick={() => sendFeedback("😡")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😡</span>
                       <span onClick={() => sendFeedback("😕")} className='cursor-pointer text-4xl hover:scale-150 transition-all'>😕</span>

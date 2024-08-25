@@ -1,6 +1,6 @@
 const queryKeys = {
   project: (project_id: number) => ["projects", project_id] as const,
-  projects: (project_id?: number) => ["projects", { project_id }] as const,
+  projects: (project_id?: number | null) => ["projects", { project_id }] as const,
   topicCluster: (topic_cluster_id?: number) => ["topic_clusters", topic_cluster_id] as const,
   topicClusters: (filters: {
     project_id?: number;

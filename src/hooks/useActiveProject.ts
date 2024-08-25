@@ -1,12 +1,14 @@
 import { create } from "zustand";
 import { persist } from 'zustand/middleware';
 
+type Id = number | null;
+
 type State = {
-  id: number;
+  id: Id;
 };
 
 type Action = {
-  setProjectId: (id: number) => void;
+  setProjectId: (id: Id) => void;
 };
 
 const setProjectId = (
@@ -22,8 +24,8 @@ const setProjectId = (
 const useActiveProject = create<State & Action>(
   persist(
     (set) => ({
-      id: 0,
-      setProjectId: (id: number) =>
+      id: null,
+      setProjectId: (id: Id) =>
         set(() => setProjectId(id)),
     }),
     {

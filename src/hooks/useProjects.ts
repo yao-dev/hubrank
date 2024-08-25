@@ -3,13 +3,14 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import queryKeys from "@/helpers/queryKeys";
 import supabase from "@/helpers/supabase";
 import { getUserId } from "@/helpers/user";
+import useActiveProject from "./useActiveProject";
 
-const getOne = async (project_id?: number) => {
+const getOne = async (project_id?: number | null) => {
   if (typeof project_id !== "number") return;
   return supabase.from('projects').select('*, languages!language_id(*)').eq('id', project_id).maybeSingle()
 }
 
-const useGetOne = (project_id?: number) => {
+const useGetOne = (project_id?: number | null) => {
   return useQuery({
     // enabled: project_id !== undefined && !isNaN(project_id),
     enabled: !!project_id,
@@ -104,7 +105,9 @@ const useUpdate = () => {
   })
 }
 
-const deleteOne = async (project_id: number) => {
+const deleteOne = async (project_id: number | null) => {
+  if (!project_id) return;
+
   return supabase
     .from('projects')
     .delete()
@@ -113,13 +116,15 @@ const deleteOne = async (project_id: number) => {
 }
 
 const useDelete = () => {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const activeProject = useActiveProject();
   return useMutation({
-    mutationFn: deleteOne,
+    mutationFn: (id: number | null) => deleteOne(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),
       });
+      activeProject.setProjectId(null)
     },
   })
 }

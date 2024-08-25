@@ -271,7 +271,6 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
               name="url"
               validateTrigger={['onChange', 'onBlur']}
               rules={[{ required: true, message: 'Please enter a valid url', type: "url" }]}
-
               help="Website, sitemap, youtube url."
             >
               <Input placeholder="Url" />

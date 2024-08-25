@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import GetStarted from "./GetStarted";
 import ProductHuntBadge from '@/components/ProductHuntBadge/ProductHuntBadge';
+import { siteConfig } from '@/config/site';
 
 function useTypewriter(words: string[], typingSpeed = 100, deletingSpeed = 50, delay = 2000) {
   const [text, setText] = useState('');
@@ -75,7 +76,7 @@ const SecondaryHeroHeader = () => {
 
       {/* subheadline */}
       <h3 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg lg:text-xl">
-        Generate SEO blogs, social media captions & replies in just few clicks
+        {siteConfig.short_description}
       </h3>
 
       {/* get started cta */}

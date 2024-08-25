@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 type Props = {
   title: string;
   text?: string;
-  imageName: "keyword-research" | "blog-post";
+  imageName: "keyword-research" | "blog-post" | "headline-mode" | "outline" | "logo";
   CallToAction: ReactNode;
 }
 

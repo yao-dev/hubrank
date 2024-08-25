@@ -4,8 +4,7 @@ import { marked } from "marked";
 import { generateUuid5 } from 'weaviate-ts-client';
 import { AI } from "./AI";
 import axios from "axios";
-import { compact, isEmpty, orderBy } from "lodash";
-import { getSerpData } from "@/helpers/seo";
+import { compact, isEmpty, orderBy, pick } from "lodash";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
@@ -478,7 +477,7 @@ export const getRelevantUrls = async ({
 
   console.log("retrieved urls", result)
 
-  return orderBy(result.filter((item) => item.score >= 0.50), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
+  return orderBy(result.filter((item) => item.score >= 0.85), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getRelevantKeywords = async ({
@@ -526,7 +525,7 @@ export const getRelevantKeywords = async ({
 
   await upstashVectorIndex.deleteNamespace(namespaceId);
 
-  return orderBy(result.filter((item) => item.score >= 0.50), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
+  return orderBy(result.filter((item) => item.score >= 0.85), ['score'], ['desc']).slice(0, topK).map(item => item.data) as string[];
 }
 
 export const getProjectById = async (projectId: number) => {
@@ -594,8 +593,8 @@ export const getKeywordsForKeywords = async ({
   }
 }
 
-export const getYoutubeVideosForKeyword = async ({
-  keyword,
+export const getSerp = async ({
+  query,
   languageCode,
   locationCode,
 }: any) => {
@@ -603,7 +602,7 @@ export const getYoutubeVideosForKeyword = async ({
     method: "POST",
     url: 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced',
     data: [{
-      keyword: `site:youtube.com ${keyword}`,
+      keyword: query,
       location_code: locationCode,
       language_code: languageCode,
       device: 'desktop',
@@ -619,12 +618,50 @@ export const getYoutubeVideosForKeyword = async ({
     }
   });
 
+  return (data?.tasks?.[0]?.result?.[0]?.items ?? []).filter((item) => item.type === "organic").slice(0, 5).map((item) => pick(item, ["title", "description", "url"]));
+}
+
+export const getUrlOutline = async (url: string) => {
+  const { data } = await axios({
+    method: "POST",
+    url: 'https://api.dataforseo.com/v3/on_page/instant_pages',
+    data: [{
+      url,
+      check_spell: false,
+      disable_cookie_popup: false,
+      return_despite_timeout: false,
+      load_resources: false,
+      enable_javascript: false,
+      enable_browser_rendering: false
+    }],
+    auth: {
+      username: process.env.DATAFORSEO_USERNAME || "",
+      password: process.env.DATAFORSEO_PASSWORD || ""
+    },
+    headers: {
+      "Content-Type": "application/json"
+    }
+  });
+
+  return data?.tasks?.[0]?.result?.[0]?.items?.[0]?.meta?.htags?.h2 ?? []
+}
+
+export const getYoutubeVideosForKeyword = async ({
+  keyword,
+  languageCode,
+  locationCode,
+}: any) => {
+  const items = await getSerp({
+    query: `site:youtube.com ${keyword}`,
+    languageCode,
+    locationCode,
+  })
+
   console.log("youtube video for keyword", `site:youtube.com ${keyword}`)
-  console.log("result", data.tasks[0].result)
-  console.log("items", data.tasks[0].result[0]?.items)
+  console.log("items", items)
 
   return {
-    videos: isEmpty(data.tasks[0].result) || isEmpty(data.tasks[0].result[0]?.items) ? [] : data.tasks[0].result[0].items.filter(i => {
+    videos: items.filter(i => {
       return i.url.startsWith('https://www.youtube.com/watch?v=')
     }).map((i) => ({
       title: i.title,
@@ -647,27 +684,28 @@ export const getHeadlines = async ({
   clickbait,
   isInspo,
   inspoTitle,
-  count
+  count,
+  competitorsHeadlines
 }: any) => {
-  if (!language) {
-    throw new Error("language not found")
-  }
+  // if (!language) {
+  //   throw new Error("language not found")
+  // }
 
-  const { data: serpDataForSeedKeyword } = await getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code });
+  // const { data: serpDataForSeedKeyword } = await getSerpData({ keyword: seedKeyword, depth: 20, lang: language.code, location_code: language.location_code });
 
-  if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
-    throw new Error("error fetching competitors ranking for main keyword")
-  }
+  // if (serpDataForSeedKeyword?.tasks_error > 0 || !serpDataForSeedKeyword) {
+  //   throw new Error("error fetching competitors ranking for main keyword")
+  // }
 
-  const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
-    .map((item: any) => {
-      return item?.items
-        .filter((subItem: any) => subItem.type === "organic")
-        .map((subItem: any) => {
-          return subItem.title
-        })
-    })
-    .flat(Infinity);
+  // const competitorsHeadlines = serpDataForSeedKeyword?.tasks[0].result
+  //   .map((item: any) => {
+  //     return item?.items
+  //       .filter((subItem: any) => subItem.type === "organic")
+  //       .map((subItem: any) => {
+  //         return subItem.title
+  //       })
+  //   })
+  //   .flat(Infinity);
 
   const ai = new AI({ context });
   const response = await ai.headlines({

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
-import { AI } from "@/app/api/AI";
-import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle } from "@/app/api/helpers";
+import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle, getSerp } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
@@ -37,9 +36,17 @@ export async function POST(request: Request) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
+    let competitors = [];
+
     if (body.title_mode === "custom") {
       body.title = body.custom_title;
     } else {
+      competitors = await getSerp({
+        query: body.seed_keyword,
+        languageCode: language.code,
+        locationCode: language.location_code,
+      });
+
       const headlines = await getHeadlines({
         language,
         context,
@@ -51,7 +58,8 @@ export async function POST(request: Request) {
         clickbait: body.clickbait,
         isInspo: body.title_mode === "inspo",
         inspoTitle: body.title_mode === "inspo" && body.inspo_title,
-        count: 1
+        count: 1,
+        competitorsHeadlines: competitors.map((item) => item.title)
       });
 
       body.title = headlines?.[0];
@@ -68,7 +76,8 @@ export async function POST(request: Request) {
         context,
         writingStyle,
         language,
-        project
+        project,
+        competitors
       },
     });
 

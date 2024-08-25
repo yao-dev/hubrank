@@ -1,8 +1,11 @@
 "use client";
 import supabase from "@/helpers/supabase";
 
-;
-const GoogleSignInButton = () => {
+type Props = {
+  name?: string;
+}
+
+const GoogleSignInButton = ({ name }: Props) => {
   const onSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -29,8 +32,8 @@ const GoogleSignInButton = () => {
         width={18}
         className="top-0 bottom-0 left-4"
       />
-      <p className="mx-auto">
-        Continue with Google
+      <p className="mx-auto font-normal">
+        {name ?? "Continue with Google"}
       </p>
     </div>
   )

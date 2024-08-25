@@ -421,35 +421,54 @@ export const callToActions = [
 export const headingsCount = [
   {
     "value": "3",
-    "label": "3",
+    "label": "3 headings",
   },
   {
     "value": "4",
-    "label": "4",
+    "label": "4 headings",
   },
   {
     "value": "5",
-    "label": "5",
+    "label": "5 headings",
   },
   {
     "value": "6",
-    "label": "6",
+    "label": "6 headings",
   },
   {
     "value": "7",
-    "label": "7",
+    "label": "7 headings",
   },
   {
     "value": "8",
-    "label": "8",
+    "label": "8 headings",
   },
   {
     "value": "9",
-    "label": "9",
+    "label": "9 headings",
   },
   {
     "value": "10",
-    "label": "10",
+    "label": "10 headings",
+  },
+]
+
+export const headlineTypes = [
+  {
+    "value": "blog",
+    "label": "Blog",
+  },
+  {
+    "value": "youtube",
+    "label": "Youtube",
+  },
+  {
+    "value": "linkedin",
+    "label": "Linkedin",
+  },
+  {
+    "value": "essay",
+    "label": "Essay",
   },
 ]
 
@@ -1149,7 +1168,8 @@ export const avoidWords = [
   "You've got this",
   "don't worry",
   "This guide",
-  "You might be thinking"
+  "You might be thinking",
+  "Harnessing"
 ]
 
 export const captionTypes = [

@@ -9,6 +9,7 @@ import { Metadata } from 'next';
 import { siteConfig } from '@/config/site';
 import "./global.css";
 import InitClarityTracking from '@/components/InitClarityTracking/InitClarityTracking';
+import Recaptcha from '@/components/Recaptcha/Recaptcha';
 
 export const metadata: Metadata = {
   title: {
@@ -77,7 +78,9 @@ export default function RootLayout({
               <ReactQueryProvider>
                 <SessionProvider>
                   <RealtimeWrapper>
-                    {children}
+                    <Recaptcha>
+                      {children}
+                    </Recaptcha>
                   </RealtimeWrapper>
                 </SessionProvider>
               </ReactQueryProvider>
@@ -86,6 +89,6 @@ export default function RootLayout({
         </AntdRegistry>
         <InitClarityTracking />
       </body>
-    </html >
+    </html>
   )
 }

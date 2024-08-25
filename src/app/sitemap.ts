@@ -1,23 +1,26 @@
 import { siteConfig } from "@/config/site";
 import { MetadataRoute } from "next";
 import { keywords } from "./(marketing)/glossary/[keyword]/constants";
+import { formSlugs } from "./(marketing)/tools/[keyword]/forms";
 
-const getSitemapRoute = (url: string) => {
+const getSitemapRoute = (path?: string) => {
   return {
-    url,
+    url: path ? `${siteConfig.url}${path.startsWith('/') ? path : `/${path}`}` : siteConfig.url,
     lastModified: new Date(),
   }
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
-    getSitemapRoute(siteConfig.url),
-    getSitemapRoute(`${siteConfig.url}#features`),
-    getSitemapRoute(`${siteConfig.url}#pricing`),
-    getSitemapRoute(`${siteConfig.url}/login`),
-    getSitemapRoute(`${siteConfig.url}/privacy-policy`),
-    getSitemapRoute(`${siteConfig.url}/terms-and-conditions`),
-    getSitemapRoute(`${siteConfig.url}/glossary`),
-    ...keywords.map((keyword) => getSitemapRoute(`${siteConfig.url}/glossary/${keyword.slug}`))
+    getSitemapRoute(),
+    getSitemapRoute("#features"),
+    getSitemapRoute("#pricing"),
+    // getSitemapRoute("/login"),
+    // getSitemapRoute("/privacy-policy"),
+    // getSitemapRoute("/terms-and-conditions"),
+    getSitemapRoute("/glossary"),
+    ...keywords.map((keyword) => getSitemapRoute(`/glossary/${keyword.slug}`)),
+    ...formSlugs.map((keyword: string) => getSitemapRoute(`/tools/${keyword}`)),
+    // TODO: add alternatives urls
   ]
 }

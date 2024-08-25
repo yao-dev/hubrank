@@ -1,13 +1,9 @@
 'use client';;
-import { Button, Spin } from "antd";
+import { Button } from "antd";
 import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
-import dynamic from "next/dynamic";
-
-const Logo = dynamic(() => import('./Logo'), {
-  loading: () => <Spin spinning />,
-})
+import Logo from "./Logo";
 
 const menu = [
   { href: "/#features", link: "Features" },
@@ -30,14 +26,14 @@ const Navbar = () => {
         href="/login"
         className={`bg-black text-white ${className}`}
       >
-        <Link href="/login" className={textClassName}>Login</Link>
+        <p className={textClassName}>Login</p>
       </Button>
     )
   }, [])
 
   return (
-    <div>
-      <nav className="navbar flex flex-row gap-16 container mx-auto py-4 px-6 lg:px-40 justify-between">
+    <div className="border-b bg-white sticky top-0 z-20">
+      <nav className="navbar flex flex-row gap-16 container mx-auto py-3 px-6 lg:px-40 justify-between">
         {/* logo */}
         <Logo />
 

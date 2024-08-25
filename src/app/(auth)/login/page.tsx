@@ -1,4 +1,4 @@
-'use client';;
+'use client';
 import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
@@ -10,6 +10,8 @@ import Label from '@/components/Label/Label';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
+import axios from 'axios';
+import { useReCaptcha } from 'next-recaptcha-v3';
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,6 +24,7 @@ export default function Login() {
   const email = Form.useWatch('email', form);
   const router = useRouter();
   const { session } = useSession();
+  const { executeRecaptcha } = useReCaptcha();
 
   useEffect(() => {
     setTimeout(() => {
@@ -47,6 +50,16 @@ export default function Login() {
     setError(false);
     if (type === 'email') {
       setIsAuthLoading(true);
+
+      const token = await executeRecaptcha("form_login");
+      const { data: recaptcha } = await axios.post("/api/recaptcha", { token });
+
+      if (!recaptcha.success) {
+        setIsAuthLoading(false);
+        setError(true);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         email: values.email,
         options: {
@@ -128,7 +141,7 @@ export default function Login() {
 
   if (isLoading) {
     return (
-      <div className='flex flex-row h-screen items-center justify-center'>
+      <div className='flex flex-row w-full h-screen items-center justify-center'>
         <Spin />
       </div>
     )
@@ -182,7 +195,7 @@ export default function Login() {
             )}
 
             <Form.Item label={<Label name="Email" />} name="email" validateTrigger="onSubmit" rules={[{ required: true, type: "email", message: "Please enter a valid email" }]}>
-              <Input size="large" placeholder="name@example.com" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
+              <Input size="large" placeholder="Enter your email" prefix={<IconMail stroke={1.25} />} autoComplete="on" />
             </Form.Item>
 
             <Form.Item
@@ -213,7 +226,7 @@ export default function Login() {
 
             <Form.Item style={{ margin: 0, marginTop: 24 }}>
               <Button size="large" block type="primary" htmlType="submit" loading={isAuthLoading}>
-                {type === "otp" ? "Login" : "Get login in code"}
+                {type === "otp" ? "Login" : "Get login code"}
               </Button>
             </Form.Item>
 

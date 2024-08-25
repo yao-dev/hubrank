@@ -680,6 +680,10 @@ export class AI {
       prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
     }
 
+    if (!isEmpty(values.competitors_outline)) {
+      prompt += `\n- Competitors outline:\n${JSON.stringify(values.competitors_outline, null, 2)}\n`
+    }
+
     prompt += `\nMarkdown Table of content example
 ## Contents
 1. [Example](#example)
@@ -747,8 +751,13 @@ video_url: string;
       prompt += `\n- Keywords (include relevant keywords only):\n${values.keywords.join('\n')}\n\n`
     }
 
+    if (values.competitors?.length > 0) {
+      prompt += `\n- Competitors description:\n${values.competitors.map(i => i.description).join('\n')}\n\n`
+    }
+
     prompt += `\n\n
     - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
+    - Do not start with "Discover"
 
     Write a valuable and search intent driven description for search engine and return a JSON object with the type Description.
     \`\`\`ts
@@ -1016,7 +1025,7 @@ video_url: string;
   getRelevantUrlsTemplate(values: GetRelevantUrls) {
     return [
       '[relevant urls]',
-      `Give me the ${values.count} most sementically relevants (min >70% relevancy percentage) urls in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
+      `Give me the ${values.count} most sementically relevants (min >90% relevancy percentage) urls in the list based on the title "${values.title}" and this seed keyword "${values.seed_keyword}"`,
       `urls list:\n- ${values.urls.join('\n- ')}`,
       `Return an json array (string[]) and wrap your output in \`\`\`json\`\`\``
     ].join('\n\n')

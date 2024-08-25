@@ -4,6 +4,7 @@ import ProductHuntBadge from '@/components/ProductHuntBadge/ProductHuntBadge';
 import dynamic from 'next/dynamic';
 import { Spin } from 'antd';
 import Typewriter from './Typewriter';
+import { siteConfig } from "@/config/site";
 
 const FeaturesPreview = dynamic(() => import('./FeaturesPreview'), {
   loading: () => <Spin spinning />,
@@ -71,7 +72,7 @@ const HeroHeader = () => {
 
         {/* subheadline */}
         <h2 className="w-4/5 lg:w-2/3 mb-8 text-center text-zinc-600 text-lg lg:text-xl">
-          Generate SEO blogs, social media captions & replies in just few clicks
+          {siteConfig.short_description}
         </h2>
 
         {/* get started cta */}

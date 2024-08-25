@@ -17,6 +17,7 @@ import {
   writeHook,
   writeSection,
   getYoutubeTranscript,
+  getUrlOutline,
 } from "../../helpers";
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
@@ -63,7 +64,6 @@ export async function POST(request: Request) {
     // FETCH THE SITEMAP
     if (body.sitemap) {
       const sitemapXml = await fetchSitemapXml(body.sitemap);
-      console.log(chalk.yellow(sitemapXml));
       sitemaps = getSitemapUrls({ websiteUrl: project.website, sitemapXml });
       sitemaps = await ai.getRelevantUrls({
         title: body.title,
@@ -89,6 +89,12 @@ export async function POST(request: Request) {
       videos = youtubeVideos;
     }
 
+    const competitorsOutline = [];
+
+    for (let competitor of body.competitors) {
+      const competitorOutline = await getUrlOutline(competitor.url);
+      competitorsOutline.push(competitorOutline)
+    }
 
     // GET THE WORD COUNT OF EACH SECTION OF THE OUTLINE
     const outlinePlan = await ai.outlinePlan({
@@ -98,7 +104,8 @@ export async function POST(request: Request) {
       images: body.sectionImages,
       videos,
       keywords,
-      youtube_transcript: youtubeTranscript
+      youtube_transcript: youtubeTranscript,
+      competitors_outline: competitorsOutline
     });
 
     // GET HEADINGS AS A COMMA SEPARATED STRING
@@ -115,14 +122,14 @@ export async function POST(request: Request) {
     if (body.featured_image) {
       ai.article += `![featured image](${body.featured_image})\n`
     } else {
-      const images = await getImages(keywords.join());
-      console.log(`unsplash images for keywords: ${keywords.join()}`, images)
-      const foundFeaturedImage = shuffle(images)[0];
+      // const images = await getImages(keywords.join());
+      // console.log(`unsplash images for keywords: ${keywords.join()}`, images)
+      // const foundFeaturedImage = shuffle(images)[0];
 
-      if (foundFeaturedImage) {
-        featuredImage = foundFeaturedImage.href;
-        ai.article += `![${foundFeaturedImage.alt ?? ""}](${foundFeaturedImage.href})\n`
-      }
+      // if (foundFeaturedImage) {
+      //   featuredImage = foundFeaturedImage.href;
+      //   ai.article += `![${foundFeaturedImage.alt ?? ""}](${foundFeaturedImage.href})\n`
+      // }
     }
 
     if (body.with_hook) {

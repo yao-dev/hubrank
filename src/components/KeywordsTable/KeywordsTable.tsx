@@ -287,7 +287,6 @@ const KeywordsTable = () => {
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => {
-          // const StarComponent = savedKeywordsString?.includes(record.keyword) ? IconStarFilled : IconStar;
           return (
             <Space size="small" align='center'>
               <Button
@@ -302,20 +301,6 @@ const KeywordsTable = () => {
                 use keyword
               </Button>
               {showSavedKeywords && <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />}
-              {/* {showSavedKeywords ? (
-                <Button icon={<DeleteTwoTone twoToneColor="#ff4d4f" />} onClick={() => toggleSaveKeyword.mutate(record)} />
-              ) : (
-                <Button
-                  icon={(
-                    <StarComponent
-                      size={16}
-                      style={{ color: savedKeywordsString?.includes(record.keyword) ? "#5D5FEF" : undefined }}
-                    />
-                  )}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-                  onClick={() => toggleSaveKeyword.mutate(record)}
-                />
-              )} */}
             </Space>
           )
         },

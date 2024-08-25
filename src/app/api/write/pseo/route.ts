@@ -19,8 +19,6 @@ import {
 import { NextResponse } from "next/server";
 import { getSummary } from 'readability-cyr';
 import { supabaseAdmin } from "@/helpers/supabase";
-import { getImages } from "@/helpers/image";
-import { shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 180;
@@ -100,13 +98,13 @@ export async function POST(request: Request) {
     });
 
     // SET FEATURED IMAGE
-    const images = await getImages(keywords.join());
-    console.log(`unsplash images for keywords: ${keywords.join()}`, images)
-    const featuredImage = shuffle(images)[0];
+    // const images = await getImages(keywords.join());
+    // console.log(`unsplash images for keywords: ${keywords.join()}`, images)
+    // const featuredImage = shuffle(images)[0];
 
-    if (featuredImage) {
-      ai.article = `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
-    }
+    // if (featuredImage) {
+    //   ai.article = `![${featuredImage.alt ?? ""}](${featuredImage.href})\n`
+    // }
 
     // WRITE HOOK
     if (body.with_hook) {

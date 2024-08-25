@@ -56,7 +56,7 @@ export default function KeywordPage({ params, }: Props) {
       <Navbar />
       <section className="flex flex-col items-center py-2 lg:py-5 px-4 lg:w-[65%] mx-auto mt-12 lg:mt-0">
         <section className="flex w-full flex-col gap-16 mb-32">
-          <div className='flex flex-col items-center gap-2'>
+          <div className='flex flex-col items-center gap-6'>
             <Link
               href="/glossary"
               className="flex flex-row gap-2 text-primary-500 font-medium"

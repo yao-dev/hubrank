@@ -50,7 +50,14 @@ export async function POST(request: Request) {
       const variables = {}
       keys.forEach((key) => {
         variables[key] = body.variableSet[key].split("\n")[index];
-      })
+      });
+
+
+      // competitors = await getSerp({
+      //   query: body.seed_keyword,
+      //   languageCode: language.code,
+      //   locationCode: language.location_code,
+      // });
 
       // TODO:
       // - enrich the outline by interpolating the variables using AI
