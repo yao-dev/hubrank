@@ -97,7 +97,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
 
         <Form.Item
           name="cta"
-          label={<Label name="Call to Action" />}
+          label={<Label name="Call to action" />}
           rules={[{
             required: false,
             type: "string",
@@ -105,7 +105,7 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
           }]}
         >
           <Select
-            placeholder="Call to Action"
+            placeholder="Call to action"
             optionLabelProp="label"
             allowClear
             options={captionCallToActions?.map((item) => {
@@ -172,10 +172,10 @@ const NewCaptionForm = ({ onSubmit, form, isSubmitting }: Props) => {
           <Form.Item
             name="max_emojis"
             label={<Label name="Emojis" />}
-            rules={[{ type: "number", max: 5, required: false }]}
+            rules={[{ type: "number", max: 10, required: false }]}
 
           >
-            <InputNumber min={0} max={5} />
+            <InputNumber min={0} max={10} />
           </Form.Item>
         </div>
       </Form>

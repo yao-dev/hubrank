@@ -278,6 +278,7 @@ export class AI {
         temperature: opts.temperature || 0.7,
         system: this.system,
         messages: [{ role: 'user', content: prompt }],
+        // top_k: opts?.top_k ?? 0, // no supported
         // messages: [
         //   {
         //     role: "user",
@@ -311,6 +312,7 @@ export class AI {
             content: prompt
           }
         ],
+        // top_k: opts?.top_k ?? 0, // no supported
         // top_k: 0,
         // metadata: {user_id: ""}
       });
@@ -342,9 +344,10 @@ export class AI {
     - one headline per line
     - do not prefix with number
     - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
+    - headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery
     ${values.clickbait ? "- make it clickbait" : ""}`;
 
-    if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
+    // if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
 
     prompt += `\n\nStart and end your writing with triple @@@.`
 
@@ -353,7 +356,7 @@ export class AI {
 
   async headlines(values: any) {
     const temperature = shuffle([0.4, 0.5, 0.6])[0]
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature, model: models["gpt-4o"] });
+    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature, model: models["gpt-4o"], top_k: 2 });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -448,6 +451,19 @@ export class AI {
     prompt += `
     Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
     Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
+    Elements that make up a good hook
+    1. State a fact or a statistic
+    2. Begin your writing with a quote
+    3. Ask a question
+    4. Tell a personal story
+    5. Make a statement
+    6. Start with a figure of speech
+    7. Don’t hesitate to contradict popular beliefs
+    8. Use humor
+    9. Connect emotionally to the reader
+    10. Use a contradictory statement
+    11. Define a term
+    12. Explain a common misconception
     - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
 
     write in markdown wrapped in \`\`\`markdown\`\`\`.
@@ -479,21 +495,6 @@ export class AI {
     Do not make up fact, statistic or fake story
     `
 
-    if (values.pseo) {
-      prompt = `[write/pseo]
-
-      For the article "${values?.title}" write the section "${values?.section?.name}" with a maximum of ${values?.section?.word_count} words in markdown wrapped in \`\`\`markdown\`\`\`.
-      Title structure: ${values.title_structure}
-      Replace all variables with their respective value.
-      Section heading prefix: ${values?.section?.prefix}
-      Do not add a CTA at the end
-      Do not add heading for the hook if there is any
-      Do not make up fact, statistic or fake story
-
-      Variables:
-      ${JSON.stringify(values.variables, null, 2)}
-    `
-    }
     // prompt += `Outline: ${values?.outline}`
 
     prompt += values?.section?.tones?.length > 0 ? `\nTones: ${values.section.tones.join(', ')}` : "";
@@ -700,6 +701,7 @@ Write the outline following the structure below
     word_count: number;
     keywords: string; // comma separated
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
+    search_query?: string; // search intent that would help find external link to include to this section of the article
     `;
 
     // if (hasImages) {
@@ -771,7 +773,7 @@ video_url: string;
   }
 
   async metaDescription(values: any) {
-    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models["gpt-4-0613"] });
+    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models["gpt-4-0613"], top_k: 2 });
   }
 
 

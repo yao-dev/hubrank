@@ -1,4 +1,4 @@
-import { getKeywordsForKeywords } from "../helpers";
+import { getKeywordsForKeywords } from "@/helpers/seo";
 
 export async function POST(request: Request) {
   const body = await request.json();

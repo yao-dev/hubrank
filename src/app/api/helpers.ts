@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { generateUuid5 } from 'weaviate-ts-client';
 import { AI } from "./AI";
 import axios from "axios";
-import { compact, isEmpty, orderBy, pick } from "lodash";
+import { compact, isEmpty, isNaN, orderBy } from "lodash";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
@@ -19,6 +19,7 @@ import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { getSerp } from "@/helpers/seo";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -210,15 +211,11 @@ export const writeSection = async ({
   section,
   title,
   outline,
-  pseo,
-  title_structure,
-  variables
 }: {
   ai: any;
   index: number;
   title: string;
   outline: string;
-  pseo?: boolean;
   section: {
     prefix: string;
     keywords: string;
@@ -250,9 +247,6 @@ export const writeSection = async ({
       title,
       section,
       outline,
-      pseo,
-      title_structure,
-      variables
     });
 
     if (section?.image?.alt && section?.image?.href) {
@@ -294,7 +288,6 @@ export const markArticleAsReadyToView = async ({
   markdown,
   html,
   writingTimeInSeconds,
-  cost,
   articleId,
   wordCount,
   metaDescription,
@@ -307,7 +300,6 @@ export const markArticleAsReadyToView = async ({
       status: 'ready_to_view',
       writing_time_sec: writingTimeInSeconds,
       word_count: wordCount,
-      cost,
       featured_image: featuredImage,
       meta_description: metaDescription
     }, null, 2)));
@@ -323,7 +315,6 @@ export const markArticleAsReadyToView = async ({
         status: 'ready_to_view',
         writing_time_sec: writingTimeInSeconds,
         word_count: wordCount,
-        cost,
         featured_image: featuredImage || ogImageUrl,
         meta_description: metaDescription,
         og_image_url: ogImageUrl,
@@ -559,66 +550,6 @@ export const getSchemaMarkup = async ({
 
   console.log("createdSchema", createdSchema)
   return createdSchema
-}
-
-export const getKeywordsForKeywords = async ({
-  keyword,
-  countryCode,
-}: any) => {
-  const { data } = await axios({
-    method: "POST",
-    url: "https://api.dataforseo.com/v3/keywords_data/google/keywords_for_keywords/live",
-    data: [{ "search_partners": false, "keywords": [keyword], "language_code": countryCode || "en", "sort_by": "relevance", "date_interval": "next_month", "include_adult_keywords": false }],
-    auth: {
-      username: process.env.DATAFORSEO_USERNAME || "",
-      password: process.env.DATAFORSEO_PASSWORD || ""
-    },
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (isEmpty(data.tasks[0].result)) {
-    return {
-      result: [],
-      result_count: 0,
-      keywords: []
-    }
-  }
-
-  return {
-    result: data.tasks[0].result,
-    result_count: data.tasks[0].result_count,
-    keywords: data.tasks[0].result.map((i) => i.keyword)
-  }
-}
-
-export const getSerp = async ({
-  query,
-  languageCode,
-  locationCode,
-}: any) => {
-  const { data } = await axios({
-    method: "POST",
-    url: 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced',
-    data: [{
-      keyword: query,
-      location_code: locationCode,
-      language_code: languageCode,
-      device: 'desktop',
-      os: 'windows',
-      depth: 10,
-    }],
-    auth: {
-      username: process.env.DATAFORSEO_USERNAME || "",
-      password: process.env.DATAFORSEO_PASSWORD || ""
-    },
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-
-  return (data?.tasks?.[0]?.result?.[0]?.items ?? []).filter((item) => item.type === "organic").slice(0, 5).map((item) => pick(item, ["title", "description", "url"]));
 }
 
 export const getUrlOutline = async (url: string) => {
@@ -1155,6 +1086,10 @@ export const getIsYoutubeUrl = (url: string = "") => {
   return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/")
 }
 
+export const getIsTwitterUrl = (url: string = "") => {
+  return url.startsWith("https://x.com/") && url.includes("/status/") && !isNaN(+url.split("/").slice(-1)[0])
+}
+
 export const getYoutubeTranscript = async (url: string) => {
   // const loader = YoutubeLoader.createFromUrl("https://youtu.be/bZQun8Y4L2A", {
   //   language: "en",
@@ -1225,4 +1160,39 @@ export const getDocumentsFromFile = async (blob: Blob, fileName: string) => {
     default:
       throw new Error(`File not supported: ${fileName}`)
   }
+}
+
+export const getTweets = async (urls: string[]) => {
+  const { data } = await axios.post(`https://api.apify.com/v2/acts/quacker~twitter-url-scraper/runs?token=${process.env.APIFY_TWITTER_TOKEN ?? ""}`, {
+    addUserInfo: false,
+    startUrls: urls.map((url) => ({ url })),
+    tweetsDesired: 1
+  });
+
+  console.log(data)
+  const datasetUrl = `https://api.apify.com/v2/datasets/${data.data.defaultDatasetId}/items?token=${process.env.APIFY_TWITTER_TOKEN ?? ""}`
+  console.log(datasetUrl)
+
+  const dataset = (await new Promise((resolve) => {
+    let counter = 0;
+    let interval = setInterval(async () => {
+      if (counter >= 40) {
+        clearInterval(interval)
+        resolve([])
+      } else {
+        const { data: result } = await axios.get(datasetUrl)
+        counter++
+        if (!isEmpty(result)) {
+          clearInterval(interval)
+          resolve(result)
+        }
+      }
+    }, 1000);
+  })) ?? []
+
+  console.log("data")
+  const tweets = dataset.map((item) => item.full_text)
+  console.log("tweets", tweets);
+
+  return tweets
 }

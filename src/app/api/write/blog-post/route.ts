@@ -4,11 +4,9 @@ import { getSummary } from 'readability-cyr';
 import {
   cleanArticle,
   convertMarkdownToHTML,
-  deductCredits,
   fetchSitemapXml,
   getAndSaveSchemaMarkup,
   getSitemapUrls,
-  getKeywordsForKeywords,
   getProjectKnowledges,
   getYoutubeVideosForKeyword,
   markArticleAsFailure,
@@ -18,11 +16,11 @@ import {
   writeSection,
   getYoutubeTranscript,
   getUrlOutline,
+  updateBlogPostStatus,
 } from "../../helpers";
 import chalk from "chalk";
 import { supabaseAdmin } from "@/helpers/supabase";
-import { getImages } from "@/helpers/image";
-import { shuffle } from "lodash";
+import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -38,6 +36,9 @@ export async function POST(request: Request) {
     const language = body.language;
     const project = body.project;
     articleId = body.articleId;
+
+    // CHANGE STATUS TO WRITING
+    await updateBlogPostStatus(articleId, "writing")
 
     const ai = new AI({ context, writing_style: writingStyle });
 
@@ -172,7 +173,21 @@ export async function POST(request: Request) {
         topK: 500,
         query: `${section.name} ${section?.keywords ?? ""}`,
         minScore: 0.5
-      })
+      });
+
+      let external_links;
+
+      if (section?.search_query) {
+        const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 20 });
+        const serpUrls = serp.map((item) => item.url);
+        external_links = await ai.getRelevantUrls({
+          title: body.title,
+          seed_keyword: section.name,
+          urls: serpUrls,
+          count: Math.min(serpUrls.length, 3)
+        })
+        console.log(`relevant external urls for section: ${section.name}`, serp)
+      }
 
       // WRITE EACH SECTION
       await writeSection({
@@ -228,15 +243,6 @@ export async function POST(request: Request) {
       structuredSchemas: body.structured_schemas,
     });
 
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-    const cost = 1 + (body.structured_schemas.length * 0.25);
-    const creditCheck = {
-      userId: body.userId,
-      costInCredits: cost,
-      featureName: "write"
-    }
-    await deductCredits(creditCheck);
-
     // GET ARTICLE STATS
     const articleStats = getSummary(ai.article);
 
@@ -249,7 +255,6 @@ export async function POST(request: Request) {
       wordCount: articleStats.words,
       featuredImage: featuredImage ?? "",
       metaDescription,
-      cost
     });
 
     return NextResponse.json({
@@ -259,7 +264,6 @@ export async function POST(request: Request) {
       stats: articleStats,
       featuredImage: featuredImage ?? "",
       metaDescription,
-      cost
     }, { status: 200 });
   } catch (error) {
     await markArticleAsFailure({ articleId, error })

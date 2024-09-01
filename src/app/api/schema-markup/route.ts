@@ -1,6 +1,6 @@
 import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-import { checkCredits, deductCredits, getSchemaMarkup, saveSchemaMarkups } from "../helpers";
+import { deductCredits, getSchemaMarkup, saveSchemaMarkups } from "../helpers";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -18,7 +18,14 @@ export async function POST(request: Request) {
       supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
     ]);
 
-    console.log("article.schema_markups", article.schema_markups)
+    console.log("article.schema_markups", article.schema_markups);
+
+    const creditCheck = {
+      userId: body.user_id,
+      costInCredits: 0.25,
+      featureName: "schema-markup"
+    }
+    await deductCredits(creditCheck);
 
     const createdSchema = await getSchemaMarkup({
       project,
@@ -30,13 +37,6 @@ export async function POST(request: Request) {
     schemas.push(createdSchema)
     console.log("schemas", schemas)
     await saveSchemaMarkups(article.id, schemas);
-
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: 0.25,
-      featureName: "schema-markup"
-    }
-    await deductCredits(creditCheck);
 
     return NextResponse.json({
       schema_markup: createdSchema

@@ -1,11 +1,10 @@
-"use client";
+"use client";;
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
 import supabase from "../../helpers/supabase";
 import useSession from "@/hooks/useSession";
-import Link from "next/link";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { App, Typography } from "antd";
+import { App } from "antd";
 import useProjectId from "@/hooks/useProjectId";
 import usePricingModal from "@/hooks/usePricingModal";
 
@@ -54,20 +53,20 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 							queryKey: ["blog_posts"],
 						});
 
-						if (["completed", "ready_to_view"].includes(data.new.status)) {
-							notification.success({
-								message: <b>Article completed</b>,
-								description: <Typography.Text><b><Link prefetch href={new URL(`${window.location.origin}/projects/${data.new.project_id}/articles/${data.new.id}`)}>{data.new.title}</Link></b> is ready to view</Typography.Text>,
-								placement: 'bottomRight',
-							});
-						}
-						if (data.new.status === "error") {
-							notification.error({
-								message: <b>Article error</b>,
-								description: <Typography.Text>An error occured while writing <b>{data.new.title}</b> please try again</Typography.Text>,
-								placement: 'bottomRight',
-							});
-						}
+						// if (["completed", "ready_to_view"].includes(data.new.status)) {
+						// 	notification.success({
+						// 		message: <b>Article completed</b>,
+						// 		description: <Typography.Text><b><Link prefetch href={new URL(`${window.location.origin}/projects/${data.new.project_id}/articles/${data.new.id}`)}>{data.new.title}</Link></b> is ready to view</Typography.Text>,
+						// 		placement: 'bottomRight',
+						// 	});
+						// }
+						// if (data.new.status === "error") {
+						// 	notification.error({
+						// 		message: <b>Article error</b>,
+						// 		description: <Typography.Text>An error occured while writing <b>{data.new.title}</b> please try again</Typography.Text>,
+						// 		placement: 'bottomRight',
+						// 	});
+						// }
 					}
 				})
 				.on('postgres_changes', {

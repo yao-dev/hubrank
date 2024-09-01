@@ -283,10 +283,10 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
                     label={<Label name="Title structure" />}
                     rules={[{ required: true, type: "string", max: 150 }]}
 
-                    help="ex: How to {action} in {city} will generate => How to Hike in Zurich"
+                    help="ex: Where to {action} in {city} will generate => Where to Hike in Zurich"
                   >
                     <Input
-                      placeholder="ex: How to {variable_1} in {variable_2}"
+                      placeholder="ex: Where to {variable_1} in {variable_2}"
                       count={{ show: true, max: 150 }}
                       onChange={() => {
                         setVariableSet((prev) => {
@@ -364,17 +364,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           }}
         </Form.Item>
 
-        {titleMode === "programmatic_seo" ? (
-          <Form.Item name="seed_keyword" label={<Label name="Main keyword group" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} >
-            <Select
-              placeholder="Select main keyword group"
-              options={[...getVariables()].map((item) => ({
-                label: item,
-                value: item,
-              }))}
-            />
-          </Form.Item>
-        ) : (
+        {titleMode !== "programmatic_seo" && (
           <Form.Item name="seed_keyword" label={<Label name="Main keyword" />} rules={[{ required: true, type: "string", max: 75, message: "Add a main keyword" }]} >
             <AutoComplete options={savedKeywordsOptions}>
               <Input placeholder="Main keyword" count={{ show: true, max: 75 }} />

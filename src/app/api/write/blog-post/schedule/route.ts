@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
-import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle, getSerp } from "@/app/api/helpers";
+import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle, deductCredits } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
+import { getSerp } from "@/helpers/seo";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
@@ -12,8 +13,7 @@ export async function POST(request: Request) {
   const articleId = await insertBlogPost(body);
 
   try {
-    // CHANGE STATUS TO WRITING
-    await updateBlogPostStatus(articleId, "writing")
+    await updateBlogPost(articleId, { status: "writing" })
 
     const [
       { data: project },
@@ -36,10 +36,21 @@ export async function POST(request: Request) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
+    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const cost = 1 + (body.structured_schemas.length * 0.25);
+    const creditCheck = {
+      userId: body.userId,
+      costInCredits: cost,
+      featureName: "write"
+    }
+    await deductCredits(creditCheck);
+    await updateBlogPost(articleId, { cost })
+
     let competitors = [];
 
     if (body.title_mode === "custom") {
       body.title = body.custom_title;
+      await updateBlogPost(articleId, { title: body.title })
     } else {
       competitors = await getSerp({
         query: body.seed_keyword,
@@ -64,7 +75,6 @@ export async function POST(request: Request) {
 
       body.title = headlines?.[0];
 
-      // CHANGE STATUS TO WRITING
       await updateBlogPost(articleId, { title: body.title })
     }
 

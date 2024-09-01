@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server";
-import {
-  getProjectNamespaceId,
-  saveKnowledgeInDatabase,
-  textToVector,
-  updateKnowledgeStatus,
-  urlToVector,
-} from "@/app/api/helpers";
+import { saveKnowledgeInDatabase, updateKnowledgeStatus } from "@/app/api/helpers";
 
-export const maxDuration = 300;
+export const maxDuration = 30;
 
 export async function POST(request: Request) {
-  console.time("training time")
   const body = await request.json();
-  const namespaceId = getProjectNamespaceId({ userId: body.user_id, projectId: body.project_id })
 
   if (body.mode === "text") {
     const { data } = await saveKnowledgeInDatabase({
@@ -23,23 +15,14 @@ export async function POST(request: Request) {
     });
     const knowledgeId = data?.id;
 
-    if (knowledgeId) {
-      await textToVector({
-        text: body.text,
-        userId: body.user_id,
-        namespaceId,
-        metadata: {
-          knowledgeId
-        }
-      });
-
-      await updateKnowledgeStatus(knowledgeId, "ready");
+    if (!knowledgeId) {
+      await updateKnowledgeStatus(knowledgeId, "error");
     }
   }
 
   if (body.mode === "url") {
     let knowledgeId;
-    for (let [index, url] of Object.entries(body.urls.slice(0, 100))) {
+    for (let [, url] of Object.entries(body.urls.slice(0, 100))) {
       const { data } = await saveKnowledgeInDatabase({
         userId: body.user_id,
         projectId: body.project_id,
@@ -48,27 +31,16 @@ export async function POST(request: Request) {
       });
 
       knowledgeId = data?.id;
-
-      // if (knowledgeId) {
-      //   await urlToVector({
-      //     url: url as string,
-      //     index: +index,
-      //     userId: body.user_id,
-      //     namespaceId,
-      //     metadata: {
-      //       knowledgeId
-      //     }
-      //   });
-
-      //   await updateKnowledgeStatus(knowledgeId, "ready");
-      // }
     }
 
+    if (!knowledgeId) {
+      await updateKnowledgeStatus(knowledgeId, "error");
+    }
   }
 
   if (body.mode === "file") {
     let knowledgeId;
-    for (let [index, file] of Object.entries(body.files)) {
+    for (let [, file] of Object.entries(body.files)) {
       const { data } = await saveKnowledgeInDatabase({
         userId: body.user_id,
         projectId: body.project_id,
@@ -79,13 +51,10 @@ export async function POST(request: Request) {
       knowledgeId = data?.id;
     }
 
-    if (knowledgeId) {
-      await updateKnowledgeStatus(knowledgeId, "ready");
+    if (!knowledgeId) {
+      await updateKnowledgeStatus(knowledgeId, "error");
     }
   }
 
-  console.timeEnd("training time")
-  return NextResponse.json({
-    success: true
-  }, { status: 200 });
+  return NextResponse.json({ success: true }, { status: 200 });
 }

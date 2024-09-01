@@ -148,6 +148,7 @@ const ExportBlogPostDrawer = ({
 
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
+    console.log(slug, article?.slug, project?.blog_path)
     return new URL(slug ?? article?.slug, project?.blog_path ?? "")?.[prop]
   }
 

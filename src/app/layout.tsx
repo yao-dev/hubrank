@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  keywords: siteConfig.keywords,
   // viewport: "width=device-width, initial-scale=1",
   robots: {
     follow: true,

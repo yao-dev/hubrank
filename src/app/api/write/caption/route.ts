@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import { models } from "@/app/api/AI";
 import {
   deductCredits,
+  getIsTwitterUrl,
+  getIsYoutubeUrl,
   getManualWritingStyle,
   getSavedWritingStyle,
+  getTweets,
   getYoutubeTranscript,
 } from "@/app/api/helpers";
 import { supabaseAdmin } from "@/helpers/supabase";
 import Anthropic from "@anthropic-ai/sdk";
+import { getSerp } from "@/helpers/seo";
+import { compact, omit, shuffle } from "lodash";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -16,17 +21,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // const { data: project } = await supabase.from("projects").select("*").eq("id", body.project_id).single();
+    const { data: project } = await supabase.from("projects").select("*").eq("id", body.project_id).single();
 
-    // if (!project) {
-    //   return NextResponse.json({ message: "project not found" }, { status: 500 })
-    // }
+    if (!project) {
+      return NextResponse.json({ message: "project not found" }, { status: 500 })
+    }
 
-    // const { data: language } = await supabase.from("languages").select("*").eq("id", project.language_id).single()
+    const { data: language } = await supabase.from("languages").select("*").eq("id", project.language_id).single()
 
-    // if (!language) {
-    //   return NextResponse.json({ message: "language not found" }, { status: 500 })
-    // }
+    if (!language) {
+      return NextResponse.json({ message: "language not found" }, { status: 500 })
+    }
 
     // const context = getProjectContext({
     //   name: project.name,
@@ -77,6 +82,36 @@ export async function POST(request: Request) {
     //   writingStyle,
     // });
 
+    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const cost = 0.5
+    const creditCheck = {
+      userId: body.user_id,
+      costInCredits: cost,
+      featureName: "caption"
+    }
+    await deductCredits(creditCheck);
+
+    let inspo;
+    let source;
+
+    if (!body.source && body.type !== "comment") {
+      const query = [...body.keywords.split(","), ...body.hashtags.split(" ")].map((keyword) => `"${keyword}"`).join(" OR ");
+      console.log("SERP QUERY", `site:x.com ${query} inurl:status`)
+      const serp = await getSerp({ query: `site:x.com ${query} inurl:status`, languageCode: language.code, locationCode: language.location_code, count: 50 });
+      const randomFiveTweets = shuffle(serp).slice(0, 5);
+      console.log("randomFiveTweets", randomFiveTweets)
+      inspo = await getTweets(randomFiveTweets.map((item) => item.url));
+    }
+
+    if (body.type !== "comment") {
+      if (getIsYoutubeUrl(body.source)) {
+        source = await getYoutubeTranscript(body.source);
+      }
+      if (getIsTwitterUrl(body.source)) {
+        source = await getTweets([body.source]);
+      }
+    }
+
     const ai = new Anthropic({
       baseURL: "https://anthropic.hconeai.com/",
       apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
@@ -93,18 +128,19 @@ export async function POST(request: Request) {
       system: "Act as a social media marketer",
       messages: [{
         role: 'user',
-        content: [
-          JSON.stringify(body, null, 2),
+        content: compact([
+          JSON.stringify(omit(body, ["user_id", "project_id", "source"]), null, 2),
+          source && `Source:\n${JSON.stringify(source, null, 2)}`,
+          inspo && `Inspo:\n${JSON.stringify(inspo, null, 2)}`,
           body.type === "Comment" ? "Write 5 comments in response to the source" : "Write 5 captions",
           "Your writing is well formatted with paragraphs, tabs, list, etc.\nOutput only a JSON array string[] with the results nothing else",
-        ].join('\n\n')
+        ]).join('\n\n')
       }]
     });
 
     console.log(completion);
     const captions = JSON.parse(completion.content[0].text)
 
-    const cost = 0.5
 
     // await insertCaption({
     //   user_id: body.user_id as string,
@@ -116,14 +152,6 @@ export async function POST(request: Request) {
     //   metadata,
     //   cost
     // });
-
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: cost,
-      featureName: "caption"
-    }
-    await deductCredits(creditCheck);
 
     return NextResponse.json({ captions }, { status: 200 });
   } catch (e: any) {

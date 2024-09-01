@@ -23,13 +23,11 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const pricingModal = usePricingModal();
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
   const titleMode = Form.useWatch("title_mode", form);
-  const estimatedPSeoArticlesCount = Form.useWatch("estimated_pseo_articles_count", form);
   const extra = ((fieldStructuredSchemas?.length ?? 0) / 4);
   const [estimatedPseoCreditsCount, setEstimatedPseoCreditsCount] = useState(0)
   const creditsCount = titleMode === "programmatic_seo" ? estimatedPseoCreditsCount : 1 + extra
 
-  const writeArticle = async (values: any) => {
-    console.log("writeArticle", values)
+  const writeBlogPost = async (values: any) => {
     try {
       setIsSubmitting(true)
       const { data } = await axios.post('/api/credits-check', {
@@ -42,7 +40,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         return pricingModal.open(true)
       }
       axios.post('/api/write/blog-post/schedule', values)
-      message.success('Article added in the queue!');
+      message.success('Blog post added in the queue!');
       onClose();
       form.resetFields();
       setIsSubmitting(false)
@@ -50,15 +48,14 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       setIsSubmitting(false)
       console.error(e)
       notification.error({
-        message: "We had an issue adding your article in the queue please try again",
+        message: "We had an issue adding your blog post in the queue please try again",
         placement: "bottomRight",
         role: "alert",
       })
     }
   }
 
-  const schedulePSeoArticles = async (values: any) => {
-    console.log("schedulePSeoArticles", values)
+  const writeBlogPostInBulk = async (values: any) => {
     try {
       setIsSubmitting(true)
       const { data } = await axios.post('/api/credits-check', {
@@ -70,8 +67,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         setIsSubmitting(false);
         return pricingModal.open(true)
       }
-      axios.post('/api/write/pseo/schedule', values);
-      message.success('Articles will be added in the queue shortly!');
+      axios.post('/api/write/blog-post/bulk-schedule', values)
+      message.success('Blog posts will be added in the queue shortly!');
       onClose();
       form.resetFields();
       setIsSubmitting(false)
@@ -79,7 +76,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       setIsSubmitting(false)
       console.error(e)
       notification.error({
-        message: "We had an issue adding your articles in the queue please try again",
+        message: "We had an issue adding your blog posts in the queue please try again",
         placement: "bottomRight",
         role: "alert",
       })
@@ -87,9 +84,14 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   }
 
   const onSubmit = async (values: any) => {
-    console.log("NewBlogPostDrawer - onSubmit", values);
-
     const isProgrammaticSeo = values.title_mode === "programmatic_seo";
+
+    const commonData = {
+      ...values,
+      content_type: values.content_type.replaceAll("_", " "),
+      userId: await getUserId(),
+      project_id: projectId
+    }
 
     if (isProgrammaticSeo) {
       const generateCombinations = () => {
@@ -118,24 +120,16 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
       const headlines = generateCombinations();
 
-      return schedulePSeoArticles({
-        ...values,
-        content_type: values.content_type.replaceAll("_", " "),
-        clickbait: !!values.clickbait,
-        userId: await getUserId(),
-        project_id: projectId,
+      await writeBlogPostInBulk({
+        ...commonData,
         headlines,
         ...getUTCHourAndMinute(format(new Date(), "HH:mm")),
       });
+
+      return;
     }
 
-    await writeArticle({
-      ...values,
-      content_type: values.content_type.replaceAll("_", " "),
-      clickbait: !!values.clickbait,
-      userId: await getUserId(),
-      project_id: projectId
-    });
+    await writeBlogPost(commonData);
     return;
   };
 
