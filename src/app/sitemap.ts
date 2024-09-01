@@ -6,7 +6,7 @@ import { competitorList } from "@/options";
 
 const getSitemapRoute = (path?: string) => {
   return {
-    url: path ? `${siteConfig.url}${path.startsWith('/') ? path : `/${path}`}` : siteConfig.url,
+    url: path ? `${siteConfig.url}${path.startsWith('/') ? path : `/${path}`}` : siteConfig.url ?? "",
     lastModified: new Date(),
   }
 }
@@ -23,6 +23,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...keywords.map((keyword) => getSitemapRoute(`/glossary/${keyword.slug}`)),
     ...formSlugs.map((keyword: string) => getSitemapRoute(`/tools/${keyword}`)),
     ...competitorList.map((competitor) => getSitemapRoute(`/alternatives/${competitor.slug}`)),
-    // TODO: add alternatives urls
   ]
 }
