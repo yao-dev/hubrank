@@ -89,7 +89,7 @@ const Footer = () => {
           <div className="flex flex-col gap-4">
             <p className="font-semibold">Alternatives</p>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-2">
               {competitorList.map((item) => {
                 return (
                   <Link
