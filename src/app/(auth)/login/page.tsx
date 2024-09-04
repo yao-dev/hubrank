@@ -3,7 +3,7 @@ import { IconLock, IconMail } from '@tabler/icons-react';
 import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
-import { Form, Alert, Input, Button, Card, Typography, Image, Spin, Divider } from 'antd';
+import { Form, Alert, Input, Button, Card, Typography, Image, Spin, Divider, message } from 'antd';
 import { useRouter } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
@@ -45,10 +45,19 @@ export default function Login() {
     }
   }, [count]);
 
+  const isEmailRestricted = (email: string) => {
+    const restrictedPattern = /^[a-zA-Z0-9._%+-]+\+[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return restrictedPattern.test(email);
+  }
 
   const onSubmit = async (values: any) => {
     setError(false);
     if (type === 'email') {
+      if (isEmailRestricted(values.email)) {
+        message.error("Invalid email")
+        return;
+      }
+
       setIsAuthLoading(true);
 
       const token = await executeRecaptcha("form_login");
