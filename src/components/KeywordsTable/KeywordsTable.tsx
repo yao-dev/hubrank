@@ -361,7 +361,7 @@ const KeywordsTable = () => {
                     userId,
                     query: searchTerm,
                     lang: language.code,
-                    locationCode: language.location_code
+                    locationCode: language.location_code,
                   });
 
                   const newKeywords = keywordsSuggestion?.map((item: any) => {

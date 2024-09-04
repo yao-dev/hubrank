@@ -58,7 +58,7 @@ export const getKeywordsForKeywords = async ({
   const { data } = await axios({
     method: "POST",
     url: "https://api.dataforseo.com/v3/keywords_data/google/keywords_for_keywords/live",
-    data: [{ "search_partners": false, "keywords": [keyword], "language_code": countryCode || "en", "sort_by": "relevance", "date_interval": "next_month", "include_adult_keywords": false }],
+    data: [{ search_partners: false, keywords: [keyword], language_code: countryCode || "en", sort_by: "relevance", date_interval: "next_month", include_adult_keywords: false }],
     auth: {
       username: process.env.DATAFORSEO_USERNAME || "",
       password: process.env.DATAFORSEO_PASSWORD || ""

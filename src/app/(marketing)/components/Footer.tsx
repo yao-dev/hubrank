@@ -43,7 +43,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="flex gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-12">
           <div className="flex flex-col gap-4">
             <p className="font-semibold">Links</p>
 
@@ -65,6 +65,24 @@ const Footer = () => {
               >
                 Affiliates - Earn 50%
               </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <p className="font-semibold">Legal</p>
+
+            <div className="flex flex-col gap-2">
+              {legals.map((item) => {
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="hover:text-primary-500"
+                  >
+                    {item.link}
+                  </Link>
+                )
+              })}
             </div>
           </div>
 
@@ -98,24 +116,6 @@ const Footer = () => {
                     className="hover:text-primary-500"
                   >
                     {item.name}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <p className="font-semibold">Legal</p>
-
-            <div className="flex flex-col gap-2">
-              {legals.map((item) => {
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="hover:text-primary-500"
-                  >
-                    {item.link}
                   </Link>
                 )
               })}
