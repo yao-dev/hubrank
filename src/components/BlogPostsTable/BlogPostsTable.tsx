@@ -11,7 +11,6 @@ import {
   Table,
   Tag,
   message,
-  Spin,
 } from 'antd';
 import { useMemo, useState } from 'react';
 import {
@@ -125,14 +124,10 @@ const BlogPostsTable = () => {
         width: 50,
         render: (_value: any, record: any) => {
           return (
-            ["writing", "queue"].includes(record.status) ? (
-              <Spin size="small" />
-            ) : (
-              <div className='flex flex-row items-center gap-2'>
-                <IconCoin stroke={1.5} />
-                <p>{record?.cost ?? 0}</p>
-              </div>
-            )
+            <div className='flex flex-row items-center gap-2'>
+              <IconCoin stroke={1.5} />
+              <p>{record?.cost ?? 0}</p>
+            </div>
           )
         },
       },
@@ -273,6 +268,7 @@ const BlogPostsTable = () => {
             >
               <Button
                 onClick={(e) => e.preventDefault()}
+                disabled={record.status === "writing"}
                 icon={(
                   <DeleteTwoTone
                     onClick={(e) => e.preventDefault()}

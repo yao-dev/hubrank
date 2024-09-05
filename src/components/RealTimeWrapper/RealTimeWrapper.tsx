@@ -98,7 +98,7 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 			knowledges = supabase
 				.channel('knowledges')
 				.on('postgres_changes', {
-					event: "INSERT",
+					event: "*",
 					schema: 'public',
 					table: 'knowledges',
 					filter: `project_id=eq.${projectId}`,

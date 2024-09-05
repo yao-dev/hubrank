@@ -4,7 +4,7 @@ import { marked } from "marked";
 import { generateUuid5 } from 'weaviate-ts-client';
 import { AI } from "./AI";
 import axios from "axios";
-import { compact, isEmpty, isNaN, orderBy } from "lodash";
+import { compact, get, isEmpty, isNaN, orderBy } from "lodash";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
@@ -1046,13 +1046,20 @@ export const updateCredits = async ({ userId, credits, action }: {
 }) => {
   console.log(chalk.yellow(`[${action}] ${credits} credits for user "${userId}"`));
   const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
-  const subscription = user?.subscription ?? {};
+  const subscription = get(user, "subscription", {});
   const userCredits = Math.max(0, user?.subscription?.credits ?? 0);
   const newCredits = action === "increment" ? userCredits + credits : credits;
 
   await supabase.from("users").update({
     subscription: {
       ...subscription,
+      plan: {
+        ...get(subscription, 'plan', {}),
+        metadata: {
+          ...get(subscription, 'plan.metadata', {}),
+          credits: get(subscription, 'plan.metadata.credits', newCredits),
+        }
+      },
       credits: newCredits
     }
   })

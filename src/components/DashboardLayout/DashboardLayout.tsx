@@ -1,5 +1,17 @@
 'use client';;
-import { Layout, Menu, theme, Flex, Image, MenuProps, Drawer, Typography, Badge, Spin } from 'antd';
+import {
+  Layout,
+  Menu,
+  theme,
+  Flex,
+  Image,
+  MenuProps,
+  Drawer,
+  Typography,
+  Spin,
+  Progress,
+  Button,
+} from 'antd';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -10,7 +22,6 @@ import {
   IconPigMoney,
   IconCreditCard,
   IconBulb,
-  IconCoin,
   IconSettings,
   IconMessage,
   IconTextCaption,
@@ -22,7 +33,7 @@ import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
 import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
-import { compact } from 'lodash';
+import { compact, isNaN } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 
@@ -220,6 +231,10 @@ export default function DashboardLayout({
   }, [pathname, params, tab])
 
   const sideMenuContent = useMemo(() => {
+    const creditsLeft = user?.subscription?.credits ?? 0
+    const periodCredits = user?.subscription?.plan?.metadata?.credits ?? 0;
+    const creditsPercentLeft = Math.max(creditsLeft / periodCredits * 100, 0)
+
     return (
       <Flex vertical justify='space-between' style={{ height: '100%' }}>
         <div>
@@ -242,34 +257,31 @@ export default function DashboardLayout({
         </div>
         <Flex vertical gap="large" style={{ marginBottom: 12 }}>
           <Flex vertical>
-            {/* <Alert
-              type="success"
-              message={
-                <Typography.Text>
-                  You have <b>{user?.subscription?.credits ?? 0}</b> credits left.
-                </Typography.Text>
-              }
-              style={{ margin: 0, marginBottom: 8, border: 0, borderRadius: 0, paddingTop: 15, paddingBottom: 15 }}
-            /> */}
+            <div className='p-2 mb-2'>
+              <div className='bg-gray-100 rounded-md p-3 flex flex-col gap-2'>
+                <div className='flex flex-row justify-between'>
+                  <p className='font-semibold'>Credits</p>
+                  <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
+                </div>
+
+                <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} />
+
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={() => pricingModal.open(true, {
+                    title: "Get more credits"
+                  })}
+                >
+                  Upgrade
+                </Button>
+              </div>
+            </div>
             <Menu
               theme="dark"
               mode="inline"
               selectedKeys={selectedKeys}
               items={[
-                {
-                  id: "credits",
-                  key: "credits",
-                  icon: <IconCoin />,
-                  label: (
-                    <Flex gap="middle" align='center' onClick={() => pricingModal.open(true, {
-                      title: "Get more credits"
-                    })}>
-                      Credits
-                      <Badge count={user?.subscription?.credits ?? 0} overflowCount={10000} showZero color="geekblue" style={{ background: "" }} />
-                    </Flex>
-                  ),
-                  // onClick: () => pricingModal.open(trues)
-                } as MenuItem,
                 getItem({ key: "subscriptions", link: '/subscriptions', label: 'Subscriptions', icon: <IconCreditCard /> }),
                 getItem({
                   key: "feedback", link: '', label: 'Feature request', onClick: () => {

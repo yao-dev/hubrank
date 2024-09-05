@@ -105,9 +105,10 @@ export default function PricingTable({ title, subtitle }: Props) {
                   const subscription: any = Object.values(userSubscriptions)?.[0];
                   const hasSubscription = !!subscription;
                   const isSubscribed = subscription?.plan?.id === currentPrice?.id;
+                  const price = currentPrice?.unit_amount_decimal / 100
+                  const safePrice = isNaN(price) ? 0 : price
 
                   const pricing = (
-
                     <Card key={product.id} className="w-full rounded-lg" style={{ borderColor: mostPopularSubscription ? tokens.token.colorPrimary : undefined, borderWidth: 2 }}>
                       <Flex vertical>
                         <Flex align="center" gap="small" style={{ marginBottom: 4 }}>
@@ -121,7 +122,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                           <Flex align="baseline">
                             <Typography.Text style={{ fontSize: 42, fontWeight: 800 }}>
                               <CurrencyFormat
-                                value={currentPrice?.unit_amount_decimal / 100}
+                                value={safePrice}
                                 displayType={'text'}
                                 prefix={currencies[currentPrice?.currency?.toUpperCase()]?.symbol}
                               />
