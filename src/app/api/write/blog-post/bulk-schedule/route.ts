@@ -39,7 +39,6 @@ export async function POST(request: Request) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
-
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
     const cost = body.headlines.length + (body.headlines.length * (body.structured_schemas.length * 0.25));
     const creditCheck = {
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
       body.headlines.map(async (headline, index) => {
         let id;
         try {
-          id = await insertBlogPost({ ...body, title: headline });
+          id = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
           const competitors = await getSerp({
             query: body.seed_keyword,
             languageCode: language.code,
@@ -78,9 +77,6 @@ export async function POST(request: Request) {
               "Upstash-Delay": `${(index || 0) as number * 25}s`,
             }
           });
-
-          await updateBlogPost(id, { cost: 1 + (body.structured_schemas.length * 0.25) })
-
         } catch (e) {
           console.log(`Fail to schedule blog post for headline: ${headline}`, e);
           if (id) {

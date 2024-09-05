@@ -10,9 +10,17 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   // CREATE NEW ARTICLE WITH QUEUE STATUS
-  const articleId = await insertBlogPost(body);
+  const cost = 1 + (body.structured_schemas.length * 0.25);
+  const articleId = await insertBlogPost({ ...body, cost });
 
   try {
+    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    const creditCheck = {
+      userId: body.userId,
+      costInCredits: cost,
+      featureName: "write"
+    }
+    await deductCredits(creditCheck);
     await updateBlogPost(articleId, { status: "writing" })
 
     const [
@@ -35,16 +43,6 @@ export async function POST(request: Request) {
     if (body.writing_style_id) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
-
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-    const cost = 1 + (body.structured_schemas.length * 0.25);
-    const creditCheck = {
-      userId: body.userId,
-      costInCredits: cost,
-      featureName: "write"
-    }
-    await deductCredits(creditCheck);
-    await updateBlogPost(articleId, { cost })
 
     let competitors = [];
 

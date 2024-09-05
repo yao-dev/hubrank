@@ -73,6 +73,7 @@ export const insertBlogPost = async (data: any) => {
         with_faq: data.with_faq,
         with_key_takeways: data.with_key_takeways,
         outline: data.outline,
+        cost: data.cost,
       })
       .select("id")
       .single()
