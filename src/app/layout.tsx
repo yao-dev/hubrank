@@ -13,7 +13,7 @@ import Recaptcha from '@/components/Recaptcha/Recaptcha';
 
 export const metadata: Metadata = {
   title: {
-    default: siteConfig.name,
+    default: `${siteConfig.name} - ${siteConfig.short_description}`,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
