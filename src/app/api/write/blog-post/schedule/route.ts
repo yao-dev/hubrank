@@ -21,7 +21,6 @@ export async function POST(request: Request) {
       featureName: "write"
     }
     await deductCredits(creditCheck);
-    await updateBlogPost(articleId, { status: "writing" })
 
     const [
       { data: project },

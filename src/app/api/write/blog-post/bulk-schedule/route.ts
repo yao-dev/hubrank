@@ -74,7 +74,7 @@ export async function POST(request: Request) {
               competitors
             },
             headers: {
-              "Upstash-Delay": `${(index || 0) as number * 25}s`,
+              "Upstash-Delay": `${(index || 0) as number * 1}m`,
             }
           });
         } catch (e) {

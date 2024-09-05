@@ -26,7 +26,7 @@ export async function POST(request: Request) {
               blog_post_id: body.record.id
             },
             headers: {
-              "Upstash-Delay": "2m",
+              "Upstash-Delay": "5m",
             }
           });
         }

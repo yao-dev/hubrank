@@ -80,10 +80,15 @@ const BlogPostsTable = () => {
         key: 'title',
         width: 600,
         render: (value: any, record: any) => {
+          if (record.status === "ready_to_view") {
+            return (
+              <Link href={`/projects/${projectId}/articles/${record.id}`} className='w-full inline-block'>
+                {value || "-"}
+              </Link>
+            )
+          }
           return (
-            <Link href={`/projects/${projectId}/articles/${record.id}`} className='w-full inline-block'>
-              {value || "-"}
-            </Link>
+            <p className='cursor-not-allowed'>{value || "-"}</p>
           )
         },
       },
@@ -126,7 +131,7 @@ const BlogPostsTable = () => {
           return (
             <div className='flex flex-row items-center gap-2'>
               <IconCoin stroke={1.5} />
-              <p>{record?.cost ?? 0}</p>
+              <p>{record?.status === "error" ? 0 : record?.cost ?? 0}</p>
             </div>
           )
         },
