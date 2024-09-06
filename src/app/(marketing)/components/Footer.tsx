@@ -59,12 +59,12 @@ const Footer = () => {
                   </Link>
                 )
               })}
-              <Link
+              {/* <Link
                 href="https://hubrank.promotekit.com"
                 className="hover:text-primary-500"
               >
                 Affiliates - Earn 50%
-              </Link>
+              </Link> */}
             </div>
           </div>
 

@@ -291,7 +291,7 @@ export default function DashboardLayout({
                     }
                   }, icon: <IconSpeakerphone />
                 }),
-                getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
+                // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
               ]}
             />
           </Flex>
