@@ -11,6 +11,8 @@ import {
   Spin,
   Progress,
   Button,
+  Modal,
+  Result,
 } from 'antd';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -19,7 +21,6 @@ import {
   IconDashboard,
   IconSeo,
   IconWriting,
-  IconPigMoney,
   IconCreditCard,
   IconBulb,
   IconSettings,
@@ -36,6 +37,7 @@ import usePricingModal from '@/hooks/usePricingModal';
 import { compact, isNaN } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
+import supabase from '@/helpers/supabase';
 
 const { Sider, Content } = Layout;
 
@@ -115,13 +117,26 @@ function getItem({
   } as MenuItem;
 }
 
+const isAppSumoRedeemable = async (userId: string) => {
+  const appSumoCode = localStorage.getItem("appsumo_code");
+  if (!appSumoCode) return false;
+
+  const { data } = await supabase.from("appsumo_code").select().eq("id", appSumoCode).is("user_id", null).maybeSingle().throwOnError();
+  if (data) {
+    await supabase.from("appsumo_code").update({ user_id: userId }).eq("id", appSumoCode).throwOnError();
+    return true;
+  }
+
+  return false;
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode,
 }) {
   const {
-    token: { colorBgContainer, borderRadiusLG, borderRadiusSM, Layout: { siderBg } },
+    token: { colorBgContainer, borderRadiusLG, Layout: { siderBg } },
   } = theme.useToken();
   const params = useParams();
   const pathname = usePathname();
@@ -134,10 +149,19 @@ export default function DashboardLayout({
   const pricingModal = usePricingModal();
   const logout = useLogout();
   const { session } = useSession();
+  const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
 
   useEffect(() => {
     if (!session) {
       redirect('/');
+    } else {
+      isAppSumoRedeemable(session.user.id)
+        .then((isRedeemable) => {
+          if (isRedeemable) {
+            setIsShowAppSumoModal(true);
+          }
+          localStorage.removeItem("appsumo_code");
+        })
     }
   }, [session])
 
@@ -350,6 +374,29 @@ export default function DashboardLayout({
       </Drawer>
 
       <PricingModal />
+
+      <Flex vertical gap="middle" align="center" justify="center">
+        <Modal
+          open={isShowAppSumoModal}
+          centered
+          footer={null}
+          width="auto"
+          closeIcon
+          closable
+          onCancel={() => setIsShowAppSumoModal(false)}
+        >
+          <Result
+            status="success"
+            title="Thank you, Sumoling!"
+            subTitle="You have successfuly redeemed your Sumo code."
+            extra={[
+              <Button type="primary" onClick={() => setIsShowAppSumoModal(false)}>
+                Start now
+              </Button>
+            ]}
+          />
+        </Modal>
+      </Flex>
 
       <Layout hasSider style={styles.mainLayout}>
         <Sider

@@ -6,7 +6,7 @@ type CustomMetadata = { name?: string; short_description?: string; url?: string;
 
 export const siteConfig: Metadata & CustomMetadata = {
   name: "Hubrank",
-  short_description: "Generate SEO blogs, social media captions & replies in just few clicks.",
+  short_description: "Generate SEO blogs, social media captions & replies in just a few clicks.",
   description: "Supercharge your marketing with AI-generated content. Create SEO blogs and social media posts instantly. Grow your brand 10x faster with no effort.",
   url,
   locale: "en_US",

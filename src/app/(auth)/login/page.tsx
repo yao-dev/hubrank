@@ -4,7 +4,7 @@ import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
 import { Form, Alert, Input, Button, Card, Typography, Image, Spin, Divider, message } from 'antd';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -25,6 +25,14 @@ export default function Login() {
   const router = useRouter();
   const { session } = useSession();
   const { executeRecaptcha } = useReCaptcha();
+  const searchParams = useSearchParams();
+  const appSumoCode = searchParams.get("appsumo_code") ?? "";
+
+  useEffect(() => {
+    if (appSumoCode) {
+      localStorage.setItem("appsumo_code", appSumoCode)
+    }
+  }, [appSumoCode]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -46,7 +54,7 @@ export default function Login() {
   }, [count]);
 
   const isEmailRestricted = (email: string) => {
-    const restrictedPattern = /^[a-zA-Z0-9._%+-]+\+[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const restrictedPattern = /^[a-zA-Z0-9._%+-]+\+[a-zA-Z0-9._%+-]+@.+$/;
     return restrictedPattern.test(email);
   }
 
@@ -168,14 +176,28 @@ export default function Login() {
       <div className='relative w-full bg-[#001727] md:bg-white md:w-1/2 flex items-center justify-center'>
         {renderBackButton("text-white md:hidden")}
         <Card className='border bg-white lg:border-none w-3/4 lg:w-2/3 xl:w-1/2'>
-          <p style={{ margin: 0, textAlign: "center" }}>
-            <Image
-              src="/brand-logo-short.webp"
-              width={35}
-              preview={false}
-              style={{ marginBottom: 24 }}
-            />
-          </p>
+          <div className='flex flex-col gap-4 justify-center'>
+            {appSumoCode && (
+              <>
+                <p className='m-0 text-center'>
+                  <Image
+                    src="https://appsumo2next-cdn.appsumo.com/_next/static/media/as-appsumo-logo-dark.fbc325ee.svg"
+                    width={150}
+                    preview={false}
+                  />
+                </p>
+                <p className='text-center text-xl'>X</p>
+              </>
+            )}
+            <p className='m-0 text-center'>
+              <Image
+                src="/brand-logo-black.webp"
+                width={150}
+                preview={false}
+                style={{ marginBottom: 24 }}
+              />
+            </p>
+          </div>
 
           <Typography.Title level={4} style={{ fontWeight: 700, margin: 0, textAlign: "center" }}>
             Log in or sign up
