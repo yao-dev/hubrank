@@ -685,7 +685,7 @@ export const fetchHtml = async (url: string): Promise<string> => {
   return $('body').html() ?? "";
 }
 
-const cleanHtml = (html: string) => {
+export const cleanHtml = (html: string) => {
   const $ = cheerio.load(html);
   $('style, script, [src*="base64"], img, svg, iframe, noscript, object, embed, link, meta, nav, footer, aside').remove();
   return $('body').html() ?? "";

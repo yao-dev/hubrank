@@ -13,6 +13,8 @@ import { supabaseAdmin } from "@/helpers/supabase";
 import Anthropic from "@anthropic-ai/sdk";
 import { getSerp } from "@/helpers/seo";
 import { compact, omit, shuffle } from "lodash";
+import axios from "axios";
+import * as cheerio from "cheerio";
 
 const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
@@ -97,10 +99,16 @@ export async function POST(request: Request) {
     if (!body.source && body.type !== "comment") {
       const query = [...body.keywords.split(","), ...body.hashtags.split(" ")].map((keyword) => `"${keyword}"`).join(" OR ");
       console.log("SERP QUERY", `site:x.com ${query} inurl:status`)
-      const serp = await getSerp({ query: `site:x.com ${query} inurl:status`, languageCode: language.code, locationCode: language.location_code, count: 50 });
+      const serp = await getSerp({ query: `site:instagram.com/p ${query}`, languageCode: language.code, locationCode: language.location_code, count: 50 });
       const randomFiveTweets = shuffle(serp).slice(0, 5);
-      console.log("randomFiveTweets", randomFiveTweets)
-      inspo = await getTweets(randomFiveTweets.map((item) => item.url));
+      const result = await Promise.all(randomFiveTweets.map(async (item) => await axios.get(item.url)))
+
+      inspo = result.map((item) => {
+        const $ = cheerio.load(item.data);
+        return $('meta[name="description"]').attr('content')
+      })
+
+      console.log("inspo", inspo)
     }
 
     if (body.type !== "comment") {
