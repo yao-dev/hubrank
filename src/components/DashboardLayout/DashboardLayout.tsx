@@ -282,26 +282,6 @@ export default function DashboardLayout({
         </div>
         <Flex vertical gap="large" style={{ marginBottom: 12 }}>
           <Flex vertical>
-            <div className='p-2 mb-2'>
-              <div className='bg-gray-100 rounded-md p-3 flex flex-col gap-2'>
-                <div className='flex flex-row justify-between'>
-                  <p className='font-semibold'>Credits</p>
-                  <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
-                </div>
-
-                <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} />
-
-                <Button
-                  size="small"
-                  type="primary"
-                  onClick={() => pricingModal.open(true, {
-                    title: "Get more credits"
-                  })}
-                >
-                  Upgrade
-                </Button>
-              </div>
-            </div>
             <Menu
               theme="dark"
               mode="inline"
@@ -317,10 +297,17 @@ export default function DashboardLayout({
                   }, icon: <IconSpeakerphone />
                 }),
                 // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
+                {
+                  key: 'logout',
+                  icon: <IconLogout />,
+                  label: (
+                    <span onClick={logout}>Logout</span>
+                  ),
+                }
               ]}
             />
           </Flex>
-          <Menu
+          {/* <Menu
             theme="dark"
             mode="inline"
             items={[
@@ -332,9 +319,34 @@ export default function DashboardLayout({
                 ),
               }
             ]}
-          />
+          /> */}
 
-          {user?.email && <Typography.Text style={{ color: "rgba(255, 255, 255, 0.65)", marginLeft: 28, marginBottom: 10 }}>{user.email}</Typography.Text>}
+          {user?.email && <Typography.Text style={{ color: "rgba(255, 255, 255, 0.65)", marginLeft: 28 }}>{user.email}</Typography.Text>}
+
+          <div className='px-2'>
+            <div className='bg-gray-100 rounded-md p-3 flex flex-col gap-2'>
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>Credits</p>
+                {!!user?.subscription?.credits ? (
+                  <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
+                ) : (
+                  <p>You have no credits</p>
+                )}
+              </div>
+
+              <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} />
+
+              <Button
+                size="small"
+                type="primary"
+                onClick={() => pricingModal.open(true, {
+                  title: "Get more credits"
+                })}
+              >
+                Upgrade
+              </Button>
+            </div>
+          </div>
         </Flex>
       </Flex>
     )
