@@ -38,6 +38,7 @@ import { compact, isNaN } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase';
+import ConfettiExplosion from 'react-confetti-explosion';
 
 const { Sider, Content } = Layout;
 
@@ -385,6 +386,7 @@ export default function DashboardLayout({
           closable
           onCancel={() => setIsShowAppSumoModal(false)}
         >
+          <ConfettiExplosion />
           <Result
             status="success"
             title="Thank you, Sumoling!"
