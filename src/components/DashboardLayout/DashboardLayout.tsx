@@ -38,7 +38,7 @@ import { compact, isNaN } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase';
-import ConfettiExplosion from 'react-confetti-explosion';
+import Confetti from 'react-confetti';
 
 const { Sider, Content } = Layout;
 
@@ -377,8 +377,16 @@ export default function DashboardLayout({
       <PricingModal />
 
       <Flex vertical gap="middle" align="center" justify="center">
+        {isShowAppSumoModal && (
+          <Confetti
+            width={window.innerWidth}
+            height={window.innerHeight}
+          />
+        )}
+
         <Modal
           open={isShowAppSumoModal}
+          mask={false}
           centered
           footer={null}
           width="auto"
@@ -386,7 +394,6 @@ export default function DashboardLayout({
           closable
           onCancel={() => setIsShowAppSumoModal(false)}
         >
-          <ConfettiExplosion />
           <Result
             status="success"
             title="Thank you, Sumoling!"
