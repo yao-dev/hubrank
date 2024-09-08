@@ -19,7 +19,8 @@ export async function POST(request: Request) {
             destination: getUpstashDestination("api/appsumo/update-credits"),
             body: body.record,
             headers: {
-              "Upstash-Cron": "0 0 1 * *", // run on the 1st day of each month
+              // "Upstash-Cron": "0 0 1 * *", // run on the 1st day of each month
+              "Upstash-Cron": "*/1 * * * *", // run on the 1st day of each month
             }
           });
           await supabase.from("appsumo_code").update({ schedule_id: scheduleId }).eq("id", body.record.id);
