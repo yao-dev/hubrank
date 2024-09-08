@@ -951,7 +951,7 @@ export const getProjectKnowledges = async ({
 }
 
 export const getUpstashDestination = (endpoint: string) => {
-  const host = process.env.NODE_ENV === "development" ? process.env.UPSTASH_TUNNEL_HOST : "https://app.usehubrank.com";
+  const host = process.env.NODE_ENV === "development" ? process.env.UPSTASH_TUNNEL_HOST : "https://usehubrank.com";
   return `${host}/${endpoint}`
 }
 

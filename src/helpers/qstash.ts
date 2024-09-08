@@ -38,12 +38,16 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
     console.log("schedule response", { status })
     return null;
   }
+  if (!data?.messageId) {
+    console.log("no message id returned in the response", { data })
+    return null;
+  }
 
-  return data.scheduleId
+  return data.messageId
 }
 
 export const deleteSchedule = async (scheduleId: string) => {
-  return axios.delete(`https://qstash.upstash.io/v2/schedules/${scheduleId}`, {
+  return axios.delete(`https://qstash.upstash.io/v2/messages/${scheduleId}`, {
     headers: {
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
     }
