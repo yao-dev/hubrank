@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateCredits } from "../../helpers";
 import { deleteSchedule } from "@/helpers/qstash";
-import { differenceInYears } from "date-fns";
+import { differenceInMonths, differenceInYears } from "date-fns";
 import { supabaseAdmin } from "@/helpers/supabase";
 import { get } from "lodash";
 
@@ -12,6 +12,8 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   try {
+    console.log("diff in years", differenceInYears(body.redeem_date, new Date()))
+    console.log("diff in month", differenceInMonths(body.redeem_date, new Date()))
     // - check if appsumo_code (redeem_date vs now() is less than a year)
     if (differenceInYears(new Date(body.redeem_date), new Date()) >= 1) {
       // delete cron schedule
