@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     switch (body.type) {
       case 'UPDATE': {
         if (!body.old_record.user_id && body.record.user_id) {
-          // await updateCredits({ userId: body.record.user_id, credits: 100, action: "increment" });
+          await updateCredits({ userId: body.record.user_id, credits: 100, action: "increment" });
           // start a cron that will call an endpoint monthly
           const scheduleId = await createSchedule({
             destination: getUpstashDestination("api/appsumo/update-credits"),

@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     // - check if appsumo_code (redeem_date vs now() is less than a year)
-    if (differenceInYears(body.redeem_date, new Date()) >= 1) {
+    if (differenceInYears(new Date(body.redeem_date), new Date()) >= 1) {
       // delete cron schedule
       const { data: appsumo } = await supabase.from("appsumo_code").select().eq("id", body.id).maybeSingle().throwOnError();
       await deleteSchedule(appsumo.schedule_id);
