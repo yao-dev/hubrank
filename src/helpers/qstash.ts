@@ -25,7 +25,7 @@ export const createBackgroundJob = async ({ body, destination, timeoutSec }: any
 }
 
 export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string | null> => {
-  const { data, status } = await axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(body), {
+  const { data, status } = await axios.post(`https://qstash.upstash.io/v2/schedules/${destination}`, JSON.stringify(body), {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
@@ -38,16 +38,16 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
     console.log("schedule response", { status })
     return null;
   }
-  if (!data?.messageId) {
+  if (!data?.scheduleId) {
     console.log("no message id returned in the response", { data })
     return null;
   }
 
-  return data.messageId
+  return data.scheduleId
 }
 
 export const deleteSchedule = async (scheduleId: string) => {
-  return axios.delete(`https://qstash.upstash.io/v2/messages/${scheduleId}`, {
+  return axios.delete(`https://qstash.upstash.io/v2/schedules/${scheduleId}`, {
     headers: {
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
     }
