@@ -39,6 +39,7 @@ import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase';
 import Confetti from 'react-confetti';
+import { updateCredits } from '@/app/api/helpers';
 
 const { Sider, Content } = Layout;
 
@@ -124,7 +125,7 @@ const isAppSumoRedeemable = async (userId: string) => {
 
   const { data } = await supabase.from("appsumo_code").select().eq("id", appSumoCode).is("user_id", null).maybeSingle().throwOnError();
   if (data) {
-    await supabase.from("appsumo_code").update({ user_id: userId }).eq("id", appSumoCode).throwOnError();
+    await supabase.from("appsumo_code").update({ user_id: userId, redeem_date: new Date() }).eq("id", appSumoCode).throwOnError();
     return true;
   }
 
