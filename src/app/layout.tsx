@@ -2,7 +2,7 @@ import { Inter } from 'next/font/google';
 import SessionProvider from '@/provider/SessionProvider';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
-import { App } from 'antd';
+import { App, Spin } from 'antd';
 import ReactQueryProvider from '@/components/ReactQueryProvider/ReactQueryProvider';
 import AntdProvider from '@/components/AntdProvider/AntdProvider';
 import { Metadata } from 'next';
@@ -10,6 +10,7 @@ import { siteConfig } from '@/config/site';
 import "./global.css";
 import InitClarityTracking from '@/components/InitClarityTracking/InitClarityTracking';
 import Recaptcha from '@/components/Recaptcha/Recaptcha';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: {
@@ -79,9 +80,11 @@ export default function RootLayout({
               <ReactQueryProvider>
                 <SessionProvider>
                   <RealtimeWrapper>
-                    <Recaptcha>
-                      {children}
-                    </Recaptcha>
+                    <Suspense fallback={<Spin spinning />}>
+                      <Recaptcha>
+                        {children}
+                      </Recaptcha>
+                    </Suspense>
                   </RealtimeWrapper>
                 </SessionProvider>
               </ReactQueryProvider>
