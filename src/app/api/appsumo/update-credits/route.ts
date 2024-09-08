@@ -13,13 +13,11 @@ export async function POST(request: Request) {
 
   try {
     const { data: appsumo } = await supabase.from("appsumo_code").select().eq("id", body.id).maybeSingle().throwOnError();
-    console.log(JSON.stringify(body))
-    console.log("diff in years", differenceInYears(appsumo.redeem_date, new Date()))
-    console.log("diff in month", differenceInMonths(appsumo.redeem_date, new Date()))
     // - check if appsumo_code (redeem_date vs now() is less than a year)
-    if (differenceInYears(new Date(body.redeem_date), new Date()) >= 1) {
+    if (Math.abs(differenceInYears(body.redeem_date, new Date())) >= 1) {
       // delete cron schedule
       await deleteSchedule(appsumo.schedule_id);
+      await supabase.from("appsumo_code").update({ schedule_id: "" }).eq("id", appsumo.id)
     } else {
       // - if user has subscription add 100 credits to the user
       // - replace user current credits with 100 credits otherwise
