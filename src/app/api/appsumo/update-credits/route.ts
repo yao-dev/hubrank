@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     } else {
       // - if user has subscription add 100 credits to the user
       // - replace user current credits with 100 credits otherwise
-      const { data: user } = await supabase.from("user").select().eq("id", body.user_id).maybeSingle().throwOnError();
+      const { data: user } = await supabase.from("users").select().eq("id", body.user_id).maybeSingle().throwOnError();
       const hasSubscription = !!get(user, "subscription.plan.id");
       await updateCredits({ userId: body.user_id, credits: 100, action: hasSubscription ? "increment" : "replace" })
     }

@@ -39,7 +39,6 @@ import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase';
 import Confetti from 'react-confetti';
-import { updateCredits } from '@/app/api/helpers';
 
 const { Sider, Content } = Layout;
 
@@ -329,7 +328,8 @@ export default function DashboardLayout({
               <div className='flex flex-row justify-between'>
                 <p className='font-semibold'>Credits</p>
                 {!!user?.subscription?.credits ? (
-                  <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
+                  // <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
+                  <p><b>{user?.subscription?.credits ?? 0}</b></p>
                 ) : (
                   <p>You have no credits</p>
                 )}
