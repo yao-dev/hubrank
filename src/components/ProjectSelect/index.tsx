@@ -7,6 +7,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import NewProjectModal from "../NewProjectModal";
 import useUser from "@/hooks/useUser";
 import usePricingModal from "@/hooks/usePricingModal";
+import useActiveProject from "@/hooks/useActiveProject";
 
 const ProjectSelect = (props = {}) => {
   const projectId = useProjectId();
@@ -17,6 +18,7 @@ const ProjectSelect = (props = {}) => {
   const pathname = usePathname();
   const user = useUser();
   const pricingModal = usePricingModal();
+  const { setProjectId } = useActiveProject()
 
   const hasReachedLimit = projects && user?.subscription?.projects_limit <= projects?.length;
 
@@ -73,6 +75,7 @@ const ProjectSelect = (props = {}) => {
           style={{ width: 200 }}
           value={selectedProject}
           onChange={(value) => {
+            setProjectId(value)
             if (projectId && value !== null) {
               const newPath = window.location.href.replace(`${projectId}`, `${value}`)
               router.push(newPath);
