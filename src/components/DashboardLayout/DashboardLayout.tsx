@@ -26,6 +26,7 @@ import {
   IconMessage,
   IconTextCaption,
   IconSpeakerphone,
+  IconPigMoney,
 } from '@tabler/icons-react';
 import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
