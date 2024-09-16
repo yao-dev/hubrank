@@ -9,7 +9,6 @@ import {
   Drawer,
   Typography,
   Spin,
-  Progress,
   Button,
   Modal,
   Result,
@@ -34,7 +33,7 @@ import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
 import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
-import { compact, isNaN } from 'lodash';
+import { compact } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase';
@@ -296,7 +295,7 @@ export default function DashboardLayout({
                     }
                   }, icon: <IconSpeakerphone />
                 }),
-                // getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
+                getItem({ key: "affiliate", link: 'https://hubrank.promotekit.com', label: 'Affiliates - Earn 50%', target: "_blank", icon: <IconPigMoney /> }),
                 {
                   key: 'logout',
                   icon: <IconLogout />,
@@ -335,7 +334,7 @@ export default function DashboardLayout({
                 )}
               </div>
 
-              <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} />
+              {/* <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} /> */}
 
               <Button
                 size="small"

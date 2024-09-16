@@ -42,6 +42,9 @@ const queryKeys = {
   knowledge: (id: number) => ["knowledges", id] as const,
   knowledges: (project_id: number, queue?: boolean) => ["knowledges", { project_id, queue }] as const,
   sitemap: (sitemap: string) => ["sitemap", sitemap] as const,
+  products: () => ['products'] as const,
+  prices: (productIds: string[]) => ["prices", productIds] as const,
+  subscriptions: (customerId: string) => ['subscriptions', { customerId }] as const
 };
 
 export default queryKeys;

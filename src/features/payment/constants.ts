@@ -12,14 +12,14 @@ export const stripeUrls = {
 }
 
 export const webhookEvents = {
-  billing_portal_session_created: 'billing_portal.session.created',
+  // billing_portal_session_created: 'billing_portal.session.created',
   checkout_session_completed: 'checkout.session.completed',
-  customer_updated: 'customer.updated',
+  // customer_updated: 'customer.updated',
   customer_subscription_created: 'customer.subscription.created',
   customer_subscription_deleted: 'customer.subscription.deleted',
   customer_subscription_updated: 'customer.subscription.updated',
-  invoice_paid: 'invoice.paid',
-  invoice_payment_failed: 'invoice.payment_failed',
+  // invoice_paid: 'invoice.paid',
+  // invoice_payment_failed: 'invoice.payment_failed',
 }
 
 export const currencies = {

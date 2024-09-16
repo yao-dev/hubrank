@@ -11,6 +11,7 @@ import "./global.css";
 import InitClarityTracking from '@/components/InitClarityTracking/InitClarityTracking';
 import Recaptcha from '@/components/Recaptcha/Recaptcha';
 import { Suspense } from 'react';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: {
@@ -67,6 +68,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className='bg-white'>
+      <Script async src="https://cdn.promotekit.com/promotekit.js" data-promotekit="4a1e3ed9-f1d4-482a-91ff-a26969556f72" />
       <body
         className={inter.className}
         style={{

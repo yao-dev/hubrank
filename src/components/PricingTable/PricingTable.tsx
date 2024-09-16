@@ -10,6 +10,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { stripeUnixTimestampToDate } from "@/features/payment/helpers";
 import { format } from "date-fns";
 import useUser from "@/hooks/useUser";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   title?: string;
@@ -17,6 +18,7 @@ type Props = {
 }
 
 export default function PricingTable({ title, subtitle }: Props) {
+  const queryClient = useQueryClient()
   const tokens = theme.useToken();
   const user = useUser();
   const { products, prices, userSubscriptions, redirectToCustomerPortal, isLoading } = usePricing();
@@ -27,6 +29,12 @@ export default function PricingTable({ title, subtitle }: Props) {
     priceId: selectedProduct?.default_price,
     metadata: selectedProduct?.metadata ?? {}
   });
+
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["products"] });
+    queryClient.invalidateQueries({ queryKey: ["prices"] });
+    queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+  }, []);
 
   useEffect(() => {
     if (selectedProduct) {

@@ -41,6 +41,7 @@ export default {
         customerId: body.customer_id,
         customerEmail: body.customer_email,
         origin,
+        referral: body.referral
       })
 
       const checkoutSessionUrl = await createCheckoutSession(checkoutData);

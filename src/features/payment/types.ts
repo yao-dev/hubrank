@@ -29,9 +29,6 @@ export type CheckoutData = {
   },
   metadata: any;
   customer_email: string;
-  customer_update: {
-    address: 'auto',
-  },
 }
 
 export type GetCheckoutData = {
@@ -39,11 +36,13 @@ export type GetCheckoutData = {
   metadata: any;
   customerId: string;
   origin: string;
+  referral?: string | number;
 } | {
   priceId: string;
   metadata: any;
   customerEmail: string;
   origin: string;
+  referral?: string | number;
 }
 
 export type GetSessionStatusUrl = {

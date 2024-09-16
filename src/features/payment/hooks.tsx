@@ -1,6 +1,5 @@
 
 "use client";;
-import { loadStripe } from '@stripe/stripe-js';
 import { useCallback } from 'react';
 import axios from 'axios';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -24,7 +23,8 @@ export const useStripe = ({
       price_id: priceId,
       customer_id: user.customer_id,
       customer_email: user.email,
-      metadata
+      metadata,
+      referral: window?.promotekit_referral
     });
     window.location.href = data.checkoutSessionUrl;
   }, [priceId, user, metadata]);

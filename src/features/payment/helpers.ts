@@ -22,6 +22,7 @@ export const getCheckoutData = ({
   customerId,
   customerEmail,
   origin,
+  referral
 }: GetCheckoutData): CheckoutData => {
   if (customerId) {
     return {
@@ -41,7 +42,10 @@ export const getCheckoutData = ({
       customer_update: {
         address: 'auto',
       },
-      metadata,
+      metadata: {
+        ...(metadata ?? {}),
+        promotekit_referral: referral,
+      },
     }
   }
   return {
@@ -58,10 +62,10 @@ export const getCheckoutData = ({
     cancel_url: getCheckoutReturnUrl({ origin }), // NOTE: add ?canceled=true
     automatic_tax: { enabled: true },
     customer_email: customerEmail,
-    customer_update: {
-      address: 'auto',
+    metadata: {
+      ...(metadata ?? {}),
+      promotekit_referral: referral,
     },
-    metadata,
   }
 }
 
@@ -103,7 +107,6 @@ export const getSessionStatus = async (sessionId: string): Promise<SessionStatus
   }
 }
 
-// getPrices([""]);
 export const getPrices = async (ids: string[]) => {
   const query = ids.map((id) => `product:"${id}"`).join(" OR ");
   const prices = await stripe.prices.search({
@@ -112,52 +115,12 @@ export const getPrices = async (ids: string[]) => {
   return prices;
 }
 
-// getProducts(["prod_PwY2NQ", "prod_PwY2NE"]);
+// Product ids are prefixed with "prod_" like "prod_PwY2NE"
 export const getProducts = async (ids: string[]) => {
   const products = await stripe.products.list({
     ids
   });
   return products
-}
-
-export type UpdateCustomer = {
-  eventType: string;
-  subscriptionId: string;
-  customerId: string;
-}
-
-export const updateCustomer = async ({
-  eventType,
-  subscriptionId,
-  customerId
-}: UpdateCustomer) => {
-  console.log(`[${eventType}] UPDATE USER SUBSCRIPTION`)
-  const customer = await stripe.customers.retrieve(customerId);
-
-  console.log("CUSTOMER EMAIL", customer.email || customer?.customer_email)
-  console.log(`[${eventType}] GET USER SUBSCRIPTION`)
-
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
-    expand: ['default_payment_method']
-  });
-
-  console.log(`[${eventType}] DID WE GET A SUBSCRIPTION?`, !!subscription)
-
-  if (!subscription?.id) {
-    throw new Error(`[${eventType}] Subscription lookup failed. stripe_customer_id: ${customerId}`);
-  }
-
-  const updateSubscriptionObject = {
-    id: subscription.id,
-    email: customer?.email ?? "",
-    metadata: subscription,
-    status: subscription.status,
-    price_id: subscription?.items?.data?.[0]?.price?.id,
-    customer_id: customerId ?? ""
-  }
-
-  console.log(`[${eventType}] UPSERT`, updateSubscriptionObject)
-  await supabase.from("subscriptions").upsert(updateSubscriptionObject).throwOnError()
 }
 
 export const getWebhookSecret = (origin: string) => {
@@ -266,7 +229,7 @@ export const handleWebhookEvent = async (event: HandleWebhookEvent) => {
       console.log(chalk.yellow(event.type), { ...eventObject, items: JSON.stringify(eventObject.items, null, 2) });
 
       if (isEmpty(subscription)) {
-        console.log("User doesn't have a subscription")
+        console.log(`User with id "${user.id}" doesn't have a subscription`)
         break;
       }
 
@@ -344,42 +307,6 @@ export const getUserSubscriptions = async (customerId: string) => {
   });
 
   return subscriptions.data;
-}
-
-// https://docs.stripe.com/billing/subscriptions/cancel
-export const cancelSubscription = async (subscriptionId: string) => {
-  const subscription = await stripe.subscriptions.update(
-    subscriptionId,
-    {
-      cancel_at_period_end: true,
-    }
-  );
-
-  return subscription
-}
-
-export const switchSubscription = async ({
-  currentSubscription,
-  newPriceId
-}: any) => {
-  const subscription = await stripe.subscriptions.update(
-    currentSubscription.id,
-    {
-      items: [
-        ...currentSubscription.items.data.map((item: any) => {
-          return {
-            id: item.id,
-            deleted: true,
-          }
-        }),
-        {
-          price: newPriceId,
-        },
-      ]
-    }
-  );
-
-  return subscription
 }
 
 export const updateUserSubscription = async ({ event_type, subscription_id, customer_id }: any) => {

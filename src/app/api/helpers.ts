@@ -587,7 +587,7 @@ export const getYoutubeVideosForKeyword = async ({
     query: `site:youtube.com ${keyword}`,
     languageCode,
     locationCode,
-  })
+  });
 
   console.log("youtube video for keyword", `site:youtube.com ${keyword}`)
   console.log("items", items)
