@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
 import { Form, Alert, Input, Button, Card, Typography, Image, Divider, message } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
-import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
@@ -12,7 +11,7 @@ import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButt
 import axios from 'axios';
 import { useReCaptcha } from 'next-recaptcha-v3';
 import supabase from '@/helpers/supabase/client';
-import useUser from '@/hooks/useUser';
+import useAuth from '@/hooks/useAuth';
 
 export default function Login() {
   // const [isLoading, setIsLoading] = useState(true);
@@ -24,11 +23,10 @@ export default function Login() {
   const [form] = Form.useForm();
   const email = Form.useWatch('email', form);
   const router = useRouter();
-  const { session } = useSession();
   const { executeRecaptcha } = useReCaptcha();
   const searchParams = useSearchParams();
   const appSumoCode = searchParams.get("appsumo_code") ?? "";
-  const user = useUser();
+  const user = useAuth();
 
   useEffect(() => {
     if (appSumoCode) {
@@ -37,10 +35,10 @@ export default function Login() {
   }, [appSumoCode]);
 
   useEffect(() => {
-    if (session) {
+    if (user) {
       router.replace('/');
     }
-  }, [session])
+  }, [user])
 
   useEffect(() => {
     if (count === 0) {

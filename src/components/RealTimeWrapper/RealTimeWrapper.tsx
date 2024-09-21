@@ -1,12 +1,11 @@
 "use client";;
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
-import useSession from "@/hooks/useSession";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { App } from "antd";
 import useProjectId from "@/hooks/useProjectId";
 import usePricingModal from "@/hooks/usePricingModal";
 import supabase from "@/helpers/supabase/client";
+import useAuth from "@/hooks/useAuth";
 
 let users: RealtimeChannel;
 let blogPosts: RealtimeChannel;
@@ -15,20 +14,19 @@ let knowledges: RealtimeChannel;
 
 const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
-	const sessionStore = useSession();
-	const { notification } = App.useApp()
 	const projectId = useProjectId();
 	const pricingModal = usePricingModal();
+	const user = useAuth();
 
 	useEffect(() => {
-		if (sessionStore.session?.user?.id) {
+		if (user?.id) {
 			users = supabase
 				.channel('users')
 				.on('postgres_changes', {
 					event: 'UPDATE',
 					schema: 'public',
 					table: 'users',
-					filter: `id=eq.${sessionStore.session.user.id}`,
+					filter: `id=eq.${user.id}`,
 				}, (data) => {
 					if (data.eventType === 'UPDATE') {
 						queryClient.invalidateQueries({
@@ -121,7 +119,7 @@ const RealtimeWrapper = ({ children }: { children: ReactNode }) => {
 			users?.unsubscribe?.();
 			knowledges?.unsubscribe?.();
 		}
-	}, [queryClient, sessionStore.session?.user?.id, projectId]);
+	}, [queryClient, user, projectId]);
 
 	return <>{children}</>;
 };

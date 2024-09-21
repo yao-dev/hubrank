@@ -36,7 +36,6 @@ import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
 import { compact } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
-import useSession from '@/hooks/useSession';
 import supabase from '@/helpers/supabase/client';
 import Confetti from 'react-confetti';
 
@@ -149,14 +148,13 @@ export default function DashboardLayout({
   const user = useUser();
   const pricingModal = usePricingModal();
   const logout = useLogout();
-  const { session } = useSession();
   const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
 
   useEffect(() => {
-    if (!session) {
+    if (!user) {
       redirect('/');
     } else {
-      isAppSumoRedeemable(session.user.id)
+      isAppSumoRedeemable(user.id)
         .then((isRedeemable) => {
           if (isRedeemable) {
             setIsShowAppSumoModal(true);
@@ -164,7 +162,7 @@ export default function DashboardLayout({
           localStorage.removeItem("appsumo_code");
         })
     }
-  }, [session])
+  }, [user])
 
   const data: MenuItem[] = useMemo(() => {
     const isProjectSelected = typeof projectId === "number" && projectId !== 0;
@@ -316,7 +314,7 @@ export default function DashboardLayout({
     )
   }, [data, selectedKeys, user]);
 
-  if (!session) {
+  if (!user) {
     return (
       <div style={{ width: "100%", height: "100vh" }}>
         <Flex style={{ height: "inherit" }} align="center" justify="center">
