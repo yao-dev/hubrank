@@ -53,6 +53,7 @@ export async function POST(request: Request) {
         query: body.seed_keyword,
         languageCode: language.code,
         locationCode: language.location_code,
+        count: 15
       });
 
       const headlines = await getHeadlines({
@@ -86,6 +87,9 @@ export async function POST(request: Request) {
         project,
         competitors
       },
+      headers: {
+        "Upstash-Delay": "5s",
+      }
     });
 
     return NextResponse.json({ scheduled: true }, { status: 200 });

@@ -15,14 +15,14 @@ export async function POST(request: Request) {
         if (!body.old_record.user_id && body.record.user_id) {
           await updateCredits({ userId: body.record.user_id, credits: 100, action: "increment" });
           // start a cron that will call an endpoint monthly
-          const scheduleId = await createSchedule({
+          const messageId = await createSchedule({
             destination: getUpstashDestination("api/appsumo/update-credits"),
             body: body.record,
             headers: {
               "Upstash-Cron": "0 0 1 * *", // run on the 1st day of each month
             }
           });
-          await supabase().from("appsumo_code").update({ schedule_id: scheduleId }).eq("id", body.record.id);
+          await supabase().from("appsumo_code").update({ schedule_id: messageId }).eq("id", body.record.id);
         }
         break;
       }

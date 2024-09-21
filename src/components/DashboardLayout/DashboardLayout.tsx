@@ -152,7 +152,6 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (user) {
-      console.log("DashboardLayout")
       isAppSumoRedeemable(user.id)
         .then((isRedeemable) => {
           if (isRedeemable) {

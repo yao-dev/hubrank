@@ -339,7 +339,7 @@ export class AI {
 
     ${prefix}
 
-    Give me ${values.count} ${values.count <= 1 ? "headline" : "headlines"} based on the inspo and made for the search intent "${values.seedKeyword}"
+    Give me ${values.count} ${values.count <= 1 ? "headline" : "headlines"} similar to the headline inspo list above but no duplicate and made for the search intent "${values.seedKeyword}"
     - the content type is "${values.contentType}"
     - one headline per line
     - do not prefix lines with number

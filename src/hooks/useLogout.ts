@@ -14,9 +14,6 @@ export const useLogout = () => {
       .then(() => {
         queryClient.clear();
       })
-      .finally(() => {
-        console.log("LOGOUT")
-      })
   }
 
   return logout

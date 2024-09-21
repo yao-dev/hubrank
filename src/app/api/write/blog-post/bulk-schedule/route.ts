@@ -56,6 +56,7 @@ export async function POST(request: Request) {
             query: body.seed_keyword,
             languageCode: language.code,
             locationCode: language.location_code,
+            count: 15
           });
 
           await createSchedule({
