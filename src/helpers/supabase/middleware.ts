@@ -73,16 +73,13 @@ export async function updateSession(request: NextRequest) {
     } else if (user && path == "/login") {
       return NextResponse.redirect(new URL("/", request.url));
     }
-    console.log("ENTER HERE 1", new URL(`/app${path === "/" ? "" : path}`, request.url))
     return NextResponse.rewrite(
       new URL(`/app${path === "/" ? "" : path}`, request.url),
     );
   }
 
-  console.log("ENTER HERE 2", new URL(`${path === "/" ? "" : path}`, request.url))
-
   // rewrite root application to `/`
   return NextResponse.rewrite(
-    new URL(`${path === "/" ? "" : path}`, request.url),
+    new URL(`${path === "/" ? "" : path}`, request.url.replace("//app.", "//")),
   );
 }
