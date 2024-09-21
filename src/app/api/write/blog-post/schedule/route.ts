@@ -30,6 +30,8 @@ export async function POST(request: Request) {
       supabase().from("languages").select("*").eq("id", body.language_id).single()
     ]);
 
+    console.log("project", project);
+
     const context = getProjectContext({
       name: project.name,
       website: project.website,
