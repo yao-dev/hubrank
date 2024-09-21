@@ -25,6 +25,14 @@ export const createBackgroundJob = async ({ body, destination, timeoutSec }: any
 }
 
 export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string | null> => {
+  console.log({
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+      "Upstash-Retries": 0,
+      ...headers,
+    },
+  })
   const { data, status } = await axios.post(`https://qstash.upstash.io/v2/schedules/${destination}`, JSON.stringify(body), {
     headers: {
       "Content-Type": "application/json",
