@@ -36,12 +36,6 @@ export default function Login() {
     }
   }, [appSumoCode]);
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setIsLoading(false)
-  //   }, 1000);
-  // }, []);
-
   useEffect(() => {
     if (session) {
       router.replace('/');

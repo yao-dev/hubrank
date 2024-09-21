@@ -53,13 +53,6 @@ export async function POST(request: Request) {
       .eq("id", integration.id)
       .throwOnError()
 
-    // await supabase().from("integrations").insert({
-    //   user_id: integration.user_id,
-    //   project_id: integration.project_id,
-    //   platform: "zapier",
-    //   metadata: body
-    // }).throwOnError()
-
     return NextResponse.json({
       ...integration,
       enabled: true,
@@ -78,7 +71,6 @@ export async function DELETE(request: Request) {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"));
     const body = await request.json();
     console.log("[DELETE] webhook", { accessToken, body, url: request.url });
-    request
 
     const integration = jwt.verify(accessToken, process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
     console.log(chalk.yellow("integration from token:"), integration)
