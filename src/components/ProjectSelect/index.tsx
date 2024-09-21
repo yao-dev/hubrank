@@ -1,3 +1,4 @@
+"use client";
 import useProjects from "@/hooks/useProjects";
 import { Button, Divider, Image, Select } from "antd";
 import { usePathname, useRouter } from "next/navigation";
