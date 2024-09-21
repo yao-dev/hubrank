@@ -19,7 +19,7 @@ export const getGoogleClient = (origin: string) => {
   return oauth2Client
 }
 
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {

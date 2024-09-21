@@ -23,7 +23,7 @@ const Navbar = () => {
   const loginButton = useCallback((className?: string, textClassName?: string) => {
     return (
       <Button
-        href={`${location.protocol}//app.${location.host}/login`}
+        href={`${process.env.NODE_ENV === "development" ? "http:" : "https:"}//app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? ""}/login`}
         className={`bg-black text-white ${className}`}
       >
         <p className={textClassName}>Login</p>
