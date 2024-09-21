@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     const searchParams = new URLSearchParams(request.url);
     const trigger = searchParams.get("trigger") ?? "";
     console.log("[GET] webhook", { accessToken, trigger, url: request.url })
-    // TODO: get all blog post with status "publishing" that are linked to the X-API-KEY in the headers
+    // TODO: I don't know what to return here
     return NextResponse.json([])
   } catch (error) {
     console.log(error)

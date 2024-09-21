@@ -9,7 +9,6 @@ import { brandsLogo } from "@/brands-logo";
 import useProjects from "@/hooks/useProjects";
 import useActiveProject from "@/hooks/useActiveProject";
 import supabase from "@/helpers/supabase/client";
-// import { useEffect } from "react";
 
 export default function Projects() {
   const router = useRouter();

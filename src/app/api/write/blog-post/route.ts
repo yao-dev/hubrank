@@ -42,9 +42,6 @@ export async function POST(request: Request) {
 
     const ai = new AI({ context, writing_style: writingStyle });
 
-    // TODO: get keywords ideas with search intent based on body.seed_keyword using AI
-    // get a string[] of keywords
-
     const { keywords: kw } = await getKeywordsForKeywords({
       keyword: body.seed_keyword,
       countryCode: language.code
