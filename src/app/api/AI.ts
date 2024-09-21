@@ -332,17 +332,17 @@ export class AI {
   headlinesTemplate(values: any) {
     // Write the headlines wrapped within triple @@@.
 
-    const prefix = values.isInspo ? `headline inspo: ${values.inspo_title}` : `List of competitors headline ranking in the 1st page of the SERP for the keyword "${values.seedKeyword}":
+    const prefix = values.isInspo ? `headlines inspo: ${values.inspo_title}` : `List of competitors headline ranking in the top page of Google for the keyword "${values.seedKeyword}":
 - ${values.competitorsHeadlines.join('\n- ')}`
 
     let prompt = `[headline]
 
     ${prefix}
 
-    Give me ${values.count} unique and SEO friendly ${values.count <= 1 ? "headline" : "headlines"} made for the search intent "${values.seedKeyword}"
+    Give me ${values.count} ${values.count <= 1 ? "headline" : "headlines"} based on the inspo and made for the search intent "${values.seedKeyword}"
     - the content type is "${values.contentType}"
     - one headline per line
-    - do not prefix with number
+    - do not prefix lines with number
     - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
     - headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery
     ${values.clickbait ? "- make it clickbait" : ""}`;
