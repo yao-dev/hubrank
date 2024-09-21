@@ -25,8 +25,8 @@ export async function GET(request: Request) {
         console.log("`${hostname}${next}`", `${hostname}${next}`)
         return NextResponse.redirect(`${hostname}${next}`)
       } else if (forwardedHost) {
-        console.log("`https://app.${forwardedHost}${next}`", `https://app.${forwardedHost}${next}`)
-        return NextResponse.redirect(`https://app.${forwardedHost}${next}`)
+        console.log("`https://app.${forwardedHost}${next}`", `https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
       } else {
         console.log("`${hostname}${next}`", `${hostname}${next}`)
         return NextResponse.redirect(`${hostname}${next}`)
