@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 // import chalk from "chalk";
 
+// export const dynamic = 'force-static'
+
 export async function GET(request: NextRequest) {
   try {
     // console.log(chalk.yellow("url received from zapier"), request.url)
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // console.log(chalk.yellow("[Request permission dialog]: we redirect to consent page in Hubrank "), redirectUrl)
 
-    return NextResponse.redirect("/test");
+    return NextResponse.redirect("https://usehubrank.com");
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error }, { status: 500 })
