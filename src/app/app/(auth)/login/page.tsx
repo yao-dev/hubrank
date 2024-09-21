@@ -162,14 +162,6 @@ export default function Login() {
     )
   }
 
-  // if (isLoading) {
-  //   return (
-  //     <div className='flex flex-row w-full h-screen items-center justify-center'>
-  //       <Spin />
-  //     </div>
-  //   )
-  // }
-
   return (
     <div className='flex flex-row h-screen'>
       <div className='relative hidden md:flex bg-[#001727] md:w-1/2 text-center items-center justify-center'>

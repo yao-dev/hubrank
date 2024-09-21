@@ -166,11 +166,6 @@ export default function DashboardLayout({
     }
   }, [session])
 
-  // const getMenuLink = (projectId, link) => {
-  //   const isProjectSelected = typeof projectId === "number" && projectId !== 0;
-
-  // }
-
   const data: MenuItem[] = useMemo(() => {
     const isProjectSelected = typeof projectId === "number" && projectId !== 0;
 
@@ -185,35 +180,6 @@ export default function DashboardLayout({
       // projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // getItem({ key: "analytics", link: '/analytics', label: 'Analytics', icon: <IconTimeline />, onClick: () => setIsMobileMenuOpen(false) }),
     ])
-
-
-    // if (typeof projectId === "number" && projectId !== 0) {
-    //   return [
-    //     getItem({ key: "dashboard", link: '/', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/', label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/', label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     getItem({ key: "integrations", link: isProjectSelected ? `/projects/${projectId}/integrations` : '/', label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     // getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     // getItem({
-    //     //   key: "project", label: 'Project', icon: <IconStack2 />, children: [
-    //     //     getItem({ key: "blog-posts", link: `/projects/${projectId}?tab=blog-posts`, label: 'Blog posts', icon: <IconArticle />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //     getItem({ key: "social-media", link: `/projects/${projectId}?tab=social-media`, label: 'Social media', icon: <IconSocial />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //     getItem({ key: "keyword-research", link: `/projects/${projectId}?tab=keyword-research`, label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //     getItem({ key: "writing-styles", link: `/projects/${projectId}?tab=writing-styles`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //     // getItem({ key: "integration", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //     getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
-    //     //   ]
-    //     // }),
-    //     ...commonLinks
-    //   ]
-    // }
-
-    // return [
-    //   dashboardLink,
-    //   ...commonLinks
-    // ];
   }, [pathname, projectId]);
 
   const selectedKeys = useMemo(() => {
@@ -247,9 +213,6 @@ export default function DashboardLayout({
     if (pathname.endsWith('/integrations')) {
       return ["integrations"]
     }
-    // if (pathname.startsWith('/settings')) {
-    //   return ["settings"]
-    // }
     if (pathname === '/subscriptions') {
       return ["subscriptions"];
     }

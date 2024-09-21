@@ -219,10 +219,6 @@ const BlogPostsTable = () => {
                 e.preventDefault();
                 setPreview(record)
               }}
-              // onClick={(e) => {
-              //   e.preventDefault();
-              //   rewrite(record.id)
-              // }}
               style={{ width: 100 }}
             >
               Preview
@@ -239,17 +235,10 @@ const BlogPostsTable = () => {
               }}
               icon={<IconBrandZapier size={18} className="text-orange-500" />}
               className='flex flex-row items-center'
-              // onClick={(e) => {
-              //   e.preventDefault();
-              //   rewrite(record.id)
-              // }}
               style={{ width: 100 }}
             >
               Publish
             </Button>
-            {/* <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
-              Edit
-            </Button> */}
             <Popconfirm
               title="Delete article"
               description="Are you sure to delete this article?"

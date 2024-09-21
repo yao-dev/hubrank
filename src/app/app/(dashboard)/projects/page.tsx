@@ -59,7 +59,6 @@ export default function Projects() {
               code: newIntegration.id
             };
 
-            // TODO: create the integration here in the database with the project_id and user_id
             const urlEncoded = new URLSearchParams();
             if (query.client_id) urlEncoded.append('client_id', query.client_id);
             if (query.state) urlEncoded.append('state', query.state);
