@@ -9,8 +9,6 @@ export const useLogout = () => {
   const router = useRouter()
 
   const logout = () => {
-    router.push("/login");
-
     // clear local and session storage
     const storage = [
       window.localStorage,
@@ -26,7 +24,12 @@ export const useLogout = () => {
 
     sessionStore.setSession(null);
     queryClient.clear();
-    supabase.auth.signOut().then();
+
+    router.push("/login");
+
+
+    // supabase.auth.signOut().then();
+    console.log("LOGOUT")
   }
 
   return logout
