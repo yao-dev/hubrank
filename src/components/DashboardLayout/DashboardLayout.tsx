@@ -28,7 +28,7 @@ import {
   IconPigMoney,
   IconPlug,
 } from '@tabler/icons-react';
-import { redirect, useParams, usePathname, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
@@ -151,9 +151,8 @@ export default function DashboardLayout({
   const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      redirect('/');
-    } else {
+    if (user) {
+      console.log("DashboardLayout")
       isAppSumoRedeemable(user.id)
         .then((isRedeemable) => {
           if (isRedeemable) {

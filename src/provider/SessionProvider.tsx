@@ -10,6 +10,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
   const user = useAuth();
 
   useEffect(() => {
+    console.log("SessionProvider")
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
