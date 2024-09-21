@@ -1,13 +1,15 @@
 import supabase from '@/helpers/supabase/client';
 import useSession from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
 
 export const useLogout = () => {
   const queryClient = useQueryClient()
   const sessionStore = useSession();
+  const router = useRouter()
 
   const logout = () => {
+
     // clear local and session storage
     const storage = [
       window.localStorage,
@@ -21,9 +23,10 @@ export const useLogout = () => {
         })
     });
 
+    supabase.auth.signOut().then();
+    router.push("/login");
     sessionStore.setSession(null);
     queryClient.clear();
-    supabase.auth.signOut().then();
   }
 
   return logout
