@@ -1,12 +1,12 @@
 "use client";;
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
-import supabase from "../../helpers/supabase";
 import useSession from "@/hooks/useSession";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { App } from "antd";
 import useProjectId from "@/hooks/useProjectId";
 import usePricingModal from "@/hooks/usePricingModal";
+import supabase from "@/helpers/supabase/client";
 
 let users: RealtimeChannel;
 let blogPosts: RealtimeChannel;

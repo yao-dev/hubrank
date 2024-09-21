@@ -1,5 +1,4 @@
 "use client";;
-import supabase from "@/helpers/supabase";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 

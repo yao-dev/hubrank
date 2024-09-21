@@ -4,11 +4,11 @@ import useBlogPosts from '@/hooks/useBlogPosts';
 import { Button, Flex, Form, message, Skeleton, Spin } from 'antd';
 import { useRouter } from 'next/navigation';
 import useProjects from '@/hooks/useProjects';
-import { ArrowLeftOutlined, ExportOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import ExportBlogPostDrawer from '@/components/ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
-import { IconSparkles } from '@tabler/icons-react';
+import { IconBrandZapier, IconSparkles } from '@tabler/icons-react';
 import TiptapEditor from './TiptapEditor/TiptapEditor';
 import { slugify } from '@/helpers/text';
 
@@ -77,13 +77,12 @@ const Article = ({
           </Button>
 
           <Button
-            type="primary"
             onClick={() => drawers.openExportBlogPostDrawer({ isOpen: true })}
-            icon={<ExportOutlined />}
-            className='w-fit'
+            icon={<IconBrandZapier size={18} className="text-orange-500" />}
+            className='w-fit flex flex-row items-center'
             disabled={article?.status !== "ready_to_view"}
           >
-            Export
+            Publish
           </Button>
         </div>
 

@@ -1,8 +1,6 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
 import { deductCredits, getSchemaMarkup, saveSchemaMarkups } from "../helpers";
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+import supabase from "@/helpers/supabase/server";
 
 export async function POST(request: Request) {
   try {
@@ -13,9 +11,9 @@ export async function POST(request: Request) {
       { data: article },
       { data: language },
     ] = await Promise.all([
-      supabase.from("projects").select("*").eq("id", body.project_id).maybeSingle(),
-      supabase.from("blog_posts").select("*").eq("id", body.article_id).maybeSingle(),
-      supabase.from("languages").select("*").eq("id", body.language_id).maybeSingle()
+      supabase().from("projects").select("*").eq("id", body.project_id).maybeSingle(),
+      supabase().from("blog_posts").select("*").eq("id", body.article_id).maybeSingle(),
+      supabase().from("languages").select("*").eq("id", body.language_id).maybeSingle()
     ]);
 
     console.log("article.schema_markups", article.schema_markups);

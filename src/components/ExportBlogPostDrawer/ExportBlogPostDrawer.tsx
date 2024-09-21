@@ -14,13 +14,12 @@ import {
   Steps,
 } from "antd";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
-import useProjectId from "@/hooks/useProjectId";
 import usePricingModal from "@/hooks/usePricingModal";
-import { CaretDownOutlined } from '@ant-design/icons';
+import { CaretDownOutlined, SearchOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX, IconCode, IconCopy, IconMarkdown, IconTextCaption } from '@tabler/icons-react';
+import { IconBrandFacebook, IconBrandGoogle, IconBrandLinkedin, IconBrandX, IconBrandZapier, IconCode, IconCopy, IconMarkdown, IconTextCaption } from '@tabler/icons-react';
 import Label from '@/components/Label/Label';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -29,10 +28,13 @@ import queryKeys from "@/helpers/queryKeys";
 import prettify from "pretty";
 import useProjects from "@/hooks/useProjects";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import * as cheerio from "cheerio";
 import { structuredSchemas } from "@/options";
+import useActiveProject from "@/hooks/useActiveProject";
+import useIntegrations from "@/hooks/useIntegrations";
+import AddImageModal from "../AddImageModal/AddImageModal";
 
 const styles = {
   google: {
@@ -119,10 +121,12 @@ const ExportBlogPostDrawer = ({
   onClose,
   articleId,
 }: Props) => {
-  const projectId = useProjectId();
+  const { id } = useActiveProject()
+  const projectId = +id;
   const { data: project } = useProjects().getOne(projectId);
   const { getOne, update: updateBlogPost } = useBlogPosts();
   const { data: article } = getOne(articleId)
+  const { data: integrations } = useIntegrations();
   const [form] = Form.useForm();
   const pricingModal = usePricingModal();
   const articleTitle = article?.title ?? ""
@@ -133,6 +137,12 @@ const ExportBlogPostDrawer = ({
   const queryClient = useQueryClient();
   const [current, setCurrent] = useState(0);
   const [isUpdatingFeaturedImage, setIsUpdatingFeaturedImage] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+
+  useEffect(() => {
+    setCurrent(0);
+    form.resetFields()
+  }, [articleId])
 
   const next = () => {
     setCurrent(current + 1);
@@ -148,7 +158,6 @@ const ExportBlogPostDrawer = ({
 
   const getPreviewUrl = (prop: string) => {
     if (!project) return "";
-    console.log(slug, article?.slug, project?.blog_path)
     return new URL(slug ?? article?.slug, project?.blog_path ?? "")?.[prop]
   }
 
@@ -196,9 +205,13 @@ ${JSON.stringify(article?.schema_markups ?? {})}
   const onSaveForm = async (values: any) => {
     await updateBlogPost.mutateAsync({
       ...values,
+      featured_image: values.og_image_url,
       keywords: values.keywords.split(","),
       id: article.id,
     })
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.blogPosts(projectId)
+    });
     next()
   }
 
@@ -232,11 +245,12 @@ ${JSON.stringify(article?.schema_markups ?? {})}
 
   return (
     <Drawer
-      title={<DrawerTitle title="Export blog post" />}
+      title={<DrawerTitle title="Publish blog post" />}
       width={600}
       onClose={() => {
-        onClose();
+        setCurrent(0);
         form.resetFields()
+        onClose();
       }}
       open={open}
       destroyOnClose
@@ -289,7 +303,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
               title: 'Preview',
             },
             {
-              title: 'Export',
+              title: 'Publish',
             },
           ]}
         />
@@ -300,6 +314,13 @@ ${JSON.stringify(article?.schema_markups ?? {})}
 
         {current === 0 && article && (
           <>
+            <AddImageModal
+              open={isImageModalOpen}
+              onClose={() => setIsImageModalOpen(false)}
+              onSubmit={(image) => {
+                form.setFieldValue("og_image_url", image.src)
+              }}
+            />
             <Form
               form={form}
               autoComplete="off"
@@ -333,22 +354,27 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                     <img src={ogImageUrl} className="w-[150px] aspect-square object-cover rounded-lg" />
                   )}
 
-                  <Button
-                    onClick={() => {
-                      try {
-                        setIsUpdatingFeaturedImage(true)
-                        const $ = cheerio.load(article.html);
-                        const firstImageInArticle = $('img').first().attr('src') ?? "";
-                        form.setFieldValue("og_image_url", firstImageInArticle)
-                        setIsUpdatingFeaturedImage(false)
-                      } catch {
-                        setIsUpdatingFeaturedImage(false)
-                      }
-                    }}
-                    className="w-fit"
-                  >
-                    Use 1st image in content
-                  </Button>
+                  <div className="flex flex-row gap-2">
+                    <Button
+                      onClick={() => {
+                        try {
+                          setIsUpdatingFeaturedImage(true)
+                          const $ = cheerio.load(article.html);
+                          const firstImageInArticle = $('img').first().attr('src') ?? "";
+                          form.setFieldValue("og_image_url", firstImageInArticle)
+                          setIsUpdatingFeaturedImage(false)
+                        } catch {
+                          setIsUpdatingFeaturedImage(false)
+                        }
+                      }}
+                      className="w-fit"
+                    >
+                      Use 1st image in content
+                    </Button>
+                    <Button className="w-fit" onClick={() => setIsImageModalOpen(true)} icon={<SearchOutlined />}>
+                      Search image
+                    </Button>
+                  </div>
                 </div>
               </Spin>
             </Form>
@@ -570,6 +596,22 @@ ${article.markdown}
               <div className="flex flex-col gap-2 items-center">
                 <IconTextCaption />
                 <p className="text-lg font-medium">Text</p>
+              </div>
+            </div>
+
+            <div
+              onClick={() => {
+                updateBlogPost.mutate({ id: article.id, status: "publishing" });
+                queryClient.invalidateQueries({
+                  queryKey: queryKeys.blogPosts(projectId)
+                });
+                onClose();
+              }}
+              className="flex items-center justify-center border rounded-md py-6 cursor-pointer hover:bg-primary-500 hover:text-white"
+            >
+              <div className="flex flex-col gap-2 items-center">
+                <IconBrandZapier />
+                <p className="text-lg font-medium">Publish</p>
               </div>
             </div>
           </div>

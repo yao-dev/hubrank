@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getUpstashDestination, updateCredits } from "../helpers";
 import { createSchedule } from "@/helpers/qstash";
-import { supabaseAdmin } from "@/helpers/supabase";
+import supabase from "@/helpers/supabase/server";
+import axios from "axios";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 30;
 
 const markAsError = "MARK_AS_ERROR"
@@ -29,11 +29,25 @@ export async function POST(request: Request) {
               "Upstash-Delay": "5m",
             }
           });
+        } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing" && body.record.auto_publish) {
+          const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
+
+          const promises = integrations?.map(async (integration) => {
+            try {
+              return axios.post("/api/zapier/publish", { url: integration.metadata.url, blogPost: body.record })
+            } catch (e) {
+              console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
+              return null
+            }
+          });
+          if (promises) {
+            await Promise.all(promises);
+          }
         }
         break;
       }
       case markAsError: {
-        await supabase.from("blog_posts").update({ status: "error" }).eq("id", body.blog_post_id).throwOnError()
+        await supabase().from("blog_posts").update({ status: "error" }).eq("id", body.blog_post_id).throwOnError()
         break;
       }
     }

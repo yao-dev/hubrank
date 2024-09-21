@@ -1,8 +1,6 @@
-import { supabaseAdmin } from "@/helpers/supabase";
+import supabase from "@/helpers/supabase/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +26,7 @@ export async function POST(req: Request) {
     const fileName = `${userId}-${projectId}-${file.name}`;
     console.log("fileName", fileName)
 
-    const { data, error } = await supabase.storage.from("files").upload(fileName, file);
+    const { data, error } = await supabase().storage.from("files").upload(fileName, file);
 
     if (error?.error === "Duplicate") {
       return NextResponse.json({ error: "The file already exists" }, { status: 409 });
@@ -42,7 +40,7 @@ export async function POST(req: Request) {
     console.log("save storage", data);
     // const type = getIsTxt(fileType) ? "txt" : getIsDocx(fileType) ? "docx" : fileType;
 
-    await supabase.from("knowledges").insert({
+    await supabase().from("knowledges").insert({
       user_id: userId,
       project_id: projectId,
       content: file.name,

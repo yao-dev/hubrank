@@ -1,23 +1,30 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-import { uuid } from "uuidv4";
+import { nanoid } from 'nanoid';
+import chalk from "chalk";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
-export async function GET(request: Request) {
+
+export async function POST(request: Request) {
   try {
-    const searchParams = new URLSearchParams(request.url);
-    const redirect_uri = searchParams.get("redirect_uri") ?? "";
-    const state = searchParams.get("state") ?? "";
+    const {
+      state,
+      client_id,
+      redirect_uri,
+      code
+    } = await request.json();
 
-    const redirectUrl = new URL(redirect_uri);
-    redirectUrl.searchParams.append("state", state);
-    redirectUrl.searchParams.append("code", uuid());
+    const query = {
+      state,
+      client_id,
+      // code: nanoid()
+      code
+    };
+    const urlEncoded = new URLSearchParams(query).toString();
+    const redirectUrl = `${redirect_uri}?${urlEncoded}`;
 
+    console.log(chalk.yellow("[User consent accepted]: we redirect to Zapier redirect uri"), redirectUrl)
 
-    console.log("zapier redirectUrl", redirectUrl.href)
-
-    return NextResponse.redirect(redirectUrl.href);
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error }, { status: 500 })

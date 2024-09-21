@@ -9,10 +9,8 @@ import {
   deductCredits,
   updateBlogPost,
 } from "@/app/api/helpers";
-import { supabaseAdmin } from "@/helpers/supabase";
 import { getSerp } from "@/helpers/seo";
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+import supabase from "@/helpers/supabase/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -22,8 +20,8 @@ export async function POST(request: Request) {
       { data: project },
       { data: language },
     ] = await Promise.all([
-      supabase.from("projects").select("*").eq("id", body.project_id).single(),
-      supabase.from("languages").select("*").eq("id", body.language_id).single()
+      supabase().from("projects").select("*").eq("id", body.project_id).single(),
+      supabase().from("languages").select("*").eq("id", body.language_id).single()
     ]);
 
     const context = getProjectContext({

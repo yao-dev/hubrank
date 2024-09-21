@@ -20,7 +20,7 @@ import useWritingStyles from "@/hooks/useWritingStyles";
 import useLanguages from "@/hooks/useLanguages";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { isEmpty } from "lodash";
-import supabase from "@/helpers/supabase";
+import supabase from '@/helpers/supabase/client';
 import MultiSelectTagList from "../MultiSelectTagList/MultiSelectTagList";
 import Label from "../Label/Label";
 import { contentTypes, structuredSchemas } from "@/options";
@@ -28,6 +28,7 @@ import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
 import AddImageModal from "../AddImageModal/AddImageModal";
 import { SearchOutlined } from '@ant-design/icons';
+import { IconBrandZapier } from "@tabler/icons-react";
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -181,7 +182,8 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           with_hook: false,
           structured_schemas: [],
           youtube_url: "",
-          featured_image: ""
+          featured_image: "",
+          auto_publish: false
         }}
         autoComplete="off"
         layout="vertical"
@@ -204,6 +206,20 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
+
+        {/* TODO: redirect to integrations page if no integrations enabled and user set this toggle to true */}
+        <Flex gap="small" align="center" className="mb-6">
+          <Form.Item name="auto_publish" rules={[]} style={{ margin: 0 }}>
+            <Switch size="small" />
+          </Form.Item>
+          <div
+            className="cursor-pointer flex flex-row items-center gap-1"
+            onClick={() => form.setFieldValue("auto_publish", !form.getFieldValue("auto_publish"))}
+          >
+            <p>Auto publish</p>
+            <IconBrandZapier size={18} className="text-orange-500" />
+          </div>
+        </Flex>
 
         <Form.Item
           name="title_mode"

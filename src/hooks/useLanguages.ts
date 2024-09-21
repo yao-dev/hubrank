@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
-import supabase from "@/helpers/supabase";
+import supabase from '@/helpers/supabase/client';
 
 const getOne = async (id: number) => {
   return supabase.from('languages').select('*').eq('id', id).limit(1).single()

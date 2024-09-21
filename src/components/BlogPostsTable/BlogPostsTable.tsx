@@ -1,17 +1,5 @@
 'use client';;
-import {
-  Button,
-  Drawer,
-  Empty,
-  Grid,
-  Flex,
-  Image,
-  Popconfirm,
-  Space,
-  Table,
-  Tag,
-  message,
-} from 'antd';
+import { Button, Drawer, Empty, Flex, Image, Popconfirm, Space, Table, Tag, message } from 'antd';
 import { useMemo, useState } from 'react';
 import {
   CheckCircleOutlined,
@@ -19,58 +7,39 @@ import {
   CloseCircleOutlined,
   SyncOutlined,
   DeleteTwoTone,
-  ExportOutlined
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useProjectId from '@/hooks/useProjectId';
-import {
-  IconArticle,
-  IconBrandFacebook,
-  IconBrandInstagram,
-  IconBrandLinkedin,
-  IconBrandPinterest,
-  IconBrandX,
-  IconCoin,
-  IconCopy,
-  IconMail,
-  IconWorld,
-} from '@tabler/icons-react';
+import { IconBrandZapier, IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
 import Link from 'next/link';
 import prettify from "pretty";
 import { format } from 'date-fns';
-import TiptapEditor from '@/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor';
+import TiptapEditor from '@/app/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor';
 import ExportBlogPostDrawer from '../ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
-
-const { useBreakpoint } = Grid
+import useIntegrations from '@/hooks/useIntegrations';
+import { isEmpty } from 'lodash';
+import { useRouter } from 'next/navigation';
 
 const BlogPostsTable = () => {
-  const { getAll, delete: deleteArticle } = useBlogPosts()
+  const { getAll, delete: deleteArticle, update: updateBlogPost } = useBlogPosts()
   const { data: articles, isPending, isFetched, refetch } = getAll({ queue: false });
-  const [selectedArticle, setSelectedArticle] = useState();
+  const [preview, setPreview] = useState();
+  const [publish, setPublish] = useState();
   const projectId = useProjectId();
-  const screens = useBreakpoint();
   const drawers = useDrawers();
+  const { data: integrations } = useIntegrations();
+  const hasIntegrations = !isEmpty(integrations)
+  const router = useRouter();
 
   const getIsDisabled = (status: string) => {
     return ["queue", "writing", "error"].includes(status)
-    // return ["error", "queue"].includes(status)
   }
 
   const onCopyKeyword = (keyword: string) => {
     navigator.clipboard.writeText(keyword);
     message.success("Copied to clipboard!");
   }
-
-  const items = [
-    <IconArticle />,
-    <IconMail />,
-    <IconBrandPinterest />,
-    <IconBrandFacebook />,
-    <IconBrandX />,
-    <IconBrandLinkedin />,
-    <IconBrandInstagram />,
-  ]
 
   const columns = useMemo(() => {
     return [
@@ -164,7 +133,7 @@ const BlogPostsTable = () => {
             icon = <ClockCircleOutlined />;
           }
           if (valueLowercase === "ready_to_view") {
-            color = "success";
+            color = "cyan";
             icon = <CheckCircleOutlined />;
           }
           if (valueLowercase === "writing") {
@@ -175,10 +144,18 @@ const BlogPostsTable = () => {
             color = "error";
             icon = <CloseCircleOutlined />;
           }
+          if (valueLowercase === "publishing") {
+            color = "green";
+            icon = <SyncOutlined spin />;
+          }
+          if (valueLowercase === "published") {
+            color = "green";
+            icon = <CheckCircleOutlined />;
+          }
 
           return (
             <span>
-              <Tag color={color} icon={valueLowercase === "writing" || valueLowercase === "queue" ? icon : null}>
+              <Tag color={color} icon={["queue", "writing", "published"].includes(valueLowercase) ? icon : null}>
                 {value.replaceAll("_", " ").toUpperCase()}
               </Tag>
             </span>
@@ -240,7 +217,7 @@ const BlogPostsTable = () => {
               disabled={getIsDisabled(record.status)}
               onClick={(e) => {
                 e.preventDefault();
-                setSelectedArticle(record)
+                setPreview(record)
               }}
               // onClick={(e) => {
               //   e.preventDefault();
@@ -249,6 +226,26 @@ const BlogPostsTable = () => {
               style={{ width: 100 }}
             >
               Preview
+            </Button>
+            <Button
+              disabled={getIsDisabled(record.status) || ["publishing", "published"].includes(record.status)}
+              onClick={(e) => {
+                e.preventDefault();
+                if (!hasIntegrations) {
+                  router.push(`/projects/${projectId}/integrations`)
+                } else {
+                  setPublish(record)
+                }
+              }}
+              icon={<IconBrandZapier size={18} className="text-orange-500" />}
+              className='flex flex-row items-center'
+              // onClick={(e) => {
+              //   e.preventDefault();
+              //   rewrite(record.id)
+              // }}
+              style={{ width: 100 }}
+            >
+              Publish
             </Button>
             {/* <Button icon={<EditOutlined />} onClick={() => router.push(`/projects/${record.project_id}/articles/${record.id}`)}>
               Edit
@@ -292,7 +289,7 @@ const BlogPostsTable = () => {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/empty-state/empty-blog-posts.png"
+          image="https://usehubrank.com/empty-state/empty-blog-posts.png"
           imageStyle={{ height: 250 }}
           description={(
             <span className='m-0 relative top-4 text-base'>
@@ -306,41 +303,34 @@ const BlogPostsTable = () => {
 
   return (
     <>
+      <ExportBlogPostDrawer
+        open={!!publish}
+        onClose={() => {
+          drawers.openExportBlogPostDrawer({ isOpen: false })
+          setPublish(undefined)
+        }}
+        articleId={publish?.id}
+      />
+
       <Drawer
-        open={!!selectedArticle}
+        open={!!preview}
         width={700}
         onClose={() => {
-          setSelectedArticle(undefined)
+          setPreview(undefined)
         }}
         extra={
-          <Space>
-            <Button
-              onClick={() => drawers.openExportBlogPostDrawer({ isOpen: true })}
-              icon={<ExportOutlined />}
-              className='w-fit'
-              disabled={selectedArticle?.status !== "ready_to_view"}
-            >
-              Export
-            </Button>
-
-            <Button href={`/projects/${projectId}/articles/${selectedArticle?.id}`} style={{ width: 100 }} type="primary">
-              Open
-            </Button>
-          </Space>
+          <Button href={`/projects/${projectId}/articles/${preview?.id}`} style={{ width: 100 }} type="primary">
+            Open
+          </Button>
         }
       >
-        {selectedArticle && (
+        {preview && (
           <div className='flex flex-col gap-4'>
-            <h1 className='text-4xl font-extrabold'>{selectedArticle.title}</h1>
+            <h1 className='text-4xl font-extrabold'>{preview.title}</h1>
             <TiptapEditor
-              articleId={selectedArticle.id}
-              content={prettify(selectedArticle.html)}
+              articleId={preview.id}
+              content={prettify(preview.html)}
               readOnly={false}
-            />
-            <ExportBlogPostDrawer
-              open={drawers.exportBlogPost.isOpen}
-              onClose={() => drawers.openExportBlogPostDrawer({ isOpen: false })}
-              articleId={selectedArticle.id}
             />
           </div>
         )}

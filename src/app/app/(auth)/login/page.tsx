@@ -1,9 +1,8 @@
-'use client';
+'use client';;
 import { IconLock, IconMail } from '@tabler/icons-react';
-import supabase from '@/helpers/supabase';
 import { useEffect, useState } from 'react';
 import { useInterval, useToggle } from '@mantine/hooks';
-import { Form, Alert, Input, Button, Card, Typography, Image, Spin, Divider, message } from 'antd';
+import { Form, Alert, Input, Button, Card, Typography, Image, Divider, message } from 'antd';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSession from '@/hooks/useSession';
 import Label from '@/components/Label/Label';
@@ -12,9 +11,11 @@ import Link from 'next/link';
 import GoogleSignInButton from '@/components/GoogleSignInButton/GoogleSignInButton';
 import axios from 'axios';
 import { useReCaptcha } from 'next-recaptcha-v3';
+import supabase from '@/helpers/supabase/client';
+import useUser from '@/hooks/useUser';
 
 export default function Login() {
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
   const [type, toggleMode] = useToggle(['email', 'otp']);
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [count, setCount] = useState(60);
@@ -27,6 +28,7 @@ export default function Login() {
   const { executeRecaptcha } = useReCaptcha();
   const searchParams = useSearchParams();
   const appSumoCode = searchParams.get("appsumo_code") ?? "";
+  const user = useUser();
 
   useEffect(() => {
     if (appSumoCode) {
@@ -34,15 +36,15 @@ export default function Login() {
     }
   }, [appSumoCode]);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1000);
-  }, []);
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     setIsLoading(false)
+  //   }, 1000);
+  // }, []);
 
   useEffect(() => {
     if (session) {
-      router.replace('/dashboard');
+      router.replace('/');
     }
   }, [session])
 
@@ -59,60 +61,68 @@ export default function Login() {
   }
 
   const onSubmit = async (values: any) => {
-    setError(false);
-    if (type === 'email') {
-      if (isEmailRestricted(values.email)) {
-        message.error("Invalid email")
-        return;
-      }
-
-      setIsAuthLoading(true);
-
-      const token = await executeRecaptcha("form_login");
-      const { data: recaptcha } = await axios.post("/api/recaptcha", { token });
-
-      if (!recaptcha.success) {
-        setIsAuthLoading(false);
-        setError(true);
-        return;
-      }
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email: values.email,
-        options: {
-          shouldCreateUser: true,
-        },
-      });
-
-      setIsAuthLoading(false);
-
-      if (error) {
-        if (error.status === 429) {
-          return setError("You've attempted login too many times, please try again later.")
+    try {
+      setError(false);
+      if (type === 'email') {
+        if (isEmailRestricted(values.email)) {
+          message.error("Invalid email")
+          return;
         }
-        return setError(true)
-      }
 
-      setIsAuthLoading(false);
-      toggleMode();
-      interval.start();
-    } else {
-      setIsAuthLoading(true);
-      const { error } = await supabase.auth.verifyOtp({
-        email: values.email,
-        token: values.otp,
-        type: 'email'
-      })
+        setIsAuthLoading(true);
 
-      if (error) {
-        console.log("error", error)
-        if (error.status === 429) {
-          setError("You've attempted login too many times, please try again later.")
-        } {
-          setError(true)
+        const token = await executeRecaptcha("form_login");
+        const { data: recaptcha } = await axios.post("/api/recaptcha", { token });
+
+        if (!recaptcha.success) {
+          setIsAuthLoading(false);
+          setError(true);
+          return;
         }
+
+        const { error } = await supabase.auth.signInWithOtp({
+          email: values.email,
+          options: {
+            shouldCreateUser: true,
+          },
+        });
+
         setIsAuthLoading(false);
+
+        if (error) {
+          if (error.status === 429) {
+            return setError("You've attempted login too many times, please try again later.")
+          }
+          return setError(true)
+        }
+
+        setIsAuthLoading(false);
+        toggleMode();
+        interval.start();
+      } else {
+        setIsAuthLoading(true);
+        const { error } = await supabase.auth.verifyOtp({
+          email: values.email,
+          token: values.otp,
+          type: 'email'
+        })
+
+        if (error) {
+          console.log("error", error)
+          if (error.status === 429) {
+            setError("You've attempted login too many times, please try again later.")
+          } {
+            setError(true)
+          }
+          setIsAuthLoading(false);
+          return;
+        }
+
+        // revalidatePath('/', 'layout')
+        // redirect('/app')
       }
+    } catch (e) {
+      console.log(e)
     }
   }
 
@@ -147,7 +157,9 @@ export default function Login() {
     return (
       <Button
         type="text"
-        onClick={() => router.push("/")}
+        onClick={() => {
+          router.push(`${location.protocol}//${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`)
+        }}
         icon={<ArrowLeftOutlined />}
         className={`absolute top-6 left-6 ${cls}`}
       >
@@ -156,13 +168,13 @@ export default function Login() {
     )
   }
 
-  if (isLoading) {
-    return (
-      <div className='flex flex-row w-full h-screen items-center justify-center'>
-        <Spin />
-      </div>
-    )
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className='flex flex-row w-full h-screen items-center justify-center'>
+  //       <Spin />
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className='flex flex-row h-screen'>

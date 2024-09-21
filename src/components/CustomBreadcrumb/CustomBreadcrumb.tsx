@@ -31,14 +31,18 @@ const CustomBreadcrumb = ({ onOpenMobileMenu }: { onOpenMobileMenu: () => void }
     )
   }
 
-  if (pathname.startsWith("/projects") && !pathname.endsWith("/projects")) {
+  if (pathname.endsWith("/settings")) {
     return (
       <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
-        {withSettingsButton(<Flex gap="small" align="center">
-          {pathname.startsWith("/projects") && !pathname.endsWith("/projects") && (
-            <ProjectSelect />
-          )}
-        </Flex>)}
+        <ProjectSelect />
+      </Flex>
+    )
+  }
+
+  if (pathname.startsWith("/projects") && !pathname.endsWith("/settings")) {
+    return (
+      <Flex style={{ marginLeft: 16, marginRight: 16, marginTop: 12 }}>
+        {withSettingsButton(<ProjectSelect />)}
       </Flex>
     )
 

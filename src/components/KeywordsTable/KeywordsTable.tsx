@@ -19,7 +19,7 @@ import useProjectId from '@/hooks/useProjectId';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import useLanguages from '@/hooks/useLanguages';
 import { DeleteTwoTone, SearchOutlined, SaveOutlined } from '@ant-design/icons';
-import supabase from '@/helpers/supabase';
+import supabase from '@/helpers/supabase/client';
 import { getUserId } from '@/helpers/user';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
@@ -424,7 +424,7 @@ const KeywordsTable = () => {
       {((!showSavedKeywords && isSearchedKeywordsFetched && isEmpty(keywords)) || (showSavedKeywords && isSavedKeywordsFetched && isEmpty(savedKeywords))) ? (
         <Flex align='center' justify='center' style={{ marginTop: 96 }}>
           <Empty
-            image="/empty-state/empty-keywords.png"
+            image="https://usehubrank.com/empty-state/empty-keywords.png"
             imageStyle={{ height: 250 }}
             description={(
               <span className='m-0 text-base'>

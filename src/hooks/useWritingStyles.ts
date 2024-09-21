@@ -1,7 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
-import supabase from "@/helpers/supabase";
+import supabase from '@/helpers/supabase/client';
 import useProjectId from "./useProjectId";
 import { getUserId } from "@/helpers/user";
 

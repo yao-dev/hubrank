@@ -9,27 +9,26 @@ import {
   getTweets,
   getYoutubeTranscript,
 } from "@/app/api/helpers";
-import { supabaseAdmin } from "@/helpers/supabase";
 import Anthropic from "@anthropic-ai/sdk";
 import { getSerp } from "@/helpers/seo";
 import { compact, omit, shuffle } from "lodash";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import supabase from "@/helpers/supabase/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { data: project } = await supabase.from("projects").select("*").eq("id", body.project_id).single();
+    const { data: project } = await supabase().from("projects").select("*").eq("id", body.project_id).single();
 
     if (!project) {
       return NextResponse.json({ message: "project not found" }, { status: 500 })
     }
 
-    const { data: language } = await supabase.from("languages").select("*").eq("id", project.language_id).single()
+    const { data: language } = await supabase().from("languages").select("*").eq("id", project.language_id).single()
 
     if (!language) {
       return NextResponse.json({ message: "language not found" }, { status: 500 })

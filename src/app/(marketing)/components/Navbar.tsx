@@ -23,7 +23,7 @@ const Navbar = () => {
   const loginButton = useCallback((className?: string, textClassName?: string) => {
     return (
       <Button
-        href="/login"
+        href={`${location.protocol}//app.${location.host}/login`}
         className={`bg-black text-white ${className}`}
       >
         <p className={textClassName}>Login</p>

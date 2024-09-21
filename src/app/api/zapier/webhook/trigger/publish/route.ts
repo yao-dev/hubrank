@@ -1,7 +1,6 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+
 
 // When the user publish a blog
 // the user id is sent in the request body

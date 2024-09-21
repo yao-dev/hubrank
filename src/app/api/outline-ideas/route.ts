@@ -1,23 +1,21 @@
 import { AI } from "../AI";
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
 import { getProjectContext } from "../helpers";
+import supabase from "@/helpers/supabase/server";
 
 export const maxDuration = 60;
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { data: project } = await supabase.from("projects").select("*, languages!language_id(*)").eq("id", body.project_id).limit(1).single();
+    const { data: project } = await supabase().from("projects").select("*, languages!language_id(*)").eq("id", body.project_id).limit(1).single();
 
     if (!project) {
       return NextResponse.json({ message: "not project found" }, { status: 500 })
     }
 
-    const { data: language } = await supabase.from("languages").select("*").eq("id", body.language_id).limit(1).single();
+    const { data: language } = await supabase().from("languages").select("*").eq("id", body.language_id).limit(1).single();
 
     const context = getProjectContext({
       name: project.name,

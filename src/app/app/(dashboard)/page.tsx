@@ -74,7 +74,7 @@ export default function Dashboard() {
         <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
         <Empty
           // TODO: replace with a folder image
-          image="/empty-state/empty-blog-posts.png"
+          image="https://usehubrank.com/empty-state/empty-blog-posts.png"
           imageStyle={{ height: screens.xs ? 125 : 200 }}
           description={(
             <Typography.Text style={{ margin: 0, position: "relative", top: 15 }}>

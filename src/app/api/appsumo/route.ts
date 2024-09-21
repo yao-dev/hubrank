@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getUpstashDestination, updateCredits } from "../helpers";
 import { createSchedule } from "@/helpers/qstash";
-import { supabaseAdmin } from "@/helpers/supabase";
+import supabase from "@/helpers/supabase/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+
 export const maxDuration = 30;
 
 export async function POST(request: Request) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
               "Upstash-Cron": "0 0 1 * *", // run on the 1st day of each month
             }
           });
-          await supabase.from("appsumo_code").update({ schedule_id: scheduleId }).eq("id", body.record.id);
+          await supabase().from("appsumo_code").update({ schedule_id: scheduleId }).eq("id", body.record.id);
         }
         break;
       }

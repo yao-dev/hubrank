@@ -1,14 +1,12 @@
 import { fetchWebsiteMetadata } from "@/helpers/metadata";
-import { supabaseAdmin } from "@/helpers/supabase";
+import supabase from "@/helpers/supabase/server";
 import { NextResponse } from "next/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 180;
 
 export async function POST(request: Request) {
   try {
     const data = await request.json();
-
     const metatags = (await fetchWebsiteMetadata(data.website)) ?? {};
 
     const result = await supabase

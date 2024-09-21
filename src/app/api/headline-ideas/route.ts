@@ -1,12 +1,10 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { getRelatedKeywords } from "@/helpers/seo";
 import { NextResponse } from "next/server";
 import { compact } from "lodash";
 import { getHeadlines, getManualWritingStyle, getProjectContext, getSavedWritingStyle } from "../helpers";
+import supabase from "@/helpers/supabase/server";
 
 export const maxDuration = 45;
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 
 export async function POST(request: Request) {
   try {
@@ -17,8 +15,8 @@ export async function POST(request: Request) {
       { data: project },
       { data: language },
     ] = await Promise.all([
-      supabase.from("projects").select("*").eq("id", body.project_id).single(),
-      supabase.from("languages").select("*").eq("id", body.language_id).single()
+      supabase().from("projects").select("*").eq("id", body.project_id).single(),
+      supabase().from("languages").select("*").eq("id", body.language_id).single()
     ])
 
     if (!project) {

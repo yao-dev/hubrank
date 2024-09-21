@@ -7,10 +7,10 @@ import { usePricing, useStripe } from "@/features/payment/hooks";
 import * as CurrencyFormat from 'react-currency-format';
 import { currencies } from "@/features/payment/constants";
 import { IconCheck } from "@tabler/icons-react";
-import { stripeUnixTimestampToDate } from "@/features/payment/helpers";
 import { format } from "date-fns";
 import useUser from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { stripeUnixTimestampToDate } from "@/features/payment/helpers/stripe-unix-timestamp-to-date";
 
 type Props = {
   title?: string;

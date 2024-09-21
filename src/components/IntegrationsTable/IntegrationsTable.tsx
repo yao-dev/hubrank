@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
 import { brandsLogo } from '@/brands-logo';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import supabase from '@/helpers/supabase';
+import supabase from '@/helpers/supabase/client';
 
 const IntegrationsTable = ({ isLoading }: any) => {
   const queryClient = useQueryClient();

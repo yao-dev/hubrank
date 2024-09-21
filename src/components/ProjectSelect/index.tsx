@@ -1,4 +1,3 @@
-import useProjectId from "@/hooks/useProjectId";
 import useProjects from "@/hooks/useProjects";
 import { Button, Divider, Image, Select } from "antd";
 import { usePathname, useRouter } from "next/navigation";
@@ -10,7 +9,7 @@ import usePricingModal from "@/hooks/usePricingModal";
 import useActiveProject from "@/hooks/useActiveProject";
 
 const ProjectSelect = (props = {}) => {
-  const projectId = useProjectId();
+  // const projectId = useProjectId();
   const { getAll } = useProjects()
   const { data: projects } = getAll();
   const router = useRouter();
@@ -18,7 +17,7 @@ const ProjectSelect = (props = {}) => {
   const pathname = usePathname();
   const user = useUser();
   const pricingModal = usePricingModal();
-  const { setProjectId } = useActiveProject()
+  const { id: projectId, setProjectId } = useActiveProject()
 
   const hasReachedLimit = projects && user?.subscription?.projects_limit <= projects?.length;
 
@@ -35,7 +34,7 @@ const ProjectSelect = (props = {}) => {
 
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
-      return p.id === projectId
+      return p.id === +projectId
     });
 
     if (foundProject) {

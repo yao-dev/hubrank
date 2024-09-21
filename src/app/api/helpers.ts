@@ -1,4 +1,3 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import chalk from "chalk";
 import { marked } from "marked";
 import { generateUuid5 } from 'weaviate-ts-client';
@@ -20,17 +19,16 @@ import { writeFileSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { getSerp } from "@/helpers/seo";
+import supabase from "@/helpers/supabase/server";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
   token: process.env.UPSTASH_VECTOR_TOKEN || "",
 })
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
-
 export const saveWritingCost = async ({ articleId, cost }: any) => {
   try {
-    await supabase.from('blog_posts').update({ cost }).eq("id", articleId).throwOnError();
+    await supabase().from('blog_posts').update({ cost }).eq("id", articleId).throwOnError();
   } catch (error) {
     console.error(chalk.bgRed("[ERROR]: updating cost"), error);
     throw error;
@@ -39,7 +37,7 @@ export const saveWritingCost = async ({ articleId, cost }: any) => {
 
 export const insertBlogPost = async (data: any) => {
   try {
-    const { data: queuedArticle } = await supabase.from("blog_posts")
+    const { data: queuedArticle } = await supabase().from("blog_posts")
       .insert({
         title: data.title_mode === "custom" ? data.custom_title : data.title,
         seed_keyword: data.seed_keyword,
@@ -74,6 +72,7 @@ export const insertBlogPost = async (data: any) => {
         with_key_takeways: data.with_key_takeways,
         outline: data.outline,
         cost: data.cost,
+        auto_publish: data.auto_publish,
       })
       .select("id")
       .single()
@@ -88,7 +87,7 @@ export const insertBlogPost = async (data: any) => {
 
 export const updateBlogPostStatus = async (articleId: number, status: string) => {
   try {
-    await supabase
+    await supabase()
       .from('blog_posts')
       .update({ status })
       .eq("id", articleId)
@@ -101,7 +100,7 @@ export const updateBlogPostStatus = async (articleId: number, status: string) =>
 
 export const updateBlogPost = async (articleId: number, updates: any) => {
   try {
-    await supabase
+    await supabase()
       .from('blog_posts')
       .update(updates)
       .eq("id", articleId)
@@ -129,7 +128,7 @@ export const getSavedWritingStyle = async (writingStyleId?: number) => {
   let writingStyle;
   if (writingStyleId) {
     try {
-      const { data } = await supabase.from("writing_styles").select().eq("id", writingStyleId).limit(1).single();
+      const { data } = await supabase().from("writing_styles").select().eq("id", writingStyleId).limit(1).single();
       writingStyle = data;
     } catch (error) {
       console.error(chalk.bgRed("[Error]: fetching writing style"), error);
@@ -285,7 +284,7 @@ export const convertMarkdownToHTML = (markdown: string) => {
   return html
 }
 
-export const markArticleAsReadyToView = async ({
+export const markArticleAs = async ({
   markdown,
   html,
   writingTimeInSeconds,
@@ -293,12 +292,13 @@ export const markArticleAsReadyToView = async ({
   wordCount,
   metaDescription,
   featuredImage,
+  status
 }: any) => {
   try {
     console.log(chalk.yellow(JSON.stringify({
       markdown,
       html,
-      status: 'ready_to_view',
+      status,
       writing_time_sec: writingTimeInSeconds,
       word_count: wordCount,
       featured_image: featuredImage,
@@ -308,12 +308,12 @@ export const markArticleAsReadyToView = async ({
     const $ = cheerio.load(html);
     const ogImageUrl = $('img').first().attr('src') ?? "";
 
-    await supabase
+    await supabase()
       .from('blog_posts')
       .update({
         markdown,
         html,
-        status: 'ready_to_view',
+        status,
         writing_time_sec: writingTimeInSeconds,
         word_count: wordCount,
         featured_image: featuredImage || ogImageUrl,
@@ -333,7 +333,7 @@ export const markArticleAsReadyToView = async ({
 export const markArticleAsFailure = async ({ articleId, error }: any) => {
   console.error(chalk.bgRed("[ERROR]: mark article as failure"), error);
   try {
-    await supabase
+    await supabase()
       .from('blog_posts')
       .update({
         status: 'error',
@@ -521,11 +521,11 @@ export const getRelevantKeywords = async ({
 }
 
 export const getProjectById = async (projectId: number) => {
-  return supabase.from("projects").select("*").eq("id", projectId).maybeSingle()
+  return supabase().from("projects").select("*").eq("id", projectId).maybeSingle()
 }
 
 export const saveSchemaMarkups = async (postId: number, schemaMarkups: any) => {
-  return supabase.from("blog_posts").update({ schema_markups: schemaMarkups }).eq("id", postId);
+  return supabase().from("blog_posts").update({ schema_markups: schemaMarkups }).eq("id", postId);
 }
 
 export const getSchemaMarkup = async ({
@@ -967,7 +967,7 @@ export const insertCaption = async (data: {
   cost: number
 }) => {
   try {
-    const { data: queuedCaption } = await supabase.from("captions")
+    const { data: queuedCaption } = await supabase().from("captions")
       .insert({
         ...data,
       })
@@ -992,7 +992,7 @@ export const checkCredits = async ({
   featureName: string;
 }) => {
   console.log(chalk.yellow(`Check if user "${userId}" credits for feature "${featureName}"`));
-  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const { data: user } = await supabase().from("users").select().eq("id", userId).maybeSingle();
   const credits = user?.subscription?.credits ?? 0;
 
   // if (user?.subscription?.status !== "active") {
@@ -1010,7 +1010,7 @@ export const checkCredits = async ({
 }
 
 export const getUserCredits = async (userId: string) => {
-  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const { data: user } = await supabase().from("users").select().eq("id", userId).maybeSingle();
   const subscription = user.subscription ?? {}
   const credits = subscription.credits ?? 0;
   return credits
@@ -1025,13 +1025,13 @@ export const deductCredits = async ({
   costInCredits: number; // cost of premium feature in credits
   featureName: string;
 }) => {
-  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const { data: user } = await supabase().from("users").select().eq("id", userId).maybeSingle();
   const subscription = user.subscription ?? {}
   const credits = subscription.credits ?? 0;
 
   console.log(chalk.yellow(`Deduct ${costInCredits} credits to user id "${userId}" for feature "${featureName}"`));
 
-  await supabase.from("users").update({
+  await supabase().from("users").update({
     subscription: {
       ...subscription,
       credits: Math.max(0, credits - costInCredits)
@@ -1046,12 +1046,12 @@ export const updateCredits = async ({ userId, credits, action }: {
   action: "increment" | "replace"
 }) => {
   console.log(chalk.yellow(`[${action}] ${credits} credits for user "${userId}"`));
-  const { data: user } = await supabase.from("users").select().eq("id", userId).maybeSingle();
+  const { data: user } = await supabase().from("users").select().eq("id", userId).maybeSingle();
   const subscription = get(user, "subscription", {});
   const userCredits = Math.max(0, user?.subscription?.credits ?? 0);
   const newCredits = action === "increment" ? userCredits + credits : credits;
 
-  await supabase.from("users").update({
+  await supabase().from("users").update({
     subscription: {
       ...subscription,
       plan: {
@@ -1073,7 +1073,7 @@ export const saveKnowledgeInDatabase = (data: {
   content: string;
   type: string;
 }) => {
-  return supabase.from("knowledges").insert({
+  return supabase().from("knowledges").insert({
     user_id: data.userId,
     project_id: data.projectId,
     content: data.content,
@@ -1083,7 +1083,7 @@ export const saveKnowledgeInDatabase = (data: {
 }
 
 export const updateKnowledgeStatus = (knowledgeId: number, status: string) => {
-  return supabase.from("knowledges").update({ status }).eq("id", knowledgeId).throwOnError()
+  return supabase().from("knowledges").update({ status }).eq("id", knowledgeId).throwOnError()
 }
 
 export const deleteVectors = async (ids: string[] | number[]) => {

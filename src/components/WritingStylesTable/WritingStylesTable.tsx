@@ -1,5 +1,5 @@
 'use client';
-import { Alert, App, Button, Empty, Flex, Grid, Popconfirm, Space, Table, Tag, Typography } from 'antd';
+import { Alert, App, Button, Empty, Flex, Grid, Popconfirm, Space, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import useWritingStyles from '@/hooks/useWritingStyles';
 import useProjectId from '@/hooks/useProjectId';
@@ -142,7 +142,7 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/empty-state/empty-writing-style.png"
+          image="https://usehubrank.com/empty-state/empty-writing-style.png"
           imageStyle={{ height: 250 }}
           description={(
             <span className='m-0 relative top-4 text-base'>

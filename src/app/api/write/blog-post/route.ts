@@ -10,7 +10,7 @@ import {
   getProjectKnowledges,
   getYoutubeVideosForKeyword,
   markArticleAsFailure,
-  markArticleAsReadyToView,
+  markArticleAs,
   updateBlogPost,
   writeHook,
   writeSection,
@@ -19,10 +19,10 @@ import {
   updateBlogPostStatus,
 } from "../../helpers";
 import chalk from "chalk";
-import { supabaseAdmin } from "@/helpers/supabase";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
+import supabase from "@/helpers/supabase/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
@@ -246,8 +246,7 @@ export async function POST(request: Request) {
     // GET ARTICLE STATS
     const articleStats = getSummary(ai.article);
 
-    // UPDATE ARTICLE STATUS TO READY TO VIEW
-    await markArticleAsReadyToView({
+    const result = {
       markdown: ai.article,
       html,
       writingTimeInSeconds,
@@ -255,7 +254,19 @@ export async function POST(request: Request) {
       wordCount: articleStats.words,
       featuredImage: featuredImage ?? "",
       metaDescription,
-    });
+      status: 'ready_to_view'
+    }
+
+    if (body.auto_publish) {
+      const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
+
+      if (integrations && integrations?.length > 0) {
+        // UPDATE ARTICLE STATUS TO PUBLISHING
+        result.status = 'publishing'
+      }
+    }
+
+    await markArticleAs(result);
 
     return NextResponse.json({
       markdown: ai.article,

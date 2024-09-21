@@ -1,5 +1,5 @@
 
-import endpoints from "../../../../features/payment/endpoints";
+import endpoints from "@/features/payment/endpoints";
 
 export const maxDuration = 10;
 

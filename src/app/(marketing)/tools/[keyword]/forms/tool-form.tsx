@@ -7,7 +7,7 @@ import axios from "axios";
 import GoogleSignInButton from "@/components/GoogleSignInButton/GoogleSignInButton";
 import { useReCaptcha } from "next-recaptcha-v3";
 import { IconCopy, IconHash } from "@tabler/icons-react";
-import TiptapEditor from "@/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor";
+import TiptapEditor from "@/app/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor";
 
 type Props = {
   name: "hashtags" | "headlines" | "content_ideas" | "meta_description" | "backlink_checker" | "outline" | "website_competitors";

@@ -1,7 +1,6 @@
 "use client";;
-import SessionContext from "@/context/SessionContext";
 import queryKeys from "@/helpers/queryKeys";
-import supabase from "@/helpers/supabase";
+import supabase from '@/helpers/supabase/client';
 import useSession from "@/hooks/useSession";
 import { useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useEffect } from "react";
@@ -30,11 +29,7 @@ const SessionProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  return (
-    <SessionContext.Provider value={{ session: sessionStore.session }}>
-      {children}
-    </SessionContext.Provider>
-  );
+  return children
 };
 
 export default SessionProvider;

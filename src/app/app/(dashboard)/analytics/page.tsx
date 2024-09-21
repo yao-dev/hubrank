@@ -16,7 +16,7 @@ import GoogleSearchConsoleSignInButton from "@/components/GoogleSearchConsoleSig
 import { useRouter, useSearchParams } from "next/navigation";
 import useGoogleSearchConsole from "@/hooks/useGoogleSearchConsole";
 import useSession from "@/hooks/useSession";
-import supabase from "@/helpers/supabase";
+import supabase from '@/helpers/supabase/client';
 
 export default function Analytics() {
   const projectId = useProjectId();

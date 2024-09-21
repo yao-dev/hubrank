@@ -1,7 +1,7 @@
-import { supabaseAdmin } from "@/helpers/supabase";
 import { NextResponse } from "next/server";
-
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
+import jwt from "jsonwebtoken";
+import chalk from "chalk";
+import supabase from "@/helpers/supabase/server";
 
 const getHeaderAccessToken = (bearerToken: string | null = "") => {
   const accessToken = bearerToken?.split(" ")?.[1] ?? ""
@@ -17,13 +17,13 @@ export async function GET(request: Request) {
     // TODO: get all blog post with status "publishing" that are linked to the X-API-KEY in the headers
     return NextResponse.json([])
   } catch (error) {
-    console.error(error)
+    console.log(error)
     return NextResponse.json({ error }, { status: 500 })
   }
 }
 
 // Webhook subscribe triggers when the user TURN ON a zap that he has created
-// hookUrl will be sent in the request.body it correspond to the webhook Zapier give us to trigger
+// url will be sent in the request.body it correspond to the webhook Zapier give us to trigger
 // our Zap trigger like "Publish blog post"
 // You can find the user access_token in the "Authorization" header of the request
 // This will help retrieve the user in the database
@@ -33,23 +33,73 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("[POST] webhook", { accessToken, body, url: request.url })
 
-    return NextResponse.json(body)
+    const integration = jwt.verify(accessToken, process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+    console.log(chalk.yellow("integration from token:"), integration)
+
+    if (!integration?.id) {
+      throw new Error("[POST] zapier webhook: token invalid, integration id missing")
+    }
+
+    if (!integration?.user_id) {
+      throw new Error("[POST] zapier webhook: token invalid, user_id missing")
+    }
+
+    if (!integration?.project_id) {
+      throw new Error("[POST] zapier webhook: token invalid, project_id missing")
+    }
+
+    await supabase().from("integrations")
+      .update({ enabled: true, metadata: body })
+      .eq("id", integration.id)
+      .throwOnError()
+
+    // await supabase().from("integrations").insert({
+    //   user_id: integration.user_id,
+    //   project_id: integration.project_id,
+    //   platform: "zapier",
+    //   metadata: body
+    // }).throwOnError()
+
+    return NextResponse.json({
+      ...integration,
+      enabled: true,
+      metadata: body
+    })
   } catch (error) {
-    console.error(error)
+    console.log(error)
     return NextResponse.json({ error }, { status: 500 })
   }
 }
 
 // Webhook unsubscribe triggers when the user TURN OFF or delete a zap
-// The integration or hookUrl must be deleted?
+// The integration or url must be deleted
 export async function DELETE(request: Request) {
   try {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"));
     const body = await request.json();
-    console.log("[DELETE] webhook", { accessToken, body, url: request.url })
+    console.log("[DELETE] webhook", { accessToken, body, url: request.url });
+    request
+
+    const integration = jwt.verify(accessToken, process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+    console.log(chalk.yellow("integration from token:"), integration)
+
+    if (!integration?.id) {
+      throw new Error("[POST] zapier webhook: token invalid, integration id missing")
+    }
+
+    if (!integration?.user_id) {
+      throw new Error("[POST] zapier webhook: token invalid, user_id missing")
+    }
+
+    if (!integration?.project_id) {
+      throw new Error("[POST] zapier webhook: token invalid, project_id missing")
+    }
+
+    await supabase().from("integrations").update({ enabled: false }).eq("id", integration.id).throwOnError();
+
     return NextResponse.json(body)
   } catch (error) {
-    console.error(error)
+    console.log(error)
     return NextResponse.json({ error }, { status: 500 })
   }
 }

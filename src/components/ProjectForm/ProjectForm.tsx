@@ -150,7 +150,7 @@ const ProjectForm = () => {
             onConfirm={(e) => {
               e?.preventDefault()
               deleteProject.mutate(projectId)
-              router.replace("/dashboard")
+              router.replace("/")
               activeProject.setProjectId(0);
               message.success('Your project was deleted.')
             }}

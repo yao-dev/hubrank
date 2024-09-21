@@ -177,7 +177,7 @@ const KnowledgesBaseTable = () => {
     return (
       <Flex align='center' justify='center' style={{ marginTop: 96 }}>
         <Empty
-          image="/empty-state/empty-knowledges.png"
+          image="https://usehubrank.com/empty-state/empty-knowledges.png"
           imageStyle={{ height: 250 }}
           description={(
             <span className='m-0 relative top-4 text-base'>

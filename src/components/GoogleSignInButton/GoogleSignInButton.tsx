@@ -1,5 +1,5 @@
-"use client";
-import supabase from "@/helpers/supabase";
+"use client";;
+import supabase from '@/helpers/supabase/client';
 
 type Props = {
   name?: string;
@@ -19,6 +19,9 @@ const GoogleSignInButton = ({ name }: Props) => {
         },
       },
     });
+
+    // revalidatePath('/', 'layout')
+    // redirect('/app')
   }
 
   return (

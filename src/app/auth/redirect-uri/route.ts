@@ -1,5 +1,4 @@
 import { getGoogleClient } from '@/app/api/search-console-auth-url/route';
-import supabase from '@/helpers/supabase';
 import chalk from 'chalk';
 import { NextResponse } from 'next/server';
 // The client you created from the Server-Side Auth instructions

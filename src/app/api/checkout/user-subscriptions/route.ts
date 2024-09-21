@@ -1,6 +1,6 @@
 
+import endpoints from "@/features/payment/endpoints";
 import { NextRequest } from "next/server";
-import endpoints from "../../../../features/payment/endpoints";
 
 export const maxDuration = 10;
 

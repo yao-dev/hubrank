@@ -1,9 +1,9 @@
 export const brandsLogo = {
-  zapier: "/brands/zapier.png",
-  wordpress: "/brands/wordpress.png",
-  shopify: "/brands/shopify.png",
-  medium: "/brands/medium.png",
-  webflow: "/brands/webflow.png",
-  wix: "/brands/wix.png",
-  ghost: "/brands/ghost.png",
+  zapier: "https://usehubrank.com/brands/zapier.png",
+  wordpress: "https://usehubrank.com/brands/wordpress.png",
+  shopify: "https://usehubrank.com/brands/shopify.png",
+  medium: "https://usehubrank.com/brands/medium.png",
+  webflow: "https://usehubrank.com/brands/webflow.png",
+  wix: "https://usehubrank.com/brands/wix.png",
+  ghost: "https://usehubrank.com/brands/ghost.png",
 }

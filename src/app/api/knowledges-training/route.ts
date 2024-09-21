@@ -11,10 +11,9 @@ import {
   updateKnowledgeStatus,
   urlToVector,
 } from "../helpers";
-import { supabaseAdmin } from "@/helpers/supabase";
 import { shuffle } from "lodash";
+import supabase from "@/helpers/supabase/server";
 
-const supabase = supabaseAdmin(process.env.NEXT_PUBLIC_SUPABASE_ADMIN_KEY || "");
 export const maxDuration = 300;
 
 export async function POST(request: Request) {
@@ -58,7 +57,7 @@ export async function POST(request: Request) {
         if (record.mode === "file") {
           console.log("received file record", record);
           const fileName = record.file.path
-          const { data: blob } = await supabase.storage.from("files").download(fileName);
+          const { data: blob } = await supabase().storage.from("files").download(fileName);
           console.log("blob", blob)
           if (!blob) {
             return NextResponse.json({ message: "Blob cannot be empty", record }, { status: 400 })
@@ -86,7 +85,7 @@ export async function POST(request: Request) {
 
           console.log(`Training done for: ${fileName}`)
 
-          await supabase.storage.from("files").remove([fileName])
+          await supabase().storage.from("files").remove([fileName])
         }
 
         await updateKnowledgeStatus(knowledgeId, "ready");
@@ -109,8 +108,8 @@ export async function POST(request: Request) {
           console.log("There is no vectors to delete for this knowledge item")
         }
 
-        await supabase.from("knowledges").delete().eq("id", knowledgeId);
-        await supabase.storage.from("files").remove([oldRecord.file.path]);
+        await supabase().from("knowledges").delete().eq("id", knowledgeId);
+        await supabase().storage.from("files").remove([oldRecord.file.path]);
         break;
       }
     }
@@ -121,7 +120,7 @@ export async function POST(request: Request) {
     switch (body.type) {
       case "INSERT":
         await updateKnowledgeStatus(body.record.id, "error");
-        await supabase.storage.from("files").remove([body.record.file.path]);
+        await supabase().storage.from("files").remove([body.record.file.path]);
         break;
     }
 
