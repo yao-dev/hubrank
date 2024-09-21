@@ -90,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {
-    console.log(e?.message)
+    console.log(e)
     // CHANGE STATUS TO ERROR
     await updateBlogPostStatus(articleId, "error");
     return NextResponse.json({ scheduled: false }, { status: 500 });
