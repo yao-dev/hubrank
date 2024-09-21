@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import supabase from "@/helpers/supabase/server";
 
 const hubrank_to_gmail_url = "https://hooks.zapier.com/hooks/standard/2046199/3406e7e928c748b1ae3e74e66abf24fb/"
 const hubrank_to_ghost_url = "https://hooks.zapier.com/hooks/standard/2046199/b06c51e573f64596834d4f7432100c8a/"
@@ -19,7 +18,7 @@ export async function GET() {
     //   "schema_markups": []
     // }, {
     //   headers: {
-    //     Authorization: "Bearer a7047301-d0fe-4d18-8c81-105b84ab49da"
+    //     Authorization: "Bearer "
     //   }
     // });
 

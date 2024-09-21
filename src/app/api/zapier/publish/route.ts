@@ -4,13 +4,13 @@ import axios from "axios";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const r = await axios.post(body.url, body.blogPost, {
+    const { data } = await axios.post(body.url, body.blogPost, {
       headers: {
-        Authorization: "Bearer a7047301-d0fe-4d18-8c81-105b84ab49da"
+        Authorization: `Bearer ${process.env.ZAPIER_TOKEN ?? ''}`
       }
     });
 
-    return NextResponse.json(r.data)
+    return NextResponse.json(data)
   } catch (e) {
     console.log(e)
   }

@@ -40,6 +40,4 @@ next-env.d.ts
 
 src/app/api/shopify.ts
 src/app/api/shopify/
-# src/app/api/zapier/oauth
-test.js
 service-account.json
