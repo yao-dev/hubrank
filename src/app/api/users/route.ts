@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { updateCredits } from "../helpers";
-import { upsertStripeCustomer } from "@/features/payment/helpers";
+import { upsertStripeCustomer } from "@/features/payment/helpers/upsert-stripe-customer";
 
 
 export const maxDuration = 300;
