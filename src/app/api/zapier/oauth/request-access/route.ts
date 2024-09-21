@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     // console.log(chalk.yellow("[Request permission dialog]: we redirect to consent page in Hubrank "), redirectUrl)
 
-    return NextResponse.redirect("");
+    return NextResponse.redirect("/test");
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error }, { status: 500 })
