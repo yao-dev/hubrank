@@ -4,7 +4,7 @@ import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWriting
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 
-
+export const maxDuration = 45;
 
 export async function POST(request: Request) {
   const body = await request.json();
