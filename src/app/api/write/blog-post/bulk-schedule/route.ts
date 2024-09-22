@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createSchedule } from "@/helpers/qstash";
 import {
   getProjectContext,
@@ -11,10 +11,16 @@ import {
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
 
-export async function POST(request: Request) {
+/**
+ * POST handler for bulk scheduling of blog posts
+ * @param {NextRequest} request - The incoming request object
+ * @returns {Promise<NextResponse>} JSON response indicating whether scheduling was successful
+ */
+export async function POST(request: NextRequest): Promise<NextResponse> {
   const body = await request.json();
 
   try {
+    // Fetch project and language data concurrently
     const [
       { data: project },
       { data: language },
@@ -23,6 +29,7 @@ export async function POST(request: Request) {
       supabase().from("languages").select("*").eq("id", body.language_id).single()
     ]);
 
+    // Generate project context
     const context = getProjectContext({
       name: project.name,
       website: project.website,
@@ -30,27 +37,30 @@ export async function POST(request: Request) {
       lang: language.label,
     })
 
-    // FETCH WRITING STYLE IF IT EXISTS
+    // Fetch or generate writing style
     let writingStyle: any = getManualWritingStyle(body);
     if (body.writing_style_id) {
       writingStyle = await getSavedWritingStyle(body.writing_style_id)
     }
 
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    // Calculate total cost for all blog posts
     const cost = body.headlines.length + (body.headlines.length * (body.structured_schemas.length * 0.25));
     const creditCheck = {
       userId: body.userId,
       costInCredits: cost,
       featureName: "pseo/write"
     }
+    // Deduct credits from user subscription
     await deductCredits(creditCheck);
 
-    // CREATE NEW ARTICLE WITH QUEUE STATUS IN BULK
+    // Create and schedule blog posts for each headline
     for (const [index, headline] of body.headlines.entries()) {
       let id;
       try {
+        // Insert new blog post with queue status
         id = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
 
+        // Schedule the blog post creation
         await createSchedule({
           destination: getUpstashDestination("api/write/blog-post"),
           body: {
@@ -64,13 +74,15 @@ export async function POST(request: Request) {
             project,
           },
           headers: {
-            "Upstash-Delay": `${index * 1}m`,
+            "Upstash-Delay": `${index * 1}m`, // Delay each post by 1 minute
           }
         });
       } catch (e) {
-        console.log(`Fail to schedule blog post for headline: ${headline}`, e);
+        console.log(`Failed to schedule blog post for headline: ${headline}`, e);
         if (id) {
+          // Update blog post status to error if scheduling fails
           await updateBlogPost(id, { status: 'error' });
+          // TODO: Implement credit refund logic
           // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
         }
       }
@@ -78,7 +90,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {
-    console.log(e?.message)
+    console.log(e instanceof Error ? e.message : 'An unknown error occurred');
     return NextResponse.json({ scheduled: false }, { status: 500 });
   }
 }
