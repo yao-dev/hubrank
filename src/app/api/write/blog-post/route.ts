@@ -87,9 +87,20 @@ export async function POST(request: Request) {
       videos = youtubeVideos;
     }
 
+    let competitors;
+
+    if (!body.competitors) {
+      competitors = await getSerp({
+        query: body.seed_keyword,
+        languageCode: language.code,
+        locationCode: language.location_code,
+        count: 15
+      });
+    }
+
     const competitorsOutline = [];
 
-    for (let competitor of body.competitors) {
+    for (let competitor of competitors) {
       const competitorOutline = await getUrlOutline(competitor.url);
       competitorsOutline.push(competitorOutline)
     }

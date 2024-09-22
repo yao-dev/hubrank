@@ -9,7 +9,6 @@ import {
   deductCredits,
   updateBlogPost,
 } from "@/app/api/helpers";
-import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 
 export async function POST(request: Request) {
@@ -48,41 +47,37 @@ export async function POST(request: Request) {
 
     // CREATE NEW ARTICLE WITH QUEUE STATUS IN BULK
     await Promise.all(
-      body.headlines.map(async (headline, index) => {
-        let id;
-        try {
-          id = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
-          const competitors = await getSerp({
-            query: body.seed_keyword,
-            languageCode: language.code,
-            locationCode: language.location_code,
-            count: 15
-          });
+      body.headlines.map((headline, index) => {
+        let id: number;
 
-          await createSchedule({
-            destination: getUpstashDestination("api/write/blog-post"),
-            body: {
-              ...body,
-              title: headline,
-              seed_keyword: headline,
-              articleId: id,
-              context,
-              writingStyle,
-              language,
-              project,
-              competitors
-            },
-            headers: {
-              "Upstash-Delay": `${(index || 0) as number * 1}m`,
+        insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) })
+          .then((result) => {
+            id = result
+            return createSchedule({
+              destination: getUpstashDestination("api/write/blog-post"),
+              body: {
+                ...body,
+                title: headline,
+                seed_keyword: headline,
+                articleId: id,
+                context,
+                writingStyle,
+                language,
+                project,
+              },
+              headers: {
+                "Upstash-Delay": `${(index || 0) as number * 1}m`,
+              }
+            })
+          })
+          .then()
+          .catch((e) => {
+            console.log(`Fail to schedule blog post for headline: ${headline}`, e);
+            if (id) {
+              updateBlogPost(id, { status: 'error' }).then().catch(console.log);
+              // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
             }
-          });
-        } catch (e) {
-          console.log(`Fail to schedule blog post for headline: ${headline}`, e);
-          if (id) {
-            await updateBlogPost(id, { status: 'error' });
-            // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
-          }
-        }
+          })
       })
     )
 

@@ -49,6 +49,21 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
   return data.messageId
 }
 
+export const createBatch = async ({ data, destination, headers = {} }: any): Promise<string | null> => {
+  return axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(data), {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+      "Upstash-Retries": 0,
+      headers: {
+        "Upstash-Retries": 0,
+        ...headers,
+      }
+    },
+  });
+}
+
+
 export const deleteSchedule = async (messageId: string) => {
   return axios.delete(`https://qstash.upstash.io/v2/messages/${messageId}`, {
     headers: {
