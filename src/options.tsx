@@ -1169,7 +1169,8 @@ export const avoidWords = [
   "don't worry",
   "This guide",
   "You might be thinking",
-  "Harnessing"
+  "Harnessing",
+  "For more",
 ]
 
 export const captionTypes = [

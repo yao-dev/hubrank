@@ -103,7 +103,9 @@ export const models = {
   sonnet: "claude-3-5-sonnet-20240620",
   haiku: "claude-3-haiku-20240307",
   "gpt-4o": "gpt-4o",
-  "gpt-4-0613": "gpt-4-0613"
+  "gpt-4o-mini": "gpt-4o-mini",
+  "gpt-4-0613": "gpt-4-0613",
+  "chatgpt": "chatgpt-4o-latest",
 }
 
 type TokenCountArgs = {
@@ -473,8 +475,8 @@ export class AI {
   }
 
   async hook(values: any) {
-    const temperature = shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0]
-    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature, model: models["gpt-4-0613"] })
+    const model = shuffle([models.chatgpt, models["gpt-4o-mini"]])[0]
+    return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 1, model })
   }
 
   writeTemplate(values: any) {
@@ -571,7 +573,7 @@ export class AI {
   }
 
   async write(values: any) {
-    const model = shuffle([models["gpt-4o"], models["gpt-4-0613"]])[0];
+    const model = shuffle([models["gpt-4o"], models["gpt-4-0613"], models.chatgpt])[0];
     const temperature = shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0]
     return this.ask(this.writeTemplate(values), { type: "markdown", mode: "write", word_count: values.word_count, temperature, model });
   }
