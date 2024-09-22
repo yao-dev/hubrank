@@ -209,6 +209,7 @@ const getRephraseInstruction = (text: string) => {
     "remove adverbs",
     "remove compound adverbs",
     "use active voice, idioms and phrasal verbs",
+    "add space to your content with paragraphs",
     "edit like a human.",
     `list of words to absolutely avoid or use alternatives:\n${avoidWords.join('\n- ')}`,
   ].join('\n')
