@@ -175,27 +175,27 @@ export async function POST(request: Request) {
       // }
 
       // TODO: add knowledges in writeSection prompt
-      const knowledges = await getProjectKnowledges({
-        userId: body.userId,
-        projectId: body.project_id,
-        topK: 500,
-        query: `${section.name} ${section?.keywords ?? ""}`,
-        minScore: 0.5
-      });
+      // const knowledges = await getProjectKnowledges({
+      //   userId: body.userId,
+      //   projectId: body.project_id,
+      //   topK: 500,
+      //   query: `${section.name} ${section?.keywords ?? ""}`,
+      //   minScore: 0.5
+      // });
 
       let external_links;
 
-      if (section?.search_query) {
-        const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 20 });
-        const serpUrls = serp.map((item) => item.url);
-        external_links = await ai.getRelevantUrls({
-          title: body.title,
-          seed_keyword: section.name,
-          urls: serpUrls,
-          count: Math.min(serpUrls.length, 3)
-        })
-        console.log(`relevant external urls for section: ${section.name}`, serp)
-      }
+      // if (section?.search_query) {
+      //   const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 20 });
+      //   const serpUrls = serp.map((item) => item.url);
+      //   external_links = await ai.getRelevantUrls({
+      //     title: body.title,
+      //     seed_keyword: section.name,
+      //     urls: serpUrls,
+      //     count: Math.min(serpUrls.length, 3)
+      //   })
+      //   console.log(`relevant external urls for section: ${section.name}`, serp)
+      // }
 
       // WRITE EACH SECTION
       await writeSection({
