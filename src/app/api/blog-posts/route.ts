@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { updateCredits } from "../helpers";
+import { publishBlogPost, updateCredits } from "../helpers";
 import supabase from "@/helpers/supabase/server";
-import axios from "axios";
 
 export const maxDuration = 30;
 
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
 
           const promises = integrations?.map(async (integration) => {
             try {
-              return axios.post("/api/zapier/publish", { url: integration.metadata.url, blogPost: body.record })
+              return publishBlogPost({ url: integration.metadata.url, blogPost: body.record })
             } catch (e) {
               console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
               return null

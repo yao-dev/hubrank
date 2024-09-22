@@ -1204,3 +1204,11 @@ export const getTweets = async (urls: string[]) => {
 
   return tweets
 }
+
+export const publishBlogPost = async ({ url, blogPost }: any) => {
+  return await axios.post(url, blogPost, {
+    headers: {
+      Authorization: `Bearer ${process.env.ZAPIER_TOKEN ?? ''}`
+    }
+  });
+}

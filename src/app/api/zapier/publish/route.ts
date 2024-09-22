@@ -1,14 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import { publishBlogPost } from "../../helpers";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { data } = await axios.post(body.url, body.blogPost, {
-      headers: {
-        Authorization: `Bearer ${process.env.ZAPIER_TOKEN ?? ''}`
-      }
-    });
+    const { data } = await publishBlogPost({ url: body.url, blogPost: body.blogPost })
 
     return NextResponse.json(data)
   } catch (e) {
