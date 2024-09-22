@@ -28,10 +28,12 @@ export async function POST(request: Request) {
           //   }
           // });
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing" && body.record.auto_publish) {
+          console.log("STEP 1", body)
           const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
 
           const promises = integrations?.map(async (integration) => {
             try {
+              console.log("STEP 3", integration)
               return publishBlogPost({ url: integration.metadata.url, blogPost: body.record })
             } catch (e) {
               console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
@@ -39,8 +41,11 @@ export async function POST(request: Request) {
             }
           });
           if (promises) {
+            console.log("STEP 2", body)
             await Promise.all(promises);
-            await supabase().from("blog_posts").update({ status: "published" }).eq("id", record.id);
+            console.log("STEP 4", body)
+            await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
+            console.log("STEP 5")
           }
         }
         break;
@@ -54,6 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Blog post webhook success", body }, { status: 200 })
   } catch (error) {
     console.log(error)
+    console.log(error?.message)
     return NextResponse.json({ message: "Blog post webhook error", error, body }, { status: 500 })
   }
 }
