@@ -80,7 +80,7 @@ const Article = ({
             onClick={() => drawers.openExportBlogPostDrawer({ isOpen: true })}
             icon={<IconBrandZapier size={18} className="text-orange-500" />}
             className='w-fit flex flex-row items-center'
-            disabled={article?.status !== "ready_to_view"}
+            disabled={!["ready_to_view", "published"].includes(article?.status)}
           >
             Publish
           </Button>

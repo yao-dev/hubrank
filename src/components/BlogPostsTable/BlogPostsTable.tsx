@@ -224,7 +224,7 @@ const BlogPostsTable = () => {
               Preview
             </Button>
             <Button
-              disabled={getIsDisabled(record.status) || ["publishing", "published"].includes(record.status)}
+              disabled={getIsDisabled(record.status) || ["publishing"].includes(record.status)}
               onClick={(e) => {
                 e.preventDefault();
                 if (!hasIntegrations) {
