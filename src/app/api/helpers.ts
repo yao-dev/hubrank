@@ -20,6 +20,8 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
+import { avoidWords } from "@/options";
+import { getSummary } from 'readability-cyr';
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -202,7 +204,15 @@ const getRephraseInstruction = (text: string) => {
   //   ].flat())[0]
   // ]).join('\n')
 
-  return "diversify vocabulary, remove adverbs, remove compound adverbs, use active voice, idioms and phrasal verbs, edit like a human."
+  return [
+    "diversify vocabulary",
+    "remove adverbs",
+    "remove compound adverbs",
+    "use active voice, idioms and phrasal verbs",
+    "edit like a human.",
+    `list of words to absolutely avoid or use alternatives:\n${avoidWords.join('\n- ')}`,
+  ].join('\n')
+
 }
 
 export const writeSection = async ({
@@ -255,14 +265,14 @@ export const writeSection = async ({
     }
     content = content.replaceAll("https://www.youtube.com/watch?v=", "https://www.youtube.com/embed/")
 
-    // const rephraseInstruction = getRephraseInstruction(content)
+    const rephraseInstruction = getRephraseInstruction(content)
 
-    // let stats = getSummary(content);
-    // if (stats.FleschKincaidGrade > 12) {
-    //   console.log("- rephrase");
-    //   content = await ai.rephrase(content, rephraseInstruction);
-    //   console.log("- rephrase done");
-    // }
+    let stats = getSummary(content);
+    if (stats.FleschKincaidGrade > 12) {
+      console.log("- rephrase");
+      content = await ai.rephrase(content, rephraseInstruction);
+      console.log("- rephrase done");
+    }
     console.log("- add section to article", content);
     // ai.addArticleContent(ai.parse(content, "markdown"));
     ai.addArticleContent(content);

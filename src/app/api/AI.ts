@@ -518,7 +518,7 @@ export class AI {
     }
 
     if (values?.section?.internal_links?.length > 0) {
-      prompt += `\nInternal links to include:\n${values.section.internal_links?.join('\n')}\n\n`
+      prompt += `\nInternal links to include (Avoid to incorporate links with a call to action):\n${values.section.internal_links?.join('\n')}\n\n`
     }
 
     if (hasImage) {
@@ -611,7 +611,7 @@ export class AI {
     Keep all links and images if there are any.
 
     Write in markdown wrapped in \`\`\`markdown\`\`\`.
-  `, { type: "markdown", mode: "rephrase", temperature: 0, model: models["gpt-4-0613"] });
+  `, { type: "markdown", mode: "rephrase", temperature: 0, model: models["gpt-4o"] });
     //   return this.ask(`
     //   "${section}"
 
