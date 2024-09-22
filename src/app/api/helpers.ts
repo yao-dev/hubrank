@@ -414,7 +414,13 @@ export const getEmbeddings = async (input: string): Promise<number[]> => {
     }
   });
 
-  return data?.[0]?.embedding ?? []
+  const embeddings = data?.[0]?.embedding ?? [];
+
+  if (!embeddings?.length) {
+    throw new Error('Empty embeddings')
+  }
+
+  return embeddings;
 }
 
 export const getRelevantUrls = async ({

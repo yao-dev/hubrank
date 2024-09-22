@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSchedule, dateToCron } from "@/helpers/qstash";
+import { createSchedule } from "@/helpers/qstash";
 import {
   getProjectContext,
   getUpstashDestination,
@@ -10,7 +10,6 @@ import {
   updateBlogPost,
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
-import { addMinutes, addSeconds } from "date-fns";
 
 /**
  * POST handler for bulk scheduling of blog posts
@@ -62,14 +61,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const newArticle = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
         id = newArticle?.id;
 
-        const dateInFuture = index === 0 ? addSeconds(newArticle?.created_at, 30) : addMinutes(newArticle?.created_at, 1);
-        console.log("dateInFuture", dateInFuture);
-
-
-        // date to cron
-        const cron = dateToCron(dateInFuture);
-        console.log("cron", cron)
-
         // Schedule the blog post creation
         const scheduleId = await createSchedule({
           destination: getUpstashDestination("api/write/blog-post"),
@@ -83,9 +74,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             language,
             project,
           },
-          // headers: {
-          //   "Upstash-Delay": `${!index ? "0s"}`,
-          // }
         });
 
         if (id && scheduleId) {
