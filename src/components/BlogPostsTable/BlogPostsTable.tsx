@@ -145,7 +145,7 @@ const BlogPostsTable = () => {
             icon = <CloseCircleOutlined />;
           }
           if (valueLowercase === "publishing") {
-            color = "green";
+            color = "purple";
             icon = <SyncOutlined spin />;
           }
           if (valueLowercase === "published") {
@@ -155,7 +155,7 @@ const BlogPostsTable = () => {
 
           return (
             <span>
-              <Tag color={color} icon={["queue", "writing", "published"].includes(valueLowercase) ? icon : null}>
+              <Tag color={color} icon={["queue", "writing", "publishing", "published"].includes(valueLowercase) ? icon : null}>
                 {value.replaceAll("_", " ").toUpperCase()}
               </Tag>
             </span>
