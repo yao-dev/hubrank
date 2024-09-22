@@ -10,7 +10,7 @@ import {
   updateBlogPost,
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
-import { addHours, addMinutes, addSeconds } from "date-fns";
+import { addMinutes, addSeconds } from "date-fns";
 
 /**
  * POST handler for bulk scheduling of blog posts
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         const dateInFuture = index === 0 ? addSeconds(newArticle?.created_at, 30) : addMinutes(newArticle?.created_at, 1);
         // date to cron
-        const cron = dateToCron(addHours(dateInFuture, 1));
+        const cron = dateToCron(addMinutes(dateInFuture, body.utc_offset));
         console.log("cron", cron)
 
         // Schedule the blog post creation
