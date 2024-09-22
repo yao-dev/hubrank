@@ -1,10 +1,13 @@
 'use client';;
 import { Button, Form, message, Skeleton, Tabs, TabsProps } from 'antd';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import useProjects from '@/hooks/useProjects';
 import { useRouter, useSearchParams } from 'next/navigation';
 import BlogPostsTable from '@/components/BlogPostsTable/BlogPostsTable';
-import { PlusOutlined } from '@ant-design/icons';
+import {
+  PlusOutlined,
+  SyncOutlined,
+} from '@ant-design/icons';
 import WritingStyleForm from '@/components/WritingStyleForm/WritingStyleForm';
 import WritingStylesTable from '@/components/WritingStylesTable/WritingStylesTable';
 import useDrawers from '@/hooks/useDrawers';
@@ -19,6 +22,9 @@ import usePricingModal from '@/hooks/usePricingModal';
 import { getUserId } from '@/helpers/user';
 import axios from 'axios';
 import { IconCopy } from '@tabler/icons-react';
+import { ButtonProps } from 'antd/lib';
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/helpers/queryKeys';
 
 export default function ProjectDetail({
   params,
@@ -26,6 +32,7 @@ export default function ProjectDetail({
   params: { project_id: number }
 }) {
   const projectId = +params.project_id;
+  const queryClient = useQueryClient();
   const { data: project, isFetched } = useProjects().getOne(projectId);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -195,26 +202,32 @@ export default function ProjectDetail({
     router.push(`/projects/${params.project_id}?tab=${key}`)
   };
 
-  const getActionButton = ({ onClick, icon, text }: { onClick: () => void; icon?: ReactNode; text: string }) => {
+  const getActionButton = (props: ButtonProps) => {
     return (
       <Button
-        type="primary"
-        onClick={onClick}
-        icon={icon}
-      >
-        {text}
-      </Button>
+        {...props}
+      />
     )
   }
 
   const getTabBarExtraContent = () => {
     switch (activeTab) {
       case "blog-posts":
-        return getActionButton({
-          onClick: () => drawers.openBlogPostDrawer({ isOpen: true }),
-          icon: <PlusOutlined />,
-          text: "Blog post"
-        });
+        return (
+          <div className='flex flex-row gap-2'>
+            {getActionButton({
+              onClick: () => queryClient.invalidateQueries({ queryKey: queryKeys.blogPosts(projectId) }),
+              icon: <SyncOutlined />,
+              // text: "Blog post"
+            })}
+            {getActionButton({
+              onClick: () => drawers.openBlogPostDrawer({ isOpen: true }),
+              icon: <PlusOutlined />,
+              children: "Blog post",
+              type: "primary"
+            })}
+          </div>
+        );
       // case "social-media":
       //   return getActionButton({
       //     onClick: () => drawers.openCaptionDrawer({ isOpen: true }),
@@ -225,13 +238,15 @@ export default function ProjectDetail({
         return getActionButton({
           onClick: () => setIsWritingStyleModalOpened(true),
           icon: <PlusOutlined />,
-          text: "Writing style"
+          children: "Writing style",
+          type: "primary"
         })
       case "knowledge-bases":
         return getActionButton({
           onClick: () => drawers.openKnowledgeDrawer({ isOpen: true }),
           icon: <PlusOutlined />,
-          text: "Knowledge"
+          children: "Knowledge",
+          type: "primary"
         })
     }
   }
