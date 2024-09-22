@@ -357,8 +357,9 @@ export class AI {
   }
 
   async headlines(values: any) {
-    const temperature = shuffle([0.4, 0.5, 0.6])[0]
-    return this.ask(this.headlinesTemplate(values), { type: "json", mode: "headlines", temperature, model: models["gpt-4o"], top_k: 2 });
+    const model = shuffle([models["gpt-4o"], models.chatgpt, models["gpt-4o-mini"]])[0]
+    const temperature = shuffle([0.4, 0.5, 0.75, 1])[0]
+    return this.ask(this.headlinesTemplate(values), { type: "json", mode: "headlines", temperature, model, top_k: 2 });
   }
 
   // outlineIdeaTemplate(values: any) {
@@ -733,7 +734,7 @@ video_url: string;
   }
 
   async outlinePlan(values: any) {
-    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models["gpt-4o"] });
+    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models.chatgpt });
   }
 
   metaDescriptionTemplate(values: any) {
@@ -775,7 +776,7 @@ video_url: string;
   }
 
   async metaDescription(values: any) {
-    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models["gpt-4-0613"], top_k: 2 });
+    return this.ask(this.metaDescriptionTemplate(values), { type: "json", mode: "meta-description", temperature: 0.7, model: models.chatgpt, top_k: 2 });
   }
 
 
@@ -944,7 +945,7 @@ video_url: string;
   }
 
   async getPSeoOutline(values: any) {
-    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-pseo-outline", temperature: 0.2, model: models["gpt-4o"] });
+    return this.ask(this.getPSeoOutlineTemplate(values), { type: "json", mode: "get-pseo-outline", temperature: 0.2, model: models.chatgpt });
   }
 
   getCaptionTemplate(values: CaptionTemplate) {
@@ -1023,7 +1024,7 @@ video_url: string;
   }
 
   async getRelevantKeywords(values: GetRelevantKeywords) {
-    return this.ask(this.getRelevantKeywordsTemplate(values), { type: "json", mode: "get-relevant-keywords", temperature: 0.3, model: models["gpt-4o"] });
+    return this.ask(this.getRelevantKeywordsTemplate(values), { type: "json", mode: "get-relevant-keywords", temperature: 0.3, model: models["gpt-4o-mini"] });
   }
 
   getRelevantUrlsTemplate(values: GetRelevantUrls) {
@@ -1036,7 +1037,7 @@ video_url: string;
   }
 
   async getRelevantUrls(values: GetRelevantUrls) {
-    return this.ask(this.getRelevantUrlsTemplate(values), { type: "json", mode: "get-relevant-urls", temperature: 0.3, model: models["gpt-4o"] });
+    return this.ask(this.getRelevantUrlsTemplate(values), { type: "json", mode: "get-relevant-urls", temperature: 0.3, model: models["gpt-4o-mini"] });
   }
 }
 

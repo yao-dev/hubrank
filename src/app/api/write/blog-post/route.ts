@@ -7,7 +7,6 @@ import {
   fetchSitemapXml,
   getAndSaveSchemaMarkup,
   getSitemapUrls,
-  getProjectKnowledges,
   getYoutubeVideosForKeyword,
   markArticleAsFailure,
   markArticleAs,
@@ -185,17 +184,17 @@ export async function POST(request: Request) {
 
       let external_links;
 
-      // if (section?.search_query) {
-      //   const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 20 });
-      //   const serpUrls = serp.map((item) => item.url);
-      //   external_links = await ai.getRelevantUrls({
-      //     title: body.title,
-      //     seed_keyword: section.name,
-      //     urls: serpUrls,
-      //     count: Math.min(serpUrls.length, 3)
-      //   })
-      //   console.log(`relevant external urls for section: ${section.name}`, serp)
-      // }
+      if (section?.search_query) {
+        const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 20 });
+        const serpUrls = serp.map((item) => item.url);
+        external_links = await ai.getRelevantUrls({
+          title: body.title,
+          seed_keyword: section.name,
+          urls: serpUrls,
+          count: Math.min(serpUrls.length, 3)
+        })
+        console.log(`relevant external urls for section: ${section.name}`, serp)
+      }
 
       // WRITE EACH SECTION
       await writeSection({
