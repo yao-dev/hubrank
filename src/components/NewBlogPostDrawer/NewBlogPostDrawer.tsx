@@ -39,7 +39,10 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         setIsSubmitting(false)
         return pricingModal.open(true)
       }
-      axios.post('/api/write/blog-post/schedule', values)
+      axios.post('/api/write/blog-post/schedule', {
+        ...values,
+        utc_offset: new Date().getTimezoneOffset()
+      })
       message.success('Blog post added in the queue!');
       onClose();
       form.resetFields();
@@ -67,7 +70,10 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         setIsSubmitting(false);
         return pricingModal.open(true)
       }
-      axios.post('/api/write/blog-post/bulk-schedule', values)
+      axios.post('/api/write/blog-post/bulk-schedule', {
+        ...values,
+        utc_offset: new Date().getTimezoneOffset()
+      })
       message.success('Blog posts will be added in the queue shortly!');
       onClose();
       form.resetFields();
