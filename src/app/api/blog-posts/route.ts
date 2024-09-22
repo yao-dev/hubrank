@@ -59,8 +59,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: "Blog post webhook success", body }, { status: 200 })
   } catch (error) {
-    console.log(error)
-    console.log(error?.message)
-    return NextResponse.json({ message: "Blog post webhook error", error, body }, { status: 500 })
+    throw new Error("Blog post webhook error", { cause: { error, body } });
   }
 }
