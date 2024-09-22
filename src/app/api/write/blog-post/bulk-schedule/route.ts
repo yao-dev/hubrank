@@ -62,7 +62,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const newArticle = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
         id = newArticle?.id;
 
-        // add 1m to newArticle.created_at
         const dateInFuture = index === 0 ? addSeconds(newArticle?.created_at, 30) : addMinutes(newArticle?.created_at, 1);
         console.log("dateInFuture", dateInFuture)
         // date to cron
