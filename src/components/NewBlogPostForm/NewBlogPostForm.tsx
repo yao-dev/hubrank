@@ -483,26 +483,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             <Segmented options={[500, 750, 1000, 1500, 2000]} style={{ width: "fit-content" }} />
           </Form.Item>
 
-          <Form.Item
-            name="sitemap"
-            label={<Label name="Sitemap" />}
-            rules={[{
-              required: false,
-              type: "url",
-              message: "Enter a valid url",
-              transform: (url: any) => {
-                if (!url?.startsWith('https://')) {
-                  url = `https://${url}`
-                }
-                return new URL(url).origin
-              }
-            }]}
-            help="We'll use this sitemap to include internal links in the article"
 
-            style={{ marginBottom: 42 }}
-          >
-            <Input placeholder="Sitemap url" />
-          </Form.Item>
 
           {/* <ExternalSourcesField name="external_sources" /> */}
 
@@ -675,6 +656,27 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           <span>SEO tags & Schema markups</span>
         </Flex> */}
         </Flex>
+
+        <Form.Item
+          name="sitemap"
+          label={<Label name="Sitemap" />}
+          rules={[{
+            required: false,
+            type: "url",
+            message: "Enter a valid url",
+            transform: (url: any) => {
+              if (!url?.startsWith('https://')) {
+                url = `https://${url}`
+              }
+              return new URL(url).origin
+            }
+          }]}
+          help="We'll use this sitemap to include internal links in the article"
+
+          style={{ marginBottom: 42 }}
+        >
+          <Input placeholder="Sitemap url" />
+        </Form.Item>
 
         <Form.Item name="structured_schemas" label={<Label name="Schema markup (ld+json)" />}>
           <MultiSelectTagList
