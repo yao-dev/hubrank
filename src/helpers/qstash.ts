@@ -70,6 +70,7 @@ export const deleteSchedule = async (scheduleId: string) => {
 }
 
 export const dateToCron = (date: Date) => {
+  // getUTCHours
   const minutes = date.getMinutes();
   const hours = date.getHours();
   const days = date.getDate();

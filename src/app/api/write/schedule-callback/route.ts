@@ -10,21 +10,23 @@ export async function POST(request: NextRequest) {
     // Decode the base64 encoded sourceBody
     const blogPost = JSON.parse(atob(body.sourceBody));
 
-    // Fetch the schedule_id for the blog post from the database
-    const { data } = await supabase()
-      .from("blog_posts")
-      .select("schedule_id")
-      .eq("id", blogPost.id)
-      .maybeSingle()
-      .throwOnError();
+    if (blogPost?.id) {
+      // Fetch the schedule_id for the blog post from the database
+      const { data } = await supabase()
+        .from("blog_posts")
+        .select("schedule_id")
+        .eq("id", blogPost.id)
+        .maybeSingle()
+        .throwOnError();
 
-    // Delete the schedule using the retrieved schedule_id
-    if (data?.schedule_id) {
-      await deleteSchedule(data.schedule_id);
+      // Delete the schedule using the retrieved schedule_id
+      if (data?.schedule_id) {
+        await deleteSchedule(data.schedule_id);
+      }
     }
 
     // Return the original body as a response
-    return NextResponse.json(body);
+    return NextResponse.json(blogPost);
   } catch (e) {
     // Log any errors that occur during the process
     console.error("Error in schedule callback:", e);
