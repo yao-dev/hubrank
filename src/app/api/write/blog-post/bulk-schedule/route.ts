@@ -46,40 +46,35 @@ export async function POST(request: Request) {
     await deductCredits(creditCheck);
 
     // CREATE NEW ARTICLE WITH QUEUE STATUS IN BULK
-    await Promise.all(
-      body.headlines.map((headline, index) => {
-        let id: number;
+    for (const [index, headline] of body.headlines.entries()) {
+      let id;
+      try {
+        id = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
 
-        insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) })
-          .then((result) => {
-            id = result
-            return createSchedule({
-              destination: getUpstashDestination("api/write/blog-post"),
-              body: {
-                ...body,
-                title: headline,
-                seed_keyword: headline,
-                articleId: id,
-                context,
-                writingStyle,
-                language,
-                project,
-              },
-              headers: {
-                "Upstash-Delay": `${(index || 0) as number * 1}m`,
-              }
-            })
-          })
-          .then()
-          .catch((e) => {
-            console.log(`Fail to schedule blog post for headline: ${headline}`, e);
-            if (id) {
-              updateBlogPost(id, { status: 'error' }).then().catch(console.log);
-              // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
-            }
-          })
-      })
-    )
+        await createSchedule({
+          destination: getUpstashDestination("api/write/blog-post"),
+          body: {
+            ...body,
+            title: headline,
+            seed_keyword: headline,
+            articleId: id,
+            context,
+            writingStyle,
+            language,
+            project,
+          },
+          headers: {
+            "Upstash-Delay": `${index * 1}m`,
+          }
+        });
+      } catch (e) {
+        console.log(`Fail to schedule blog post for headline: ${headline}`, e);
+        if (id) {
+          await updateBlogPost(id, { status: 'error' });
+          // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
+        }
+      }
+    }
 
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {
