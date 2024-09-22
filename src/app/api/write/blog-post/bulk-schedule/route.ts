@@ -10,7 +10,7 @@ import {
   updateBlogPost,
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
-import { addMinutes, addSeconds } from "date-fns";
+import { addMinutes, addSeconds, format } from "date-fns";
 
 /**
  * POST handler for bulk scheduling of blog posts
@@ -62,8 +62,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const newArticle = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
         id = newArticle?.id;
 
+        console.log(format(newArticle?.created_at, "LLL dd, h:mm:ss aaa"), format(Date.now(), "LLL dd, h:mm:ss aaa"))
+
         const dateInFuture = index === 0 ? addSeconds(newArticle?.created_at, 30) : addMinutes(newArticle?.created_at, 1);
-        console.log("dateInFuture", dateInFuture)
         // date to cron
         const cron = dateToCron(dateInFuture);
         console.log("cron", cron)
