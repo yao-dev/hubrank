@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUpstashDestination, updateCredits } from "../helpers";
-import { createSchedule } from "@/helpers/qstash";
+import { updateCredits } from "../helpers";
 import supabase from "@/helpers/supabase/server";
 import axios from "axios";
 
@@ -17,18 +16,18 @@ export async function POST(request: Request) {
         if (body.old_record?.status !== "error" && body.record.status === "error") {
           await updateCredits({ userId: body.record.user_id, credits: Math.max(body.record.cost, 0), action: 'increment' })
         } else if (body.old_record?.status !== "writing" && body.record.status === "writing") {
-          // schedule a job that will run 1 to 2min insertion
+          // schedule a job that will run 5min after initial insert
           // it will mark the blog post as error if it has not finished
-          await createSchedule({
-            destination: getUpstashDestination("api/blog-posts"),
-            body: {
-              type: markAsError,
-              blog_post_id: body.record.id
-            },
-            headers: {
-              "Upstash-Delay": "5m",
-            }
-          });
+          // await createSchedule({
+          //   destination: getUpstashDestination("api/blog-posts"),
+          //   body: {
+          //     type: markAsError,
+          //     blog_post_id: body.record.id
+          //   },
+          //   headers: {
+          //     "Upstash-Delay": "5m",
+          //   }
+          // });
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing" && body.record.auto_publish) {
           const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
 
@@ -42,6 +41,7 @@ export async function POST(request: Request) {
           });
           if (promises) {
             await Promise.all(promises);
+            await supabase().from("blog_posts").update({ status: "published" }).eq("id", record.id);
           }
         }
         break;
