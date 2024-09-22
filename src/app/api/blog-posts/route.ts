@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { publishBlogPost, updateCredits } from "../helpers";
+import { getUpstashDestination, publishBlogPost, updateCredits } from "../helpers";
 import supabase from "@/helpers/supabase/server";
+import { createSchedule } from "@/helpers/qstash";
 
 export const maxDuration = 30;
 
@@ -17,16 +18,16 @@ export async function POST(request: Request) {
         } else if (body.old_record?.status !== "writing" && body.record.status === "writing") {
           // schedule a job that will run 5min after initial insert
           // it will mark the blog post as error if it has not finished
-          // await createSchedule({
-          //   destination: getUpstashDestination("api/blog-posts"),
-          //   body: {
-          //     type: markAsError,
-          //     blog_post_id: body.record.id
-          //   },
-          //   headers: {
-          //     "Upstash-Delay": "5m",
-          //   }
-          // });
+          await createSchedule({
+            destination: getUpstashDestination("api/blog-posts"),
+            body: {
+              type: markAsError,
+              blog_post_id: body.record.id
+            },
+            headers: {
+              "Upstash-Delay": "5m",
+            }
+          });
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing" && body.record.auto_publish) {
           console.log("STEP 1", body)
           const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
