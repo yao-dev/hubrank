@@ -255,7 +255,7 @@ export async function POST(request: Request) {
     }
 
     if (body.auto_publish) {
-      const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
+      const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.userId, project_id: body.project_id, enabled: true });
 
       if (integrations && integrations?.length > 0) {
         // UPDATE ARTICLE STATUS TO PUBLISHING
