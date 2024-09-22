@@ -67,7 +67,7 @@ export async function POST(request: Request) {
         clickbait: body.clickbait,
         isInspo: body.title_mode === "inspo",
         inspoTitle: body.title_mode === "inspo" && body.inspo_title,
-        count: 1,
+        count: 10,
         competitorsHeadlines: competitors.map((item) => item.title)
       });
 

@@ -3,7 +3,7 @@ import { marked } from "marked";
 import { generateUuid5 } from 'weaviate-ts-client';
 import { AI } from "./AI";
 import axios from "axios";
-import { compact, get, isEmpty, isNaN, orderBy } from "lodash";
+import { get, isEmpty, isNaN, orderBy, shuffle } from "lodash";
 import { Index } from "@upstash/vector";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
@@ -653,7 +653,7 @@ export const getHeadlines = async ({
     count,
   });
 
-  const headlines = compact(response.split("\n"));
+  const headlines = shuffle(response)
   return headlines
 }
 

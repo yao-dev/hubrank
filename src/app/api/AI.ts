@@ -349,14 +349,14 @@ export class AI {
 
     // if (values.writingStyle?.text) prompt += `\n\nCopy the tone and writing style of this text: ${values.writingStyle.text}`;
 
-    prompt += `\n\nStart and end your writing with triple @@@.`
+    prompt += `\nOutput a JSON array of headlines (string[]) wrapped in \`\`\`json\`\`\``
 
     return prompt
   }
 
   async headlines(values: any) {
     const temperature = shuffle([0.4, 0.5, 0.6])[0]
-    return this.ask(this.headlinesTemplate(values), { mode: "headlines", temperature, model: models["gpt-4o"], top_k: 2 });
+    return this.ask(this.headlinesTemplate(values), { type: "json", mode: "headlines", temperature, model: models["gpt-4o"], top_k: 2 });
   }
 
   // outlineIdeaTemplate(values: any) {
