@@ -149,7 +149,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           article_count: 0,
           title_structure: "",
           variables: [],
-          content_type: "",
+          content_type: "blog_posts",
           // purpose: "", // TODO: remove it in favor of purposes
           writing_mode: "custom",
           writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default)?.id : null,
@@ -484,22 +484,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           </Form.Item>
 
           <Form.Item
-            name="additional_information"
-            label={<Label name="Additional information" />}
-            rules={[{ type: "string", max: 150 }]}
-
-          >
-            <Input.TextArea
-              placeholder="Provide any context or information we should consider while writing your article"
-              autoSize={{ minRows: 3, maxRows: 5 }}
-              count={{
-                show: true,
-                max: 150,
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
             name="sitemap"
             label={<Label name="Sitemap" />}
             rules={[{
@@ -521,15 +505,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           </Form.Item>
 
           {/* <ExternalSourcesField name="external_sources" /> */}
-
-          <Form.Item name="structured_schemas" label={<Label name="Schema markup (ld+json)" />}>
-            <MultiSelectTagList
-              field="structured_schemas"
-              options={structuredSchemas}
-              selectedOptions={fieldStructuredSchemas}
-              onAddTag={onAddTag}
-            />
-          </Form.Item>
 
           {/* <Form.Item
             name="external_sources"
@@ -700,6 +675,31 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           <span>SEO tags & Schema markups</span>
         </Flex> */}
         </Flex>
+
+        <Form.Item name="structured_schemas" label={<Label name="Schema markup (ld+json)" />}>
+          <MultiSelectTagList
+            field="structured_schemas"
+            options={structuredSchemas}
+            selectedOptions={fieldStructuredSchemas}
+            onAddTag={onAddTag}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="additional_information"
+          label={<Label name="Additional information" />}
+          rules={[{ type: "string", max: 150 }]}
+
+        >
+          <Input.TextArea
+            placeholder="Provide any context or information we should consider while writing your article"
+            autoSize={{ minRows: 3, maxRows: 5 }}
+            count={{
+              show: true,
+              max: 150,
+            }}
+          />
+        </Form.Item>
       </Form>
     </Flex>
   )
