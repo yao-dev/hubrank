@@ -4,7 +4,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    console.log("schedule-callback", body)
+    const decoded = atob(body.sourceBody);
+    console.log("schedule-callback", decoded)
 
     return NextResponse.json(body)
   } catch (e) {
