@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { createSchedule } from "@/helpers/qstash";
+import { createSchedule, dateToCron } from "@/helpers/qstash";
 import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle, deductCredits } from "@/app/api/helpers";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
+import { addSeconds } from "date-fns";
 
 export const maxDuration = 45;
 
@@ -11,7 +12,8 @@ export async function POST(request: Request) {
 
   // CREATE NEW ARTICLE WITH QUEUE STATUS
   const cost = 1 + (body.structured_schemas.length * 0.25);
-  const articleId = await insertBlogPost({ ...body, cost });
+  const newArticle = await insertBlogPost({ ...body, cost });
+  const articleId = newArticle?.id
 
   try {
     // DEDUCTS CREDITS FROM USER SUBSCRIPTION
@@ -76,6 +78,9 @@ export async function POST(request: Request) {
       await updateBlogPost(articleId, { title: body.title })
     }
 
+    // date to cron
+    const cron = dateToCron(addSeconds(newArticle?.created_at, 45));
+
     await createSchedule({
       destination: getUpstashDestination("api/write/blog-post"),
       body: {
@@ -88,7 +93,7 @@ export async function POST(request: Request) {
         competitors
       },
       headers: {
-        "Upstash-Delay": "5s",
+        "Upstash-Cron": cron,
       }
     });
 

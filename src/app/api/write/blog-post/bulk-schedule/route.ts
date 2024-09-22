@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSchedule } from "@/helpers/qstash";
+import { createSchedule, dateToCron } from "@/helpers/qstash";
 import {
   getProjectContext,
   getUpstashDestination,
@@ -10,6 +10,7 @@ import {
   updateBlogPost,
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
+import { addMinutes, addSeconds } from "date-fns";
 
 /**
  * POST handler for bulk scheduling of blog posts
@@ -58,10 +59,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       let id;
       try {
         // Insert new blog post with queue status
-        id = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
+        const newArticle = await insertBlogPost({ ...body, title: headline, cost: 1 + (body.structured_schemas.length * 0.25) });
+        id = newArticle?.id;
+
+        // add 1m to newArticle.created_at
+        const dateInFuture = index === 0 ? addSeconds(newArticle?.created_at, 30) : addMinutes(newArticle?.created_at, 1);
+        // date to cron
+        const cron = dateToCron(dateInFuture);
 
         // Schedule the blog post creation
-        await createSchedule({
+        const scheduleId = await createSchedule({
           destination: getUpstashDestination("api/write/blog-post"),
           body: {
             ...body,
@@ -74,9 +81,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             project,
           },
           headers: {
-            "Upstash-Delay": `${index * 1}m`, // Delay each post by 1 minute
+            "Upstash-Cron": cron,
           }
         });
+
+        if (id && scheduleId) {
+          await updateBlogPost(id, { schedule_id: scheduleId })
+        }
       } catch (e) {
         console.log(`Failed to schedule blog post for headline: ${headline}`, e);
         if (id) {

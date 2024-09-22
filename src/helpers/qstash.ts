@@ -1,3 +1,4 @@
+import { getUpstashDestination } from "@/app/api/helpers";
 import { Client, PublishToUrlResponse } from "@upstash/qstash";
 import axios from "axios";
 
@@ -25,15 +26,14 @@ export const createBackgroundJob = async ({ body, destination, timeoutSec }: any
 }
 
 export const createSchedule = async ({ body, destination, headers = {} }: any): Promise<string | null> => {
-  const { data, status } = await axios.post(`https://qstash.upstash.io/v2/publish/${destination}`, JSON.stringify(body), {
+  const { data, status } = await axios.post(`https://qstash.upstash.io/v2/schedules/${destination}`, JSON.stringify(body), {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
       "Upstash-Retries": 0,
-      headers: {
-        "Upstash-Retries": 0,
-        ...headers,
-      }
+      "Upstash-Callback": getUpstashDestination("api/write/schedule-callback"),
+      "Upstash-Failure-Callback": getUpstashDestination("api/write/schedule-callback"),
+      ...headers,
     },
   });
 
@@ -41,12 +41,12 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
     console.log("schedule response", { status })
     return null;
   }
-  if (!data?.messageId) {
+  if (!data?.scheduleId) {
     console.log("no message id returned in the response", { data })
     return null;
   }
 
-  return data.messageId
+  return data.scheduleId
 }
 
 export const createBatch = async ({ data, destination, headers = {} }: any): Promise<string | null> => {
@@ -55,21 +55,28 @@ export const createBatch = async ({ data, destination, headers = {} }: any): Pro
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
       "Upstash-Retries": 0,
-      headers: {
-        "Upstash-Retries": 0,
-        ...headers,
-      }
+      ...headers,
     },
   });
 }
 
 
-export const deleteSchedule = async (messageId: string) => {
-  return axios.delete(`https://qstash.upstash.io/v2/messages/${messageId}`, {
+export const deleteSchedule = async (scheduleId: string) => {
+  return axios.delete(`https://qstash.upstash.io/v2/messages/${scheduleId}`, {
     headers: {
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
     }
   })
+}
+
+export const dateToCron = (date: Date) => {
+  const minutes = date.getMinutes();
+  const hours = date.getHours();
+  const days = date.getDate();
+  const months = date.getMonth() + 1;
+  const dayOfWeek = date.getDay();
+
+  return `${minutes} ${hours} ${days} ${months} ${dayOfWeek}`;
 }
 
 export default client

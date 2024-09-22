@@ -74,11 +74,11 @@ export const insertBlogPost = async (data: any) => {
         cost: data.cost,
         auto_publish: data.auto_publish,
       })
-      .select("id")
+      .select("id, created_at")
       .single()
       .throwOnError();
     console.log(chalk.bgBlue("[INFO]: queuedArticle"), queuedArticle);
-    return queuedArticle?.id;
+    return queuedArticle;
   } catch (error) {
     console.error(chalk.bgRed("[ERROR]: inserting blog post"), error);
     throw error;
