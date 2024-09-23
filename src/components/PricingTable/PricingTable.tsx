@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import useUser from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
 import { stripeUnixTimestampToDate } from "@/features/payment/helpers/stripe-unix-timestamp-to-date";
+import { LOGIN_URL } from "@/helpers/url";
 
 type Props = {
   title?: string;
@@ -159,7 +160,7 @@ export default function PricingTable({ title, subtitle }: Props) {
                           ) : (
                             <Button
                               size="large"
-                              href={user ? undefined : "/login"}
+                              href={user ? undefined : LOGIN_URL}
                               onClick={() => {
                                 if (!hasSubscription) {
                                   return setSelectedProduct(product)

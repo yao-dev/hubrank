@@ -4,6 +4,7 @@ import Link from "next/link";
 import { IconMenu2 } from "@tabler/icons-react";
 import { useCallback, useRef, useState } from "react";
 import Logo from "./Logo";
+import { LOGIN_URL } from "@/helpers/url";
 
 const menu = [
   { href: "/#features", link: "Features" },
@@ -23,7 +24,7 @@ const Navbar = () => {
   const loginButton = useCallback((className?: string, textClassName?: string) => {
     return (
       <Button
-        href={`${process.env.NODE_ENV === "development" ? "http:" : "https:"}//app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN ?? ""}/login`}
+        href={LOGIN_URL}
         className={`bg-black text-white ${className}`}
       >
         <p className={textClassName}>Login</p>
