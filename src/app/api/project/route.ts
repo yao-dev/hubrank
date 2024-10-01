@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const metatags = (await fetchWebsiteMetadata(data.website)) ?? {};
 
-    const result = await supabase
+    const result = await supabase()
       .from('projects')
       .insert({ ...data, metatags })
       .select()
@@ -29,7 +29,7 @@ export async function PUT(request: Request) {
     const { project_id, user_id, ...data } = await request.json();
     const metatags = (await fetchWebsiteMetadata(data.website)) ?? {};
 
-    await supabase
+    await supabase()
       .from('projects')
       .update({
         ...data,

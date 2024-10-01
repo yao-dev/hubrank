@@ -3,7 +3,6 @@ import { getUpstashDestination, updateCredits } from "../helpers";
 import { createSchedule } from "@/helpers/qstash";
 import supabase from "@/helpers/supabase/server";
 
-
 export const maxDuration = 30;
 
 export async function POST(request: Request) {
