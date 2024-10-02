@@ -89,9 +89,9 @@ export async function POST(request: Request) {
       videos = youtubeVideos;
     }
 
-    let competitors;
+    let competitors = body.competitors;
 
-    if (!body.competitors) {
+    if (!competitors) {
       console.log("=== GET SERP ===")
       competitors = await getSerp({
         query: body.seed_keyword,
@@ -103,7 +103,6 @@ export async function POST(request: Request) {
 
     const competitorsOutline = [];
 
-    console.log("we try to iterate on competitors:", competitors)
 
     for (let competitor of competitors) {
       console.log("=== GET URL OUTLINE ===")
