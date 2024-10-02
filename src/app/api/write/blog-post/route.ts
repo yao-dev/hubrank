@@ -103,6 +103,8 @@ export async function POST(request: Request) {
 
     const competitorsOutline = [];
 
+    console.log("we try to iterate on competitors:", competitors)
+
     for (let competitor of competitors) {
       console.log("=== GET URL OUTLINE ===")
       const competitorOutline = await getUrlOutline(competitor.url);
