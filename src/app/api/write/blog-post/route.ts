@@ -70,11 +70,15 @@ export async function POST(request: Request) {
       console.log(`relevant urls for: ${body.seed_keyword}`, sitemaps)
     }
 
+    console.log("body.title_mode", body.title_mode)
+    console.log("body.youtube_url", body.youtube_url)
+
     let youtubeTranscript;
     if (body.title_mode === "youtube_to_blog" && body.youtube_url) {
       youtubeTranscript = await getYoutubeTranscript(body.youtube_url);
     }
 
+    console.log("body.with_youtube_videos", body.with_youtube_videos)
     let videos = [];
     if (body.with_youtube_videos) {
       const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
