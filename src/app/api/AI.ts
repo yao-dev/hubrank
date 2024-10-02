@@ -705,6 +705,7 @@ Write the outline following the structure below
     keywords: string; // comma separated
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
     search_query?: string; // search intent that would help find external link to include to this section of the article
+    image?: boolean; // whether to include an image in section or not
     `;
 
     // if (hasImages) {

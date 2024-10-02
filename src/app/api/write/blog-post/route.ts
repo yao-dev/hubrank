@@ -20,6 +20,8 @@ import {
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
+import { get, shuffle } from "lodash";
+import { getImages } from "@/helpers/image";
 
 export const maxDuration = 300;
 
@@ -172,11 +174,11 @@ export async function POST(request: Request) {
       // if (section.media === "image") {
       //   image = await getImage("unsplash", shuffle(get(section, "keywords", "").split(","))[0])
       // }
-      // if (section.image) {
-      //   const images = await getImages(get(section, "keywords", ""));
-      //   console.log("unsplash images", images)
-      //   image = shuffle(images)[0]
-      // }
+      if (section.image) {
+        const images = await getImages(get(section, "keywords", ""));
+        console.log("unsplash images", images)
+        image = shuffle(images)[0]
+      }
 
       // TODO: add knowledges in writeSection prompt
       // const knowledges = await getProjectKnowledges({
