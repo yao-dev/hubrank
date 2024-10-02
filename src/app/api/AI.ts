@@ -734,7 +734,7 @@ video_url: string;
   }
 
   async outlinePlan(values: any) {
-    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0.3, model: models.chatgpt });
+    return this.ask(this.outlinePlanTemplate(values), { type: "json", mode: "outline-plan", temperature: 0, model: models.chatgpt });
   }
 
   metaDescriptionTemplate(values: any) {
