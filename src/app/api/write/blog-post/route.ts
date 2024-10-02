@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     let competitors;
 
     if (!body.competitors) {
+      console.log("=== GET SERP ===")
       competitors = await getSerp({
         query: body.seed_keyword,
         languageCode: language.code,
@@ -99,10 +100,12 @@ export async function POST(request: Request) {
     const competitorsOutline = [];
 
     for (let competitor of competitors) {
+      console.log("=== GET URL OUTLINE ===")
       const competitorOutline = await getUrlOutline(competitor.url);
       competitorsOutline.push(competitorOutline)
     }
 
+    console.log("=== GET OUTLINE PLAN ===")
     // GET THE WORD COUNT OF EACH SECTION OF THE OUTLINE
     const outlinePlan = await ai.outlinePlan({
       ...body,
@@ -122,7 +125,6 @@ export async function POST(request: Request) {
 
     // WRITE META DESCRIPTION
     const { description: metaDescription } = await ai.metaDescription({ ...body, keywords, outline });
-
 
     // SET FEATURED IMAGE
     let featuredImage = body.featured_image;
