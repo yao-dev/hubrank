@@ -285,6 +285,8 @@ export async function POST(request: Request) {
       metaDescription,
     }, { status: 200 });
   } catch (error) {
+    console.error("Error caught:", error); // Log the error
+    console.error("Article ID:", articleId); // Log the articleId
     await markArticleAsFailure({ articleId, error })
     return NextResponse.json(error, { status: 500 });
   }
