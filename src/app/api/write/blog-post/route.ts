@@ -21,7 +21,6 @@ import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 
-
 export const maxDuration = 300;
 
 export async function POST(request: Request) {

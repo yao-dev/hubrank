@@ -43,7 +43,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         ...values,
         utc_offset: new Date().getTimezoneOffset()
       })
-      message.success('Blog post added in the queue!');
+      message.success('Blog posts will be added in the queue shortly!');
       onClose();
       form.resetFields();
       setIsSubmitting(false)

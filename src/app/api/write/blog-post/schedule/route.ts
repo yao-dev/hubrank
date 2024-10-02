@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
-import { createSchedule, dateToCron } from "@/helpers/qstash";
-import { getHeadlines, getProjectContext, getUpstashDestination, getSavedWritingStyle, insertBlogPost, updateBlogPost, updateBlogPostStatus, getManualWritingStyle, deductCredits } from "@/app/api/helpers";
+import { createSchedule } from "@/helpers/qstash";
+import {
+  getHeadlines,
+  getProjectContext,
+  getUpstashDestination,
+  getSavedWritingStyle,
+  insertBlogPost,
+  updateBlogPost,
+  getManualWritingStyle,
+  deductCredits,
+} from "@/app/api/helpers";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
-import { addSeconds } from "date-fns";
 
 export const maxDuration = 45;
 
@@ -79,9 +87,9 @@ export async function POST(request: Request) {
     }
 
     // date to cron
-    const cron = dateToCron(addSeconds(newArticle?.created_at, 45));
+    // const cron = dateToCron(addSeconds(newArticle?.created_at, 45));
 
-    await createSchedule({
+    const scheduleId = await createSchedule({
       destination: getUpstashDestination("api/write/blog-post"),
       body: {
         ...body,
@@ -92,16 +100,20 @@ export async function POST(request: Request) {
         project,
         competitors
       },
-      headers: {
-        "Upstash-Cron": cron,
-      }
+      // headers: {
+      //   "Upstash-Cron": cron,
+      // }
     });
+
+    if (articleId && scheduleId) {
+      await updateBlogPost(articleId, { schedule_id: scheduleId })
+    }
 
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {
     console.log(e)
     // CHANGE STATUS TO ERROR
-    await updateBlogPostStatus(articleId, "error");
+    await updateBlogPost(articleId, { status: 'error' });
     return NextResponse.json({ scheduled: false }, { status: 500 });
   }
 }

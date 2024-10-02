@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUpstashDestination, publishBlogPost, updateCredits } from "../helpers";
+import { publishBlogPost, updateCredits } from "../helpers";
 import supabase from "@/helpers/supabase/server";
-import { createSchedule } from "@/helpers/qstash";
 
 export const maxDuration = 30;
 
