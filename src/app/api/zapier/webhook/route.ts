@@ -18,11 +18,11 @@ export async function GET(request: Request) {
     console.log("[GET] webhook", { accessToken, trigger, url: request.url })
     const integration = jwt.verify(accessToken, process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
     console.log(chalk.yellow("integration from token:"), integration)
-    const { data } = await supabase().from("blog_posts").select("id, created_at, status, html, markdown, title, seed_keyword, keywords, meta_description, featured_image, slug").order("id", { ascending: false }).limit(1).throwOnError()
+    const { data } = await supabase().from("blog_posts").select("id, created_at, status, html, markdown, title, seed_keyword, meta_description, featured_image, slug").order("id", { ascending: false }).limit(1).throwOnError()
 
     const list = isEmpty(data) ? [] : data.map((item) => ({
       ...item,
-      keywords: isEmpty(item.keywords) ? "" : item.keywords.join(",")
+      // keywords: isEmpty(item.keywords) ? "" : item.keywords.join(",")
     }))
 
     return NextResponse.json(list)
