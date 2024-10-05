@@ -2,20 +2,30 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import chalk from "chalk";
 import supabase from "@/helpers/supabase/server";
+import { isEmpty } from "lodash";
 
 const getHeaderAccessToken = (bearerToken: string | null = "") => {
   const accessToken = bearerToken?.split(" ")?.[1] ?? ""
   return accessToken
 }
 
+// https://platform.zapier.com/build//hook-trigger#perform-list
 export async function GET(request: Request) {
   try {
     const accessToken = getHeaderAccessToken(request.headers.get("Authorization"))
     const searchParams = new URLSearchParams(request.url);
     const trigger = searchParams.get("trigger") ?? "";
     console.log("[GET] webhook", { accessToken, trigger, url: request.url })
-    // TODO: I don't know what to return here
-    return NextResponse.json([])
+    const integration = jwt.verify(accessToken, process.env.NEXT_PUBLIC_ZAPIER_CLIENT_SECRET ?? "");
+    console.log(chalk.yellow("integration from token:"), integration)
+    const { data } = await supabase().from("blog_posts").select("id, created_at, status, html, markdown, title, seed_keyword, keywords, meta_description, featured_image, slug").order("id", { ascending: false }).limit(1).throwOnError()
+
+    const list = isEmpty(data) ? [] : data.map((item) => ({
+      ...item,
+      keywords: isEmpty(item.keywords) ? "" : item.keywords.join(",")
+    }))
+
+    return NextResponse.json(list)
   } catch (error) {
     console.log(error)
     return NextResponse.json({ error }, { status: 500 })
