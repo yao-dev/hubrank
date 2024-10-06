@@ -1269,3 +1269,50 @@ export const getTableOfContent = (html: string): string => {
 
   return toc;
 }
+
+export const getHemingwayStats = (text) => {
+  const result = [];
+  // Split the input text into sentences/phrases based on dots or new lines
+  const sentences = text.split(/(?<=\.)\s+|\n/);
+
+  let currentPosition = 0; // Keep track of the position in the text
+
+  sentences.forEach(sentence => {
+    const trimmedSentence = sentence.trim();
+    const wordCount = trimmedSentence.split(/\s+/).filter(word => word.length > 0).length;
+    const letters = trimmedSentence.replace(/\s+/g, '').length;
+
+    // Hemingway app level calculation
+    const level = Math.round(4.71 * (letters / wordCount) + 0.5 * wordCount - 21.43);
+
+    // Set difficulty based on the word count and Hemingway readability level
+    let difficultyLevel = null;
+    if (wordCount >= 14) {
+      if (level >= 10 && level < 14) {
+        difficultyLevel = "hard";
+      } else if (level >= 14) {
+        difficultyLevel = "very_hard";
+      }
+    }
+
+    // Only include sentences with at least 10 words
+    if (wordCount >= 10 && difficultyLevel) {
+      const start = currentPosition;
+      const end = start + sentence.length;
+
+      // Push the sentence object to the result array
+      result.push({
+        text: trimmedSentence,
+        word_count: wordCount,
+        level: difficultyLevel,
+        start: start,
+        end: end
+      });
+    }
+
+    // Update the currentPosition to the end of the sentence, plus 1 for space/new line or dot
+    currentPosition += sentence.length + 1;
+  });
+
+  return result;
+}

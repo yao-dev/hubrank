@@ -328,19 +328,6 @@ const BlogPostsTable = () => {
           // }}
           pagination={false}
           style={{ minWidth: 900, overflow: "auto" }}
-        // onRow={(record) => {
-        //   return {
-        //     "aria-disabled": getIsDisabled(record.status),
-        //     onClick: (event) => {
-        //       console.log(event);
-        //       console.log(event.target);
-        //       console.log(event.target.id);
-        //       if (!getIsDisabled(record.status) && !["Retry", "Preview"].includes(event?.target?.innerText)) {
-        //         router.push(`/projects/${projectId}/articles/${record.id}`)
-        //       }
-        //     },
-        //   };
-        // }}
         />
       </Flex>
     </>

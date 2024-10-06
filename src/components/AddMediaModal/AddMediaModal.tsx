@@ -81,27 +81,15 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
 
   const onGeneratingImage = async (query: string) => {
     try {
-      console.log(imageStyle)
       if (!query || !imageStyle) return;
       setIsGeneratingImage(true)
-      const { data: generatedImageBlob } = await axios.post('/api/images/generate', { query })
-      if (!generatedImageBlob) {
+      const { data: base64Url } = await axios.post('/api/images/generate', { query, image_style: imageStyle })
+      if (!base64Url) {
         message.info('We couldn\'t generate an image from your query')
         setIsGeneratingImage(false);
         return;
       }
-      const reader = new FileReader();
-      reader.addEventListener(
-        "load",
-        () => {
-          if (typeof reader.result === "string") {
-            console.log('reader.result', reader.result)
-            setGeneratedImageLink(reader.result)
-          }
-        },
-        false,
-      );
-      reader.readAsDataURL(generatedImageBlob);
+      setGeneratedImageLink(base64Url)
       setIsGeneratingImage(false)
     } catch {
       setIsGeneratingImage(false)
@@ -250,7 +238,6 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
                     "load",
                     () => {
                       if (typeof reader.result === "string") {
-                        console.log('reader.result', reader.result)
                         setImageLink(reader.result);
                       }
                     },
@@ -327,6 +314,7 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
                     value: i.name
                   }))}
                   onSelect={setImageStyle}
+                  disabled={isGeneratingImage}
                 />
                 <Button
                   onClick={() => onGeneratingImage(document.getElementById('input-ai-image').value)}

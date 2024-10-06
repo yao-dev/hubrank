@@ -10,7 +10,6 @@ import {
   IconArrowForwardUp,
   IconBlockquote,
   IconBold,
-  IconBrandYoutube,
   IconCode,
   IconH1,
   IconH2,
@@ -34,7 +33,6 @@ import AddMediaModal from '@/components/AddMediaModal/AddMediaModal';
 import { DOMSerializer } from '@tiptap/pm/model';
 import { Dropdown } from 'antd';
 import { getAIAutocomplete } from '@/app/app/actions';
-// import deepEqual from "deep-equal"
 
 const AIContext = createContext({ content: "" })
 
@@ -48,7 +46,6 @@ const AIMenu = ({ onClick }) => {
       menu={{
         items: [
           { key: '1', label: "Fix spelling", onClick: () => onClick("Fix spelling", context) },
-          { key: '2', label: "Extend text", onClick: () => onClick("Extend text", context) },
           { key: '3', label: "Expand", onClick: () => onClick("Expand", context) },
           { key: '5', label: "Simplify", onClick: () => onClick("Simplify", context) },
           { key: '6', label: "Rephrase", onClick: () => onClick("Rephrase", context) },
@@ -100,17 +97,6 @@ const useMenuButtons = () => {
 
   if (!editor) {
     return {}
-  }
-
-  const addYoutubeVideo = () => {
-    const url = prompt('Enter YouTube URL')
-
-    if (url) {
-      editor.commands.setYoutubeVideo({
-        src: url,
-        // width: 'auto',
-      })
-    }
   }
 
   const addImage = () => {
@@ -266,11 +252,6 @@ const useMenuButtons = () => {
         />
       </div>
     ),
-    youtube: (
-      <div onClick={addYoutubeVideo} className={`cursor-pointer p-1 flex items-center justify-center rounded-md hover:bg-primary-500 hover:text-white transition-all`}>
-        <IconBrandYoutube stroke={1.5} />
-      </div>
-    ),
     ai: (
       <AIMenu onClick={onAI} />
     )
@@ -326,7 +307,6 @@ const FloatingMenus = () => {
     codeBlockquote,
     link,
     image,
-    youtube,
     ai
   } = useMenuButtons();
 
@@ -349,7 +329,6 @@ const FloatingMenus = () => {
       {codeBlockquote}
       {link}
       {image}
-      {youtube}
       {ai}
     </div>
   )

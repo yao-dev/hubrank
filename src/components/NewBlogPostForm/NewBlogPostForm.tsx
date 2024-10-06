@@ -190,7 +190,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
         onFinish={(values) => {
           onSubmit({ ...values, variableSet })
         }}
-        onError={console.error}
         scrollToFirstError
         disabled={isSubmitting}
       >

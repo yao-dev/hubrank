@@ -1,3 +1,4 @@
+import { imageStyles } from "@/options";
 import axios from "axios";
 import { createClient } from 'pexels';
 
@@ -83,15 +84,15 @@ export const getImages = async (query: string, count = 5) => {
   }
 }
 
-export const getAiImage = async (query: string) => {
-  const details = "detailed, commercial, high resolution, 8k UHD, DSLR, professional photography"
+export const getAiImage = async ({ query, image_style }: { query: string; image_style: string }) => {
   // const details = "color scheme: pastel orange and faded turquoise"
+  const prompt = imageStyles.find((i) => i.name === image_style)
   const formData = {
-    prompt: `${query}`,
+    prompt: prompt?.prompt.replace("{prompt}", query),
     output_format: "webp",
-    style_preset: "cinematic",
+    // style_preset: "cinematic",
     aspect_ratio: "1:1",
-    negative_prompt: "no script, no text, no brand name, Avoid indoor settings,un-detailed skin.",
+    negative_prompt: prompt?.negative_prompt,
     seed: 0,
   };
 
@@ -100,7 +101,7 @@ export const getAiImage = async (query: string) => {
     axios.toFormData(formData, new FormData()),
     {
       validateStatus: undefined,
-      responseType: "blob",
+      responseType: "arraybuffer",
       headers: {
         Authorization: `Bearer ${process.env.STABLE_DIFFUSION_API_KEY ?? ""}`,
         Accept: "image/*"
@@ -108,5 +109,9 @@ export const getAiImage = async (query: string) => {
     },
   );
 
-  return response?.data
+  const base64Image = Buffer.from(response.data).toString('base64');
+  const mimeType = 'image/webp'; // Use webp as the MIME type
+  const imageSrc = `data:${mimeType};base64,${base64Image}`;
+
+  return imageSrc
 }

@@ -509,7 +509,7 @@ export class AI {
     prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting structures: ${values.section.writing_structures.join(', ')}` : "";
     prompt += values?.section?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.section.instructional_elements.join(', ')}` : "";
 
-    prompt += `\n\nRelevant keywords: ${values?.section?.keywords}\n`
+    // prompt += `\n\nRelevant keywords: ${values?.section?.keywords}\n`
 
     if (values?.section?.call_to_action) {
       prompt += `\nCall to action instructions:\n${values.section.call_to_action}`;

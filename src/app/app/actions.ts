@@ -25,11 +25,9 @@ export const searchYouTubeVideos = async (query: string) => {
       maxResults: 25,
       q: query,
     })
-    console.log(response.data.items)
     return response.data.items;
   } catch (error) {
-    console.error('Error fetching YouTube videos:', error);
-    console.log(error.response)
+    console.error('Error fetching YouTube videos:', error?.response);
     throw error;
   }
 }

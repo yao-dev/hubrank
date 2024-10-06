@@ -211,7 +211,7 @@ export async function POST(request: Request) {
         title: body.title,
         section: {
           prefix: "##",
-          keywords: section?.keywords ?? "",
+          // keywords: section?.keywords ?? "",
           word_count: section?.word_count ?? 250,
           name: section.name,
           call_to_action: section?.call_to_action,
