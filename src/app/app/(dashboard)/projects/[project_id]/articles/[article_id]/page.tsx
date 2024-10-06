@@ -250,8 +250,6 @@ ${article.html}
 
   if (isError) return null;
 
-  console.log(article, params, project)
-
   return (
     <div>
 
