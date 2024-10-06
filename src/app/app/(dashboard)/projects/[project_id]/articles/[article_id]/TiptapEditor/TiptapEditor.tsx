@@ -4,6 +4,7 @@ import { useCurrentEditor, EditorProvider, FloatingMenu, BubbleMenu, Editor } fr
 import Placeholder from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
+import Dropcursor from '@tiptap/extension-dropcursor';
 import {
   IconArrowBackUp,
   IconArrowForwardUp,
@@ -28,10 +29,10 @@ import { debounce } from 'lodash';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 import Image from '@tiptap/extension-image';
 import './style.css';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import AddMediaModal from '@/components/AddMediaModal/AddMediaModal';
 import { DOMSerializer } from '@tiptap/pm/model';
-import { Button, Dropdown, Spin } from 'antd';
+import { Dropdown } from 'antd';
 import { getAIAutocomplete } from '@/app/app/actions';
 // import deepEqual from "deep-equal"
 
@@ -107,7 +108,7 @@ const useMenuButtons = () => {
     if (url) {
       editor.commands.setYoutubeVideo({
         src: url,
-        width: 'auto',
+        // width: 'auto',
       })
     }
   }
@@ -249,15 +250,18 @@ const useMenuButtons = () => {
           open={isImageModalOpen}
           onClose={() => setIsImageModalOpen(false)}
           onSubmit={(image, video) => {
-            if (image) {
-              return editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
+            if (image?.src) {
+              editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
             }
             if (video) {
               editor.commands.setYoutubeVideo({
                 src: `https://www.youtube.com/watch?v=${video.id.videoId}`,
-                width: 'auto',
-              })
+                // width: 'auto',
+              });
             }
+            document.querySelectorAll(`[rc-util-key^="rc-util-locker"]`).forEach(element => {
+              element.remove();
+            });
           }}
         />
       </div>
@@ -376,26 +380,10 @@ const TiptapEditor = ({
   readOnly
 }: Props) => {
   const { update: updateBlogPost } = useBlogPosts();
-  const mousePositionRef = useRef()
   const [htmlSelection, setHTMLSelection] = useState()
 
-  useEffect(() => {
-    const nativeOnMouseMove = onmouseup;
-    document.getElementById('hubrank-editor').onmouseup = function (e) {
-      const rect = this.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      mousePositionRef.current = {
-        x: x,
-        y: y
-      }
-    }
-    return () => {
-      onmousemove = nativeOnMouseMove
-    }
-  }, []);
-
   const extensions = [
+    Dropcursor,
     StarterKit.configure({
       history: {
         depth: 5,
@@ -471,73 +459,42 @@ const TiptapEditor = ({
   }
 
   return (
-    <>
-      <AIContext.Provider value={htmlSelection}>
-        <div id="hubrank-editor">
-          <EditorProvider
-            slotBefore={readOnly ? null : (
-              <MenuBar />
-            )}
-            extensions={extensions}
-            content={content}
-            editorProps={{
-              attributes: {
-                class: 'prose prose-md focus:outline-none m-0 py-5',
-              },
-            }}
-            /**
-            * This option gives us the control to enable the default behavior of rendering the editor immediately.
-            */
-            immediatelyRender
-            /**
-    * This option gives us the control to disable the default behavior of re-rendering the editor on every transaction.
-    */
-            shouldRerenderOnTransaction
-            // This function will be used to compare the previous and the next state
-            // equalityFn={deepEqual}
-            onUpdate={debounce(onEditorChange, 500) as any}
-            editable={!readOnly}
-            onSelectionUpdate={(props) => {
-              if (props.transaction.selection.ranges[0].$from && props.transaction.selection.ranges[0].$to) {
-                const htmlFromSelection = getHTMLFromSelection(props.editor, props.transaction.selection);
-                setHTMLSelection({ content: htmlFromSelection, from: props.transaction.selection.ranges[0].$from.pos, to: props.transaction.selection.ranges[0].$to.pos })
-              }
-            }}
-          >
-            <FloatingMenus />
-          </EditorProvider>
-        </div>
-      </AIContext.Provider>
-
-      {htmlSelection && mousePositionRef.current?.x && mousePositionRef.current?.y && false && (
-        <div
-          id="ai-editor"
-          className={`absolute z-10 bg-white max-w-[360px] flex flex-col gap-3 p-3 rounded-lg border shadow-xl`}
-          style={{
-            top: mousePositionRef.current.y,
-            left: mousePositionRef.current.x,
+    <AIContext.Provider value={htmlSelection}>
+      <div id="hubrank-editor">
+        <EditorProvider
+          slotBefore={readOnly ? null : (
+            <MenuBar />
+          )}
+          extensions={extensions}
+          content={content}
+          editorProps={{
+            attributes: {
+              class: 'prose prose-md focus:outline-none m-0 py-5',
+            },
+          }}
+          /**
+          * This option gives us the control to enable the default behavior of rendering the editor immediately.
+          */
+          immediatelyRender
+          /**
+  * This option gives us the control to disable the default behavior of re-rendering the editor on every transaction.
+  */
+          shouldRerenderOnTransaction
+          // This function will be used to compare the previous and the next state
+          // equalityFn={deepEqual}
+          onUpdate={debounce(onEditorChange, 500) as any}
+          editable={!readOnly}
+          onSelectionUpdate={(props) => {
+            if (props.transaction.selection.ranges[0].$from && props.transaction.selection.ranges[0].$to) {
+              const htmlFromSelection = getHTMLFromSelection(props.editor, props.transaction.selection);
+              setHTMLSelection({ content: htmlFromSelection, from: props.transaction.selection.ranges[0].$from.pos, to: props.transaction.selection.ranges[0].$to.pos })
+            }
           }}
         >
-          <div className='flex flex-row gap-2'>
-            <IconSparkles stroke={1.5} />
-            <p className='text-base font-semibold'>AI Autocomplete</p>
-          </div>
-          <div className='flex flex-row flex-wrap'>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Fix spelling</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Extend text</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Reduce text</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Simplify</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Rephrase</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Paraphrase</Button>
-            <Button size="small" className='cursor-pointer mb-1 mr-1'>Summarize</Button>
-          </div>
-          <Spin spinning>
-            <p>Suggestions</p>
-            <p></p>
-          </Spin>
-        </div>
-      )}
-    </>
+          <FloatingMenus />
+        </EditorProvider>
+      </div>
+    </AIContext.Provider>
   );
 }
 

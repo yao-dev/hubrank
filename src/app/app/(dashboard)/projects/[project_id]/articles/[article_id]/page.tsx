@@ -17,7 +17,6 @@ import {
 import { useRouter } from 'next/navigation';
 import useProjects from '@/hooks/useProjects';
 import { ArrowLeftOutlined, CaretDownOutlined } from '@ant-design/icons';
-import ExportBlogPostDrawer from '@/components/ExportBlogPostDrawer/ExportBlogPostDrawer';
 import useDrawers from '@/hooks/useDrawers';
 import { debounce } from 'lodash';
 import {
@@ -133,7 +132,7 @@ const Article = ({
   }
 
   const seoChecks = useMemo(() => {
-    if (!article.html) return
+    if (!article?.html) return
 
     const { href, host } = new URL(article?.slug, project?.blog_path ?? "");
 
@@ -250,6 +249,8 @@ ${article.html}
   }
 
   if (isError) return null;
+
+  console.log(article, params, project)
 
   return (
     <div>

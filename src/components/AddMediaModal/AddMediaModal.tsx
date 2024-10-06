@@ -1,14 +1,22 @@
 'use client';;
-import { debounce, isEmpty } from 'lodash';
-import { Button, Image, Input, message, Modal, Spin, Upload } from 'antd';
+import { isEmpty } from 'lodash';
+import { Button, Image, Input, message, Modal, Select, Spin, Upload } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { Blurhash } from "react-blurhash";
 import axios from 'axios';
 import { SearchOutlined } from '@ant-design/icons';
 import { searchYouTubeVideos } from '@/app/app/actions';
 import { IconSparkles } from '@tabler/icons-react';
+import { imageStyles } from '@/options';
 
-const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (image?: any, video?: any) => void;
+  disableYoutube?: boolean;
+}
+
+const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
   const [tab, setTab] = useState("upload");
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -19,11 +27,13 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
   const [selectedVideo, setSelectedVideo] = useState();
   const [imageLink, setImageLink] = useState("");
   const [generatedImageLink, setGeneratedImageLink] = useState("");
+  const [imageStyle, setImageStyle] = useState();
 
   const resetModal = () => {
     setImageLink("");
     setSelectedImage({ href: "", alt: "" });
     setSelectedVideo(undefined);
+    setImageStyle(undefined);
     setGeneratedImageLink("");
     setImages([]);
     setVideos([]);
@@ -44,11 +54,11 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
     }
   }, [tab])
 
-  const onSearchImage = async (e: any) => {
+  const onSearchImage = async (query: string) => {
     try {
       setIsSearchingImage(true)
       const { data: imagesFound } = await axios.post('/api/images/search', {
-        query: e.currentTarget.value,
+        query,
         count: 12,
       })
       setImages(imagesFound);
@@ -61,10 +71,8 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
   const onSearchVideo = async (query: string) => {
     try {
       setIsSearchingVideos(true)
-      const result = await searchYouTubeVideos(query)
-      console.log(result)
-      console.log(result[0].snippet)
-      setVideos(result);
+      const results = await searchYouTubeVideos(query)
+      setVideos(results);
       setIsSearchingVideos(false)
     } catch {
       setIsSearchingVideos(false)
@@ -73,7 +81,8 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
 
   const onGeneratingImage = async (query: string) => {
     try {
-      if (!query) return;
+      console.log(imageStyle)
+      if (!query || !imageStyle) return;
       setIsGeneratingImage(true)
       const { data: generatedImageBlob } = await axios.post('/api/images/generate', { query })
       if (!generatedImageBlob) {
@@ -168,7 +177,7 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
       onOk={onSubmitImage}
       destroyOnClose
       okText="Add"
-      width={tab === "youtube" && !isEmpty(videos) ? 1000 : undefined}
+      width={tab === "youtube" && !isEmpty(videos) ? 1000 : tab === "ai" ? 700 : undefined}
       okButtonProps={{
         disabled:
           tab === "upload" && !imageLink ||
@@ -270,11 +279,22 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
         {tab === "unsplash" && (
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-4'>
-              <Input
-                placeholder="Search image"
-                onChange={debounce(onSearchImage, 1000)}
-                allowClear
-              />
+              <div className='flex flex-row gap-2'>
+                <Input
+                  id="input-unsplash-search"
+                  placeholder="Search images"
+                  allowClear
+                  disabled={isSearchingImage}
+                />
+                <Button
+                  onClick={() => onSearchImage(document.getElementById('input-unsplash-search').value)}
+                  icon={<SearchOutlined />}
+                  className='w-fit'
+                  disabled={isSearchingImage}
+                >
+                  Search
+                </Button>
+              </div>
               {isSearchingImage && (
                 <Spin spinning />
               )}
@@ -297,9 +317,20 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
                   allowClear
                   disabled={isGeneratingImage}
                 />
+                <Select
+                  showSearch
+                  placeholder="Image styles"
+                  className='w-[400px]'
+                  options={imageStyles.map((i) => ({
+                    ...i,
+                    label: i.name,
+                    value: i.name
+                  }))}
+                  onSelect={setImageStyle}
+                />
                 <Button
                   onClick={() => onGeneratingImage(document.getElementById('input-ai-image').value)}
-                  icon={<SearchOutlined />}
+                  // icon={<SearchOutlined />}
                   className='w-fit'
                   disabled={isGeneratingImage}
                 >
@@ -349,9 +380,6 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
             {videos.length > 0 && (
               <div className='grid grid-cols-4 gap-2 h-[500px] overflow-scroll'>
                 {videos.map((video) => {
-                  if (selectedVideo) {
-                    console.log(selectedVideo?.id?.videoId, video.id.videoId, selectedVideo?.id?.videoId === video.id.videoId)
-                  }
                   return (
                     <div
                       key={video.id.videoId}

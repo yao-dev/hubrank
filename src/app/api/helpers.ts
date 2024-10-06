@@ -1229,3 +1229,43 @@ export const publishBlogPost = async ({ url, blogPost }: any) => {
     }
   });
 }
+
+export const getTableOfContent = (html: string): string => {
+  // Load the HTML content into cheerio
+  const $ = cheerio.load(html);
+
+  // Create a unique ID for each heading
+  $("h1, h2, h3, h4, h5, h6").each((index, element) => {
+    if (!$(element).attr("id")) {
+      $(element).attr(
+        "id",
+        `${$(element)
+          .text()
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^\w-]+/g, "")}-${index}`
+      );
+    }
+  });
+
+  // Start building the table of contents
+  let toc = '<div>';
+  toc +=
+    '<div>Table of contents</div>';
+  toc += '<div>';
+
+  // Loop through the headings and generate links
+  $("h1, h2, h3, h4, h5, h6").each((index, element) => {
+    const id = $(element).attr("id");
+    const text = $(element).text().trim();
+    const level = parseInt(element.tagName[1]) - 1; // Get the heading level (h1 -> 0rem, h2 -> 1rem, etc.)
+
+    toc += `<a href="#${id}">${index + 1
+      }. ${text}</a>`;
+  });
+
+  toc += "</div></div>";
+
+  return toc;
+}

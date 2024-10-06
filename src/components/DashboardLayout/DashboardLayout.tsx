@@ -172,7 +172,7 @@ export default function DashboardLayout({
       projectId > 0 ? getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       projectId > 0 ? getItem({ key: "knowledge-bases", link: isProjectSelected ? `/projects/${projectId}?tab=knowledge-bases` : '/projects?tab=knowledge-bases', label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 && process.env.NODE_ENV === "development" ? getItem({ key: "integrations", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }) : null,
+      projectId > 0 ? getItem({ key: "integrations", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
       // getItem({ key: "analytics", link: '/analytics', label: 'Analytics', icon: <IconTimeline />, onClick: () => setIsMobileMenuOpen(false) }),
     ])
