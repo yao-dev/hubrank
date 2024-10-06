@@ -1,36 +1,48 @@
 'use client';;
-import { debounce } from 'lodash';
+import { debounce, isEmpty } from 'lodash';
 import { Button, Image, Input, message, Modal, Spin, Upload } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { Blurhash } from "react-blurhash";
 import axios from 'axios';
 import { SearchOutlined } from '@ant-design/icons';
+import { searchYouTubeVideos } from '@/app/app/actions';
+import { IconSparkles } from '@tabler/icons-react';
 
-const AddImageModal = ({ open, onClose, onSubmit }) => {
-  const [imageTab, setImageTab] = useState("upload");
+const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }) => {
+  const [tab, setTab] = useState("upload");
   const [images, setImages] = useState([]);
+  const [videos, setVideos] = useState([]);
   const [isSearchingImage, setIsSearchingImage] = useState(false);
+  const [isSearchingVideos, setIsSearchingVideos] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ href: "", alt: "" });
+  const [selectedVideo, setSelectedVideo] = useState();
   const [imageLink, setImageLink] = useState("");
   const [generatedImageLink, setGeneratedImageLink] = useState("");
 
   const resetModal = () => {
     setImageLink("");
     setSelectedImage({ href: "", alt: "" });
+    setSelectedVideo(undefined);
     setGeneratedImageLink("");
     setImages([]);
+    setVideos([]);
     setIsSearchingImage(false);
+    setIsSearchingVideos(false);
     setIsGeneratingImage(false)
   }
 
   useEffect(() => {
-    setImageTab("upload")
+    setTab("upload");
   }, [open])
 
   useEffect(() => {
-    resetModal()
-  }, [imageTab])
+    resetModal();
+    const modals = document.querySelectorAll('.ant-modal-root');
+    if (modals.length > 1) {
+      modals[0].remove()
+    }
+  }, [tab])
 
   const onSearchImage = async (e: any) => {
     try {
@@ -43,6 +55,19 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
       setIsSearchingImage(false)
     } catch {
       setIsSearchingImage(false)
+    }
+  }
+
+  const onSearchVideo = async (query: string) => {
+    try {
+      setIsSearchingVideos(true)
+      const result = await searchYouTubeVideos(query)
+      console.log(result)
+      console.log(result[0].snippet)
+      setVideos(result);
+      setIsSearchingVideos(false)
+    } catch {
+      setIsSearchingVideos(false)
     }
   }
 
@@ -75,21 +100,27 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
   }
 
   const onSubmitImage = () => {
-    if (imageTab === "upload" || imageTab === "link") {
+    if (tab === "upload" || tab === "link") {
       if (imageLink) {
         onSubmit({ src: imageLink, alt: "" })
       }
     }
 
-    if (imageTab === "unsplash") {
+    if (tab === "unsplash") {
       if (selectedImage.href) {
         onSubmit({ src: selectedImage.href, alt: selectedImage.alt })
       }
     }
 
-    if (imageTab === "ai") {
+    if (tab === "ai") {
       if (generatedImageLink) {
         onSubmit({ src: generatedImageLink, alt: "" })
+      }
+    }
+
+    if (tab === "youtube") {
+      if (selectedVideo) {
+        onSubmit(undefined, selectedVideo)
       }
     }
 
@@ -133,43 +164,69 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
       open={open}
       onCancel={onClose}
       centered
-      title="Add image"
+      title="Add media"
       onOk={onSubmitImage}
       destroyOnClose
       okText="Add"
+      width={tab === "youtube" && !isEmpty(videos) ? 1000 : undefined}
       okButtonProps={{
-        disabled: imageTab === "upload" && !imageLink || imageTab === "link" && !imageLink || imageTab === "unsplash" && !selectedImage.href || imageTab === "ai" && !generatedImageLink || isSearchingImage || isGeneratingImage
+        disabled:
+          tab === "upload" && !imageLink ||
+          tab === "link" && !imageLink ||
+          tab === "unsplash" && !selectedImage.href ||
+          tab === "ai" && !generatedImageLink ||
+          tab === "youtube" && !selectedVideo ||
+          isSearchingImage ||
+          isSearchingVideos ||
+          isGeneratingImage
+      }}
+      styles={{
+        body: {
+          maxHeight: 700,
+          overflow: "scroll"
+        }
       }}
     >
       <div className='flex flex-col gap-4 w-full mt-2'>
         <div className='flex flex-row gap-2'>
           <Button
-            type={imageTab === "upload" ? "primary" : "default"}
-            onClick={() => setImageTab("upload")}
+            type={tab === "upload" ? "primary" : "default"}
+            onClick={() => setTab("upload")}
           >
             Upload
           </Button>
           <Button
-            type={imageTab === "link" ? "primary" : "default"}
-            onClick={() => setImageTab("link")}
+            type={tab === "link" ? "primary" : "default"}
+            onClick={() => setTab("link")}
           >
             Link
           </Button>
           <Button
-            type={imageTab === "unsplash" ? "primary" : "default"}
-            onClick={() => setImageTab("unsplash")}
+            type={tab === "unsplash" ? "primary" : "default"}
+            onClick={() => setTab("unsplash")}
           >
             Unsplash
           </Button>
+          {!disableYoutube && (
+            <Button
+              type={tab === "youtube" ? "primary" : "default"}
+              onClick={() => setTab("youtube")}
+            >
+              Youtube
+            </Button>
+          )}
           <Button
-            type={imageTab === "ai" ? "primary" : "default"}
-            onClick={() => setImageTab("ai")}
+            type={tab === "ai" ? "primary" : "default"}
+            onClick={() => setTab("ai")}
           >
-            AI
+            <div className="flex flex-row gap-1 items-center justify-center">
+              <p>AI</p>
+              <IconSparkles stroke={1.5} size={18} />
+            </div>
           </Button>
         </div>
 
-        {imageTab === "upload" && (
+        {tab === "upload" && (
           <div className='flex flex-col gap-4'>
             <Upload.Dragger
               name={'image'}
@@ -206,11 +263,11 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
           </div>
         )}
 
-        {imageTab === "link" && (
+        {tab === "link" && (
           <Input placeholder="Image link" onChange={(e) => setImageLink(e.currentTarget.value)} />
         )}
 
-        {imageTab === "unsplash" && (
+        {tab === "unsplash" && (
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-4'>
               <Input
@@ -230,7 +287,7 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
           </div>
         )}
 
-        {imageTab === "ai" && (
+        {tab === "ai" && (
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-4'>
               <div className='flex flex-row gap-2'>
@@ -246,7 +303,7 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
                   className='w-fit'
                   disabled={isGeneratingImage}
                 >
-                  Search
+                  Generate
                 </Button>
               </div>
 
@@ -265,9 +322,57 @@ const AddImageModal = ({ open, onClose, onSubmit }) => {
             )}
           </div>
         )}
+
+        {tab === "youtube" && (
+          <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4'>
+              <div className='flex flex-row gap-2'>
+                <Input
+                  id="input-youtube-search"
+                  placeholder="Search Youtube video"
+                  allowClear
+                  disabled={isSearchingVideos}
+                />
+                <Button
+                  onClick={() => onSearchVideo(document.getElementById('input-youtube-search').value)}
+                  icon={<SearchOutlined />}
+                  className='w-fit'
+                  disabled={isSearchingVideos}
+                >
+                  Search
+                </Button>
+              </div>
+              {isSearchingVideos && (
+                <Spin spinning />
+              )}
+            </div>
+            {videos.length > 0 && (
+              <div className='grid grid-cols-4 gap-2 h-[500px] overflow-scroll'>
+                {videos.map((video) => {
+                  if (selectedVideo) {
+                    console.log(selectedVideo?.id?.videoId, video.id.videoId, selectedVideo?.id?.videoId === video.id.videoId)
+                  }
+                  return (
+                    <div
+                      key={video.id.videoId}
+                      className={`cursor-pointer rounded-md flex flex-col gap-2 border-2 hover:border-primary-500 p-1 transition-all ${selectedVideo?.id?.videoId === video.id.videoId ? "border-primary-500" : "border-transparent"}`}
+                      onClick={() => setSelectedVideo(video)}
+                    >
+                      <img
+                        src={video.snippet.thumbnails.high.url}
+                        className="rounded-md"
+                      />
+                      <p>{video.snippet.title}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   )
 }
 
-export default AddImageModal
+export default AddMediaModal

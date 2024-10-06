@@ -26,7 +26,7 @@ import Label from "../Label/Label";
 import { contentTypes, structuredSchemas } from "@/options";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
-import AddImageModal from "../AddImageModal/AddImageModal";
+import AddMediaModal from "../AddMediaModal/AddMediaModal";
 import { SearchOutlined } from '@ant-design/icons';
 import { IconBrandZapier } from "@tabler/icons-react";
 
@@ -132,7 +132,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
   return (
     <Flex vertical gap="large" style={{ height: "100%" }}>
       {contextHolder}
-      <AddImageModal
+      <AddMediaModal
         open={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
         onSubmit={(image) => {

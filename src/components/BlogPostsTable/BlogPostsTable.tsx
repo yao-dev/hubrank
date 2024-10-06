@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useProjectId from '@/hooks/useProjectId';
-import { IconBrandZapier, IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
+import { IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
 import Link from 'next/link';
 import prettify from "pretty";
 import { format } from 'date-fns';
@@ -20,6 +20,7 @@ import useDrawers from '@/hooks/useDrawers';
 import useIntegrations from '@/hooks/useIntegrations';
 import { isEmpty } from 'lodash';
 import { useRouter } from 'next/navigation';
+import PublishBlogPostButton from '../PublishBlogPostButton/PublishBlogPostButton';
 
 const BlogPostsTable = () => {
   const { getAll, delete: deleteArticle, update: updateBlogPost } = useBlogPosts()
@@ -223,22 +224,12 @@ const BlogPostsTable = () => {
             >
               Preview
             </Button>
-            <Button
+
+            <PublishBlogPostButton
+              id={record.id}
               disabled={getIsDisabled(record.status) || ["publishing"].includes(record.status)}
-              onClick={(e) => {
-                e.preventDefault();
-                if (!hasIntegrations) {
-                  router.push(`/projects/${projectId}/integrations`)
-                } else {
-                  setPublish(record)
-                }
-              }}
-              icon={<IconBrandZapier size={18} className="text-orange-500" />}
-              className='flex flex-row items-center'
-              style={{ width: 100 }}
-            >
-              Publish
-            </Button>
+            />
+
             <Popconfirm
               title="Delete article"
               description="Are you sure to delete this article?"

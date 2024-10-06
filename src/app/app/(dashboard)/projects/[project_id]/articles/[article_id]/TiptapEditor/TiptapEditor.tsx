@@ -19,6 +19,7 @@ import {
   IconList,
   IconListNumbers,
   IconPhoto,
+  IconSparkles,
   IconUnderline,
 } from '@tabler/icons-react';
 import { IconStrikethrough } from '@tabler/icons-react';
@@ -27,8 +28,40 @@ import { debounce } from 'lodash';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
 import Image from '@tiptap/extension-image';
 import './style.css';
-import { useState } from 'react';
-import AddImageModal from '@/components/AddImageModal/AddImageModal';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import AddMediaModal from '@/components/AddMediaModal/AddMediaModal';
+import { DOMSerializer } from '@tiptap/pm/model';
+import { Button, Dropdown, Spin } from 'antd';
+import { getAIAutocomplete } from '@/app/app/actions';
+// import deepEqual from "deep-equal"
+
+const AIContext = createContext({ content: "" })
+
+const AIMenu = ({ onClick }) => {
+  const context = useContext(AIContext);
+
+  if (!context?.content) return null;
+
+  return (
+    <Dropdown
+      menu={{
+        items: [
+          { key: '1', label: "Fix spelling", onClick: () => onClick("Fix spelling", context) },
+          { key: '2', label: "Extend text", onClick: () => onClick("Extend text", context) },
+          { key: '3', label: "Expand", onClick: () => onClick("Expand", context) },
+          { key: '5', label: "Simplify", onClick: () => onClick("Simplify", context) },
+          { key: '6', label: "Rephrase", onClick: () => onClick("Rephrase", context) },
+          { key: '7', label: "Paraphrase", onClick: () => onClick("Paraphrase", context) },
+          { key: '8', label: "Summarize", onClick: () => onClick("Summarize", context) },
+        ]
+      }} trigger={['click']}>
+      <div className={`cursor-pointer p-1 flex flex-row gap-1 items-center justify-center rounded-md hover:bg-primary-500 hover:text-white transition-all`}>
+        <p>AI</p>
+        <IconSparkles stroke={1.5} />
+      </div>
+    </Dropdown>
+  )
+}
 
 const MenuButton = ({
   Icon,
@@ -81,6 +114,12 @@ const useMenuButtons = () => {
 
   const addImage = () => {
     setIsImageModalOpen(true)
+  }
+
+  const onAI = async (type, selection) => {
+    const response = await getAIAutocomplete(type, selection.content);
+    editor.commands.setTextSelection({ from: selection.from, to: selection.to })
+    editor.commands.insertContentAt({ from: selection.from, to: selection.to }, response.text)
   }
 
   return {
@@ -206,11 +245,19 @@ const useMenuButtons = () => {
         <div onClick={addImage} className={`cursor-pointer p-1 flex items-center justify-center rounded-md hover:bg-primary-500 hover:text-white transition-all`}>
           <IconPhoto stroke={1.5} />
         </div>
-        <AddImageModal
+        <AddMediaModal
           open={isImageModalOpen}
           onClose={() => setIsImageModalOpen(false)}
-          onSubmit={(image) => {
-            editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
+          onSubmit={(image, video) => {
+            if (image) {
+              return editor.chain().focus().setImage({ src: image.src, alt: image.alt }).run()
+            }
+            if (video) {
+              editor.commands.setYoutubeVideo({
+                src: `https://www.youtube.com/watch?v=${video.id.videoId}`,
+                width: 'auto',
+              })
+            }
           }}
         />
       </div>
@@ -219,6 +266,9 @@ const useMenuButtons = () => {
       <div onClick={addYoutubeVideo} className={`cursor-pointer p-1 flex items-center justify-center rounded-md hover:bg-primary-500 hover:text-white transition-all`}>
         <IconBrandYoutube stroke={1.5} />
       </div>
+    ),
+    ai: (
+      <AIMenu onClick={onAI} />
     )
   }
 }
@@ -272,7 +322,8 @@ const FloatingMenus = () => {
     codeBlockquote,
     link,
     image,
-    youtube
+    youtube,
+    ai
   } = useMenuButtons();
 
   if (!editor) {
@@ -295,6 +346,7 @@ const FloatingMenus = () => {
       {link}
       {image}
       {youtube}
+      {ai}
     </div>
   )
 
@@ -323,7 +375,25 @@ const TiptapEditor = ({
   content,
   readOnly
 }: Props) => {
-  const { update: updateBlogPost } = useBlogPosts()
+  const { update: updateBlogPost } = useBlogPosts();
+  const mousePositionRef = useRef()
+  const [htmlSelection, setHTMLSelection] = useState()
+
+  useEffect(() => {
+    const nativeOnMouseMove = onmouseup;
+    document.getElementById('hubrank-editor').onmouseup = function (e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      mousePositionRef.current = {
+        x: x,
+        y: y
+      }
+    }
+    return () => {
+      onmousemove = nativeOnMouseMove
+    }
+  }, []);
 
   const extensions = [
     StarterKit.configure({
@@ -390,22 +460,83 @@ const TiptapEditor = ({
     }
   }
 
+  const getHTMLFromSelection = (editor: Editor, selection: Selection) => {
+    const slice = selection.content();
+    const serializer = DOMSerializer.fromSchema(editor.schema);
+    const fragment = serializer.serializeFragment(slice.content);
+    const div = document.createElement('div');
+    div.appendChild(fragment);
+
+    return div.innerHTML;
+  }
+
   return (
     <>
-      <EditorProvider
-        slotBefore={readOnly ? null : <MenuBar />}
-        extensions={extensions}
-        content={content}
-        editorProps={{
-          attributes: {
-            class: 'prose prose-md focus:outline-none m-0 py-5',
-          },
-        }}
-        onUpdate={debounce(onEditorChange, 500) as any}
-        editable={!readOnly}
-      >
-        <FloatingMenus />
-      </EditorProvider>
+      <AIContext.Provider value={htmlSelection}>
+        <div id="hubrank-editor">
+          <EditorProvider
+            slotBefore={readOnly ? null : (
+              <MenuBar />
+            )}
+            extensions={extensions}
+            content={content}
+            editorProps={{
+              attributes: {
+                class: 'prose prose-md focus:outline-none m-0 py-5',
+              },
+            }}
+            /**
+            * This option gives us the control to enable the default behavior of rendering the editor immediately.
+            */
+            immediatelyRender
+            /**
+    * This option gives us the control to disable the default behavior of re-rendering the editor on every transaction.
+    */
+            shouldRerenderOnTransaction
+            // This function will be used to compare the previous and the next state
+            // equalityFn={deepEqual}
+            onUpdate={debounce(onEditorChange, 500) as any}
+            editable={!readOnly}
+            onSelectionUpdate={(props) => {
+              if (props.transaction.selection.ranges[0].$from && props.transaction.selection.ranges[0].$to) {
+                const htmlFromSelection = getHTMLFromSelection(props.editor, props.transaction.selection);
+                setHTMLSelection({ content: htmlFromSelection, from: props.transaction.selection.ranges[0].$from.pos, to: props.transaction.selection.ranges[0].$to.pos })
+              }
+            }}
+          >
+            <FloatingMenus />
+          </EditorProvider>
+        </div>
+      </AIContext.Provider>
+
+      {htmlSelection && mousePositionRef.current?.x && mousePositionRef.current?.y && false && (
+        <div
+          id="ai-editor"
+          className={`absolute z-10 bg-white max-w-[360px] flex flex-col gap-3 p-3 rounded-lg border shadow-xl`}
+          style={{
+            top: mousePositionRef.current.y,
+            left: mousePositionRef.current.x,
+          }}
+        >
+          <div className='flex flex-row gap-2'>
+            <IconSparkles stroke={1.5} />
+            <p className='text-base font-semibold'>AI Autocomplete</p>
+          </div>
+          <div className='flex flex-row flex-wrap'>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Fix spelling</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Extend text</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Reduce text</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Simplify</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Rephrase</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Paraphrase</Button>
+            <Button size="small" className='cursor-pointer mb-1 mr-1'>Summarize</Button>
+          </div>
+          <Spin spinning>
+            <p>Suggestions</p>
+            <p></p>
+          </Spin>
+        </div>
+      )}
     </>
   );
 }

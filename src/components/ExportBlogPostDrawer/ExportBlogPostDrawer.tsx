@@ -34,7 +34,7 @@ import * as cheerio from "cheerio";
 import { structuredSchemas } from "@/options";
 import useActiveProject from "@/hooks/useActiveProject";
 import useIntegrations from "@/hooks/useIntegrations";
-import AddImageModal from "../AddImageModal/AddImageModal";
+import AddMediaModal from "../AddMediaModal/AddMediaModal";
 
 const styles = {
   google: {
@@ -314,7 +314,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
 
         {current === 0 && article && (
           <>
-            <AddImageModal
+            <AddMediaModal
               open={isImageModalOpen}
               onClose={() => setIsImageModalOpen(false)}
               onSubmit={(image) => {
