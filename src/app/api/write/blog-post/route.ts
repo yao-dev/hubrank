@@ -16,6 +16,7 @@ import {
   getUrlOutline,
   updateBlogPostStatus,
   queryInstantVector,
+  getTableOfContent,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
@@ -23,6 +24,7 @@ import supabase from "@/helpers/supabase/server";
 import { get, shuffle } from "lodash";
 import { getImages } from "@/helpers/image";
 import { searchYouTubeVideos } from "@/app/app/actions";
+import { NodeHtmlMarkdown } from "node-html-markdown";
 
 export const maxDuration = 300;
 
@@ -135,18 +137,21 @@ export async function POST(request: Request) {
 
     // SET FEATURED IMAGE
     let featuredImage = body.featured_image;
-    if (body.featured_image) {
-      ai.article += `![featured image](${body.featured_image})\n`
-    } else {
-      // const images = await getImages(keywords.join());
-      // console.log(`unsplash images for keywords: ${keywords.join()}`, images)
-      // const foundFeaturedImage = shuffle(images)[0];
 
-      // if (foundFeaturedImage) {
-      //   featuredImage = foundFeaturedImage.href;
-      //   ai.article += `![${foundFeaturedImage.alt ?? ""}](${foundFeaturedImage.href})\n`
-      // }
-    }
+    // TODO find the best feature image for article based on user criteria whether with AI or Unsplash
+
+    // if (body.featured_image) {
+    //   ai.article += `![featured image](${body.featured_image})\n`
+    // } else {
+    //   // const images = await getImages(keywords.join());
+    //   // console.log(`unsplash images for keywords: ${keywords.join()}`, images)
+    //   // const foundFeaturedImage = shuffle(images)[0];
+
+    //   // if (foundFeaturedImage) {
+    //   //   featuredImage = foundFeaturedImage.href;
+    //   //   ai.article += `![${foundFeaturedImage.alt ?? ""}](${foundFeaturedImage.href})\n`
+    //   // }
+    // }
 
     if (body.with_hook) {
       await writeHook({
@@ -158,11 +163,11 @@ export async function POST(request: Request) {
       })
     }
 
-    ai.article = [
-      ai.article,
-      outline,
-      ""
-    ].join('\n\n');
+    // ai.article = [
+    //   ai.article,
+    //   outline,
+    //   ""
+    // ].join('\n\n');
 
     for (const [index, section] of Object.entries(outlinePlan.sections) as any) {
       // TODO: section.media
@@ -270,6 +275,20 @@ export async function POST(request: Request) {
         },
       })
     }
+
+    const tableOfContentHTML = getTableOfContent(convertMarkdownToHTML(cleanArticle(ai.article)) as string)
+    console.log("Table of content html", tableOfContentHTML)
+    const tableOfContentMarkdown = NodeHtmlMarkdown.translate(tableOfContentHTML);
+    console.log("Table of content markdown", tableOfContentMarkdown)
+
+    const decomposedArticle = [];
+
+    if (featuredImage) {
+      decomposedArticle.push(`![featured image](${featuredImage})\n`)
+    }
+
+    decomposedArticle.push(tableOfContentMarkdown, ai.article)
+    ai.article = decomposedArticle.join('\n\n');
 
     // REMOVE UNWANTED CHARACTERS
     ai.article = cleanArticle(ai.article);
