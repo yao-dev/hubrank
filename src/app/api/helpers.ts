@@ -415,8 +415,10 @@ export const getArticleNamespaceId = ({ userId, articleId }: { userId: string; a
   return namespaceId;
 }
 
-export const getEmbeddings = async (input: string): Promise<number[]> => {
+export const getEmbedding = async (input: string): Promise<number[]> => {
   const { embedding, usage } = await embed({
+    // https://sdk.vercel.ai/docs/ai-sdk-core/embeddings#embedding-providers--models
+    // model needs to have 1536 dimensions to work
     model: openai.embedding('text-embedding-3-small'),
     value: input,
   });
@@ -462,7 +464,7 @@ export const getRelevantUrls = async ({
   const urlSubsets = Array.from(uniqUrls).slice(0, 1000);
   const promises = urlSubsets.map(async (url) => {
     try {
-      const embeddings = await getEmbeddings(url);
+      const embeddings = await getEmbedding(url);
       return namespace.upsert({
         id: url,
         vector: embeddings,
@@ -483,7 +485,7 @@ export const getRelevantUrls = async ({
   console.log("query", query)
 
   const result = await namespace.query({
-    vector: await getEmbeddings(query),
+    vector: await getEmbedding(query),
     topK: 500,
     includeMetadata: true,
     // includeData: true
@@ -515,7 +517,7 @@ export const getRelevantKeywords = async ({
   const subset = Array.from(uniqs).slice(0, 1000);
   const promises = subset.map(async (keyword) => {
     try {
-      const embeddings = await getEmbeddings(keyword)
+      const embeddings = await getEmbedding(keyword)
       return namespace.upsert({
         id: keyword,
         vector: embeddings,
@@ -534,7 +536,7 @@ export const getRelevantKeywords = async ({
   await Promise.all(promises);
 
   const result = await namespace.query({
-    vector: await getEmbeddings(query),
+    vector: await getEmbedding(query),
     topK: 500,
     includeData: true
   });
@@ -759,7 +761,7 @@ export const urlToVector = async ({
   const output = await splitter.createDocuments([markdown]);
   const promises = output.map(async (document, index) => {
     try {
-      const embeddings = await getEmbeddings(document.pageContent)
+      const embeddings = await getEmbedding(document.pageContent)
       console.log("Training document number:", index + 1)
       return namespace.upsert({
         id: generateUuid5(document.pageContent),
@@ -800,7 +802,7 @@ export const textToVector = async ({
   const output = await splitter.createDocuments([text]);
   const promises = output.map(async (document, index) => {
     try {
-      const embeddings = await getEmbeddings(document.pageContent)
+      const embeddings = await getEmbedding(document.pageContent)
       console.log("Training document number:", index + 1)
       return namespace.upsert({
         id: generateUuid5(document.pageContent),
@@ -838,7 +840,7 @@ export const docsToVector = async ({
     const namespace = upstashVectorIndex.namespace(namespaceId);
     promises = docs.map(async (document, index) => {
       try {
-        const embeddings = await getEmbeddings(document.pageContent)
+        const embeddings = await getEmbedding(document.pageContent)
         console.log("Training document number:", index + 1);
         return namespace.upsert({
           id: generateUuid5(document.pageContent),
@@ -859,7 +861,7 @@ export const docsToVector = async ({
   } else {
     promises = docs.map(async (document, index) => {
       try {
-        const embeddings = await getEmbeddings(document.pageContent)
+        const embeddings = await getEmbedding(document.pageContent)
         console.log("Training document number:", index + 1);
         return createBackgroundJob({
           timeoutSec: 30,
@@ -936,7 +938,7 @@ export const queryVector = async ({
 }) => {
   const namespace = upstashVectorIndex.namespace(namespaceId)
   const knowledges = await namespace.query({
-    vector: await getEmbeddings(query),
+    vector: await getEmbedding(query),
     topK,
     includeMetadata: true,
     // includeData: true,
@@ -963,19 +965,19 @@ export const queryInstantVector = async ({
     metadata: any
   }[]
 }) => {
-  const namespaceId = uuid()
+  const namespaceId = Date.now().toString()
   const namespace = upstashVectorIndex.namespace(namespaceId);
 
   const promises = docs.map(async (document) => {
     try {
-      const embeddings = await getEmbeddings(document.query)
+      const embedding = await getEmbedding(document.query)
       return namespace.upsert({
-        id: generateUuid5(document.query),
-        vector: embeddings,
+        id: Date.now().toString(),
+        vector: embedding,
         metadata: document.metadata
       })
     } catch (error) {
-      console.error(`Failed to get embeddings for content: ${document.query}`, error);
+      console.error(`Failed to get embedding for content: ${document.query}`, error);
       // Handle the error according to your needs, e.g., return null or a default value
       return null;
     }
@@ -983,7 +985,7 @@ export const queryInstantVector = async ({
   await Promise.all(promises);
 
   const results = await namespace.query({
-    vector: await getEmbeddings(query),
+    vector: await getEmbedding(query),
     topK,
     includeMetadata: true,
     // includeData: true,
@@ -1012,7 +1014,7 @@ export const getProjectKnowledges = async ({
   const namespaceId = getProjectNamespaceId({ userId, projectId });
   const namespace = upstashVectorIndex.namespace(namespaceId)
   const knowledges = await namespace.query({
-    vector: await getEmbeddings(query),
+    vector: await getEmbedding(query),
     topK,
     includeMetadata: true,
     // includeData: true,

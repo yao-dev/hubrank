@@ -76,7 +76,6 @@ export async function POST(request: Request) {
     }
 
     console.log("body.title_mode", body.title_mode)
-    console.log("body.youtube_url", body.youtube_url)
 
     let youtubeTranscript;
     if (body.title_mode === "youtube_to_blog" && body.youtube_url) {
@@ -109,7 +108,7 @@ export async function POST(request: Request) {
     const competitorsOutline = [];
 
     for (let competitor of competitors) {
-      console.log("=== GET URL OUTLINE ===")
+      console.log("=== GET COMPETITOR OUTLINE ===")
       const competitorOutline = await getUrlOutline(competitor.url);
       competitorsOutline.push(competitorOutline)
     }
@@ -144,10 +143,13 @@ export async function POST(request: Request) {
     // - get the tags and/or description of each image
     // - convert the above into embedding
     // - query images embeddings using article title and meta description
+    console.log("We find a suitable feature image")
     const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword) => {
       const images = await getImages(keyword, 10);
       return images;
     }))).flat();
+
+    console.log("keywords images", keywordImages[0])
 
     const bestImage = await queryInstantVector({
       query: `${body.title} ${metaDescription}`,
@@ -310,7 +312,8 @@ export async function POST(request: Request) {
       decomposedArticle.push(`![featured image](${featuredImage})\n`)
     }
 
-    decomposedArticle.push(tableOfContentMarkdown, ai.article)
+    // decomposedArticle.push(tableOfContentMarkdown, ai.article)
+    decomposedArticle.push(ai.article)
     ai.article = decomposedArticle.join('\n\n');
 
     // REMOVE UNWANTED CHARACTERS
