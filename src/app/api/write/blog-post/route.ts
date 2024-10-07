@@ -139,6 +139,29 @@ export async function POST(request: Request) {
     let featuredImage = body.featured_image;
 
     // TODO find the best feature image for article based on user criteria whether with AI or Unsplash
+    // Unsplash:
+    // - do one search for each keywords up to X?
+    // - get the tags and/or description of each image
+    // - convert the above into embedding
+    // - query images embeddings using article title and meta description
+    const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword) => {
+      const images = await getImages(keyword, 10);
+      return images;
+    }))).flat();
+
+    const bestImage = await queryInstantVector({
+      query: `${body.title} ${metaDescription}`,
+      topK: 1,
+      minScore: 0.8,
+      docs: keywordImages.map((item) => ({
+        query: item.alt,
+        metadata: item
+      }))
+    });
+
+    featuredImage = bestImage?.[0]?.metadata?.href || featuredImage;
+
+
 
     // if (body.featured_image) {
     //   ai.article += `![featured image](${body.featured_image})\n`
