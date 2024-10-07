@@ -22,6 +22,7 @@ import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 import { avoidWords } from "@/options";
 import { getSummary } from 'readability-cyr';
+import { uuid } from "uuidv4";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -938,6 +939,55 @@ export const queryVector = async ({
 
   const filteredKnowledgesByScore = knowledges.filter((item) => item.score >= minScore)
   return orderBy(filteredKnowledgesByScore, ['score'], ['desc'])
+}
+
+export const queryInstantVector = async ({
+  query = "",
+  docs = [],
+  topK = 1,
+  minScore = 0,
+  filter = "",
+}: {
+  query: string;
+  topK?: number,
+  minScore?: number,
+  filter?: string
+  docs: {
+    query: string;
+    metadata: any
+  }[]
+}) => {
+  const namespaceId = uuid()
+  const namespace = upstashVectorIndex.namespace(namespaceId);
+
+  const promises = docs.map(async (document) => {
+    try {
+      const embeddings = await getEmbeddings(document.query)
+      return namespace.upsert({
+        id: generateUuid5(document.query),
+        vector: embeddings,
+        metadata: document.metadata
+      })
+    } catch (error) {
+      console.error(`Failed to get embeddings for content: ${document.query}`, error);
+      // Handle the error according to your needs, e.g., return null or a default value
+      return null;
+    }
+  });
+  await Promise.all(promises);
+
+  const results = await namespace.query({
+    vector: await getEmbeddings(query),
+    topK,
+    includeMetadata: true,
+    // includeData: true,
+    filter
+  });
+
+  await upstashVectorIndex.deleteNamespace(namespaceId);
+
+  const filteredResultsByScore = results.filter((item) => item.score >= minScore)
+  return orderBy(filteredResultsByScore, ['score'], ['desc']);
 }
 
 export const getProjectKnowledges = async ({

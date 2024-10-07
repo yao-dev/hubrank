@@ -7,7 +7,6 @@ import {
   fetchSitemapXml,
   getAndSaveSchemaMarkup,
   getSitemapUrls,
-  getYoutubeVideosForKeyword,
   markArticleAsFailure,
   markArticleAs,
   updateBlogPost,
@@ -16,12 +15,14 @@ import {
   getYoutubeTranscript,
   getUrlOutline,
   updateBlogPostStatus,
+  queryInstantVector,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 import { get, shuffle } from "lodash";
 import { getImages } from "@/helpers/image";
+import { searchYouTubeVideos } from "@/app/app/actions";
 
 export const maxDuration = 300;
 
@@ -80,16 +81,16 @@ export async function POST(request: Request) {
       youtubeTranscript = await getYoutubeTranscript(body.youtube_url);
     }
 
-    console.log("body.with_youtube_videos", body.with_youtube_videos)
-    let videos = [];
-    if (body.with_youtube_videos) {
-      const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
-        keyword: keywords.slice(0, 10).join(" OR ") || body.seed_keyword,
-        languageCode: language.code,
-        locationCode: language.location_code,
-      });
-      videos = youtubeVideos;
-    }
+    // console.log("body.with_youtube_videos", body.with_youtube_videos)
+    // let videos = [];
+    // if (body.with_youtube_videos) {
+    //   const { videos: youtubeVideos } = await getYoutubeVideosForKeyword({
+    //     keyword: keywords.slice(0, 10).join(" OR ") || body.seed_keyword,
+    //     languageCode: language.code,
+    //     locationCode: language.location_code,
+    //   });
+    //   videos = youtubeVideos;
+    // }
 
     let competitors = body.competitors;
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
       language: language.label,
       sitemaps,
       images: body.sectionImages,
-      videos,
+      // videos,
       keywords,
       youtube_transcript: youtubeTranscript,
       competitors_outline: competitorsOutline
@@ -203,6 +204,38 @@ export async function POST(request: Request) {
         console.log(`relevant external urls for section: ${section.name}`, serp)
       }
 
+      let selectedYoutubeVideo;
+      if (body.with_youtube_videos && section.youtube_search) {
+        console.log("Search youtube videos, query:", section.youtube_search)
+        const youtubeVideos = await searchYouTubeVideos(section.youtube_search);
+        if (youtubeVideos) {
+          console.log(`We found ${youtubeVideos.length} relevant videos for:`, section.youtube_search);
+
+          const youtubeDocs = youtubeVideos.map((youtubeVideo) => {
+            const query = `${youtubeVideo.snippet?.title} ${youtubeVideo.snippet?.description}`
+            return {
+              query,
+              metadata: youtubeVideo
+            }
+          });
+
+          console.log("Now we create an instant vector to get the most relevant video");
+
+          const foundYoutubeVideoMatches = await queryInstantVector({
+            query: section.name,
+            docs: youtubeDocs,
+            topK: 1,
+            minScore: 0.8,
+          });
+
+          selectedYoutubeVideo = foundYoutubeVideoMatches?.[0];
+
+          console.log("The most relevant video:", selectedYoutubeVideo?.metadata?.snippet);
+        } else {
+          console.log("No video found for query:", section.youtube_search)
+        }
+      }
+
       // WRITE EACH SECTION
       await writeSection({
         ai,
@@ -220,7 +253,12 @@ export async function POST(request: Request) {
           image,
           internal_links: section?.internal_links,
           images: section?.images,
-          video_url: section?.video_url,
+          // video_url: section?.video_url,
+          video: selectedYoutubeVideo?.metadata?.id?.videoId ? {
+            id: selectedYoutubeVideo?.metadata?.id?.videoId,
+            name: selectedYoutubeVideo?.metadata?.snippet?.title,
+            description: selectedYoutubeVideo?.metadata?.snippet?.description,
+          } : undefined,
           tones: section?.tones,
           purposes: section?.purposes,
           emotions: section?.emotions,

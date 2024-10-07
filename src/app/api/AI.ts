@@ -483,7 +483,7 @@ export class AI {
   writeTemplate(values: any) {
     const hasImage = !!values?.section?.image;
     const hasImages = values?.section?.images?.length > 0;
-    const hasVideo = !!values.section?.video_url;
+    const hasVideo = !!values.section?.video;
 
     // prompt += `\nHeadline structure: ${body.title_structure}`;
     // prompt += `\nHeadline (do not add it in the output): ${body.title}`;
@@ -534,7 +534,10 @@ export class AI {
     if (hasVideo) {
       prompt += `\nVideo to include:
       // here is how you embed it in the markdown => <iframe width="560" height="315" src="https://www.youtube.com/embed/REPLACE_WITH_YOUTUBE_VIDEO_ID" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-      video url: ${values.section.video_url}\n`
+      name: ${values.section.video.name}
+      description: ${values.section.video.description}
+      id: ${values.section.video.id}
+      `
     }
 
     if ((hasImage || hasImages) && hasVideo) {
@@ -638,7 +641,7 @@ export class AI {
 
   outlinePlanTemplate(values: any) {
     const hasImages = values?.images?.length > 0;
-    const hasVideos = values?.videos?.length > 0;
+    // const hasVideos = values?.videos?.length > 0;
     // - number of heading: ${values.heading_count}
     let prompt = `[outline plan]\n\nWrite an article outline for the headline: "${values.title}"
 - the content type is ${values.content_type}
@@ -680,9 +683,9 @@ export class AI {
     //   prompt += `\n- Images:\n${JSON.stringify(values.images.slice(0, 2), null, 2)}`
     // }
 
-    if (hasVideos) {
-      prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
-    }
+    // if (hasVideos) {
+    //   prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
+    // }
 
     if (!isEmpty(values.competitors_outline)) {
       prompt += `\n- Competitors outline:\n${JSON.stringify(values.competitors_outline, null, 2)}\n`
@@ -706,17 +709,19 @@ Write the outline following the structure below
     internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
     search_query?: string; // search intent that would help find external link to include to this section of the article
     image?: boolean; // whether to include an image in section or not
+    image_description?: string; // a query describing exactly what the image should look like
+    youtube_search?: string; // a youtube search query if this section must embed a video
     `;
 
     // if (hasImages) {
     //   prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // @@image@@`
     // }
 
-    if (hasVideos) {
-      prompt += `\n// include the most relevant youtube video, up to 1 video per article
-video_url: string;
-`
-    }
+    //     if (hasVideos) {
+    //       prompt += `\n// include the most relevant youtube video, up to 1 video per article
+    // video_url: string;
+    // `
+    //     }
 
     prompt += `purposes?: string[]; // options: ${purposes.map(i => i.label).join()}
     emotions?: string[]; // options: ${emotions.map(i => i.label).join()}
