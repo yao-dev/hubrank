@@ -22,7 +22,9 @@ import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 import { avoidWords } from "@/options";
 import { getSummary } from 'readability-cyr';
-import { uuid } from "uuidv4";
+import { v4 as uuid } from "uuid";
+import { embed } from "ai";
+import { openai } from "@ai-sdk/openai";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -414,25 +416,29 @@ export const getArticleNamespaceId = ({ userId, articleId }: { userId: string; a
 }
 
 export const getEmbeddings = async (input: string): Promise<number[]> => {
-  const { data } = await axios.post('https://api.voyageai.com/v1/embeddings', {
-    input,
-    model: "voyage-lite-02-instruct",
-    input_type: "document",
-    truncation: true,
-  }, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.VOYAGE_AI_API_KEY ?? ""}`
-    }
+  const { embedding, usage } = await embed({
+    model: openai.embedding('text-embedding-3-small'),
+    value: input,
   });
+  // const { data } = await axios.post('https://api.voyageai.com/v1/embeddings', {
+  //   input,
+  //   model: "voyage-lite-02-instruct",
+  //   input_type: "document",
+  //   truncation: true,
+  // }, {
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //     'Authorization': `Bearer ${process.env.VOYAGE_AI_API_KEY ?? ""}`
+  //   }
+  // });
 
-  const embeddings = data?.[0]?.embedding ?? [];
+  // const embeddings = data?.[0]?.embedding ?? [];
 
-  if (!embeddings?.length) {
-    throw new Error('Empty embeddings')
+  if (!embedding?.length) {
+    throw new Error('Empty embedding')
   }
 
-  return embeddings;
+  return embedding;
 }
 
 export const getRelevantUrls = async ({
