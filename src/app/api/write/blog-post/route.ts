@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         return images;
       }))).flat();
 
-      console.log("keywords images", keywordImages[0])
+      console.log("keywords image sample", keywordImages[0])
 
       const bestImage = await queryInstantVector({
         query: `${body.title} ${metaDescription}`,
@@ -253,17 +253,18 @@ export async function POST(request: Request) {
           });
 
           console.log("We search for the most relevant video for this section:", section.name)
+          console.log("Amongst those videos", youtubeDocs)
 
           const foundYoutubeVideoMatches = await queryInstantVector({
             query: section.name,
             docs: youtubeDocs,
             topK: 1,
-            minScore: 0.5,
+            minScore: 0,
           });
 
           selectedYoutubeVideo = foundYoutubeVideoMatches?.[0];
 
-          console.log("The most relevant video:", selectedYoutubeVideo?.metadata?.snippet);
+          console.log("The most relevant videos:", foundYoutubeVideoMatches.slice(0, 2));
         } else {
           console.log("No video found for query:", section.youtube_search)
         }
