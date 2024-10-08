@@ -20,6 +20,10 @@ export async function getAIAutocomplete(type: string, value: string) {
 
 export const searchYouTubeVideos = async (query: string) => {
   try {
+    if (!query) {
+      return [];
+    }
+
     const response = await youtube.search.list({
       part: ["snippet"],
       maxResults: 25,

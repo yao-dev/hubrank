@@ -137,31 +137,28 @@ export async function POST(request: Request) {
     // SET FEATURED IMAGE
     let featuredImage = body.featured_image;
 
-    // TODO find the best feature image for article based on user criteria whether with AI or Unsplash
-    // Unsplash:
-    // - do one search for each keywords up to X?
-    // - get the tags and/or description of each image
-    // - convert the above into embedding
-    // - query images embeddings using article title and meta description
-    console.log("We find a suitable feature image")
-    const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword: string) => {
-      const images = await getImages(keyword, 10);
-      return images;
-    }))).flat();
+    if (!featuredImage) {
+      // TODO: we should do it only if the user enable if via body.with_image?
+      console.log("We search for a suitable featured image")
+      const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword: string) => {
+        const images = await getImages(keyword, 10);
+        return images;
+      }))).flat();
 
-    console.log("keywords images", keywordImages[0])
+      console.log("keywords images", keywordImages[0])
 
-    const bestImage = await queryInstantVector({
-      query: `${body.title} ${metaDescription}`,
-      topK: 1,
-      minScore: 0.8,
-      docs: keywordImages.map((item) => ({
-        query: item.alt,
-        metadata: item
-      }))
-    });
+      const bestImage = await queryInstantVector({
+        query: `${body.title} ${metaDescription}`,
+        topK: 1,
+        minScore: 0.8,
+        docs: keywordImages.map((item) => ({
+          query: item.alt,
+          metadata: item
+        }))
+      });
 
-    featuredImage = bestImage?.[0]?.metadata?.href || featuredImage;
+      featuredImage = bestImage?.[0]?.metadata?.href || featuredImage;
+    }
 
 
 
@@ -237,7 +234,13 @@ export async function POST(request: Request) {
       let selectedYoutubeVideo;
       if (body.with_youtube_videos && section.youtube_search) {
         console.log("Search youtube videos, query:", section.youtube_search)
-        const youtubeVideos = await searchYouTubeVideos(section.youtube_search);
+        const youtubeVideos = (await Promise.all(
+          [
+            searchYouTubeVideos(section.youtube_search),
+            searchYouTubeVideos(section?.keywords?.slice?.(0, 30) ?? "")
+          ]
+        )).flat();
+
         if (youtubeVideos) {
           console.log(`We found ${youtubeVideos.length} relevant videos for:`, section.youtube_search);
 
@@ -249,13 +252,13 @@ export async function POST(request: Request) {
             }
           });
 
-          console.log("Now we create an instant vector to get the most relevant video");
+          console.log("We search for the most relevant video for this section:", section.name)
 
           const foundYoutubeVideoMatches = await queryInstantVector({
             query: section.name,
             docs: youtubeDocs,
             topK: 1,
-            minScore: 0.8,
+            minScore: 0.5,
           });
 
           selectedYoutubeVideo = foundYoutubeVideoMatches?.[0];
