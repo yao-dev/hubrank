@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     // - convert the above into embedding
     // - query images embeddings using article title and meta description
     console.log("We find a suitable feature image")
-    const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword) => {
+    const keywordImages = (await Promise.all(keywords.slice(0, 10).map(async (keyword: string) => {
       const images = await getImages(keyword, 10);
       return images;
     }))).flat();
