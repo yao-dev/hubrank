@@ -29,7 +29,7 @@ const BlogPostsTable = () => {
   const [publish, setPublish] = useState();
   const projectId = useProjectId();
   const drawers = useDrawers();
-  const { data: integrations } = useIntegrations({enabled: true});
+  const { data: integrations } = useIntegrations({ enabled: true });
   const hasIntegrations = !isEmpty(integrations)
   const router = useRouter();
 
@@ -320,13 +320,18 @@ const BlogPostsTable = () => {
           size="small"
           virtual
           dataSource={articles?.data ?? []}
-          columns={columns ?? []}
+          columns={columns?.map(column => ({
+            ...column,
+            onFilter: (value, record) => value === record[column.dataIndex]
+          })) ?? []}
           loading={isPending}
-          // pagination={{
-          //   pageSizeOptions: [10, 25, 50],
-          //   pageSize: 25,
-          // }}
-          pagination={false}
+          pagination={{
+            pageSize: 25,
+            position: ["bottomCenter"],
+            showSizeChanger: false,
+            size: "default",
+            responsive: true
+          }}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       </Flex>

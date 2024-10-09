@@ -5,8 +5,6 @@ import useProjects from "@/hooks/useProjects";
 import {
   Typography,
   Button,
-  Row,
-  Col,
   Card,
   Image,
   Flex,
@@ -24,13 +22,11 @@ import NewProjectModal from "@/components/NewProjectModal";
 import PageTitle from "@/components/PageTitle/PageTitle";
 import useUser from "@/hooks/useUser";
 import { useRouter, useSearchParams } from "next/navigation";
-import useProjectId from "@/hooks/useProjectId";
 import { brandsLogo } from "@/brands-logo";
 import supabase from "@/helpers/supabase/client";
 
 export default function Dashboard() {
   const router = useRouter();
-  const projectId = useProjectId();
   const searchParams = useSearchParams();
   const projects = useProjects();
   const {
@@ -199,12 +195,12 @@ export default function Dashboard() {
             </Button>
           </Flex>
 
-          <Row gutter={16}>
+          <div className="grid grid-cols-3 gap-4">
             {projectList?.map((project) => {
               const description = project?.metatags?.description || project?.description || "No description.";
               return (
-                <Col key={project.id} xs={24} md={12} xl={8} style={{ marginBottom: 24 }}>
-                  <Card style={{ height: 180 }}>
+                <div key={project.id}>
+                  <Card style={{ height: 200 }}>
                     <Link
                       href={`/projects/${project.id}?tab=blog-posts`}
                       prefetch
@@ -250,10 +246,10 @@ export default function Dashboard() {
                       </Typography.Paragraph>
                     </Link>
                   </Card>
-                </Col>
+                </div>
               )
             })}
-          </Row >
+          </div >
         </div >
       </div >
     </Spin>

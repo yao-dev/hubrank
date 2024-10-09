@@ -37,7 +37,6 @@ export default function ProjectDetail({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "blog-posts")
-  console.log("activeTab", activeTab)
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const drawers = useDrawers();
 
@@ -47,16 +46,8 @@ export default function ProjectDetail({
   const [captions, setCaptions] = useState([]);
 
   useEffect(() => {
-    setActiveTab(searchParams.get("tab") ?? "blog-posts")
-  }, [searchParams])
-
-  useEffect(() => {
-    if (isFetched) {
-      if (!project?.id) {
-        router.replace('/projects');
-      }
-    }
-  }, [project, isFetched]);
+    setActiveTab(searchParams.get("tab") ?? "")
+  }, [])
 
   const writeCaption = async (values: any) => {
     try {
@@ -189,9 +180,6 @@ export default function ProjectDetail({
     },
   ];
 
-  // const pageTitle = useMemo(() => {
-  //   return (items.find(i => i.key === activeTab)?.label ?? "") as string
-  // }, [activeTab]);
   const pageTitle = (items.find(i => i.key === activeTab)?.label ?? "") as string
 
   if (isFetched && !project) {
@@ -229,12 +217,6 @@ export default function ProjectDetail({
             })}
           </div>
         );
-      // case "social-media":
-      //   return getActionButton({
-      //     onClick: () => drawers.openCaptionDrawer({ isOpen: true }),
-      //     icon: <PlusOutlined />,
-      //     text: "Caption"
-      //   });
       case "writing-styles":
         return getActionButton({
           onClick: () => setIsWritingStyleModalOpened(true),

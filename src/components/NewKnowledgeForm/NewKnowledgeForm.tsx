@@ -176,7 +176,7 @@ const NewKnowledgeForm = ({ onSubmit, form, closeDrawer }: Props) => {
   }
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && projectId) {
       setDraggerProps({
         name: 'file',
         multiple: false,

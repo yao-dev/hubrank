@@ -169,7 +169,13 @@ const WritingStylesTable = ({ setModalOpen }: Props) => {
           dataSource={data?.data}
           columns={columns}
           loading={false}
-          pagination={false}
+          pagination={{
+            pageSize: 10,
+            position: ["bottomCenter"],
+            showSizeChanger: false,
+            size: "default",
+            responsive: true
+          }}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       </Flex>

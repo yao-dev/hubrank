@@ -440,10 +440,13 @@ const KeywordsTable = () => {
           dataSource={showSavedKeywords ? savedKeywords : keywords}
           columns={columns}
           loading={isFetchingKeywords}
-          // pagination={{
-          //   pageSize: 25
-          // }}
-          pagination={false}
+          pagination={{
+            pageSize: 50,
+            position: ["bottomCenter"],
+            showSizeChanger: false,
+            size: "default",
+            responsive: true
+          }}
           style={{ minWidth: 900, overflow: "auto" }}
         />
       )}

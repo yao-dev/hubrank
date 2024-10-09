@@ -98,7 +98,7 @@ ${NodeHtmlMarkdown.translate(html)}
       onClick: () => {
         updateBlogPost.mutate({ id: article.id, status: "publishing" });
         queryClient.invalidateQueries({
-          queryKey: queryKeys.blogPosts(+projectId)
+          queryKey: queryKeys.blogPosts(projectId)
         });
       },
       disabled: !hasIntegrations

@@ -85,8 +85,10 @@ const ProjectSelect = (props = {}) => {
             return {
               label: (
                 <>
-                  {renderProjectFavicon(p.website)}
-                  <span style={{ position: "relative", left: 10 }}>{p.name}</span>
+                  <span className="relative top-1">
+                    {renderProjectFavicon(p.website)}
+                  </span>
+                  <span style={{ position: "relative", left: 8 }}>{p.name}</span>
                 </>
               ),
               value: p.id.toString(),

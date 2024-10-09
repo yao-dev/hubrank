@@ -198,11 +198,13 @@ const KnowledgesBaseTable = () => {
         dataSource={knowledges?.data ?? []}
         columns={columns ?? []}
         loading={false}
-        // pagination={{
-        //   pageSizeOptions: [10, 25, 50],
-        //   pageSize: 25,
-        // }}
-        pagination={false}
+        pagination={{
+          pageSize: 25,
+          position: ["bottomCenter"],
+          showSizeChanger: false,
+          size: "default",
+          responsive: true
+        }}
         style={{ minWidth: 900, overflow: "auto" }}
       />
     </Flex>

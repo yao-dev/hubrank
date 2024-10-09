@@ -1,16 +1,15 @@
+"use client";;
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import queryKeys from "@/helpers/queryKeys";
 import supabase from '@/helpers/supabase/client';
-import { getUserId } from "@/helpers/user";
-import { useEffect, useState } from "react";
+import { useContext } from "react";
+import { minutesToMilliseconds } from "date-fns";
+import { SessionContext } from "@/context/SessionContext";
 
 const useUser = () => {
-  const [userId, setUserId] = useState();
-
-  useEffect(() => {
-    getUserId().then((userId) => setUserId(userId)).catch(console.error)
-  }, []);
+  const session = useContext(SessionContext);
+  const userId = session?.user?.id;
 
   const { data: user } = useQuery({
     enabled: !!userId,
@@ -21,7 +20,7 @@ const useUser = () => {
     select: ({ data }) => {
       return data;
     },
-    gcTime: 0,
+    gcTime: minutesToMilliseconds(2),
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchInterval: 10 * 1000,

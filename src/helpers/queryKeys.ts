@@ -27,7 +27,7 @@ const queryKeys = {
   //   status?: string;
   //   project_id: number
   // }) => ["blog_posts", filters] as const,
-  blogPosts: (project_id?: number, queue?: boolean) => ["blog_posts", { project_id, queue }] as const,
+  blogPosts: (project_id?: number | null, queue?: boolean) => ["blog_posts", { project_id, queue }] as const,
   blogPostsCount: () => ["blog_posts", "blog_posts_count"] as const,
   getAllSeedKeywords: () => ["get_all_seed_keywords"] as const,
   targetAudiences: (filters: {
