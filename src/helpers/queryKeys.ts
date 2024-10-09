@@ -45,7 +45,7 @@ const queryKeys = {
   products: () => ['products'] as const,
   prices: (productIds: string[]) => ["prices", productIds] as const,
   subscriptions: (customerId: string) => ['subscriptions', { customerId }] as const,
-  integrations: ["integrations"] as const
+  integrations: ({ projectId, enabled }: any) => ["integrations", { projectId, enabled }] as const
 };
 
 export default queryKeys;

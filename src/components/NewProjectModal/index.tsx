@@ -11,7 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 
-
 const NewProjectModal = ({ opened, onClose }: any) => {
   const [error, setError] = useState(false);
   const router = useRouter()
@@ -66,8 +65,11 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       onCancel={() => onCloseCreateProject()}
       onOk={() => form.submit()}
       okText="Create"
+      cancelButtonProps={{
+        disabled: !projects.create.isPending || !isSaving
+      }}
       confirmLoading={isSaving}
-      closable={!projects.create.isPending || !isSaving}
+      closable={!projects.create.isPending && !isSaving}
     >
       <Form
         form={form}

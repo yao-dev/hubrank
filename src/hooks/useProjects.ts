@@ -4,6 +4,7 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from '@/helpers/supabase/client';
 import { getUserId } from "@/helpers/user";
 import useActiveProject from "./useActiveProject";
+import useProjectId from "./useProjectId";
 
 const getOne = async (project_id?: number | null) => {
   if (typeof project_id !== "number") return;
@@ -117,14 +118,12 @@ const deleteOne = async (project_id: number | null) => {
 
 const useDelete = () => {
   const queryClient = useQueryClient();
-  const activeProject = useActiveProject();
   return useMutation({
     mutationFn: (id: number | null) => deleteOne(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.projects(),
       });
-      activeProject.setProjectId(null)
     },
   })
 }

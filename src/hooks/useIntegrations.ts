@@ -3,17 +3,23 @@ import { useQuery } from "@tanstack/react-query";
 import useUser from "./useUser";
 import { isEmpty } from "lodash";
 import queryKeys from "@/helpers/queryKeys";
-import useActiveProject from "./useActiveProject";
+import useProjectId from "./useProjectId";
 
-const useIntegrations = () => {
+const useIntegrations = ({ enabled } = {}) => {
   const user = useUser();
-  const { id } = useActiveProject();
+  const projectId = useProjectId();
 
   return useQuery({
-    enabled: !!user?.id,
-    queryKey: queryKeys.integrations,
+    enabled: !!user?.id && !!projectId,
+    queryKey: queryKeys.integrations({ projectId, enabled }),
     queryFn: async () => {
-      const { data } = await supabase.from("integrations").select("*").match({ user_id: user.id, project_id: +id, enabled: true })
+      const options = { user_id: user.id, project_id: projectId }
+
+      if (typeof enabled === "boolean") {
+        options.enabled = enabled
+      }
+
+      const { data } = await supabase.from("integrations").select("*").match(options)
       return data
     },
     select(data) {

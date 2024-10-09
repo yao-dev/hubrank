@@ -27,6 +27,7 @@ import {
   IconSpeakerphone,
   IconPigMoney,
   IconPlug,
+  IconSettings,
 } from '@tabler/icons-react';
 import { useParams, usePathname, useSearchParams } from 'next/navigation';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
@@ -34,7 +35,6 @@ import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
 import PricingModal from '../PricingModal/PricingModal';
 import usePricingModal from '@/hooks/usePricingModal';
-import { compact } from 'lodash';
 import { useLogout } from '@/hooks/useLogout';
 import supabase from '@/helpers/supabase/client';
 import Confetti from 'react-confetti';
@@ -163,19 +163,23 @@ export default function DashboardLayout({
   }, [user])
 
   const data: MenuItem[] = useMemo(() => {
-    const isProjectSelected = typeof projectId === "number" && projectId !== 0;
-
-    return compact([
+    const menus = [
       getItem({ key: "dashboard", link: '/', label: 'Dashboard', icon: <IconDashboard />, onClick: () => setIsMobileMenuOpen(false) }),
-      projectId > 0 ? getItem({ key: "blog-posts", link: isProjectSelected ? `/projects/${projectId}?tab=blog-posts` : '/projects?tab=blog-posts', label: 'Blog posts', icon: <IconTextCaption />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "social-media", link: isProjectSelected ? `/projects/${projectId}?tab=social-media` : '/projects?tab=social-media', label: 'Social media', icon: <IconMessage />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "keyword-research", link: isProjectSelected ? `/projects/${projectId}?tab=keyword-research` : '/projects?tab=keyword-research', label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "writing-styles", link: isProjectSelected ? `/projects/${projectId}?tab=writing-styles` : '/projects?tab=writing-styles', label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "knowledge-bases", link: isProjectSelected ? `/projects/${projectId}?tab=knowledge-bases` : '/projects?tab=knowledge-bases', label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      projectId > 0 ? getItem({ key: "integrations", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      // projectId > 0 ? getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }) : null,
-      // getItem({ key: "analytics", link: '/analytics', label: 'Analytics', icon: <IconTimeline />, onClick: () => setIsMobileMenuOpen(false) }),
-    ])
+    ]
+
+    if (!!projectId) {
+      menus.push(
+        getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Project settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "blog-posts", link: `/projects/${projectId}?tab=blog-posts`, label: 'Blog posts', icon: <IconTextCaption />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "social-media", link: `/projects/${projectId}?tab=social-media`, label: 'Social media', icon: <IconMessage />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "keyword-research", link: `/projects/${projectId}?tab=keyword-research`, label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "writing-styles", link: `/projects/${projectId}?tab=writing-styles`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "knowledge-bases", link: `/projects/${projectId}?tab=knowledge-bases`, label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "integrations", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
+      )
+    }
+
+    return menus
   }, [pathname, projectId]);
 
   const selectedKeys = useMemo(() => {

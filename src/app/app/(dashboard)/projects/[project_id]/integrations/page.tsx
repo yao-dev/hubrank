@@ -3,13 +3,21 @@ import { Card, Button, Switch } from 'antd';
 import { brandsLogo } from '@/brands-logo';
 import PageTitle from '@/components/PageTitle/PageTitle';
 import useIntegrations from '@/hooks/useIntegrations';
-
+import supabase from '@/helpers/supabase/client';
+import useUserId from '@/hooks/useUserId';
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/helpers/queryKeys';
+import useProjectId from '@/hooks/useProjectId';
 
 export default function Integrations() {
   // const [hover, setHover] = useState("")
   // const [selectedIntegration, setSelectedIntegration] = useState("")
+  const userId = useUserId()
+  const projectId = useProjectId();
   const { data: integrations } = useIntegrations();
   const hasZapierIntegration = integrations?.some((item) => item.platform === "zapier");
+  const hasZapierIntegrationEnabled = integrations?.some((item) => item.platform === "zapier" && item.enabled);
+  const queryClient = useQueryClient();
 
   return (
     <>
@@ -57,15 +65,19 @@ export default function Integrations() {
               <div className='flex flex-col gap-2'>
                 <div className='flex flex-row justify-between items-start'>
                   <img src={brandsLogo.zapier} className='w-[75px]' />
-                  <Switch
-                    className='w-fit'
-                    value={hasZapierIntegration}
-                    onChange={checked => {
-                      if (false) {
-                        // TODO: delete zapier integration and webhook subscriptions
-                      }
-                    }}
-                  />
+                  {hasZapierIntegration && (
+                    <Switch
+                      className='w-fit'
+                      value={hasZapierIntegrationEnabled}
+                      onChange={async (checked) => {
+                        // TODO: delete zapier integration and webhook subscriptions or just set enabled false?
+                        await supabase.from("integrations").update({ enabled: checked }).match({ "user_id": userId, platform: "zapier", project_id: projectId }).throwOnError();
+                        queryClient.invalidateQueries({
+                          queryKey: queryKeys.integrations({ projectId })
+                        })
+                      }}
+                    />
+                  )}
                 </div>
                 <p className='text-xl font-medium'>Zapier</p>
                 <p className='text-zinc-500 text-sm'>Build custom automations and integrations with other apps.</p>

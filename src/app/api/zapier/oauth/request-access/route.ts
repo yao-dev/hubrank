@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     };
     const urlEncoded = new URLSearchParams(query).toString();
     const protocol = process.env.NODE_ENV === "development" ? "http:" : "https:"
-    const redirectUrl = `${protocol}//app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/projects?${urlEncoded}`;
+    const redirectUrl = `${protocol}//app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}?${urlEncoded}`;
 
     console.log(chalk.yellow("[Request permission dialog]: we redirect to consent page in Hubrank "), redirectUrl)
 

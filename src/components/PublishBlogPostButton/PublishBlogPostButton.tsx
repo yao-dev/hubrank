@@ -4,7 +4,6 @@ import { Button, Dropdown, MenuProps, message } from 'antd';
 import useProjects from '@/hooks/useProjects';
 import { isEmpty } from 'lodash';
 import { IconBrandZapier } from '@tabler/icons-react';
-import cheerio from "cheerio";
 import { useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/helpers/queryKeys';
 import prettify from "pretty";
@@ -17,12 +16,12 @@ const PublishBlogPostButton = ({ id, disabled }) => {
   const projectId = useProjectId()
   const { getOne, update: updateBlogPost } = useBlogPosts();
   const { data: article } = getOne(id)
-  const { data: project } = useProjects().getOne(+projectId);
+  const { data: project } = useProjects().getOne(projectId);
   const queryClient = useQueryClient();
-  const { data: integrations } = useIntegrations();
+  const { data: integrations } = useIntegrations({ enabled: true });
   const hasIntegrations = !isEmpty(integrations)
 
-  const url = new URL(article?.slug ?? "", project?.blog_path ?? "");
+  const url = project && article ? new URL(article?.slug ?? "", project?.blog_path ?? "") : "";
 
   const html = prettify(`
 <html>

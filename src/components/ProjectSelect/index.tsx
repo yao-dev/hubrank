@@ -1,24 +1,22 @@
-"use client";
+"use client";;
 import useProjects from "@/hooks/useProjects";
 import { Button, Divider, Image, Select } from "antd";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { PlusOutlined } from '@ant-design/icons';
 import NewProjectModal from "../NewProjectModal";
 import useUser from "@/hooks/useUser";
 import usePricingModal from "@/hooks/usePricingModal";
-import useActiveProject from "@/hooks/useActiveProject";
+import useProjectId from "@/hooks/useProjectId";
 
 const ProjectSelect = (props = {}) => {
-  // const projectId = useProjectId();
+  const projectId = useProjectId();
   const { getAll } = useProjects()
   const { data: projects } = getAll();
   const router = useRouter();
   const [openedCreateProject, setOpenCreateProject] = useState(false);
-  const pathname = usePathname();
   const user = useUser();
   const pricingModal = usePricingModal();
-  const { id: projectId, setProjectId } = useActiveProject()
 
   const hasReachedLimit = projects && user?.subscription?.projects_limit <= projects?.length;
 
@@ -35,7 +33,7 @@ const ProjectSelect = (props = {}) => {
 
   const selectedProject = useMemo(() => {
     const foundProject = projects?.find((p) => {
-      return p.id === +projectId
+      return p.id === projectId
     });
 
     if (foundProject) {
@@ -75,7 +73,6 @@ const ProjectSelect = (props = {}) => {
           style={{ width: 200 }}
           value={selectedProject}
           onChange={(value) => {
-            setProjectId(value)
             if (projectId && value !== null) {
               const newPath = window.location.href.replace(`${projectId}`, `${value}`)
               router.push(newPath);

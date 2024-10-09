@@ -213,13 +213,13 @@ export const getSEOChecks = ({ html, keywords, url }: { html: string; keywords: 
   const internalLinks = $('a').filter((_, link) => {
     const href = $(link).attr('href') || '';
     // Consider as internal if it contains the hostname or is an anchor link
-    return href.includes(new URL(url).hostname) || href.startsWith('#');
+    return url && href.includes(new URL(url).hostname) || href.startsWith('#');
   }).map((_, link) => $(link).attr('href') || '').get();
 
   const externalLinks = $('a').filter((_, link) => {
     const href = $(link).attr('href') || '';
     // Consider as external if it doesn't contain the hostname and is not an anchor link
-    return !href.includes(new URL(url).hostname) && !href.startsWith('#');
+    return url && !href.includes(new URL(url).hostname) && !href.startsWith('#');
   }).map((_, link) => $(link).attr('href') || '').get();
 
   // Meta check

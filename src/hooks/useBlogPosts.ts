@@ -6,7 +6,7 @@ import { isNaN } from "lodash";
 import useProjectId from "./useProjectId";
 
 const getOne = async (id: number) => {
-  return supabase.from('blog_posts').select('*').eq('id', id).single();
+  return supabase.from('blog_posts').select('*').eq('id', id).maybeSingle().throwOnError();
 }
 
 const useGetOne = (id: number) => {

@@ -10,7 +10,6 @@ import queryKeys from "@/helpers/queryKeys";
 import { getUserId } from "@/helpers/user";
 import { useState } from "react";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
-import useActiveProject from "@/hooks/useActiveProject";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -21,7 +20,6 @@ const ProjectForm = () => {
   const router = useRouter()
   const { data: languages } = useLanguages().getAll();
   const [isSaving, setIsSaving] = useState(false)
-  const activeProject = useActiveProject()
 
   if (!project) {
     return null;
@@ -151,7 +149,6 @@ const ProjectForm = () => {
               e?.preventDefault()
               deleteProject.mutate(projectId)
               router.replace("/")
-              activeProject.setProjectId(0);
               message.success('Your project was deleted.')
             }}
             onCancel={(e) => {
@@ -166,7 +163,7 @@ const ProjectForm = () => {
             <Button danger type="text">Delete project</Button>
           </Popconfirm>
           <Button loading={isSaving} type="primary" htmlType="submit">
-            Update
+            Save
           </Button>
         </Flex>
       </Form.Item>

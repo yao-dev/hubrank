@@ -37,6 +37,7 @@ export default function ProjectDetail({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "blog-posts")
+  console.log("activeTab", activeTab)
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const drawers = useDrawers();
 
@@ -46,7 +47,7 @@ export default function ProjectDetail({
   const [captions, setCaptions] = useState([]);
 
   useEffect(() => {
-    setActiveTab(searchParams.get("tab") ?? "")
+    setActiveTab(searchParams.get("tab") ?? "blog-posts")
   }, [searchParams])
 
   useEffect(() => {

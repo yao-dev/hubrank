@@ -32,9 +32,8 @@ import { useEffect, useState } from "react";
 import useBlogPosts from "@/hooks/useBlogPosts";
 import * as cheerio from "cheerio";
 import { structuredSchemas } from "@/options";
-import useActiveProject from "@/hooks/useActiveProject";
-import useIntegrations from "@/hooks/useIntegrations";
 import AddMediaModal from "../AddMediaModal/AddMediaModal";
+import useProjectId from "@/hooks/useProjectId";
 
 const styles = {
   google: {
@@ -121,12 +120,10 @@ const ExportBlogPostDrawer = ({
   onClose,
   articleId,
 }: Props) => {
-  const { id } = useActiveProject()
-  const projectId = +id;
+  const projectId = useProjectId();
   const { data: project } = useProjects().getOne(projectId);
   const { getOne, update: updateBlogPost } = useBlogPosts();
   const { data: article } = getOne(articleId)
-  const { data: integrations } = useIntegrations();
   const [form] = Form.useForm();
   const pricingModal = usePricingModal();
   const articleTitle = article?.title ?? ""

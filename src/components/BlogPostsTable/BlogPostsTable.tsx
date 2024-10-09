@@ -29,7 +29,7 @@ const BlogPostsTable = () => {
   const [publish, setPublish] = useState();
   const projectId = useProjectId();
   const drawers = useDrawers();
-  const { data: integrations } = useIntegrations();
+  const { data: integrations } = useIntegrations({enabled: true});
   const hasIntegrations = !isEmpty(integrations)
   const router = useRouter();
 

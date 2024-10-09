@@ -97,11 +97,18 @@ const Article = ({
 }: {
   params: { article_id: number, project_id: number }
 }) => {
-  const articleId = +params.article_id;
   const projectId = +params.project_id;
+  const articleId = +params.article_id;
   const { getOne, update: updateBlogPost } = useBlogPosts()
-  const { data: article, isError } = getOne(articleId)
   const { data: project } = useProjects().getOne(projectId);
+  const { data: article, isError } = getOne(articleId);
+
+  console.log({
+    projectId,
+    articleId,
+    article
+  })
+
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
   const [articleTitle, setArticleTitle] = useState("");
@@ -134,7 +141,7 @@ const Article = ({
   const seoChecks = useMemo(() => {
     if (!article?.html) return
 
-    const { href, host } = new URL(article?.slug, project?.blog_path ?? "");
+    const { href = "", host = "" } = article?.slug && project?.blog_path ? new URL(article.slug, project.blog_path) : {};
 
     const html = `
 <html>
@@ -373,7 +380,7 @@ ${article.html}
               >
                 <Form
                   initialValues={{
-                    keywords: article.keywords ? article.keywords.join(',') ?? "" : "",
+                    keywords: article?.keywords ? article.keywords.join(',') ?? "" : "",
                   }}
                   onFinish={(values) => {
                     onSaveForm({

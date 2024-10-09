@@ -1,6 +1,6 @@
 'use client';;
-import { useState } from "react";
-import { IconSettings, IconTrash } from '@tabler/icons-react';
+import { useEffect, useState } from "react";
+import { IconCircle, IconCircleCheckFilled, IconSettings, IconTrash } from '@tabler/icons-react';
 import useProjects from "@/hooks/useProjects";
 import {
   Typography,
@@ -14,6 +14,7 @@ import {
   Spin,
   Empty,
   Grid,
+  Modal,
 } from "antd";
 import {
   PlusOutlined
@@ -21,11 +22,16 @@ import {
 import Link from "next/link";
 import NewProjectModal from "@/components/NewProjectModal";
 import PageTitle from "@/components/PageTitle/PageTitle";
-import useActiveProject from "@/hooks/useActiveProject";
 import useUser from "@/hooks/useUser";
-import usePricingModal from "@/hooks/usePricingModal";
+import { useRouter, useSearchParams } from "next/navigation";
+import useProjectId from "@/hooks/useProjectId";
+import { brandsLogo } from "@/brands-logo";
+import supabase from "@/helpers/supabase/client";
 
 export default function Dashboard() {
+  const router = useRouter();
+  const projectId = useProjectId();
+  const searchParams = useSearchParams();
   const projects = useProjects();
   const {
     data: projectList,
@@ -35,12 +41,20 @@ export default function Dashboard() {
     isLoading,
   } = projects.getAll();
   const screens = Grid.useBreakpoint();
-  const activeProject = useActiveProject();
   const user = useUser();
-  const pricingModal = usePricingModal();
+
   const [openedCreateProject, setOpenCreateProject] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isIntegrationLoading, setIsIntegrationLoading] = useState(false);
+  const [selectedProjectForIntegration, setSelectedProjectForIntegration] = useState();
 
   const hasReachedLimit = projectList && user?.subscription?.projects_limit <= projectList?.length;
+
+  useEffect(() => {
+    if (searchParams.get("install_zapier")) {
+      setIsModalOpen(true)
+    }
+  }, []);
 
   const onOpenNewProject = () => {
     // if (hasReachedLimit) {
@@ -99,6 +113,74 @@ export default function Dashboard() {
     <Spin spinning={isPending}>
       <div>
         <NewProjectModal opened={openedCreateProject} onClose={() => setOpenCreateProject(false)} />
+        <Modal
+          open={isModalOpen}
+          centered
+          closable={false}
+          title="New integration"
+          okText="Create integration"
+          maskClosable={false}
+          onCancel={() => {
+            router.push("/")
+          }}
+          confirmLoading={isIntegrationLoading}
+          okButtonProps={{
+            disabled: !selectedProjectForIntegration
+          }}
+          onOk={async () => {
+            if (selectedProjectForIntegration?.id) {
+              setIsIntegrationLoading(true)
+              const { data: newIntegration } = await supabase.from("integrations").insert({ user_id: user.id, project_id: selectedProjectForIntegration.id, platform: "zapier" }).select().maybeSingle()
+
+              const query = {
+                client_id: searchParams.get("client_id"),
+                state: searchParams.get("state"),
+                code: newIntegration.id
+              };
+
+              const urlEncoded = new URLSearchParams();
+              if (query.client_id) urlEncoded.append('client_id', query.client_id);
+              if (query.state) urlEncoded.append('state', query.state);
+              urlEncoded.append('code', query.code);
+              const redirectUrl = `${searchParams.get("redirect_uri")}?${urlEncoded.toString()}`;
+
+              router.push(redirectUrl);
+            }
+          }}
+        >
+          <p className='m-0 text-center'>
+            <Image
+              src={brandsLogo.zapier}
+              height={50}
+              preview={false}
+            />
+          </p>
+          {/* <p className='text-center text-base mt-6 mb-10'>Zapier is requesting access to {project ? <b>{project.name}</b> : "your Hubrank account"}</p> */}
+          <p className='text-center text-base mt-6 mb-10'>Zapier is requesting access to your Hubrank account, select a project to continue.</p>
+          <div className="flex flex-col gap-4">
+            {projectList?.map((project) => {
+              return (
+                <div
+                  key={project.id}
+                  className={`cursor-pointer flex flex-row gap-2 border items-center rounded-md justify-between p-4 hover:border-primary-500 ${selectedProjectForIntegration?.id === project.id && "border-primary-500"}`}
+                  onClick={() => setSelectedProjectForIntegration(project)}
+                >
+                  <div className="flex flex-row gap-2 items-center">
+                    <Image
+                      src={`https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${project.website}&size=128`}
+                      width={30}
+                      height={30}
+                      preview={false}
+                    />
+                    <p className="text-base">{project.name}</p>
+                  </div>
+
+                  {selectedProjectForIntegration?.id === project.id ? <IconCircleCheckFilled stroke={1.5} className="text-primary-500" /> : <IconCircle stroke={1.5} color="grey" />}
+                </div>
+              )
+            })}
+          </div>
+        </Modal>
         <div>
           <Flex
             gap="middle"
@@ -126,9 +208,6 @@ export default function Dashboard() {
                     <Link
                       href={`/projects/${project.id}?tab=blog-posts`}
                       prefetch
-                      onClick={() => {
-                        activeProject.setProjectId(project.id)
-                      }}
                     >
                       <Flex justify="space-between" style={{ marginBottom: 24 }}>
                         <Flex gap="middle" align="center">
