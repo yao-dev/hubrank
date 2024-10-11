@@ -1,28 +1,35 @@
 import { deleteSchedule } from "@/helpers/qstash";
-import supabase from "@/helpers/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { updateBlogPost } from "../../helpers";
 
 export async function POST(request: NextRequest) {
   try {
     // Parse the request body
     const body = await request.json();
 
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+
+    if (status === "error") {
+      console.log("[Upstash callback error]", {
+        ...body,
+        body: atob(body.body)
+      })
+    }
+
+    const msgId = body.sourceMessageId;
+
+    // Delete the schedule using the retrieved schedule_id
+    if (msgId) {
+      console.log("[Upstash callback] Delete message id:", msgId)
+      await deleteSchedule(msgId);
+    }
+
     // Decode the base64 encoded sourceBody
     const blogPost = JSON.parse(atob(body.sourceBody));
 
     if (blogPost?.id) {
-      // Fetch the schedule_id for the blog post from the database
-      const { data } = await supabase()
-        .from("blog_posts")
-        .select("schedule_id")
-        .eq("id", blogPost.id)
-        .maybeSingle()
-        .throwOnError();
-
-      // Delete the schedule using the retrieved schedule_id
-      if (data?.schedule_id) {
-        await deleteSchedule(data.schedule_id);
-      }
+      await updateBlogPost(blogPost.id, { status: "error" })
     }
 
     // Return the original body as a response

@@ -20,22 +20,41 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
-import { avoidWords } from "@/options";
 import { getSummary } from 'readability-cyr';
-import { v4 as uuid } from "uuid";
 import { embed } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
+import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
+import { z } from "zod";
+import { format } from "date-fns";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
   token: process.env.UPSTASH_VECTOR_TOKEN || "",
 })
 
+export const groq = createOpenAI({
+  baseURL: 'https://api.groq.com/openai/v1',
+  apiKey: process.env.GROQ_API_KEY,
+});
+
+export const getGroqModel = () => {
+  return shuffle([
+    // "llama3-8b-8192",
+    "llama3-70b-8192",
+    "llama3-groq-70b-8192-tool-use-preview",
+    "llama3-groq-8b-8192-tool-use-preview"
+  ])[0]
+}
+
+export const getErrorMessage = (error: any) => {
+  return error?.response?.message || error?.message || error
+}
+
 export const saveWritingCost = async ({ articleId, cost }: any) => {
   try {
     await supabase().from('blog_posts').update({ cost }).eq("id", articleId).throwOnError();
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: updating cost"), error);
+    console.error(chalk.bgRed("[ERROR]: updating cost"), getErrorMessage(error));
     throw error;
   }
 }
@@ -85,7 +104,7 @@ export const insertBlogPost = async (data: any) => {
     console.log(chalk.bgBlue("[INFO]: queuedArticle"), queuedArticle);
     return queuedArticle;
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: inserting blog post"), error);
+    console.error(chalk.bgRed("[ERROR]: inserting blog post"), getErrorMessage(error));
     throw error;
   }
 }
@@ -98,7 +117,7 @@ export const updateBlogPostStatus = async (articleId: number, status: string) =>
       .eq("id", articleId)
       .throwOnError();
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: updating blog post status"), error);
+    console.error(chalk.bgRed("[ERROR]: updating blog post status"), getErrorMessage(error));
     throw error;
   }
 }
@@ -111,7 +130,7 @@ export const updateBlogPost = async (articleId: number, updates: any) => {
       .eq("id", articleId)
       .throwOnError();
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: updating blog post"), error);
+    console.error(chalk.bgRed("[ERROR]: updating blog post"), getErrorMessage(error));
     throw error;
   }
 }
@@ -136,7 +155,7 @@ export const getSavedWritingStyle = async (writingStyleId?: number) => {
       const { data } = await supabase().from("writing_styles").select().eq("id", writingStyleId).limit(1).single();
       writingStyle = data;
     } catch (error) {
-      console.error(chalk.bgRed("[Error]: fetching writing style"), error);
+      console.error(chalk.bgRed("[Error]: fetching writing style"), getErrorMessage(error));
       throw error;
     }
   }
@@ -183,31 +202,16 @@ export const writeHook = async ({
     // ai.addArticleContent(ai.parse(hook, "markdown"));
     ai.addArticleContent(hook);
   } catch (error) {
-    console.error(chalk.bgRed("[Error]: generating hook"), error);
+    console.error(chalk.bgRed("[Error]: generating hook"), getErrorMessage(error));
     throw error;
   }
   console.log(`[end]: hook`);
 }
 
-const getRephraseInstruction = (text: string) => {
-  const wordsCount = text.split(" ").length;
-  // return compact([
-  //   "- diversify vocabulary",
-  //   "- reduce words duplication by paraphrasing them, use synonym or different forms",
-  //   "- do not use adverbs",
-  //   "- do not use compound adverbs",
-  //   "- use active voice",
-  //   wordsCount > 40 && "- split the paragraph",
-  //   "- use idioms",
-  //   "- use phrasal verbs",
-  //   shuffle([
-  //     "- end with a question",
-  //     "- start with a question",
-  //     [...new Array(15)].map(i => "")
-  //   ].flat())[0]
-  // ]).join('\n')
-
+export const getRephraseInstruction = (content: string) => {
   return [
+    `Content:\n${content}`,
+    "\n===\n",
     "diversify vocabulary",
     "remove adverbs",
     "remove compound adverbs",
@@ -215,8 +219,11 @@ const getRephraseInstruction = (text: string) => {
     "add space to your content with paragraphs",
     "edit like a human.",
     `list of words to absolutely avoid or use alternatives:\n${avoidWords.join('\n- ')}`,
+    "keep all links and images if there are any.",
+    "if there is any links introduce them naturally by guiding the user towards it without directly stating",
+    "Don't end the section like a conclusion, unless it's the conclusion section, but transition smoothly to the next point. This keeps the flow going without making it sound like a conclusion.",
+    "Output a markdown",
   ].join('\n')
-
 }
 
 export const writeSection = async ({
@@ -281,13 +288,17 @@ export const writeSection = async ({
     // ai.addArticleContent(ai.parse(content, "markdown"));
     ai.addArticleContent(content);
   } catch (error) {
-    console.error(chalk.bgRed(`[ERROR] generating section ${index}:`), error);
+    console.error(chalk.bgRed(`[ERROR] generating section ${index}:`), getErrorMessage(error));
     throw error;
   }
   console.log(`[end]: ${index}) ${section.name}`);
 }
 
 export const cleanArticle = (article: string) => {
+  return article.replaceAll("```markdown", "").replaceAll("```", "");
+}
+
+export const removeMarkdownWrapper = (article: string) => {
   return article.replaceAll("```markdown", "").replaceAll("```", "");
 }
 
@@ -356,7 +367,7 @@ export const markArticleAsFailure = async ({ articleId, error }: any) => {
       .eq("id", articleId)
       .throwOnError();
   } catch (updateError) {
-    console.error(chalk.bgRed("[ERROR]: updating blog post status to 'error'"), updateError);
+    console.error(chalk.bgRed("[ERROR]: updating blog post status to 'error'"), getErrorMessage(updateError));
   }
 }
 
@@ -474,7 +485,7 @@ export const getRelevantUrls = async ({
         },
       });
     } catch (error) {
-      console.error(`Failed to get embeddings for URL: ${url}`, error);
+      console.error(`Failed to get embeddings for URL: ${url}`, getErrorMessage(error));
       // Handle the error according to your needs, e.g., return null or a default value
       return null;
     }
@@ -527,7 +538,7 @@ export const getRelevantKeywords = async ({
         },
       })
     } catch (error) {
-      console.error(`Failed to get embeddings for keyword: ${keyword}`, error);
+      console.error(`Failed to get embeddings for keyword: ${keyword}`, getErrorMessage(error));
       // Handle the error according to your needs, e.g., return null or a default value
       return null;
     }
@@ -743,43 +754,47 @@ export const urlToVector = async ({
   url,
   userId,
   namespaceId,
-  metadata = {}
+  metadata = {},
 }: {
   url: string;
   userId: string;
   namespaceId: string;
   metadata?: any;
 }) => {
-  const namespace = upstashVectorIndex.namespace(namespaceId);
-  const html = await fetchHtml(url);
-  const markdown = getMarkdown(html);
-  const splitter = new TokenTextSplitter({
-    encodingName: "gpt2",
-    chunkSize: 150,
-    chunkOverlap: 50,
-  });
-  const output = await splitter.createDocuments([markdown]);
-  const promises = output.map(async (document, index) => {
-    try {
-      const embeddings = await getEmbedding(document.pageContent)
-      console.log("Training document number:", index + 1)
-      return namespace.upsert({
-        id: generateUuid5(document.pageContent),
-        vector: embeddings,
-        metadata: {
-          ...metadata,
-          userId,
-          content: document.pageContent
-        }
-      })
-    } catch (error) {
-      console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
-      // Handle the error according to your needs, e.g., return null or a default value
-      return null;
-    }
-  });
+  try {
+    const namespace = upstashVectorIndex.namespace(namespaceId);
+    const html = await fetchHtml(url);
+    const markdown = getMarkdown(html);
+    const splitter = new TokenTextSplitter({
+      encodingName: "gpt2",
+      chunkSize: 150,
+      chunkOverlap: 50,
+    });
+    const output = await splitter.createDocuments([markdown]);
+    const promises = output.map(async (document, index) => {
+      try {
+        const embeddings = await getEmbedding(document.pageContent)
+        console.log("Upsert document number:", index + 1)
+        return namespace.upsert({
+          id: generateUuid5(document.pageContent),
+          vector: embeddings,
+          metadata: {
+            ...metadata,
+            userId,
+            content: document.pageContent
+          }
+        })
+      } catch (error) {
+        console.error(`Failed to get embeddings for content: ${document.pageContent}`, getErrorMessage(error));
+        // Handle the error according to your needs, e.g., return null or a default value
+        return null;
+      }
+    });
 
-  await Promise.all(promises)
+    await Promise.all(promises)
+  } catch (error) {
+    console.error("Failed to process URL to vector conversion for url:", url, getErrorMessage(error));
+  }
 }
 
 export const textToVector = async ({
@@ -814,7 +829,7 @@ export const textToVector = async ({
         }
       })
     } catch (error) {
-      console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+      console.error(`Failed to get embeddings for content: ${document.pageContent}`, getErrorMessage(error));
       // Handle the error according to your needs, e.g., return null or a default value
       return null;
     }
@@ -852,7 +867,7 @@ export const docsToVector = async ({
           }
         })
       } catch (error) {
-        console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+        console.error(`Failed to get embeddings for content: ${document.pageContent}`, getErrorMessage(error));
         // Handle the error according to your needs, e.g., return null or a default value
         return null;
       }
@@ -881,7 +896,7 @@ export const docsToVector = async ({
           }
         })
       } catch (error) {
-        console.error(`Failed to get embeddings for content: ${document.pageContent}`, error);
+        console.error(`Failed to get embeddings for content: ${document.pageContent}`, getErrorMessage(error));
         // Handle the error according to your needs, e.g., return null or a default value
         return null;
       }
@@ -977,7 +992,7 @@ export const queryInstantVector = async ({
         metadata: document.metadata
       })
     } catch (error) {
-      console.error(`Failed to get embedding for content: ${document.query}`, error);
+      console.error(`Failed to get embedding for content: ${document.query}`, getErrorMessage(error));
       // Handle the error according to your needs, e.g., return null or a default value
       return null;
     }
@@ -996,6 +1011,10 @@ export const queryInstantVector = async ({
 
   const filteredResultsByScore = results.filter((item) => item.score >= minScore)
   return orderBy(filteredResultsByScore, ['score'], ['desc']);
+}
+
+export const deleteNamespace = async (namespaceId: string) => {
+  await upstashVectorIndex.deleteNamespace(namespaceId);
 }
 
 export const getProjectKnowledges = async ({
@@ -1052,7 +1071,7 @@ export const insertCaption = async (data: {
     console.log(chalk.bgBlue("[INFO]: queuedCaption"), queuedCaption);
     return queuedCaption?.id;
   } catch (error) {
-    console.error(chalk.bgRed("[ERROR]: inserting caption"), error);
+    console.error(chalk.bgRed("[ERROR]: inserting caption"), getErrorMessage(error));
     throw error;
   }
 }
@@ -1288,45 +1307,42 @@ export const publishBlogPost = async ({ url, blogPost }: any) => {
   });
 }
 
-export const getTableOfContent = (html: string): string => {
-  // Load the HTML content into cheerio
-  const $ = cheerio.load(html);
+export const getTableOfContent = (markdown: string): string => {
+  // Split the markdown content into lines
+  const lines = markdown.split("\n");
 
-  // Create a unique ID for each heading
-  $("h1, h2, h3, h4, h5, h6").each((index, element) => {
-    if (!$(element).attr("id")) {
-      $(element).attr(
-        "id",
-        `${$(element)
-          .text()
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "-")
-          .replace(/[^\w-]+/g, "")}-${index}`
-      );
+  // Initialize the Table of Contents string
+  let toc = "## Contents\n\n";
+  let headingCount = 0;
+
+  // Loop through the lines to find markdown headings
+  lines.forEach((line, index) => {
+    // Use a regular expression to match headings (e.g., #, ##, ###)
+    const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+    if (headingMatch) {
+      const level = headingMatch[1].length; // The number of '#' characters determines the level
+      const text = headingMatch[2].trim(); // Extract the heading text
+      const id = text
+        .toLowerCase()
+        .replace(/\s+/g, "-") // Replace spaces with hyphens
+        .replace(/[^\w-]+/g, ""); // Remove any non-alphanumeric characters
+
+      // Increment the heading count
+      headingCount++;
+
+      // Add indentation for subheadings based on level
+      const indentation = "   ".repeat(level - 1);
+
+      // Add the heading to the Table of Contents
+      // toc += `${indentation}[${text}](#${id})\n`;
+      toc += `${indentation}${headingCount}. [${text}](#${id})\n`;
     }
   });
 
-  // Start building the table of contents
-  let toc = '<div>';
-  toc +=
-    '<div>Table of contents</div>';
-  toc += '<div>';
-
-  // Loop through the headings and generate links
-  $("h1, h2, h3, h4, h5, h6").each((index, element) => {
-    const id = $(element).attr("id");
-    const text = $(element).text().trim();
-    const level = parseInt(element.tagName[1]) - 1; // Get the heading level (h1 -> 0rem, h2 -> 1rem, etc.)
-
-    toc += `<a href="#${id}">${index + 1
-      }. ${text}</a>`;
-  });
-
-  toc += "</div></div>";
-
   return toc;
-}
+};
+
+
 
 export const getHemingwayStats = (text) => {
   const result = [];
@@ -1373,4 +1389,413 @@ export const getHemingwayStats = (text) => {
   });
 
   return result;
+}
+
+const formatWritingStyle = (writingStyle: {
+  purposes?: string[];
+  emotions?: string[];
+  vocabularies?: string[];
+  sentence_structures?: string[];
+  perspectives?: string[];
+  writing_structures?: string[];
+  instructional_elements?: string[];
+}) => {
+  let writingStylePrompt = "";
+  writingStylePrompt += writingStyle.purposes && writingStyle.purposes.length > 0 ? `\nPurposes: ${writingStyle.purposes.join(', ')}` : "";
+  writingStylePrompt += writingStyle.emotions && writingStyle.emotions.length > 0 ? `\nEmotions: ${writingStyle.emotions.join(', ')}` : "";
+  writingStylePrompt += writingStyle.vocabularies && writingStyle.vocabularies.length > 0 ? `\nVocabularies: ${writingStyle.vocabularies.join(', ')}` : "";
+  writingStylePrompt += writingStyle.sentence_structures && writingStyle.sentence_structures.length > 0 ? `\nSentence structures: ${writingStyle.sentence_structures.join(', ')}` : "";
+  writingStylePrompt += writingStyle.perspectives && writingStyle.perspectives.length > 0 ? `\nPerspectives: ${writingStyle.perspectives.join(', ')}` : "";
+  writingStylePrompt += writingStyle.writing_structures && writingStyle.writing_structures.length > 0 ? `\nWriting structures: ${writingStyle.writing_structures.join(', ')}` : "";
+  writingStylePrompt += writingStyle.instructional_elements && writingStyle.instructional_elements.length > 0 ? `\nInstructional elements: ${writingStyle.instructional_elements.join(', ')}` : "";
+  return writingStylePrompt;
+}
+
+const formatAdditionalInstructions = (values: {
+  with_introduction: boolean;
+  with_conclusion: boolean;
+  with_key_takeways: boolean;
+  with_faq: boolean;
+  language: string;
+  additional_information?: string;
+  keywords?: string[];
+  sitemaps?: string[];
+}) => {
+  let additionalInstructionsPrompt = "";
+  additionalInstructionsPrompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
+  additionalInstructionsPrompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
+  additionalInstructionsPrompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
+  additionalInstructionsPrompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
+  additionalInstructionsPrompt += `\n- Language: ${values.language}`;
+  if (values.additional_information) {
+    additionalInstructionsPrompt += `\n- Additional information: ${values.additional_information}`
+  }
+  if (values.keywords && values.keywords.length > 0) {
+    additionalInstructionsPrompt += `\n- Keywords (include relevant keywords only, avoid keywords stuffing):\n${values.keywords.join('\n')}\n\n`
+  }
+  if (values.sitemaps && values.sitemaps.length > 0) {
+    additionalInstructionsPrompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps.join('\n')}\n\n`
+  }
+  return additionalInstructionsPrompt;
+}
+
+const formatCompetitorsOutline = (competitors_outline: any[]) => {
+  let competitorsOutlinePrompt = "";
+  if (competitors_outline && competitors_outline.length > 0) {
+    competitorsOutlinePrompt += `\n- Competitors outline:\n${JSON.stringify(competitors_outline, null, 2)}\n`
+  }
+  return competitorsOutlinePrompt;
+}
+
+const formatMarkdownTableOfContentExample = () => {
+  return `\nExample
+## Contents
+1. [Example](#example)
+2. [Example2](#example2)
+3. [Third Example](#third-example)
+`;
+}
+
+const getPromptDate = () => {
+  return `Date: ${format(new Date(), "dd/MM/yyyy")}`
+}
+
+export const getOutlinePrompt = (values: any) => {
+  let prompt = `[outline plan]
+
+  ${getPromptDate()}
+
+  Write an article outline for the headline: "${values.title}"
+- the content type is ${values.content_type}
+- the article will have roughly ${values.word_count} words
+- a section that has more than 200 words should be split into sub-sections or paragraphs
+- Don't prefix sections with numbers
+- Add anchors
+`;
+
+  if (values.youtube_transcript) {
+    prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 10000)}`
+  }
+
+  prompt += formatWritingStyle(values.writingStyle);
+  prompt += formatAdditionalInstructions(values);
+  prompt += formatCompetitorsOutline(values.competitors_outline);
+  prompt += formatMarkdownTableOfContentExample();
+
+  return prompt;
+}
+
+export const getOutlineSchema = ({
+  with_sections_image,
+  with_youtube_videos,
+}: { with_sections_image?: boolean; with_youtube_videos?: boolean }) => {
+  const sectionSchema: any = {
+    name: z.string().describe("Section's name"),
+    word_count: z.number().describe("Section's word count"),
+    keywords: z.string().describe("Comma separated keywords"),
+    // NOTE: should use embeddings instead at the section level
+    internal_links: z.array(z.string()).describe("Include relevant link you find in the sitemap, leave it empty otherwise."),
+    search_query: z.string().describe("Search query to get/extract up-to-date information on the web/serp"),
+    purposes: z.array(z.string()).optional().describe(`Options: ${purposes.map(i => i.label).join()}`),
+    emotions: z.array(z.string()).optional().describe(`Options: ${emotions.map(i => i.label).join()}`),
+    vocabularies: z.array(z.string()).optional().describe(`Options: ${vocabularies.map(i => i.label).join()}`),
+    sentence_structures: z.array(z.string()).optional().describe(`Options: ${sentenceStructures.map(i => i.label).join()}`),
+    perspectives: z.array(z.string()).optional().describe(`Options: ${perspectives.map(i => i.label).join()}`),
+    writing_structures: z.array(z.string()).optional().describe(`Options: ${writingStructures.map(i => i.label).join()}`),
+    instructional_elements: z.array(z.string()).optional().describe(`Options: ${instructionalElements.map(i => i.label).join()}`),
+    tones: z.array(z.string()).optional().describe(`Options: ${tones.map(i => i.label).join()}`),
+  }
+
+  if (with_sections_image) {
+    sectionSchema.image = z.boolean().describe(`At least 40% of the sections must contain an image`);
+    sectionSchema.image_description = z.boolean().describe("Search query to get/extract up-to-date information on the web/serp");
+  }
+  if (with_youtube_videos) {
+    sectionSchema.youtube_search = z.string().optional().describe("At least one section must have a youtube search query");
+  }
+
+  return z.object({
+    table_of_content_markdown: z.string().describe("Don't include the article title but only h2 and, don't number them."),
+    sections: z.array(
+      z.object(sectionSchema)
+    ),
+  })
+}
+
+const addWritingStyleSection = (prompt: string, style: string[], label: string) => {
+  if (style.length > 0) {
+    prompt += `\n${label}: ${style.join(', ')}`;
+  }
+};
+
+export const getMetaDescriptionPrompt = (values: {
+  title: string;
+  content_type?: string;
+  seed_keyword?: string;
+  outline?: string;
+  writingStyle?: {
+    tones?: string[];
+    purposes?: string[];
+    emotions?: string[];
+    vocabularies?: string[];
+    perspectives?: string[];
+  };
+  keywords?: string[];
+  competitors?: { description: string }[];
+}) => {
+  let prompt = `[description]
+
+  ${getPromptDate()}
+
+  Write a valuable and engaging article description.
+
+  Headline: ${values.title}
+  Content type: ${values.content_type ?? ""}
+  Seed keyword: ${values.seed_keyword ?? ""}
+  Outline: ${values.outline ?? ""}
+  `
+
+  addWritingStyleSection(prompt, values.writingStyle?.tones ?? [], "Tones");
+  addWritingStyleSection(prompt, values.writingStyle?.purposes ?? [], "Purposes");
+  addWritingStyleSection(prompt, values.writingStyle?.emotions ?? [], "Emotions");
+  addWritingStyleSection(prompt, values.writingStyle?.vocabularies ?? [], "Vocabularies");
+  addWritingStyleSection(prompt, values.writingStyle?.perspectives ?? [], "Perspectives");
+
+  if (values.keywords && values.keywords.length > 0) {
+    prompt += `\n- Keywords (include relevant keywords only):\n${values.keywords.join('\n')}\n\n`;
+  }
+
+  if (values.competitors && values.competitors.length > 0) {
+    prompt += `\n- Competitors description:\n${values.competitors.map(competitor => competitor.description).join('\n')}\n\n`;
+  }
+
+  return prompt;
+}
+
+export const getMetaDescriptionSchema = () => {
+  return z.object({
+    description: z.string().describe("160 characters maximum, no emoji."),
+  })
+}
+
+export const getHookSchema = () => {
+  return z.object({
+    markdown: z.string().describe("hook written in markdown."),
+  })
+}
+
+
+export const getHookPrompt = (values: any) => {
+  let prompt = `[hook]
+
+  ${getPromptDate()}
+
+  Headline: ${values?.headline}
+  Outline: ${values?.outline}
+  `;
+
+  addWritingStyleSection(prompt, values.writingStyle?.tones ?? [], "Tones");
+  addWritingStyleSection(prompt, values.writingStyle?.purposes ?? [], "Purposes");
+  addWritingStyleSection(prompt, values.writingStyle?.emotions ?? [], "Emotions");
+  addWritingStyleSection(prompt, values.writingStyle?.vocabularies ?? [], "Vocabularies");
+  addWritingStyleSection(prompt, values.writingStyle?.perspectives ?? [], "Perspectives");
+
+  // NOTE: do I keep this part, it could contribute to keywords stuffing
+  if (!isEmpty(values?.keywords)) {
+    prompt += `\n\nKeywords:\n${values.keywords.join('\n')}\n`
+  }
+
+  prompt += `
+  Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
+  Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
+  Elements that make up a good hook
+  1. State a fact or a statistic
+  2. Begin your writing with a quote
+  3. Ask a question
+  4. Tell a personal story
+  5. Make a statement
+  6. Start with a figure of speech
+  7. Don’t hesitate to contradict popular beliefs
+  8. Use humor
+  9. Connect emotionally to the reader
+  10. Use a contradictory statement
+  11. Define a term
+  12. Explain a common misconception.`;
+
+  return prompt;
+}
+
+export const getSectionSchema = () => {
+  return z.object({
+    markdown: z.string().describe("section written in markdown."),
+  })
+}
+
+export const getSectionPrompt = (values: any): string => {
+  const hasImage: boolean = !!values?.image?.href;
+  const hasVideo: boolean = !!values?.video?.id;
+
+  let prompt: string = `[write]
+
+  ${getPromptDate()}
+
+  Headline: ${values?.headline}
+  Section heading prefix: ${values?.prefix}
+  Outline:
+  ${values?.outline}
+
+
+  Write the section "${values?.name}" with a maximum of ${values?.word_count} words.
+  Section heading prefix: ${values?.prefix}
+  - Do not add heading for the hook if there is any
+  - Do not make up fact, statistic or fake story
+  `;
+
+  addWritingStyleSection(prompt, values?.tones ?? [], "Tones");
+  addWritingStyleSection(prompt, values?.purposes ?? [], "Purposes");
+  addWritingStyleSection(prompt, values?.emotions ?? [], "Emotions");
+  addWritingStyleSection(prompt, values?.vocabularies ?? [], "Vocabularies");
+  addWritingStyleSection(prompt, values?.perspectives ?? [], "Perspectives");
+  addWritingStyleSection(prompt, values?.sentence_structures ?? [], "Sentence structures");
+  addWritingStyleSection(prompt, values?.writing_structures ?? [], "Writing structures");
+  addWritingStyleSection(prompt, values?.instructional_elements ?? [], "Instructional elements");
+
+  if (values?.call_to_action) {
+    prompt += `\nCall to action instructions:\n${values.call_to_action}`;
+    if (values?.call_to_action_example) {
+      prompt += `\nCall to action instructions:\n${values.call_to_action}`
+    }
+  } else {
+    prompt += `\n- Do not add a CTA at the end`
+  }
+
+  if (values?.internal_links?.length > 0) {
+    prompt += `\nInternal links you could include (no call to action):\n${values.internal_links?.join('\n')}\n\n`
+  }
+
+  if (values?.external_links?.length > 0) {
+    prompt += `\nExternal links you could include (no call to action):\n${values.external_links?.join('\n')}\n\n`
+  }
+
+  if (values?.external_resources?.length > 0) {
+    prompt += `\nExternal resources for extra context:\n${JSON.stringify(values.external_resources, null, 2)}\n\n`
+  }
+
+  if (hasImage) {
+    prompt += `\nInclude the text @@image@@ as a placeholder that will be replaced by an image named "${values.image.alt}"`
+  }
+
+  if (hasVideo) {
+    prompt += `\nInclude the text @@video@@ as a placeholder that will be replaced by a video named "${values.video.name}"`
+  }
+
+  if (hasImage && hasVideo) {
+    prompt += `\nDon't put image and video next to each other, preferrably not both in the same section`
+  }
+
+  prompt += `
+  Primary instructions:
+  - Leverage markdown syntaxes (strikethrough, table, italic, bold, quote, etc.) to make the content appealing and easier to read.
+  - Add h3 sub-sections with ### if the content as more than 2 paragraphs.
+  - Don't use h1 at all.
+  - Add anchor to the section here is an example for a h2: ## <a name="heading-example"></a>Heading example
+  - Prefer Active Voice
+  - Avoid the use of adverbs as much as possible
+  - Avoid Passive Voice
+  - Consider Sentence Variety
+  - IMPORTANT: Do not use adverbs at all
+  - IMPORTANT: Diversify vocabulary
+  - IMPORTANT: vary the sentence structure and tone to make it sound more conversational.
+  - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
+  - do not use emojis
+  - do not introduce any followin section`
+
+  if (values?.custom_prompt) {
+    prompt += `\nSecondary instructions (does not override primary instructions):\n${values?.custom_prompt}`
+  }
+
+  prompt += `\nOutput a markdown.`
+
+  return prompt.replaceAll("\t", "")
+}
+
+export const getAllUrlsFromAnyData = (data: any) => {
+  const urls: string[] = [];
+  const handleString = (value: string) => {
+    // Check if it's a valid URL (starts with https:// and has no spaces)
+    const urlPattern = /^https:\/\/[^\s]+$/i;
+    if (urlPattern.test(value) && !value.startsWith("https://www.google")) {
+      urls.push(value);
+    }
+  };
+
+  const handleArray = (value: any[]) => {
+    value.forEach(item => {
+      handleTypes(item);
+    });
+  };
+
+  const handleObject = (value: object) => {
+    Object.values(value).forEach(item => {
+      handleTypes(item);
+    });
+  };
+
+  const handleTypes = (value: any) => {
+    if (typeof value === 'string') {
+      handleString(value);
+    } else if (Array.isArray(value)) {
+      handleArray(value);
+    } else if (typeof value === 'object' && value !== null) {
+      handleObject(value);
+    }
+  };
+
+  handleTypes(data);
+
+  return urls;
+};
+
+export const getRelevantUrlsSchema = () => {
+  return z.string().describe("list of urls")
+}
+
+export const getRelevantUrlsPrompt = ({
+  query,
+  count,
+  urls,
+}: { query: string; count: number; urls: string[] }) => {
+  return [
+    '[relevant urls]',
+    getPromptDate(),
+    `Give me up to ${count} of the most relevant urls in the list to the query "${query}"`,
+    `urls list:\n- ${urls.join('\n- ')}`,
+  ].join('\n\n')
+}
+
+export const getRelevantYoutubeVideoSchema = () => {
+  return z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string(),
+  })
+}
+
+export const getRelevantYoutubeVideoPrompt = ({
+  query,
+  youtubeVideos,
+}: {
+  query: string;
+  youtubeVideos: {
+    id: any;
+    name: any;
+    description: any;
+  }[]
+}) => {
+  return [
+    '[relevant youtube video]',
+    getPromptDate(),
+    `Give the most relevant video to the query "${query}"`,
+    `Videos:\n${JSON.stringify(youtubeVideos, null, 2)}`,
+  ].join('\n\n')
 }

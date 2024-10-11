@@ -31,8 +31,8 @@ export const createSchedule = async ({ body, destination, headers = {} }: any): 
       "Content-Type": "application/json",
       Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
       "Upstash-Retries": 0,
-      "Upstash-Callback": getUpstashDestination("api/write/schedule-callback"),
-      "Upstash-Failure-Callback": getUpstashDestination("api/write/schedule-callback"),
+      "Upstash-Callback": getUpstashDestination("api/write/schedule-callback?status=success"),
+      "Upstash-Failure-Callback": getUpstashDestination("api/write/schedule-callback?status=error"),
       ...headers,
     },
   });

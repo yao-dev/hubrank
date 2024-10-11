@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import OpenAI from "openai";
 import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
 import { capitalize, isEmpty, shuffle } from "lodash";
+import { z } from "zod";
 
 export type CaptionTemplate = {
   platform: string;
@@ -434,18 +435,14 @@ export class AI {
   //     return this.ask(this.outlineTemplate(values), { type: "json", mode: "outline", temperature: 0.7, model: models.opus });
   //   }
 
-  hookTemplate(values: any) {
+  hookTemplate(values: any, writingStyle: any) {
     let prompt = `[hook]
 
     Outline: ${values?.outline}
     Seed keyword: ${values?.seed_keyword}
     `;
 
-    prompt += this.opts?.writing_style?.tones?.length > 0 ? `\nTones: ${this.opts?.writing_style?.tones.join(', ')}` : "";
-    prompt += this.opts?.writing_style?.purposes?.length > 0 ? `\nPurposes: ${this.opts?.writing_style?.purposes.join(', ')}` : "";
-    prompt += this.opts?.writing_style?.emotions?.length > 0 ? `\nEmotions: ${this.opts?.writing_style?.emotions.join(', ')}` : "";
-    prompt += this.opts?.writing_style?.vocabularies?.length > 0 ? `\nVocabularies: ${this.opts?.writing_style?.vocabularies.join(', ')}` : "";
-    prompt += this.opts?.writing_style?.perspectives?.length > 0 ? `\nPerspectives: ${this.opts?.writing_style?.perspectives.join(', ')}` : "";
+    this.addWritingStyleOptions(prompt, writingStyle);
 
     if (!isEmpty(values?.keywords)) {
       prompt += `\n\nKeywords:\n${values.keywords.join('\n')}\n`
@@ -475,19 +472,23 @@ export class AI {
     return prompt;
   }
 
+  addWritingStyleOptions(prompt: string, writingStyle: any) {
+    prompt += writingStyle?.tones?.length > 0 ? `\nTones: ${writingStyle?.tones.join(', ')}` : "";
+    prompt += writingStyle?.purposes?.length > 0 ? `\nPurposes: ${writingStyle?.purposes.join(', ')}` : "";
+    prompt += writingStyle?.emotions?.length > 0 ? `\nEmotions: ${writingStyle?.emotions.join(', ')}` : "";
+    prompt += writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${writingStyle?.vocabularies.join(', ')}` : "";
+    prompt += writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${writingStyle?.perspectives.join(', ')}` : "";
+  }
+
   async hook(values: any) {
     const model = shuffle([models.chatgpt, models["gpt-4o-mini"]])[0]
     return this.ask(this.hookTemplate(values), { type: "markdown", mode: "hook", temperature: 1, model })
   }
 
-  writeTemplate(values: any) {
+  writeTemplate(values: any): string {
     const hasImage = !!values?.section?.image;
     const hasImages = values?.section?.images?.length > 0;
     const hasVideo = !!values.section?.video;
-
-    // prompt += `\nHeadline structure: ${body.title_structure}`;
-    // prompt += `\nHeadline (do not add it in the output): ${body.title}`;
-    // prompt += `\nReplace all variables with their respective value.`;
 
     let prompt = `[write]
 
@@ -496,9 +497,7 @@ export class AI {
     Do not add a CTA at the end
     Do not add heading for the hook if there is any
     Do not make up fact, statistic or fake story
-    `
-
-    // prompt += `Outline: ${values?.outline}`
+    `;
 
     prompt += values?.section?.tones?.length > 0 ? `\nTones: ${values.section.tones.join(', ')}` : "";
     prompt += values?.section?.purposes?.length > 0 ? `\nPurposes: ${values.section.purposes.join(', ')}` : "";
@@ -508,8 +507,6 @@ export class AI {
     prompt += values?.section?.perspectives?.length > 0 ? `\nPerspectives: ${values.section.perspectives.join(', ')}` : "";
     prompt += values?.section?.writing_structures?.length > 0 ? `\nWriting structures: ${values.section.writing_structures.join(', ')}` : "";
     prompt += values?.section?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.section.instructional_elements.join(', ')}` : "";
-
-    // prompt += `\n\nRelevant keywords: ${values?.section?.keywords}\n`
 
     if (values?.section?.call_to_action) {
       prompt += `\nCall to action instructions:\n${values.section.call_to_action}`;
@@ -524,7 +521,6 @@ export class AI {
 
     if (hasImage) {
       prompt += `\n- Include @@image@@ as a placeholder for the image: "${values.section.image.alt}" (DO NOT EMBED THE IMAGE)`
-      // prompt += `\nImage to include: ${values.section.image}`
     }
 
     if (hasImages) {
@@ -544,9 +540,6 @@ export class AI {
       prompt += `\nDon't put image and video next to each other, preferrably not both in the same section`
     }
 
-    // - You know how to transition from a section to another at the end of a section.
-    // - Simplify Words
-    // - Avoid Hard-to-Read Phrases
     prompt += `
     Primary instructions:
     - Leverage markdown syntaxes (strikethrough, table, italic, bold, quote, etc.) to make the content appealing and easier to read.
@@ -563,11 +556,6 @@ export class AI {
     - IMPORTANT: avoid words like the following or write their alternative: ${avoidWords.join()}
     - do not use emojis
     - do not introduce any next section`
-
-    // if (values?.section?.image?.alt && values?.section?.image?.href) {
-    //   // prompt += `\n- Include this image in the content: ![${values.section.image.alt}](${values.section.image.href})`
-    //   prompt += `\n- Include @@image@@ as a placeholder for the image: "${values.section.image.alt}" (DO NOT EMBED THE IMAGE)`
-    // }
 
     if (values?.section?.custom_prompt) {
       prompt += `\nSecondary instructions (does not override primary instructions):\n${values?.section?.custom_prompt}`
@@ -641,8 +629,6 @@ export class AI {
 
   outlinePlanTemplate(values: any) {
     const hasImages = values?.images?.length > 0;
-    // const hasVideos = values?.videos?.length > 0;
-    // - number of heading: ${values.heading_count}
     let prompt = `[outline plan]\n\nWrite an article outline for the headline: "${values.title}"
 - the content type is ${values.content_type}
 - the article has no more than ${values.word_count} words length
@@ -652,46 +638,56 @@ export class AI {
       prompt += `\nWrite the article based on this youtube transcript: ${values.youtube_transcript.slice(0, 10000)}`
     }
 
-    prompt += values.writingStyle?.purposes?.length > 0 ? `\nPurposes: ${values.writingStyle.purposes.join(', ')}` : "";
-    prompt += values.writingStyle?.emotions?.length > 0 ? `\nEmotions: ${values.writingStyle.emotions.join(', ')}` : "";
-    prompt += values.writingStyle?.vocabularies?.length > 0 ? `\nVocabularies: ${values.writingStyle.vocabularies.join(', ')}` : "";
-    prompt += values.writingStyle?.sentence_structures?.length > 0 ? `\nSentence structures: ${values.writingStyle.sentence_structures.join(', ')}` : "";
-    prompt += values.writingStyle?.perspectives?.length > 0 ? `\nPerspectives: ${values.writingStyle.perspectives.join(', ')}` : "";
-    prompt += values.writingStyle?.writing_structures?.length > 0 ? `\nWriting structures: ${values.writingStyle.writing_structures.join(', ')}` : "";
-    prompt += values.writingStyle?.instructional_elements?.length > 0 ? `\nInstructional elements: ${values.writingStyle.instructional_elements.join(', ')}` : "";
+    prompt += this.formatWritingStyle(values.writingStyle);
+    prompt += this.formatAdditionalInstructions(values);
+    prompt += this.formatCompetitorsOutline(values.competitors_outline);
+    prompt += this.formatMarkdownTableOfContentExample();
+    // prompt += this.formatOutlineStructure();
 
-    prompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
-    prompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
-    prompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
-    prompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
+    return prompt;
+  }
 
-    prompt += `\n- Language: ${values.language}`
+  formatWritingStyle(writingStyle: any) {
+    let writingStylePrompt = "";
+    writingStylePrompt += writingStyle.purposes?.length > 0 ? `\nPurposes: ${writingStyle.purposes.join(', ')}` : "";
+    writingStylePrompt += writingStyle.emotions?.length > 0 ? `\nEmotions: ${writingStyle.emotions.join(', ')}` : "";
+    writingStylePrompt += writingStyle.vocabularies?.length > 0 ? `\nVocabularies: ${writingStyle.vocabularies.join(', ')}` : "";
+    writingStylePrompt += writingStyle.sentence_structures?.length > 0 ? `\nSentence structures: ${writingStyle.sentence_structures.join(', ')}` : "";
+    writingStylePrompt += writingStyle.perspectives?.length > 0 ? `\nPerspectives: ${writingStyle.perspectives.join(', ')}` : "";
+    writingStylePrompt += writingStyle.writing_structures?.length > 0 ? `\nWriting structures: ${writingStyle.writing_structures.join(', ')}` : "";
+    writingStylePrompt += writingStyle.instructional_elements?.length > 0 ? `\nInstructional elements: ${writingStyle.instructional_elements.join(', ')}` : "";
+    return writingStylePrompt;
+  }
 
+  formatAdditionalInstructions(values: any) {
+    let additionalInstructionsPrompt = "";
+    additionalInstructionsPrompt += values.with_introduction ? "\n- add an introduction, it is no more than 100 words (it never has sub-sections)" : "\n- do not add an introduction"
+    additionalInstructionsPrompt += values.with_conclusion ? "\n- add a conclusion, it is no more than 200 words (it never has sub-sections)" : "\n- do not add a conclusion"
+    additionalInstructionsPrompt += values.with_key_takeways ? "\n- add a key takeways, it is a list of key points or short paragraph (it never has sub-sections)" : "\n- do not add a key takeways"
+    additionalInstructionsPrompt += values.with_faq ? "\n- add a FAQ" : "\n- do not add a FAQ";
+    additionalInstructionsPrompt += `\n- Language: ${values.language}`;
     if (values.additional_information) {
-      prompt += `\n-Additional information: ${values.additional_information}`
+      additionalInstructionsPrompt += `\n-Additional information: ${values.additional_information}`
     }
-
     if (values.keywords?.length > 0) {
-      prompt += `\n- Keywords (include relevant keywords only, avoid keywords stuffing):\n${values.keywords.join('\n')}\n\n`
+      additionalInstructionsPrompt += `\n- Keywords (include relevant keywords only, avoid keywords stuffing):\n${values.keywords.join('\n')}\n\n`
     }
-
     if (values.sitemaps?.length > 0) {
-      prompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps?.join('\n')}\n\n`
+      additionalInstructionsPrompt += `\n- Sitemap (include relevant links only, up to 10 links):\n${values.sitemaps?.join('\n')}\n\n`
     }
+    return additionalInstructionsPrompt;
+  }
 
-    // if (hasImages) {
-    //   prompt += `\n- Images:\n${JSON.stringify(values.images.slice(0, 2), null, 2)}`
-    // }
-
-    // if (hasVideos) {
-    //   prompt += `\n- Videos:\n${JSON.stringify(values.videos.slice(0, 2), null, 2)}`
-    // }
-
-    if (!isEmpty(values.competitors_outline)) {
-      prompt += `\n- Competitors outline:\n${JSON.stringify(values.competitors_outline, null, 2)}\n`
+  formatCompetitorsOutline(competitors_outline: any) {
+    let competitorsOutlinePrompt = "";
+    if (!isEmpty(competitors_outline)) {
+      competitorsOutlinePrompt += `\n- Competitors outline:\n${JSON.stringify(competitors_outline, null, 2)}\n`
     }
+    return competitorsOutlinePrompt;
+  }
 
-    prompt += `\nMarkdown Table of content example
+  formatMarkdownTableOfContentExample() {
+    return `\nMarkdown Table of content example
 ## Contents
 1. [Example](#example)
 2. [Example2](#example2)
@@ -699,44 +695,34 @@ export class AI {
 
 Write the outline following the structure below
 `;
+  }
 
-    prompt += `\ntype Outline = {
-  table_of_content_markdown: string; // don't include the article title but only h2 and, don't number them.
-  sections: {
-    name: string;
-    word_count: number;
-    keywords: string; // comma separated
-    internal_links: string[]; // include relevant link you find in the sitemap, leave it empty otherwise.
-    search_query?: string; // search intent that would help find external link to include to this section of the article
-    image?: boolean; // whether to include an image in section or not
-    image_description?: string; // a query describing exactly what the image should look like
-    youtube_search?: string; // a youtube search query if this section must embed a video
-    `;
+  formatOutlineStructure() {
+    const outlineSchema = z.object({
+      table_of_content_markdown: z.string().describe("Don't include the article title but only h2 and, don't number them."),
+      sections: z.array(
+        z.object({
+          name: z.string().describe("The name of the section"),
+          word_count: z.number().describe("The word count of the section"),
+          keywords: z.string().describe("Comma separated keywords"),
+          internal_links: z.array(z.string()).describe("Include relevant link you find in the sitemap, leave it empty otherwise."),
+          search_query: z.string().optional().describe("Search intent that would help find external link to include to this section of the article"),
+          image: z.boolean().optional().describe("Whether to include an image in section or not"),
+          image_description: z.string().optional().describe("A query describing exactly what the image should look like"),
+          youtube_search: z.string().optional().describe("A youtube search query if this section must embed a video"),
+          purposes: z.array(z.string()).optional().describe(`Options: ${purposes.map(i => i.label).join()}`),
+          emotions: z.array(z.string()).optional().describe(`Options: ${emotions.map(i => i.label).join()}`),
+          vocabularies: z.array(z.string()).optional().describe(`Options: ${vocabularies.map(i => i.label).join()}`),
+          sentence_structures: z.array(z.string()).optional().describe(`Options: ${sentenceStructures.map(i => i.label).join()}`),
+          perspectives: z.array(z.string()).optional().describe(`Options: ${perspectives.map(i => i.label).join()}`),
+          writing_structures: z.array(z.string()).optional().describe(`Options: ${writingStructures.map(i => i.label).join()}`),
+          instructional_elements: z.array(z.string()).optional().describe(`Options: ${instructionalElements.map(i => i.label).join()}`),
+          tones: z.array(z.string()).optional().describe(`Options: ${tones.map(i => i.label).join()}`),
+        })
+      ),
+    });
 
-    // if (hasImages) {
-    //   prompt += `\n// include relevant images in the above list, leave it empty otherwise.\nimages: string[]; // @@image@@`
-    // }
-
-    //     if (hasVideos) {
-    //       prompt += `\n// include the most relevant youtube video, up to 1 video per article
-    // video_url: string;
-    // `
-    //     }
-
-    prompt += `purposes?: string[]; // options: ${purposes.map(i => i.label).join()}
-    emotions?: string[]; // options: ${emotions.map(i => i.label).join()}
-    vocabularies?: string[]; // options: ${vocabularies.map(i => i.label).join()}
-    sentence_structures?: string[]; // options: ${sentenceStructures.map(i => i.label).join()}
-    perspectives?: string[]; // options: ${perspectives.map(i => i.label).join()}
-    writing_structures?: string[]; // options: ${writingStructures.map(i => i.label).join()}
-    instructional_elements?: string[]; // options: ${instructionalElements.map(i => i.label).join()}
-    tones?: string[]; // options: ${tones.map(i => i.label).join()}
-}[];
-  };`
-
-    prompt += `\nOutput a JSON object wrapped in \`\`\`json\`\`\``
-
-    return prompt
+    return outlineSchema;
   }
 
   async outlinePlan(values: any) {
@@ -1046,4 +1032,3 @@ video_url: string;
     return this.ask(this.getRelevantUrlsTemplate(values), { type: "json", mode: "get-relevant-urls", temperature: 0.3, model: models["gpt-4o-mini"] });
   }
 }
-

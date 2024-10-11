@@ -531,6 +531,21 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           </Form.Item>
         </Flex>
 
+        {/* TODO: disable or hide, if you selected a featured image already */}
+        <Flex gap="small" align="center" className="mt-6">
+          <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
+            <Switch size="small" />
+          </Form.Item>
+          <span>Featured image</span>
+        </Flex>
+
+        <Flex gap="small" align="center">
+          <Form.Item name="with_table_of_content" rules={[]} style={{ margin: 0 }}>
+            <Switch size="small" />
+          </Form.Item>
+          <span>Table of content</span>
+        </Flex>
+
         <Flex gap="small" align="center">
           <Form.Item name="with_hook" tooltip="Short sentence that comes before the introduction, its goal is to capture the reader's attention and encourage them to continue reading." rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
@@ -539,7 +554,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             className="cursor-pointer"
             onClick={() => form.setFieldValue("with_hook", !form.getFieldValue("with_hook"))}
           >
-            Include hook
+            Hook
           </span>
         </Flex>
 
@@ -592,69 +607,38 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
         </Flex>
 
         <Flex gap="small" align="center">
-          <Form.Item name="with_youtube_videos" rules={[]} style={{ margin: 0 }}>
+          <Form.Item name="with_sections_image" style={{ margin: 0 }}>
+            <Switch size="small" />
+          </Form.Item>
+          <span>Sections image</span>
+        </Flex>
+
+        <Flex gap="small" align="center" className="mb-6">
+          <Form.Item name="with_youtube_videos" rules={[]} className="m-0">
             <Switch size="small" />
           </Form.Item>
           <span
             className="cursor-pointer"
             onClick={() => form.setFieldValue("with_youtube_videos", !form.getFieldValue("with_youtube_videos"))}
           >
-            Include Youtube videos
+            Youtube videos
           </span>
         </Flex>
 
-        <Flex vertical hidden>
-          {/* <Flex gap="small" align="center">
-            <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
-              <Switch size="small" />
-            </Form.Item>
-            <span>Include featured image</span>
-          </Flex> */}
-
-          {/* <Flex gap="small" align="center">
-          <Form.Item name="with_table_of_content" rules={[]} style={{ margin: 0 }}>
-            <Switch size="small" />
-          </Form.Item>
-          <span>Table of content</span>
-        </Flex> */}
-
-          {/* <Flex hidden gap="small" align="center" style={{ marginBottom: 18 }}>
-            <Form.Item name="with_sections_image" style={{ margin: 0 }}>
-              <Switch size="small" />
-            </Form.Item>
-            <span>Include sections image</span>
-          </Flex> */}
-
+        {/* <Flex vertical>
           <Form.Item
             noStyle
             shouldUpdate={(prevValues, currentValues) => prevValues.with_sections_image !== currentValues.with_sections_image}
           >
             {({ getFieldValue }) => {
               return !!getFieldValue('with_sections_image') ? (
-                <>
-                  {/* <Form.Item
-                  name="with_sections_image_mode"
-                  label="Sections with image" rules={[]}
-                  tooltip='Select "Auto" to let the AI decide where it makes sense to include images in the content'
-                >
-                  <Segmented defaultValue="Auto" options={['Auto', 'All sections (h2)']} style={{ width: "fit-content" }} />
-                </Form.Item> */}
-
                   <Form.Item name="image_source" rules={[]}>
                     <Segmented options={['Unsplash', 'Pexels']} style={{ width: "fit-content" }} />
                   </Form.Item>
-                </>
               ) : null
             }}
           </Form.Item>
-
-          {/* <Flex gap="small" align="center">
-          <Form.Item name="with_seo" rules={[]} style={{ margin: 0 }}>
-            <Switch size="small" />
-          </Form.Item>
-          <span>SEO tags & Schema markups</span>
         </Flex> */}
-        </Flex>
 
         <Form.Item
           name="sitemap"

@@ -32,9 +32,9 @@ export default function LandingPage() {
 
       {/* <Testimonials /> */}
 
-      <div className="mb-12">
+      {/* <div className="mb-12">
         <Pricing />
-      </div>
+      </div> */}
 
       {/* <Faq /> */}
 

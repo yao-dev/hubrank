@@ -88,8 +88,19 @@ export const getSerp = async ({
   query,
   languageCode,
   locationCode,
-  count = 5
-}: any) => {
+  count = 5,
+  depth = 10
+}: {
+  query: string;
+  languageCode: string;
+  locationCode: number;
+  count?: number;
+  depth?: number;
+}): Promise<{
+  title: string;
+  description: string;
+  url: string
+}[]> => {
   const { data } = await axios({
     method: "POST",
     url: 'https://api.dataforseo.com/v3/serp/google/organic/live/advanced',
@@ -99,7 +110,7 @@ export const getSerp = async ({
       language_code: languageCode,
       device: 'desktop',
       os: 'windows',
-      depth: 10,
+      depth,
     }],
     auth: {
       username: process.env.DATAFORSEO_USERNAME || "",
