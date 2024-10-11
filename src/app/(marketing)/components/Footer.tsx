@@ -26,7 +26,8 @@ const legals = [
 
 const Footer = () => {
   return (
-    <section className="py-10 lg:py-20 border-t mt-20 bg-[#fafafa]/50">
+    // <section className="py-10 lg:py-20 border-t mt-20 bg-[#fafafa]/50">
+    <section className="py-10 lg:py-20 border-t bg-[#fafafa]/50">
       <div className="flex flex-col md:flex-row gap-16 container mx-auto px-6 lg:px-40 justify-between">
         <div className="flex flex-col gap-6">
           <Logo />

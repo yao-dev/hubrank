@@ -36,18 +36,18 @@ export default function ProjectDetail({
   const { data: project, isFetched } = useProjects().getOne(projectId);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "blog-posts")
-  const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
+  const activeTab = searchParams.get("tab") ?? "";
   const drawers = useDrawers();
 
   const [form] = Form.useForm();
   const pricingModal = usePricingModal();
+  const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captions, setCaptions] = useState([]);
 
   useEffect(() => {
-    setActiveTab(searchParams.get("tab") ?? "")
-  }, [])
+    router.push(`/projects/${params.project_id}?tab=${searchParams.get("tab") ?? "blog-posts"}`)
+  }, [params, searchParams])
 
   const writeCaption = async (values: any) => {
     try {
@@ -187,7 +187,6 @@ export default function ProjectDetail({
   }
 
   const onChange = (key: string) => {
-    setActiveTab(key)
     router.push(`/projects/${params.project_id}?tab=${key}`)
   };
 
