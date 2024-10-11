@@ -114,6 +114,8 @@ const BlogPostsTable = () => {
           { text: 'Queue', value: 'queue' },
           { text: 'Writing', value: 'writing' },
           { text: 'Ready to view', value: 'ready_to_view' },
+          { text: 'Publishing', value: 'publishing' },
+          { text: 'Published', value: 'published' },
           { text: 'Error', value: 'error' },
         ],
         width: 175,

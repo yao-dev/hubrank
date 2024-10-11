@@ -133,7 +133,7 @@ const ProjectForm = () => {
           }
         }]}
       >
-        <Input placeholder="ex: /, /blog" />
+        <Input placeholder="ex: https://google.com/blog, https://blog.google.com" />
       </Form.Item>
 
       <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} >
