@@ -15,6 +15,7 @@ import { compact, omit, shuffle } from "lodash";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import supabase from "@/helpers/supabase/server";
+import dJSON from "dirty-json";
 
 export const maxDuration = 300;
 
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
     });
 
     console.log(completion);
-    const captions = JSON.parse(completion.content[0].text)
+    const captions = dJSON.parse(completion.content[0].text)
 
 
     // await insertCaption({

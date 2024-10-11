@@ -1178,7 +1178,7 @@ export const captionTypes = [
   "Rephrase post",
   "Motivational",
   "Networking",
-  "Question for engaement",
+  "Question for engagement",
   "List & Tips",
   "How to, Step by Step, Guide",
   "Ask a Poll",
