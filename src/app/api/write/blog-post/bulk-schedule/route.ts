@@ -53,8 +53,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Deduct credits from user subscription
     await deductCredits(creditCheck);
 
-    // Create and schedule blog posts for each headline
-    for (const [index, headline] of body.headlines.entries()) {
+    // Create and schedule blog posts for each headline using Promise.all
+    const schedulingPromises = body.headlines.map(async (headline) => {
       let id;
       try {
         // Insert new blog post with queue status
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
 
         if (id && scheduleId) {
-          await updateBlogPost(id, { schedule_id: scheduleId })
+          await updateBlogPost(id, { schedule_id: scheduleId });
         }
       } catch (e) {
         console.log(`Failed to schedule blog post for headline: ${headline}`, e);
@@ -88,7 +88,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           // await updateCredits({ userId: body.userId, credits: 1 + (body.structured_schemas.length * 0.25), action: 'increment' })
         }
       }
-    }
+    });
+
+    await Promise.all(schedulingPromises);
 
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {

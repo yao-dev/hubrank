@@ -9,14 +9,17 @@ export async function POST(request: Request) {
 
     switch (body.action) {
       case 'write-blog-post':
-        creditsRequired = 1 + (body.extra ?? 0)
+        creditsRequired = 1 + (body.extra ?? 0);
+        break;
       case 'write-pseo':
-        creditsRequired = body.extra ?? 0
+        creditsRequired = body.extra ?? 0;
+        break;
       case 'write-caption':
-        creditsRequired = 0.5
+        creditsRequired = 0.5;
+        break;
       case 'schema-markup':
       case 'keyword-research':
-        creditsRequired = 0.25
+        creditsRequired = 0.25;
     }
 
     const userCredits = await getUserCredits(body.user_id);
