@@ -6,20 +6,20 @@ const featuresInAction = [
   {
     id: 0,
     title: "Write blogs",
-    demo: "https://demo.arcade.software/763cH6cTNhQqOcymMZWs?embed&show_copy_link=true"
+    demo: "https://demo.arcade.software/M4RXcihEwkkwxVIHIoBS?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true"
   },
   {
     id: 1,
     title: "Keyword research",
     // description: "Keyword research is key to write articles optimised for search intent, with Hubrank you get just that!",
-    demo: "https://demo.arcade.software/H8aUVtESQ7BckCqYygyI?embed&show_copy_link=true",
+    demo: "https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
   },
-  {
-    id: 2,
-    title: "Match your brand voice",
-    // description: "Upload samples of existing content to have Hubrank mimic your tone and style. The AI will ensure articles sound as if your marketing team wrote them.",
-    demo: "https://demo.arcade.software/NgZQUaQ5zn4QMTNitpYl?embed&show_copy_link=true",
-  },
+  // {
+  //   id: 2,
+  //   title: "Match your brand voice",
+  //   // description: "Upload samples of existing content to have Hubrank mimic your tone and style. The AI will ensure articles sound as if your marketing team wrote them.",
+  //   demo: "https://demo.arcade.software/NgZQUaQ5zn4QMTNitpYl?embed&show_copy_link=true",
+  // },
   {
     id: 3,
     title: "Programmatic SEO",
@@ -28,17 +28,17 @@ const featuresInAction = [
   {
     id: 4,
     title: "Social media",
-    demo: "https://demo.arcade.software/OOY9fgTvkc5uCumcttbr?embed&show_copy_link=true",
+    demo: "https://demo.arcade.software/n2X2KjTIVHxF6JTMAmhe?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 5,
-    title: "Knowledge base",
-    demo: "https://demo.arcade.software/g92uiyqfxX5QYiMJeQJR?embed&show_copy_link=true",
+    title: "Knowledge bases",
+    demo: "https://demo.arcade.software/iCdSIiMpc8xGZscyecjo?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 6,
     title: "Schema markup",
-    demo: "https://demo.arcade.software/zHkHvD469VX0Bv0zAnRc?embed&show_copy_link=true",
+    demo: "https://demo.arcade.software/8EcyUfcnmIDGlB7aLvxx?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
   }
 ]
 
