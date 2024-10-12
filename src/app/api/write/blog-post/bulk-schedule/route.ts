@@ -8,6 +8,7 @@ import {
   getManualWritingStyle,
   deductCredits,
   updateBlogPost,
+  getErrorMessage,
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
 
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           await updateBlogPost(id, { schedule_id: scheduleId });
         }
       } catch (e) {
-        console.log(`Failed to schedule blog post for headline: ${headline}`, e);
+        console.log(`Failed to schedule blog post for headline: ${headline}`, getErrorMessage(e));
         if (id) {
           // Update blog post status to error if scheduling fails
           await updateBlogPost(id, { status: 'error' });
@@ -95,6 +96,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ scheduled: true }, { status: 200 });
   } catch (e) {
     console.log(e instanceof Error ? e.message : 'An unknown error occurred');
+    console.log(getErrorMessage(e))
     return NextResponse.json({ scheduled: false }, { status: 500 });
   }
 }

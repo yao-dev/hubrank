@@ -1,6 +1,6 @@
 import { deleteSchedule } from "@/helpers/qstash";
 import { NextRequest, NextResponse } from "next/server";
-import { updateBlogPost } from "../../helpers";
+import { getErrorMessage, updateBlogPost } from "../../helpers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Decode the base64 encoded sourceBody
     const blogPost = JSON.parse(atob(body.sourceBody));
 
-    if (blogPost?.id) {
+    if (blogPost?.id && status === "error") {
       await updateBlogPost(blogPost.id, { status: "error" })
     }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(blogPost);
   } catch (e) {
     // Log any errors that occur during the process
-    console.error("Error in schedule callback:", e);
+    console.error("Error in schedule callback:", getErrorMessage(e));
 
     // Return an error response
     return NextResponse.json({ error: true }, { status: 500 });

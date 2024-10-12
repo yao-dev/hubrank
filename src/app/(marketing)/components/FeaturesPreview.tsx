@@ -23,7 +23,7 @@ const featuresInAction = [
   {
     id: 3,
     title: "Programmatic SEO",
-    demo: "https://demo.arcade.software/M2RkMOP3v1rWqcYXa55o?embed&show_copy_link=true",
+    demo: "https://demo.arcade.software/M2czMUKPTWLHyTzF97vD?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 4,

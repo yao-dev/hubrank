@@ -1,4 +1,4 @@
-import { getUpstashDestination } from "@/app/api/helpers";
+import { getErrorMessage, getUpstashDestination } from "@/app/api/helpers";
 import { Client, PublishToUrlResponse } from "@upstash/qstash";
 import axios from "axios";
 
@@ -62,11 +62,16 @@ export const createBatch = async ({ data, destination, headers = {} }: any): Pro
 
 
 export const deleteSchedule = async (value: string) => {
-  return axios.delete(`https://qstash.upstash.io/v2/messages/${value}`, {
-    headers: {
-      Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
-    }
-  })
+  try {
+    return axios.delete(`https://qstash.upstash.io/v2/messages/${value}`, {
+      headers: {
+        Authorization: `Bearer ${process.env.QSTASH_TOKEN}`,
+      }
+    })
+  } catch (e) {
+    console.log("Error deleting schedule id:", value, getErrorMessage(e));
+    return;
+  }
 }
 
 export const dateToCron = (date: Date) => {
