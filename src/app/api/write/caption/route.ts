@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { models } from "@/app/api/AI";
 import {
   deductCredits,
   getIsTwitterUrl,
@@ -16,6 +15,8 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import supabase from "@/helpers/supabase/server";
 import dJSON from "dirty-json";
+import { models } from "../../AI";
+import OpenAI from "openai";
 
 export const maxDuration = 300;
 
@@ -23,13 +24,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const { data: project } = await supabase().from("projects").select("*").eq("id", body.project_id).single();
+    const { data: project } = await supabase().from("projects").select("*").eq("id", body.project_id).maybeSingle();
 
     if (!project) {
       return NextResponse.json({ message: "project not found" }, { status: 500 })
     }
 
-    const { data: language } = await supabase().from("languages").select("*").eq("id", project.language_id).single()
+    const { data: language } = await supabase().from("languages").select("*").eq("id", project.language_id).maybeSingle()
 
     if (!language) {
       return NextResponse.json({ message: "language not found" }, { status: 500 })
@@ -99,14 +100,20 @@ export async function POST(request: Request) {
     if (!body.source && body.type !== "comment") {
       const query = [...body.keywords.split(","), ...body.hashtags.split(" ")].map((keyword) => `"${keyword}"`).join(" OR ");
       console.log("SERP QUERY", `site:x.com ${query} inurl:status`)
-      const serp = await getSerp({ query: `site:instagram.com/p ${query}`, languageCode: language.code, locationCode: language.location_code, count: 50 });
+      const serp = await getSerp({ query: `site:instagram.com/p ${query}`, languageCode: language.code, locationCode: language.location_code, count: 25, depth: 10 });
       const randomFiveTweets = shuffle(serp).slice(0, 5);
       const result = await Promise.all(randomFiveTweets.map(async (item) => await axios.get(item.url)))
 
       inspo = result.map((item) => {
-        const $ = cheerio.load(item.data);
-        return $('meta[name="description"]').attr('content')
+        if (item.data) {
+          const $ = cheerio.load(item.data);
+          return $('meta[name="description"]').attr('content')
+        }
+
+        return;
       })
+
+      inspo = compact(inspo)
 
       console.log("inspo", inspo)
     }
@@ -128,6 +135,7 @@ export async function POST(request: Request) {
       },
     });
 
+
     const completion = await ai.messages.create({
       // model: opts.model || "claude-3-5-sonnet-20240620",
       model: models.sonnet,
@@ -146,7 +154,7 @@ export async function POST(request: Request) {
       }]
     });
 
-    console.log(completion);
+    // console.log(completion);
     const captions = dJSON.parse(completion.content[0].text)
 
 

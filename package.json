@@ -14,6 +14,7 @@
     "@ant-design/nextjs-registry": "^1.0.0",
     "@anthropic-ai/sdk": "^0.25.1",
     "@billing-js/react-billing-js": "^1.1.18",
+    "@dofy/youtube-caption-fox": "^1.5.1",
     "@googleapis/youtube": "^20.0.0",
     "@langchain/community": "^0.2.20",
     "@langchain/core": "^0.2.18",
@@ -83,6 +84,7 @@
     "weaviate-ts-client": "^2.1.1",
     "youtube-transcript": "^1.2.1",
     "youtubei.js": "^10.1.0",
+    "yt-transcribe": "^1.0.3",
     "zod": "^3.23.8",
     "zustand": "^4.4.1"
   },

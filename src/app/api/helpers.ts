@@ -9,7 +9,6 @@ import { NodeHtmlMarkdown } from "node-html-markdown";
 import * as cheerio from "cheerio";
 import { TokenTextSplitter } from "langchain/text_splitter";
 import { createBackgroundJob } from "@/helpers/qstash";
-import { YoutubeTranscript } from 'youtube-transcript';
 import { JSONLoader } from "langchain/document_loaders/fs/json";
 import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
@@ -26,6 +25,8 @@ import { createOpenAI, openai } from "@ai-sdk/openai";
 import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
 import { z } from "zod";
 import { format } from "date-fns";
+import { getCaptions } from '@dofy/youtube-caption-fox';
+import { transcribe } from "yt-transcribe";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -1185,7 +1186,20 @@ export const deleteVectors = async (ids: string[] | number[]) => {
 }
 
 export const getIsYoutubeUrl = (url: string = "") => {
-  return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/")
+  return url.startsWith("https://www.youtube.com/watch?v=") || url.startsWith("https://youtu.be/") || url.startsWith("https://www.youtube.com/shorts/")
+}
+
+export const getYoutubeId = (url: string = "") => {
+  if (url.startsWith("https://www.youtube.com/watch?v=")) {
+    return new URL(url).searchParams.get("v")
+  }
+  if (url.startsWith("https://youtu.be/")) {
+    return url.split("https://youtu.be/")[1].split("/")[0]
+  }
+  if (url.startsWith("https://www.youtube.com/shorts/")) {
+    return url.split("https://www.youtube.com/shorts/")[1].split("/")[0]
+  }
+  return ""
 }
 
 export const getIsTwitterUrl = (url: string = "") => {
@@ -1193,15 +1207,17 @@ export const getIsTwitterUrl = (url: string = "") => {
 }
 
 export const getYoutubeTranscript = async (url: string) => {
-  // const loader = YoutubeLoader.createFromUrl("https://youtu.be/bZQun8Y4L2A", {
-  //   language: "en",
-  //   addVideoInfo: true,
-  // });
-  const transcriptJson = await YoutubeTranscript.fetchTranscript(url);
-  const transcriptText = transcriptJson.map((chunk) => {
-    return chunk.text
-  }).join(" ");
-  return transcriptText;
+  try {
+    const youtubeId = getYoutubeId(url);
+    if (!youtubeId) throw new Error("YouTube ID not found");
+    const result = await getCaptions(youtubeId);
+    const transcript = result?.captions.map((item) => item.text).join(" ");
+
+    return transcript;
+  } catch (e) {
+    const transcript = await transcribe(url);
+    return transcript
+  }
 }
 
 const getFilePathFromBlob = async (file: Blob, fileName: string) => {
