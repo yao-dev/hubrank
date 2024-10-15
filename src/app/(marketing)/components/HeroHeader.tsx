@@ -76,7 +76,7 @@ const HeroHeader = () => {
         </h2>
 
         {/* get started cta */}
-        <GetStarted title="Get 5 Free Credits" />
+        <GetStarted title="Try Now" subtitle="No credit card required" />
 
         <div className="flex flex-row gap-3 lg:gap-6 mb-8 lg:mb-16">
           <div className="flex gap-1">

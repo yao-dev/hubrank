@@ -8,7 +8,7 @@ import {
   insertBlogPost,
   updateBlogPost,
   getManualWritingStyle,
-  deductCredits,
+  getWritingConcurrencyLeft,
 } from "@/app/api/helpers";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
@@ -24,13 +24,21 @@ export async function POST(request: Request) {
   const articleId = newArticle?.id
 
   try {
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-    const creditCheck = {
-      userId: body.userId,
-      costInCredits: cost,
-      featureName: "write"
-    }
-    await deductCredits(creditCheck);
+    // const { data: user } = await supabase().from("users").select("*, users_premium:users_premium!user_id(*)").eq("id", body.userId).maybeSingle();
+    // user.premium = getUserPremiumData(user);
+    // const costInWords = (body.headlines.length * body.word_count) + (body.headlines.length * (body.structured_schemas.length * 100));
+
+    // if (!user.premium.words || user.premium.words < costInWords) {
+    //   return NextResponse.json({ message: "Insufficient words" }, { status: 401 })
+    // }
+
+    // TODO: update credits, with estimated words count + estimated markup words count
+    // await deductCredits({
+    //   userId: body.userId,
+    //   costInCredits: cost,
+    //   featureName: "write",
+    //   premiumName: "words"
+    // });
 
     const [
       { data: project },
@@ -83,30 +91,38 @@ export async function POST(request: Request) {
 
       body.title = headlines?.[0];
 
-      await updateBlogPost(articleId, { title: body.title })
+      await updateBlogPost(articleId, {
+        title: body.title, metadata: {
+          ...body,
+          articleId,
+          context,
+          writingStyle,
+          language,
+          project,
+          competitors
+        }
+      })
     }
 
-    // date to cron
-    // const cron = dateToCron(addSeconds(newArticle?.created_at, 45));
+    const concurrencyLeft = await getWritingConcurrencyLeft()
 
-    const scheduleId = await createSchedule({
-      destination: getUpstashDestination("api/write/blog-post"),
-      body: {
-        ...body,
-        articleId,
-        context,
-        writingStyle,
-        language,
-        project,
-        competitors
-      },
-      // headers: {
-      //   "Upstash-Cron": cron,
-      // }
-    });
+    if (concurrencyLeft > 0) {
+      const scheduleId = await createSchedule({
+        destination: getUpstashDestination("api/write/blog-post"),
+        body: {
+          ...body,
+          articleId,
+          context,
+          writingStyle,
+          language,
+          project,
+          competitors
+        },
+      });
 
-    if (articleId && scheduleId) {
-      await updateBlogPost(articleId, { schedule_id: scheduleId })
+      if (articleId && scheduleId) {
+        await updateBlogPost(articleId, { schedule_id: scheduleId })
+      }
     }
 
     return NextResponse.json({ scheduled: true }, { status: 200 });

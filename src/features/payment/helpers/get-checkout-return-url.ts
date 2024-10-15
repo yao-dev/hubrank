@@ -1,8 +1,10 @@
-import { stripeUrls } from "../constants"
-import { GetCheckoutReturnUrl } from "../types"
+import { stripeUrls } from "../constants";
+import { GetCheckoutReturnUrl } from "../types";
 
-export const getCheckoutReturnUrl = ({ origin, checkoutSessionId = "" }: GetCheckoutReturnUrl) => {
-  return stripeUrls.RETURN_CHECKOUT
-    .replace("ORIGIN", origin)
-    .replace("CHECKOUT_SESSION_ID", checkoutSessionId)
+export const getCheckoutReturnUrl = ({ checkoutSessionId = "", success }: GetCheckoutReturnUrl = {}) => {
+  const origin = `${process.env.NODE_ENV === "development" ? "http://app.localhost:3000" : "https://app.usehubrank.com"}`;
+  return success ? `${origin}${stripeUrls.CHECKOUT_SUCCESS}` : `${origin}${stripeUrls.CHECKOUT_CANCELED}`
+
+
+
 }

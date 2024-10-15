@@ -8,6 +8,10 @@ import { SearchOutlined } from '@ant-design/icons';
 import { searchYouTubeVideos } from '@/app/app/actions';
 import { IconSparkles } from '@tabler/icons-react';
 import { imageStyles } from '@/options';
+import usePricingModal from '@/hooks/usePricingModal';
+import useUser from '@/hooks/useUser';
+import queryKeys from '@/helpers/queryKeys';
+import { useQueryClient } from '@tanstack/react-query';
 
 type Props = {
   open: boolean;
@@ -28,6 +32,9 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
   const [imageLink, setImageLink] = useState("");
   const [generatedImageLink, setGeneratedImageLink] = useState("");
   const [imageStyle, setImageStyle] = useState();
+  const user = useUser();
+  const pricingModal = usePricingModal();
+  const queryClient = useQueryClient();
 
   const resetModal = () => {
     setImageLink("");
@@ -82,8 +89,17 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
   const onGeneratingImage = async (query: string) => {
     try {
       if (!query || !imageStyle) return;
+
+      if (!user.premium.ai_images) {
+        return pricingModal.open(true)
+      }
+
       setIsGeneratingImage(true)
-      const { data: base64Url } = await axios.post('/api/images/generate', { query, image_style: imageStyle })
+      const { data: base64Url } = await axios.post('/api/images/generate', { user_id: user.id, query, image_style: imageStyle });
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.user()
+      });
       if (!base64Url) {
         message.info('We couldn\'t generate an image from your query')
         setIsGeneratingImage(false);
@@ -91,7 +107,10 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
       }
       setGeneratedImageLink(base64Url)
       setIsGeneratingImage(false)
-    } catch {
+    } catch (e) {
+      if (e?.response?.status === 401) {
+        return pricingModal.open(true)
+      }
       setIsGeneratingImage(false)
     }
   }

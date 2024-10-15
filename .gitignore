@@ -42,3 +42,4 @@ service-account.json
 # Sentry Config File
 .env.sentry-build-plugin
 src/app/api/write/blog-post/v2/
+src/app/api/write/blog-post/nba

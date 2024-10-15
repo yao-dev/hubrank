@@ -47,6 +47,7 @@ import queryKeys from '@/helpers/queryKeys';
 import prettify from "pretty";
 import Link from 'next/link';
 import PublishBlogPostButton from '@/components/PublishBlogPostButton/PublishBlogPostButton';
+import useUser from '@/hooks/useUser';
 
 const styles = {
   google: {
@@ -103,12 +104,6 @@ const Article = ({
   const { data: project } = useProjects().getOne(projectId);
   const { data: article, isError } = getOne(articleId);
 
-  console.log({
-    projectId,
-    articleId,
-    article
-  })
-
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
   const [articleTitle, setArticleTitle] = useState("");
@@ -121,6 +116,7 @@ const Article = ({
   const queryClient = useQueryClient();
   const [seoForm] = Form.useForm();
   const drawers = useDrawers();
+  const user = useUser();
 
   const getBlogUrl = () => {
     return project?.blog_path ?? ""
@@ -194,11 +190,7 @@ ${article.html}
 
   const onGenerateSchemaMarkup = useMutation({
     mutationFn: async (schemaName: string) => {
-      const { data } = await axios.post('/api/credits-check', {
-        user_id: await getUserId(),
-        action: 'schema-markup'
-      });
-      if (!data.authorized) {
+      if (!user.premium.words || user.premium.words < 100) {
         return pricingModal.open(true)
       }
       return axios.post("/api/schema-markup", {
@@ -215,7 +207,10 @@ ${article.html}
         queryKey: queryKeys.blogPost(article.id)
       })
     },
-    onError() {
+    onError(e) {
+      if (e?.response?.status === 401) {
+        return pricingModal.open(true)
+      }
       message.error("An error occured, please try again.")
     },
   })
@@ -742,7 +737,7 @@ ${article.html}
                           )}
                           onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
                           onCancel={() => { }}
-                          okText="Yes (0.25 credit)"
+                          okText="Yes"
                           cancelText="No"
                         >
                           <Button>{schemaName}</Button>

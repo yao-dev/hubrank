@@ -3,12 +3,12 @@ import DashboardLayout from "@/components/DashboardLayout/DashboardLayout";
 import { Spin } from "antd";
 import { ReactNode, Suspense } from "react";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout(props: { children: ReactNode }) {
   return (
     <Suspense fallback={<Spin />}>
       <CrispChat />
       <DashboardLayout>
-        {children}
+        {props.children}
       </DashboardLayout>
     </Suspense>
   )

@@ -5,3 +5,8 @@
 nextjs-portal {
   display: none;
 }
+
+.ant-modal-mask,
+.ant-modal-wrap {
+  z-index: 10001;
+}

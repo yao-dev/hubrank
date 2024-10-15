@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { publishBlogPost, updateCredits } from "../helpers";
+import { getWritingConcurrencyLeft, getUpstashDestination, publishBlogPost, updateBlogPost } from "../helpers";
 import supabase from "@/helpers/supabase/server";
+import { createSchedule } from "@/helpers/qstash";
 
 export const maxDuration = 30;
 
-const markAsError = "MARK_AS_ERROR"
+const markAsError = "MARK_AS_ERROR";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -12,21 +13,31 @@ export async function POST(request: Request) {
   try {
     switch (body.type) {
       case 'UPDATE': {
-        if (body.old_record?.status !== "error" && body.record.status === "error") {
-          await updateCredits({ userId: body.record.user_id, credits: Math.max(body.record.cost, 0), action: 'increment' })
+        if (
+          body.old_record?.status !== "error" && body.record.status === "error" ||
+          body.old_record?.status !== "ready_to_view" && body.record.status === "ready_to_view"
+        ) {
+          const concurrencyLeft = await getWritingConcurrencyLeft()
+
+          if (concurrencyLeft > 0) {
+            const { data: blogPosts } = await supabase().from("blog_posts").select("*").neq("id", body.record.id).eq("status", "queue").order("created_at", { ascending: false }).limit(concurrencyLeft).throwOnError();
+            const blogPostsWithUpdatedStatus = blogPosts?.map((item) => {
+              return {
+                ...item,
+                status: "writing"
+              }
+            })
+            await supabase().from('blog_posts').upsert(blogPostsWithUpdatedStatus).throwOnError()
+          }
         } else if (body.old_record?.status !== "writing" && body.record.status === "writing") {
-          // schedule a job that will run 5min after initial insert
-          // it will mark the blog post as error if it has not finished
-          // await createSchedule({
-          //   destination: getUpstashDestination("api/blog-posts"),
-          //   body: {
-          //     type: markAsError,
-          //     blog_post_id: body.record.id
-          //   },
-          //   headers: {
-          //     "Upstash-Delay": "5m",
-          //   }
-          // });
+          const scheduleId = await createSchedule({
+            destination: getUpstashDestination("api/write/blog-post"),
+            body: body.record.metadata,
+          });
+
+          if (scheduleId) {
+            await updateBlogPost(body.record.id, { schedule_id: scheduleId })
+          }
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing") {
           const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
 

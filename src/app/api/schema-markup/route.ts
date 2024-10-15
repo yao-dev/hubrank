@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { deductCredits, getSchemaMarkup, saveSchemaMarkups } from "../helpers";
+import { deductCredits, getSchemaMarkup, getUserPremiumData, saveSchemaMarkups } from "../helpers";
 import supabase from "@/helpers/supabase/server";
+import { getSummary } from 'readability-cyr';
 
 export async function POST(request: Request) {
   try {
@@ -16,15 +17,14 @@ export async function POST(request: Request) {
       supabase().from("languages").select("*").eq("id", body.language_id).maybeSingle()
     ]);
 
-    console.log("article.schema_markups", article.schema_markups);
+    const { data: user } = await supabase().from("users").select("*, users_premium:users_premium!user_id(*)").eq("id", body.user_id).maybeSingle();
+    user.premium = getUserPremiumData(user);
 
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: 0.25,
-      featureName: "schema-markup"
+    if (!user.premium.words || user.premium.words < 100) {
+      return NextResponse.json({ message: "Insufficient words" }, { status: 401 })
     }
-    await deductCredits(creditCheck);
 
+    console.log("article.schema_markups", article.schema_markups);
     const createdSchema = await getSchemaMarkup({
       project,
       article,
@@ -35,6 +35,13 @@ export async function POST(request: Request) {
     schemas.push(createdSchema)
     console.log("schemas", schemas)
     await saveSchemaMarkups(article.id, schemas);
+
+    await deductCredits({
+      userId: body.user_id,
+      costInCredits: getSummary(JSON.stringify(createdSchema, null, 2)).words,
+      featureName: "schema-markup",
+      premiumName: "words"
+    });
 
     return NextResponse.json({
       schema_markup: createdSchema

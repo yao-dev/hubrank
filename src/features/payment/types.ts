@@ -86,6 +86,6 @@ export type HandleWebhookEvent = {
 }
 
 export type GetCheckoutReturnUrl = {
-  origin: string;
   checkoutSessionId?: string;
+  success?: boolean;
 }

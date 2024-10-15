@@ -17,8 +17,8 @@ const features = [
   {
     id: 1,
     icon: <IconSearch className="text-primary-500 mx-auto lg:mx-0" />,
-    title: "Keyword research",
-    description: "Keyword research is key to write articles optimised for search intent.",
+    title: "Keywords research",
+    description: "Keywords research is key to write articles optimised for search intent.",
     video: "https://framerusercontent.com/assets/fOFbW6mN9ehCC1qNGeuCNXBAO8.mp4"
   },
   {

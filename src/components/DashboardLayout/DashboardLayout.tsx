@@ -29,7 +29,7 @@ import {
   IconPlug,
   IconSettings,
 } from '@tabler/icons-react';
-import { useParams, usePathname, useSearchParams } from 'next/navigation';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import CustomBreadcrumb from '../CustomBreadcrumb/CustomBreadcrumb';
 import useProjectId from '@/hooks/useProjectId';
 import useUser from '@/hooks/useUser';
@@ -141,7 +141,8 @@ export default function DashboardLayout({
   const params = useParams();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const tab = searchParams.get('tab')
+  const tab = searchParams.get('tab');
+  const checkoutSuccess = searchParams.get('checkout_success');
   const projectId = useProjectId()
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -149,6 +150,7 @@ export default function DashboardLayout({
   const pricingModal = usePricingModal();
   const logout = useLogout();
   const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (user) {
@@ -160,7 +162,15 @@ export default function DashboardLayout({
           localStorage.removeItem("appsumo_code");
         })
     }
-  }, [user])
+  }, [user]);
+
+  useEffect(() => {
+    if (checkoutSuccess) {
+      setTimeout(() => {
+        router.replace(`${location.origin}${location.pathname}`);
+      }, 5000);
+    }
+  }, [searchParams]);
 
   const data: MenuItem[] = useMemo(() => {
     const menus = [
@@ -172,7 +182,7 @@ export default function DashboardLayout({
         getItem({ key: "project-settings", link: `/projects/${projectId}/settings`, label: 'Project settings', icon: <IconSettings />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "blog-posts", link: `/projects/${projectId}?tab=blog-posts`, label: 'Blog posts', icon: <IconTextCaption />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "social-media", link: `/projects/${projectId}?tab=social-media`, label: 'Social media', icon: <IconMessage />, onClick: () => setIsMobileMenuOpen(false) }),
-        getItem({ key: "keyword-research", link: `/projects/${projectId}?tab=keyword-research`, label: 'Keyword research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
+        getItem({ key: "keywords-research", link: `/projects/${projectId}?tab=keywords-research`, label: 'Keywords research', icon: <IconSeo />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "writing-styles", link: `/projects/${projectId}?tab=writing-styles`, label: 'Writing styles', icon: <IconWriting />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "knowledge-bases", link: `/projects/${projectId}?tab=knowledge-bases`, label: 'Knowledge bases', icon: <IconBulb />, onClick: () => setIsMobileMenuOpen(false) }),
         getItem({ key: "integrations", link: `/projects/${projectId}/integrations`, label: 'Integrations', icon: <IconPlug />, onClick: () => setIsMobileMenuOpen(false) }),
@@ -195,8 +205,8 @@ export default function DashboardLayout({
     if (tab === "social-media") {
       return ["social-media"]
     }
-    if (tab === "keyword-research") {
-      return ["keyword-research"]
+    if (tab === "keywords-research") {
+      return ["keywords-research"]
     }
     if (tab === "writing-styles") {
       return ["writing-styles"]
@@ -213,16 +223,12 @@ export default function DashboardLayout({
     if (pathname.endsWith('/integrations')) {
       return ["integrations"]
     }
-    if (pathname === '/subscriptions') {
-      return ["subscriptions"];
-    }
+    // if (pathname === '/subscriptions') {
+    //   return ["subscriptions"];
+    // }
   }, [pathname, params, tab])
 
   const sideMenuContent = useMemo(() => {
-    const creditsLeft = user?.subscription?.credits ?? 0
-    const periodCredits = user?.subscription?.plan?.metadata?.credits ?? 0;
-    const creditsPercentLeft = Math.max(creditsLeft / periodCredits * 100, 0)
-
     return (
       <Flex vertical justify='space-between' style={{ height: '100%' }}>
         <div>
@@ -250,7 +256,6 @@ export default function DashboardLayout({
               mode="inline"
               selectedKeys={selectedKeys}
               items={[
-                getItem({ key: "subscriptions", link: '/subscriptions', label: 'Subscriptions', icon: <IconCreditCard /> }),
                 getItem({
                   key: "feedback", link: '', label: 'Feature request', onClick: () => {
                     if (window.$crisp) {
@@ -287,27 +292,29 @@ export default function DashboardLayout({
           {user?.email && <Typography.Text style={{ color: "rgba(255, 255, 255, 0.65)", marginLeft: 28 }}>{user.email}</Typography.Text>}
 
           <div className='px-2'>
-            <div className='bg-gray-100 rounded-md p-3 flex flex-col gap-2'>
+            <div className='bg-gray-100 rounded-md p-3 flex flex-col'>
               <div className='flex flex-row justify-between'>
-                <p className='font-semibold'>Credits</p>
-                {!!user?.subscription?.credits ? (
-                  // <p><b>{user?.subscription?.credits ?? 0}</b>/{user?.subscription?.plan?.metadata?.credits ?? 0}</p>
-                  <p><b>{user?.subscription?.credits ?? 0}</b></p>
-                ) : (
-                  <p>You have no credits</p>
-                )}
+                <p className='font-semibold'>Words</p>
+                <p><b>{user?.premium?.words ?? 0}</b></p>
               </div>
-
-              {/* <Progress percent={isNaN(creditsPercentLeft) ? 0 : creditsPercentLeft} showInfo={false} /> */}
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>Keywords research</p>
+                <p><b>{user?.premium?.keywords_research ?? 0}</b></p>
+              </div>
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>AI images</p>
+                <p><b>{user?.premium?.ai_images ?? 0}</b></p>
+              </div>
 
               <Button
                 size="small"
                 type="primary"
+                className='mt-4'
                 onClick={() => pricingModal.open(true, {
-                  title: "Get more credits"
+                  title: "Buy more words"
                 })}
               >
-                Upgrade
+                Buy More
               </Button>
             </div>
           </div>
@@ -353,7 +360,7 @@ export default function DashboardLayout({
       <PricingModal />
 
       <Flex vertical gap="middle" align="center" justify="center">
-        {isShowAppSumoModal && (
+        {(isShowAppSumoModal || checkoutSuccess) && (
           <Confetti
             width={window.innerWidth}
             height={window.innerHeight}

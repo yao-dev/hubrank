@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import useBlogPosts from '@/hooks/useBlogPosts';
 import useProjectId from '@/hooks/useProjectId';
-import { IconCoin, IconCopy, IconWorld } from '@tabler/icons-react';
+import { IconCopy, IconWorld } from '@tabler/icons-react';
 import Link from 'next/link';
 import prettify from "pretty";
 import { format } from 'date-fns';
@@ -89,20 +89,6 @@ const BlogPostsTable = () => {
         render: (_value: any, record: any) => {
           return (
             <p>{format(record.created_at, 'LLL dd, h:mm aaa')}</p>
-          )
-        },
-      },
-      {
-        title: 'Cost',
-        dataIndex: 'cost',
-        key: 'cost',
-        width: 50,
-        render: (_value: any, record: any) => {
-          return (
-            <div className='flex flex-row items-center gap-2'>
-              <IconCoin stroke={1.5} />
-              <p>{record?.status === "error" ? 0 : record?.cost ?? 0}</p>
-            </div>
           )
         },
       },

@@ -43,13 +43,6 @@ export default {
       })
 
       const checkoutSessionUrl = await createCheckoutSession(checkoutData);
-      // return NextResponse.redirect(checkoutSessionUrl, {
-      //   headers: {
-      //     'Access-Control-Allow-Origin': '*',
-      //     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      //     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      //   }
-      // })
       return NextResponse.json({ checkoutSessionUrl })
     } catch (e: any) {
       console.log(`❌ Error message: ${e?.message}`);

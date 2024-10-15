@@ -34,6 +34,7 @@ import * as cheerio from "cheerio";
 import { structuredSchemas } from "@/options";
 import AddMediaModal from "../AddMediaModal/AddMediaModal";
 import useProjectId from "@/hooks/useProjectId";
+import useUser from "@/hooks/useUser";
 
 const styles = {
   google: {
@@ -135,6 +136,7 @@ const ExportBlogPostDrawer = ({
   const [current, setCurrent] = useState(0);
   const [isUpdatingFeaturedImage, setIsUpdatingFeaturedImage] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const user = useUser()
 
   useEffect(() => {
     setCurrent(0);
@@ -214,11 +216,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
 
   const onGenerateSchemaMarkup = useMutation({
     mutationFn: async (schemaName: string) => {
-      const { data } = await axios.post('/api/credits-check', {
-        user_id: await getUserId(),
-        action: 'schema-markup'
-      });
-      if (!data.authorized) {
+      if (!user.premium.words || user.premium.words < 100) {
         return pricingModal.open(true)
       }
       return axios.post("/api/schema-markup", {
@@ -235,7 +233,10 @@ ${JSON.stringify(article?.schema_markups ?? {})}
         queryKey: queryKeys.blogPost(article.id)
       })
     },
-    onError() {
+    onError(e) {
+      if (e?.response?.status === 401) {
+        return pricingModal.open(true)
+      }
       message.error("An error occured, please try again.")
     },
   })
@@ -410,7 +411,7 @@ ${JSON.stringify(article?.schema_markups ?? {})}
                       )}
                       onConfirm={() => onGenerateSchemaMarkup.mutate(schemaName)}
                       onCancel={() => { }}
-                      okText="Yes (0.25 credit)"
+                      okText="Yes"
                       cancelText="No"
                     >
                       <Button>{schemaName}</Button>

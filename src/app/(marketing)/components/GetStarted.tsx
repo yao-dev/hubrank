@@ -1,14 +1,16 @@
+"use client";
 import { LOGIN_URL } from "@/helpers/url";
-import { Button } from "antd";
+import { Button, Typography } from "antd";
 import { ReactNode } from "react";
 
-const GetStarted = ({ className, title }: { className?: string; title: ReactNode }) => {
+const GetStarted = ({ className, title, subtitle }: { className?: string; title: ReactNode; subtitle?: string }) => {
   return (
-    <Button size="large" href={LOGIN_URL} className={`bg-primary-500 text-white border-primary-500 mb-8 hover:scale-105 ${className}`}>
-      {/* Try for FREE */}
-      {/* Try for FREE (5 credits) */}
-      {title}
-    </Button>
+    <div className="flex flex-col gap-1 mb-8">
+      <Button size="large" href={LOGIN_URL} className={`bg-primary-500 text-white border-primary-500 hover:scale-105 ${className}`}>
+        {title}
+      </Button>
+      {subtitle && <Typography.Text type="secondary" className="text-center text-xs">{subtitle}</Typography.Text>}
+    </div>
   )
 }
 

@@ -18,7 +18,7 @@ export async function POST(request: Request) {
         creditsRequired = 0.5;
         break;
       case 'schema-markup':
-      case 'keyword-research':
+      case 'keywords-research':
         creditsRequired = 0.25;
     }
 

@@ -21,7 +21,7 @@ export default function Glossary() {
         </section>
 
         <CallToActionBanner
-          title="Keyword research + Hubrank = 🚀"
+          title="Keywords research + Hubrank = 🚀"
           imageName="keyword-research"
           CallToAction={<GetStarted title="Try Now" className='mb-0 mx-auto xl:mx-0' />}
         />

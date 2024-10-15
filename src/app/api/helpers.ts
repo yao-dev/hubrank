@@ -98,6 +98,7 @@ export const insertBlogPost = async (data: any) => {
         outline: data.outline,
         cost: data.cost,
         auto_publish: data.auto_publish,
+        metadata: data.metadata,
       })
       .select("id, created_at")
       .single()
@@ -715,6 +716,8 @@ export const getAndSaveSchemaMarkup = async ({
     console.log("schemas", schemas)
     await saveSchemaMarkups(articleId, schemas);
   }
+
+  return schemas
 }
 
 export const fetchHtml = async (url: string): Promise<string> => {
@@ -1115,24 +1118,26 @@ export const deductCredits = async ({
   userId,
   costInCredits,
   featureName,
+  premiumName,
 }: {
   userId: string;
   costInCredits: number; // cost of premium feature in credits
   featureName: string;
+  premiumName: "words" | "keywords_research" | "ai_images";
 }) => {
-  const { data: user } = await supabase().from("users").select().eq("id", userId).maybeSingle();
-  const subscription = user.subscription ?? {}
-  const credits = subscription.credits ?? 0;
+  try {
+    const { data: user } = await supabase().from("users").select("*, users_premium:users_premium!user_id(*)").eq("id", userId).maybeSingle();
+    user.premium = getUserPremiumData(user);
+    console.log(chalk.yellow(`Deduct ${costInCredits} credits to user id "${userId}" for feature "${featureName}"`));
 
-  console.log(chalk.yellow(`Deduct ${costInCredits} credits to user id "${userId}" for feature "${featureName}"`));
 
-  await supabase().from("users").update({
-    subscription: {
-      ...subscription,
-      credits: Math.max(0, credits - costInCredits)
-    }
-  })
-    .eq("id", userId)
+    await supabase().from("users_premium").update({
+      [premiumName]: Math.max(0, (user.premium?.[premiumName] ?? 0) - costInCredits),
+      updated_at: new Date()
+    }).eq("user_id", userId);
+  } catch (e) {
+    console.error("Error deduction credits", getErrorMessage(e))
+  }
 }
 
 export const updateCredits = async ({ userId, credits, action }: {
@@ -1814,4 +1819,16 @@ export const getRelevantYoutubeVideoPrompt = ({
     `Give the most relevant video to the query "${query}"`,
     `Videos:\n${JSON.stringify(youtubeVideos, null, 2)}`,
   ].join('\n\n')
+}
+
+const MAX_CONCURRENCY = 3;
+
+export const getWritingConcurrencyLeft = async () => {
+  const { count } = await supabase().from("blog_posts").select("id", { count: "exact" }).eq("status", "writing");
+  const concurrencyLeft = Math.max(0, MAX_CONCURRENCY - (count ?? 0));
+  return concurrencyLeft
+}
+
+export const getUserPremiumData = (user: any) => {
+  return user?.users_premium?.[0] ?? {};
 }

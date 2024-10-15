@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Drawer, Flex, Form, message, notification } from "antd";
+import { Button, Drawer, Form, message, notification } from "antd";
 import NewBlogPostForm from "../NewBlogPostForm/NewBlogPostForm";
 import { getUserId } from "@/helpers/user";
 import { getUTCHourAndMinute } from "@/helpers/date";
@@ -9,6 +9,7 @@ import useProjectId from "@/hooks/useProjectId";
 import DrawerTitle from "../DrawerTitle/DrawerTitle";
 import { useState } from "react";
 import usePricingModal from "@/hooks/usePricingModal";
+import useUser from "@/hooks/useUser";
 
 type Props = {
   open: boolean;
@@ -19,26 +20,24 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
   const projectId = useProjectId();
   const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [variableSet, setVariableSet] = useState({});
   const pricingModal = usePricingModal();
+
   const fieldStructuredSchemas = Form.useWatch("structured_schemas", form);
+  const fieldWordCount = Form.useWatch("word_count", form);
   const titleMode = Form.useWatch("title_mode", form);
   const extra = ((fieldStructuredSchemas?.length ?? 0) / 4);
   const [estimatedPseoCreditsCount, setEstimatedPseoCreditsCount] = useState(0)
-  const creditsCount = titleMode === "programmatic_seo" ? estimatedPseoCreditsCount : 1 + extra
+  const creditsCount = titleMode === "programmatic_seo" ? estimatedPseoCreditsCount : 1 + extra;
+  const user = useUser();
+
+  const wordCredits = fieldWordCount + (fieldStructuredSchemas?.length ?? 0) * 100;
 
   const writeBlogPost = async (values: any) => {
     try {
-      setIsSubmitting(true)
-      const { data } = await axios.post('/api/credits-check', {
-        user_id: await getUserId(),
-        action: 'write-blog-post',
-        extra
-      });
-      if (!data.authorized) {
-        setIsSubmitting(false)
+      if (!user.premium.words || user.premium.words < values.word_count + (values.structured_schemas.length * 100)) {
         return pricingModal.open(true)
       }
+      setIsSubmitting(true)
       axios.post('/api/write/blog-post/schedule', {
         ...values,
         utc_offset: new Date().getTimezoneOffset()
@@ -48,6 +47,9 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       form.resetFields();
       setIsSubmitting(false)
     } catch (e) {
+      if (e?.response?.status === 401) {
+        return pricingModal.open(true)
+      }
       setIsSubmitting(false)
       console.error(e)
       notification.error({
@@ -60,16 +62,11 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
 
   const writeBlogPostInBulk = async (values: any) => {
     try {
-      setIsSubmitting(true)
-      const { data } = await axios.post('/api/credits-check', {
-        user_id: await getUserId(),
-        action: 'write-pseo',
-        extra: estimatedPseoCreditsCount
-      });
-      if (!data.authorized) {
-        setIsSubmitting(false);
+      const costInWords = (values.headlines.length * values.word_count) + (values.headlines.length * (values.structured_schemas.length * 100));
+      if (!user.premium.words || user.premium.words < costInWords) {
         return pricingModal.open(true)
       }
+      setIsSubmitting(true)
       axios.post('/api/write/blog-post/bulk-schedule', {
         ...values,
         utc_offset: new Date().getTimezoneOffset()
@@ -79,6 +76,9 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
       form.resetFields();
       setIsSubmitting(false)
     } catch (e) {
+      if (e?.response?.status === 401) {
+        return pricingModal.open(true)
+      }
       setIsSubmitting(false)
       console.error(e)
       notification.error({
@@ -155,7 +155,8 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         },
       }}
       footer={
-        <Flex justify="end">
+        <div className="flex flex-row justify-end items-center gap-4">
+          <p>You need at least <b>{wordCredits}</b> words credits</p>
           <Button
             onClick={() => form.submit()}
             type="primary"
@@ -163,9 +164,9 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
             loading={isSubmitting}
             disabled={isSubmitting}
           >
-            Write ({creditsCount} {creditsCount > 1 ? "credits" : "credit"})
+            Write
           </Button>
-        </Flex>
+        </div>
       }
     >
       <NewBlogPostForm

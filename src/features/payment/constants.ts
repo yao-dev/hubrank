@@ -5,7 +5,9 @@ export const stripeUrls = {
   SESSION_STATUS: "/api/checkout/session-status?session_id=SESSION_ID&user_id=USER_ID",
   GET_PRODUCTS: "/api/checkout/products",
   GET_PRICES: "/api/checkout/prices",
-  RETURN_CHECKOUT: "ORIGIN/subscriptions",
+  RETURN_CHECKOUT: "ORIGIN",
+  CHECKOUT_SUCCESS: "?checkout_success=true",
+  CHECKOUT_CANCELED: "?checkout_canceled=true",
   // RETURN_CHECKOUT: "ORIGIN/subscriptions?session_id=CHECKOUT_SESSION_ID",
   USER_SUBSCRIPTIONS: "/api/checkout/user-subscriptions",
   CREATE_CUSTOMER: '/api/checkout/create-customer'
@@ -14,6 +16,7 @@ export const stripeUrls = {
 export const webhookEvents = {
   // billing_portal_session_created: 'billing_portal.session.created',
   checkout_session_completed: 'checkout.session.completed',
+  checkout_session_expired: 'checkout.session.expired',
   // customer_updated: 'customer.updated',
   customer_subscription_created: 'customer.subscription.created',
   customer_subscription_deleted: 'customer.subscription.deleted',

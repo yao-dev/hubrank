@@ -1475,7 +1475,7 @@ export const competitors = {
     url: "https://machined.ai",
     description: (
       <p className="text-lg">
-        <Link href="https://machined.ai" className="text-primary-500 font-semibold">Machined.ai</Link> is a tool that automates the creation of SEO-optimized content clusters. It handles everything from keyword research to content writing and interlinking, producing large volumes of articles designed to boost search engine rankings. The platform integrates directly with content management systems like WordPress and Webflow, enabling seamless publishing.
+        <Link href="https://machined.ai" className="text-primary-500 font-semibold">Machined.ai</Link> is a tool that automates the creation of SEO-optimized content clusters. It handles everything from keywords research to content writing and interlinking, producing large volumes of articles designed to boost search engine rankings. The platform integrates directly with content management systems like WordPress and Webflow, enabling seamless publishing.
       </p>
     ),
     keywords: [
@@ -1538,7 +1538,7 @@ export const competitors = {
     url: "https://tryjournalist.com",
     description: (
       <p className="text-lg">
-        <Link href="https://tryjournalist.com" className="text-primary-500 font-semibold">Journalist AI</Link> is a platform that offers AI-driven tools for automating content creation and SEO tasks. It provides features like an AI SEO writer, listicle generator, and news writer, allowing users to quickly generate optimized articles. The platform also includes automation tools for managing blogs, keyword research, social media syndication, and internal/external linking. It supports integrations with popular platforms like WordPress, Shopify, Wix, and others, making it easier to publish and manage content across different sites.
+        <Link href="https://tryjournalist.com" className="text-primary-500 font-semibold">Journalist AI</Link> is a platform that offers AI-driven tools for automating content creation and SEO tasks. It provides features like an AI SEO writer, listicle generator, and news writer, allowing users to quickly generate optimized articles. The platform also includes automation tools for managing blogs, keywords research, social media syndication, and internal/external linking. It supports integrations with popular platforms like WordPress, Shopify, Wix, and others, making it easier to publish and manage content across different sites.
       </p>
     ),
     keywords: [
@@ -1725,7 +1725,7 @@ export const competitors = {
     url: "https://seo.ai",
     description: (
       <p className="text-lg">
-        <Link href="https://seo.ai" className="text-primary-500 font-semibold">SEO AI</Link> is a platform that uses AI to help create and optimize SEO-friendly content. It offers tools for keyword research, content generation, and on-page optimization. The platform also provides AI-driven suggestions for titles, meta descriptions, and internal linking, making it easier to produce content that ranks well on search engines.
+        <Link href="https://seo.ai" className="text-primary-500 font-semibold">SEO AI</Link> is a platform that uses AI to help create and optimize SEO-friendly content. It offers tools for keywords research, content generation, and on-page optimization. The platform also provides AI-driven suggestions for titles, meta descriptions, and internal linking, making it easier to produce content that ranks well on search engines.
       </p>
     ),
     keywords: [
@@ -1851,7 +1851,7 @@ export const competitors = {
     url: "https://blogseo.ai",
     description: (
       <p className="text-lg">
-        <Link href="https://blogseo.ai" className="text-primary-500 font-semibold">Blog SEO AI</Link> offers AI-powered tools for creating and optimizing SEO-friendly blog content. It features keyword research, content generation, and auto-blogging capabilities, allowing users to produce and publish blog posts automatically on a schedule.
+        <Link href="https://blogseo.ai" className="text-primary-500 font-semibold">Blog SEO AI</Link> offers AI-powered tools for creating and optimizing SEO-friendly blog content. It features keywords research, content generation, and auto-blogging capabilities, allowing users to produce and publish blog posts automatically on a schedule.
       </p>
     ),
     keywords: [

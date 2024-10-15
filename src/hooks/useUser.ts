@@ -15,10 +15,14 @@ const useUser = () => {
     enabled: !!userId,
     queryKey: queryKeys.user(),
     queryFn: async () => {
-      return supabase.from('users').select('*').eq("id", userId).maybeSingle();
+      return supabase.from('users').select('*, users_premium:users_premium!user_id(*)').eq("id", userId).maybeSingle();
     },
     select: ({ data }) => {
-      return data;
+      const user = data ?? {}
+      return {
+        ...user,
+        premium: user?.users_premium?.[0] ?? {}
+      }
     },
     gcTime: minutesToMilliseconds(2),
     refetchOnWindowFocus: true,

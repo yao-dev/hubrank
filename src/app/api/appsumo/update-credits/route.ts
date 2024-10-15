@@ -5,7 +5,6 @@ import { differenceInYears } from "date-fns";
 import { get } from "lodash";
 import supabase from "@/helpers/supabase/server";
 
-
 export const maxDuration = 30;
 
 export async function POST(request: Request) {

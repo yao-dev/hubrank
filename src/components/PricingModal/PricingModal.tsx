@@ -1,7 +1,7 @@
 import { Modal } from "antd";
-import PricingTable from "../PricingTable/PricingTable";
 import usePricingModal from "@/hooks/usePricingModal";
 import useUser from "@/hooks/useUser";
+import PricingCard from "../PricingCard/PricingCard";
 
 const PricingModal = () => {
   const modal = usePricingModal();
@@ -14,10 +14,16 @@ const PricingModal = () => {
       footer={null}
       style={{ top: 50, left: 100 }}
       onCancel={() => modal.open(false)}
+      maskClosable={false}
     >
-      <PricingTable
+      {/* <PricingTable
         title={modal.title || customTitle || "You don't have enough credits"}
         subtitle={modal.subtitle || "Choose a plan to upgrade"}
+      /> */}
+      <PricingCard
+        borderless
+        title={modal.title || customTitle || "You don't have enough credits"}
+        subtitle={modal.subtitle}
       />
     </Modal>
   )

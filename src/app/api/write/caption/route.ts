@@ -6,6 +6,7 @@ import {
   getManualWritingStyle,
   getSavedWritingStyle,
   getTweets,
+  getUserPremiumData,
   getYoutubeTranscript,
 } from "@/app/api/helpers";
 import Anthropic from "@anthropic-ai/sdk";
@@ -16,7 +17,7 @@ import * as cheerio from "cheerio";
 import supabase from "@/helpers/supabase/server";
 import dJSON from "dirty-json";
 import { models } from "../../AI";
-import OpenAI from "openai";
+import { getSummary } from 'readability-cyr';
 
 export const maxDuration = 300;
 
@@ -28,6 +29,13 @@ export async function POST(request: Request) {
 
     if (!project) {
       return NextResponse.json({ message: "project not found" }, { status: 500 })
+    }
+
+    const { data: user } = await supabase().from("users").select("*, users_premium:users_premium!user_id(*)").eq("id", project.user_id).maybeSingle();
+    user.premium = getUserPremiumData(user);
+
+    if (!user.premium.words || user.premium.words < 100) {
+      return NextResponse.json({ message: "Insufficient words" }, { status: 401 })
     }
 
     const { data: language } = await supabase().from("languages").select("*").eq("id", project.language_id).maybeSingle()
@@ -84,15 +92,6 @@ export async function POST(request: Request) {
     //   description: body.description,
     //   writingStyle,
     // });
-
-    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
-    const cost = 0.5
-    const creditCheck = {
-      userId: body.user_id,
-      costInCredits: cost,
-      featureName: "caption"
-    }
-    await deductCredits(creditCheck);
 
     let inspo;
     let source;
@@ -157,17 +156,15 @@ export async function POST(request: Request) {
     // console.log(completion);
     const captions = dJSON.parse(completion.content[0].text)
 
+    const stats = getSummary(captions.join(" "))
 
-    // await insertCaption({
-    //   user_id: body.user_id as string,
-    //   project_id: body.project_id as number,
-    //   language_id: body.language_id as number,
-    //   writing_style_id: body.writing_style_id as number,
-    //   platform: body.platform as string,
-    //   caption: result.caption as string,
-    //   metadata,
-    //   cost
-    // });
+    // DEDUCTS CREDITS FROM USER SUBSCRIPTION
+    await deductCredits({
+      userId: body.user_id,
+      costInCredits: stats.words,
+      featureName: "caption",
+      premiumName: "words"
+    });
 
     return NextResponse.json({ captions }, { status: 200 });
   } catch (e: any) {

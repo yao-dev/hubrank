@@ -163,7 +163,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           instructional_elements: [], // TODO: add in DB, use it in BE write endpoint
           clickbait: false,
           // perspective: "first_person_singular", // TODO: remove it in favor of perspectives
-          word_count: 500,
+          word_count: 750,
           additional_information: "",
           sitemap: "",
           external_sources: [],
@@ -325,6 +325,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
                       <Form.Item
                         key={variable}
                         // name={`variables-${variable}`}
+                        name={`title_variable_${variable}`}
                         label={<Label name={`Variable ${index + 1}: ${variable}`} />}
                         // help={`Describe in few words what ${variable} represents`}
                         help="One value per line"
@@ -479,7 +480,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
 
             help="More or less the amount of words the article will contains"
           >
-            <Segmented options={[500, 750, 1000, 1500, 2000]} style={{ width: "fit-content" }} />
+            <Segmented options={[750, 1000, 1500, 2000]} style={{ width: "fit-content" }} />
           </Form.Item>
 
 

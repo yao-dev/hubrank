@@ -44,8 +44,6 @@ export default function Dashboard() {
   const [isIntegrationLoading, setIsIntegrationLoading] = useState(false);
   const [selectedProjectForIntegration, setSelectedProjectForIntegration] = useState();
 
-  const hasReachedLimit = projectList && user?.subscription?.projects_limit <= projectList?.length;
-
   useEffect(() => {
     if (searchParams.get("install_zapier")) {
       setIsModalOpen(true)
@@ -53,14 +51,6 @@ export default function Dashboard() {
   }, []);
 
   const onOpenNewProject = () => {
-    // if (hasReachedLimit) {
-    //   pricingModal.open(true, {
-    //     title: "You've reached your projects limit",
-    //     subtitle: "Upgrade to create more projects"
-    //   })
-    // } else {
-    //   setOpenCreateProject(true)
-    // }
     setOpenCreateProject(true)
   }
 
@@ -186,7 +176,7 @@ export default function Dashboard() {
           >
             <PageTitle title="Dashboard" />
             <Button
-              disabled={projectList?.length >= 5}
+              disabled={projectList?.length >= 20}
               type="primary"
               onClick={onOpenNewProject}
               icon={<PlusOutlined />}

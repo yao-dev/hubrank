@@ -25,6 +25,7 @@ import { IconCopy } from '@tabler/icons-react';
 import { ButtonProps } from 'antd/lib';
 import { useQueryClient } from '@tanstack/react-query';
 import queryKeys from '@/helpers/queryKeys';
+import useUser from '@/hooks/useUser';
 
 export default function ProjectDetail({
   params,
@@ -44,6 +45,7 @@ export default function ProjectDetail({
   const [isWritingStyleModalOpened, setIsWritingStyleModalOpened] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captions, setCaptions] = useState([]);
+  const user = useUser()
 
   useEffect(() => {
     router.push(`/projects/${params.project_id}?tab=${searchParams.get("tab") ?? "blog-posts"}`)
@@ -51,16 +53,11 @@ export default function ProjectDetail({
 
   const writeCaption = async (values: any) => {
     try {
-      setIsSubmitting(true)
-      setCaptions([])
-      const { data } = await axios.post('/api/credits-check', {
-        user_id: await getUserId(),
-        action: 'write-cpation',
-      });
-      if (!data.authorized) {
-        setIsSubmitting(false);
+      if (!user.premium.words || user.premium.words < 100) {
         return pricingModal.open(true)
       }
+      setIsSubmitting(true)
+      setCaptions([])
       const { data: captions } = await axios.post('/api/write/caption', values);
       // form.resetFields([
       //   "goal",
@@ -78,6 +75,10 @@ export default function ProjectDetail({
       setCaptions(captions.captions ?? [])
       setIsSubmitting(false)
     } catch (e) {
+      if (e?.response?.status === 401) {
+        setIsSubmitting(false);
+        return pricingModal.open(true)
+      }
       setIsSubmitting(false);
       message.error("We had an issue generation your caption, please try again")
     }
@@ -124,7 +125,7 @@ export default function ProjectDetail({
               disabled={isSubmitting}
               className='w-fit'
             >
-              Write caption (0.5 credit)
+              Write caption
             </Button>
           </div>
           <div className='flex flex-col gap-4 w-3/5'>
@@ -160,8 +161,8 @@ export default function ProjectDetail({
       )
     },
     {
-      key: 'keyword-research',
-      label: 'Keyword research',
+      key: 'keywords-research',
+      label: 'Keywords research',
       children: (
         <KeywordsTable />
       ),

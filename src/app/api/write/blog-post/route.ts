@@ -31,9 +31,8 @@ import {
   urlToVector,
   deleteNamespace,
   queryVector,
-  getGroqModel,
-  groq,
   getErrorMessage,
+  deductCredits,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
@@ -534,7 +533,7 @@ export async function POST(request: Request) {
     const end = performance.now();
     const writingTimeInSeconds = (end - start) / 1000;
 
-    await getAndSaveSchemaMarkup({
+    const allSchemaMarkups = await getAndSaveSchemaMarkup({
       project,
       articleId,
       article: {
@@ -569,6 +568,13 @@ export async function POST(request: Request) {
     }
 
     await markArticleAs(result);
+
+    await deductCredits({
+      userId: body.userId,
+      costInCredits: articleStats.words + getSummary(JSON.stringify(allSchemaMarkups, null, 2)).words,
+      featureName: "write",
+      premiumName: "words"
+    });
 
     return NextResponse.json({
       markdown: recomposedArticle,

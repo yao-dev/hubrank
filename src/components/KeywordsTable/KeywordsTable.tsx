@@ -28,6 +28,8 @@ import useDrawers from '@/hooks/useDrawers';
 import LanguageSelect from '../LanguageSelect/LanguageSelect';
 import axios from 'axios';
 import usePricingModal from '@/hooks/usePricingModal';
+import useUser from '@/hooks/useUser';
+import queryKeys from '@/helpers/queryKeys';
 
 const competitionOrder: any = {
   "low": 0,
@@ -55,6 +57,7 @@ const KeywordsTable = () => {
   const screens = Grid.useBreakpoint();
   const drawers = useDrawers();
   const pricingModal = usePricingModal();
+  const user = useUser()
 
   const { data: searchedKeywords, isFetched: isSearchedKeywordsFetched } = useQuery({
     enabled: !!projectId,
@@ -321,16 +324,10 @@ const KeywordsTable = () => {
             }}
             onFinish={async (values) => {
               try {
-                setIsFetchingKeywords(true);
-                const { data } = await axios.post('/api/credits-check', {
-                  user_id: await getUserId(),
-                  action: 'keywords-research'
-                });
-                if (!data.authorized) {
-                  setIsFetchingKeywords(false);
+                if (!user.premium.keywords_research) {
                   return pricingModal.open(true)
                 }
-
+                setIsFetchingKeywords(true);
                 setShowSavedKeywords(false);
                 const searchTerm = values.search;
 
@@ -380,7 +377,14 @@ const KeywordsTable = () => {
                 } else {
                   setKeywords(state?.data || [])
                 }
+                queryClient.invalidateQueries({
+                  queryKey: queryKeys.user()
+                });
                 setActiveLanguage(language)
+              } catch (e) {
+                if (e?.response?.status === 401) {
+                  return pricingModal.open(true)
+                }
               } finally {
                 setIsFetchingKeywords(false)
               }
@@ -408,7 +412,7 @@ const KeywordsTable = () => {
                 loading={isFetchingKeywords}
                 style={{ width: "auto", marginBottom: 0 }}
               >
-                {screens.xs ? "(0.25 credit)" : "Search (0.25 credit)"}
+                Search
               </Button>
             </Flex>
           </Form>
