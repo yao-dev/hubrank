@@ -217,7 +217,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
               type: "number",
             }]}
           >
-            <AutoPublishIntegrationSelect />
+            <AutoPublishIntegrationSelect integrations={integrations} />
           </Form.Item>
         )}
 
