@@ -55,18 +55,18 @@ export async function POST(request: Request) {
               await api.posts.add({
                 title: body.record.title,
                 html: body.record.html,
-                status: "published",
+                status: integration.metadata.status ?? "draft",
 
-                meta_description: body.record.meta_description,
-                feature_image: body.record.featured_image,
-                slug: body.record.slug,
-                meta_title: body.record.title,
-                facebook_title: body.record.title,
-                facebook_description: body.record.meta_description,
-                facebook_image: body.record.featured_image,
-                twitter_title: body.record.title,
-                twitter_description: body.record.meta_description,
-                twitter_image: body.record.featured_image,
+                // meta_description: body.record.meta_description,
+                // feature_image: body.record.featured_image,
+                // slug: body.record.slug,
+                // meta_title: body.record.title,
+                // facebook_title: body.record.title,
+                // facebook_description: body.record.meta_description,
+                // facebook_image: body.record.featured_image,
+                // twitter_title: body.record.title,
+                // twitter_description: body.record.meta_description,
+                // twitter_image: body.record.featured_image,
 
                 // og_image
                 // og_image_description

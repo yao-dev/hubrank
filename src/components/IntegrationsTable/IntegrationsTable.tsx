@@ -65,6 +65,8 @@ const IntegrationsTable = ({ isLoading }: any) => {
         key: 'api_key',
         width: 300,
         render: (value: any, record: any) => {
+          // admin_api_key, api_url, status, webhook, url, username, password
+
           if (record?.metadata?.api_key) {
             return (
               <span>

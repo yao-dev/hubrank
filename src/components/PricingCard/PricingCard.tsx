@@ -21,7 +21,7 @@ const PricingCard = ({
   subtitle
 }: Props) => {
   const user = useUser();
-  const [words, setWords] = useState(ONE_ARTICLE_WORD_COUNT * 3);
+  const [words, setWords] = useState(ONE_ARTICLE_WORD_COUNT * 10 * 3);
 
   let costPerWord;
   let pricingTitle;

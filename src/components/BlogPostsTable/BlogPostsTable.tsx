@@ -50,7 +50,7 @@ const BlogPostsTable = () => {
         key: 'title',
         width: 600,
         render: (value: any, record: any) => {
-          if (["ready_to_view", "published"].includes(record.status)) {
+          if (["ready_to_view", "publishing", "published"].includes(record.status)) {
             return (
               <Link href={`/projects/${projectId}/articles/${record.id}`} className='w-full inline-block'>
                 {value || "-"}

@@ -1608,7 +1608,7 @@ export const getHookSchema = () => {
 
 
 export const getHookPrompt = (values: any) => {
-  let prompt = `[hook]
+  let prompt = `[Excerpt]
 
   ${getPromptDate()}
 
@@ -1628,9 +1628,9 @@ export const getHookPrompt = (values: any) => {
   }
 
   prompt += `
-  Write an engaging introduction (typically ranging from one to two sentences or around 20-50 words) for the article "${values?.title}"
-  Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
-  Elements that make up a good hook
+  Write an Excerpt for the article "${values?.title}"
+  Choose the excerpt type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
+  Elements that make up a good excerpt
   1. State a fact or a statistic
   2. Begin your writing with a quote
   3. Ask a question

@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Dropdown, Modal, Form, Input, message } from 'antd';
+import { Button, Dropdown, Modal, Form, Input, message, Select } from 'antd';
 import { brandsLogo } from '@/brands-logo';
 import PageTitle from '@/components/PageTitle/PageTitle';
 import supabase from '@/helpers/supabase/client';
@@ -25,7 +25,8 @@ const GhostIntegrationForm = ({ form, onFinish }) => {
       initialValues={{
         name: "",
         admin_api_key: "",
-        api_url: ""
+        api_url: "",
+        status: "draft"
       }}
     >
       <Form.Item
@@ -48,6 +49,18 @@ const GhostIntegrationForm = ({ form, onFinish }) => {
         rules={[{ required: true, message: 'API URL is required', type: "url" }]}
       >
         <Input placeholder="API URL" />
+      </Form.Item>
+
+      <Form.Item
+        name="status"
+        label={<Label name="Status" />}
+        rules={[{ required: true, message: 'Status is required' }]}
+      >
+        <Select
+          placeholder="Select a status"
+          options={[{ label: "Draft", value: "draft" }, { label: "Published", value: "published" }]}
+          optionLabelProp="label"
+        />
       </Form.Item>
 
       <Form.Item>
@@ -345,8 +358,6 @@ const ShopifyIntegrationForm = ({ form, onFinish }) => {
     </Form>
   );
 };
-
-
 
 export default function Integrations() {
   const queryClient = useQueryClient();
