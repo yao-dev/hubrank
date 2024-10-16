@@ -2,7 +2,7 @@
 import { Button, Card, Flex, Slider, Typography } from "antd";
 import * as CurrencyFormat from 'react-currency-format';
 import { IconCheck } from "@tabler/icons-react";
-import { LOGIN_URL } from "@/helpers/url";
+import { APP_URL } from "@/helpers/url";
 import { useState } from "react";
 import useUser from "@/hooks/useUser";
 import { checkout } from "@/app/app/actions";
@@ -89,7 +89,7 @@ const PricingCard = ({
               <Button
                 size="large"
                 type="primary"
-                href={user ? undefined : `${LOGIN_URL}?create_checkout=${words}`}
+                href={user ? undefined : `${APP_URL}?create_checkout=${words}`}
                 onClick={async () => {
                   if (user) {
                     const checkoutSessionUrl = await checkout({
