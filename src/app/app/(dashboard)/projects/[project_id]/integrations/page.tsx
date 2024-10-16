@@ -421,12 +421,12 @@ export default function Integrations() {
                 icon: <IconWebhook size={20} />,
                 onClick: () => setSelectedPlatform("webhook")
               },
-              {
-                key: "zapier",
-                label: "Zapier",
-                icon: <img src={brandsLogo.zapier} width={20} />,
-                onClick: () => setSelectedPlatform("zapier")
-              },
+              // {
+              //   key: "zapier",
+              //   label: "Zapier",
+              //   icon: <img src={brandsLogo.zapier} width={20} />,
+              //   onClick: () => setSelectedPlatform("zapier")
+              // },
               {
                 key: "wordpress",
                 label: "WordPress",

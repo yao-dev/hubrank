@@ -10,6 +10,7 @@ import queryKeys from '@/helpers/queryKeys';
 import useProjectId from '@/hooks/useProjectId';
 import { IconWebhook } from '@tabler/icons-react';
 import useIntegrations from '@/hooks/useIntegrations';
+import { compact, isEmpty } from 'lodash';
 
 const IntegrationsTable = ({ isLoading }: any) => {
   const projectId = useProjectId();
@@ -60,58 +61,31 @@ const IntegrationsTable = ({ isLoading }: any) => {
         },
       },
       {
-        title: 'API Key',
-        dataIndex: 'api_key',
-        key: 'api_key',
-        width: 300,
+        title: '',
+        dataIndex: '',
+        key: 'metadata',
+        width: 900,
         render: (value: any, record: any) => {
-          // admin_api_key, api_url, status, webhook, url, username, password
+          const tags = compact([
+            record.metadata.admin_api_key,
+            record.metadata.api_url,
+            record.metadata.status,
+            record.metadata.webhook,
+            record.metadata.url,
+            record.metadata.username,
+            record.metadata.password,
+          ])
 
-          if (record?.metadata?.api_key) {
+          if (isEmpty(tags)) {
             return (
-              <span>
-                <Tag>{record.metadata.api_key}</Tag>
-              </span>
+              <span>-</span>
             )
           }
+
           return (
-            <span>-</span>
-          )
-        },
-      },
-      {
-        title: 'API URL',
-        dataIndex: 'api_url',
-        key: 'api_url',
-        width: 300,
-        render: (value: any, record: any) => {
-          if (record?.metadata?.api_url) {
-            return (
-              <span>
-                <Tag>{record.metadata.api_url}</Tag>
-              </span>
-            )
-          }
-          return (
-            <span>-</span>
-          )
-        },
-      },
-      {
-        title: 'Webhook',
-        dataIndex: 'webhook',
-        key: 'webhook',
-        width: 300,
-        render: (value: any, record: any) => {
-          if (record?.metadata?.webhook) {
-            return (
-              <span>
-                <Tag>{record.metadata.webhook}</Tag>
-              </span>
-            )
-          }
-          return (
-            <span>-</span>
+            <div className='flex flex-row gap-2'>
+              {tags.map((value, index) => <Tag key={index}>{value}</Tag>)}
+            </div>
           )
         },
       },
