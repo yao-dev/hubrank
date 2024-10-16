@@ -67,13 +67,14 @@ const IntegrationsTable = ({ isLoading }: any) => {
         width: 900,
         render: (value: any, record: any) => {
           const tags = compact([
-            record.metadata?.admin_api_key ?? "",
-            record.metadata?.api_url ?? "",
             record.metadata?.status ?? "",
-            record.metadata?.webhook ?? "",
-            record.metadata?.url ?? "",
             record.metadata?.username ?? "",
             record.metadata?.password ?? "",
+            record.metadata?.trigger ?? "",
+            record.metadata?.api_url ?? "",
+            record.metadata?.admin_api_key ?? "",
+            record.metadata?.webhook ?? "",
+            record.metadata?.url ?? "",
           ])
 
           if (isEmpty(tags)) {

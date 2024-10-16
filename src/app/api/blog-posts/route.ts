@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost } from "../helpers";
+import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost, publishBlogPost } from "../helpers";
 import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
 import GhostAdminAPI from '@tryghost/admin-api';
@@ -86,26 +86,16 @@ export async function POST(request: Request) {
                 featured_image: body.record.featured_image,
                 slug: body.record.slug
               };
-              await axios.post(integration.metadata.webhook, blogPost)
+              await axios.post(integration.metadata.webhook, blogPost);
+              break;
+            }
+            case 'zapier': {
+              await publishBlogPost({ url: integration.metadata.url, blogPost: body.record });
+              break;
             }
           }
 
           await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
-
-          // const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
-
-          // const promises = integrations?.map(async (integration) => {
-          //   try {
-          //     return publishBlogPost({ url: integration.metadata.url, blogPost: body.record })
-          //   } catch (e) {
-          //     console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
-          //     return null
-          //   }
-          // });
-          // if (promises) {
-          //   await Promise.all(promises);
-          //   await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
-          // }
         }
         break;
       }

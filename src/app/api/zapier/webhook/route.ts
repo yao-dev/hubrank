@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     await supabase().from("integrations")
-      .update({ enabled: true, metadata: body })
+      .update({ enabled: true, metadata: body, name: body.integration_name })
       .eq("id", integration.id)
       .throwOnError()
 

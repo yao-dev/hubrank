@@ -44,12 +44,11 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isIntegrationLoading, setIsIntegrationLoading] = useState(false);
   const [selectedProjectForIntegration, setSelectedProjectForIntegration] = useState();
+  const showInstallZapierModal = searchParams.get("install_zapier") ?? "";
 
   useEffect(() => {
-    if (searchParams.get("install_zapier")) {
-      setIsModalOpen(true)
-    }
-  }, []);
+    setIsModalOpen(!!showInstallZapierModal)
+  }, [showInstallZapierModal]);
 
   const onOpenNewProject = () => {
     setOpenCreateProject(true)
@@ -117,7 +116,7 @@ export default function Dashboard() {
           onOk={async () => {
             if (selectedProjectForIntegration?.id) {
               setIsIntegrationLoading(true)
-              const { data: newIntegration } = await supabase.from("integrations").insert({ user_id: user.id, project_id: selectedProjectForIntegration.id, platform: "zapier" }).select().maybeSingle()
+              const { data: newIntegration } = await supabase.from("integrations").insert({ user_id: user.id, project_id: selectedProjectForIntegration.id, platform: "zapier", name: searchParams.get("integration_name") }).select().maybeSingle()
 
               const query = {
                 client_id: searchParams.get("client_id"),

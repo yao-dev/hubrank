@@ -17,6 +17,7 @@ import ModalTitle from '@/components/ModalTitle/ModalTitle';
 import { v4 as uuid } from "uuid";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { useRouter } from 'next/navigation';
 
 const GhostIntegrationForm = ({ form, onFinish }) => {
   return (
@@ -386,6 +387,7 @@ export default function Integrations() {
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const userId = useUserId();
   const projectId = useProjectId();
+  const router = useRouter();
 
   const [ghostForm] = Form.useForm();
   const [zapierForm] = Form.useForm();
@@ -443,23 +445,23 @@ export default function Integrations() {
                 icon: <IconWebhook size={20} />,
                 onClick: () => setSelectedPlatform("webhook")
               },
+              {
+                key: "zapier",
+                label: "Zapier",
+                icon: <img src={brandsLogo.zapier} width={20} />,
+                onClick: () => router.push("https://zap.new")
+              },
               // {
-              //   key: "zapier",
-              //   label: "Zapier",
-              //   icon: <img src={brandsLogo.zapier} width={20} />,
-              //   onClick: () => setSelectedPlatform("zapier")
+              //   key: "wordpress",
+              //   label: "WordPress",
+              //   icon: <img src={brandsLogo.wordpress} width={20} />,
+              //   onClick: () => setSelectedPlatform("wordPress")
               // },
               {
-                key: "wordpress",
-                label: "WordPress",
-                icon: <img src={brandsLogo.wordpress} width={20} />,
-                onClick: () => setSelectedPlatform("wordPress")
-              },
-              {
-                key: "shopify",
-                label: "Shopify",
-                icon: <img src={brandsLogo.shopify} width={20} />,
-                onClick: () => setSelectedPlatform("shopify")
+                key: "ghost",
+                label: "Ghost",
+                icon: <img src={brandsLogo.ghost} width={20} />,
+                onClick: () => setSelectedPlatform("ghost")
               },
               {
                 key: "webflow",
@@ -467,18 +469,18 @@ export default function Integrations() {
                 icon: <img src={brandsLogo.webflow} width={20} />,
                 onClick: () => setSelectedPlatform("webflow")
               },
+              {
+                key: "shopify",
+                label: "Shopify",
+                icon: <img src={brandsLogo.shopify} width={20} />,
+                onClick: () => setSelectedPlatform("shopify")
+              },
               // {
               //   key: "wix",
               //   label: "Wix",
               //   icon: <img src={brandsLogo.wix} width={20} />,
               //   onClick: () => setSelectedPlatform("wix")
               // },
-              {
-                key: "ghost",
-                label: "Ghost",
-                icon: <img src={brandsLogo.ghost} width={20} />,
-                onClick: () => setSelectedPlatform("ghost")
-              }
             ],
           }} trigger={['click']}>
           <Button type="primary" icon={<PlusOutlined />}>Integration</Button>
