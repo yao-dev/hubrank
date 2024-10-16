@@ -12,6 +12,7 @@ import usePricingModal from '@/hooks/usePricingModal';
 import useUser from '@/hooks/useUser';
 import queryKeys from '@/helpers/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
+import ModalTitle from '../ModalTitle/ModalTitle';
 
 type Props = {
   open: boolean;
@@ -180,7 +181,7 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
       open={open}
       onCancel={onClose}
       centered
-      title="Add media"
+      title={<ModalTitle>Add media</ModalTitle>}
       onOk={onSubmitImage}
       destroyOnClose
       okText="Add"

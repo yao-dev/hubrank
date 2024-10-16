@@ -98,6 +98,7 @@ export const insertBlogPost = async (data: any) => {
         outline: data.outline,
         cost: data.cost,
         auto_publish: data.auto_publish,
+        integration_id: data.integration_id,
         metadata: data.metadata,
       })
       .select("id, created_at")

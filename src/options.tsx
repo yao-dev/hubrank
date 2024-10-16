@@ -1,6 +1,16 @@
-import { IconBrandFacebook, IconBrandInstagram, IconBrandLinkedin, IconBrandPinterest, IconBrandThreads, IconBrandTiktok, IconBrandX } from "@tabler/icons-react";
+import {
+  IconBrandFacebook,
+  IconBrandInstagram,
+  IconBrandLinkedin,
+  IconBrandPinterest,
+  IconBrandThreads,
+  IconBrandTiktok,
+  IconBrandX,
+  IconWebhook,
+} from "@tabler/icons-react";
 import { Flex } from "antd";
 import Link from "next/link";
+import { brandsLogo } from "./brands-logo";
 
 export const headlineCount = [
   { value: '1', label: '1' },
@@ -2613,4 +2623,47 @@ export const imageStyles = [
     "negative_prompt": "blurry, noisy, deformed, flat, low contrast, unrealistic, oversaturated, underexposed",
     "image": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
   },
+]
+
+export const integrations = [
+  {
+    key: "Wehbook",
+    label: "Wehbook",
+    icon: <IconWebhook size={20} />
+  },
+  {
+    key: "Zapier",
+    label: "Zapier",
+    icon: <img src={brandsLogo.zapier} width={20} />
+  },
+  {
+    key: "WordPress",
+    label: "WordPress",
+    icon: <img src={brandsLogo.wordpress} width={20} />
+  },
+  // {
+  //   key: "Shopify",
+  //   label: "Shopify",
+  //   icon: <img src={brandsLogo.shopify} width={20} />
+  // },
+  {
+    key: "Medium",
+    label: "Medium",
+    icon: <img src={brandsLogo.medium} width={20} />
+  },
+  // {
+  //   key: "Webflow",
+  //   label: "Webflow",
+  //   icon: <img src={brandsLogo.webflow} width={20} />
+  // },
+  // {
+  //   key: "Wix",
+  //   label: "Wix",
+  //   icon: <img src={brandsLogo.wix} width={20} />
+  // },
+  {
+    key: "Ghost",
+    label: "Ghost",
+    icon: <img src={brandsLogo.ghost} width={20} />
+  }
 ]

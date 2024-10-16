@@ -10,6 +10,7 @@ import { getUserId } from "@/helpers/user";
 import { useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
+import ModalTitle from "../ModalTitle/ModalTitle";
 
 const NewProjectModal = ({ opened, onClose }: any) => {
   const [error, setError] = useState(false);
@@ -60,7 +61,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
 
   return (
     <Modal
-      title="New project"
+      title={<ModalTitle>New project</ModalTitle>}
       open={opened}
       onCancel={() => onCloseCreateProject()}
       onOk={() => form.submit()}

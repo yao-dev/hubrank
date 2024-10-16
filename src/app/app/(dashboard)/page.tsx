@@ -24,6 +24,7 @@ import useUser from "@/hooks/useUser";
 import { useRouter, useSearchParams } from "next/navigation";
 import { brandsLogo } from "@/brands-logo";
 import supabase from "@/helpers/supabase/client";
+import ModalTitle from "@/components/ModalTitle/ModalTitle";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -103,7 +104,7 @@ export default function Dashboard() {
           open={isModalOpen}
           centered
           closable={false}
-          title="New integration"
+          title={<ModalTitle>New integration</ModalTitle>}
           okText="Create integration"
           maskClosable={false}
           onCancel={() => {

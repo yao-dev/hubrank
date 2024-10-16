@@ -19,7 +19,8 @@ const useIntegrations = ({ enabled } = {}) => {
         options.enabled = enabled
       }
 
-      const { data } = await supabase.from("integrations").select("*").match(options)
+      const { data } = await supabase.from("integrations").select("*").match(options).order("created_at", { ascending: false })
+      console.log(data)
       return data
     },
     select(data) {

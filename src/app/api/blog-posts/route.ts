@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getWritingConcurrencyLeft, getUpstashDestination, publishBlogPost, updateBlogPost } from "../helpers";
+import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost } from "../helpers";
 import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
+import GhostAdminAPI from '@tryghost/admin-api';
 
 export const maxDuration = 30;
 
@@ -39,20 +40,40 @@ export async function POST(request: Request) {
             await updateBlogPost(body.record.id, { schedule_id: scheduleId })
           }
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing") {
-          const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
+          // TODO: handle re-publish case
+          const { data: integration } = await supabase().from("integrations").select("*").eq("id", body.record.integration_id).maybeSingle().throwOnError();
 
-          const promises = integrations?.map(async (integration) => {
-            try {
-              return publishBlogPost({ url: integration.metadata.url, blogPost: body.record })
-            } catch (e) {
-              console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
-              return null
+          switch (integration?.platform) {
+            case 'ghost': {
+              const api = new GhostAdminAPI({
+                url: integration.metadata.api_url,
+                key: integration.metadata.admin_api_key,
+                version: 'v5.0'
+              });
+
+              await api.posts.add({
+                title: body.record.title,
+                html: body.record.html,
+                status: "published"
+              }, { source: 'html' })
+              break;
             }
-          });
-          if (promises) {
-            await Promise.all(promises);
-            await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
           }
+
+          // const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
+
+          // const promises = integrations?.map(async (integration) => {
+          //   try {
+          //     return publishBlogPost({ url: integration.metadata.url, blogPost: body.record })
+          //   } catch (e) {
+          //     console.log('[WEBHOOK - blog-posts]: error publishing to zapier', e);
+          //     return null
+          //   }
+          // });
+          // if (promises) {
+          //   await Promise.all(promises);
+          //   await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
+          // }
         }
         break;
       }

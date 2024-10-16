@@ -6,13 +6,13 @@ const featuresInAction = [
   {
     id: 0,
     title: "Write blogs",
-    demo: "https://demo.arcade.software/M4RXcihEwkkwxVIHIoBS?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true"
+    demo: "https://demo.arcade.software/M4RXcihEwkkwxVIHIoBS?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
   },
   {
     id: 1,
     title: "Keyword research",
     // description: "Keyword research is key to write articles optimised for search intent, with Hubrank you get just that!",
-    demo: "https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
+    demo: "https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true",
   },
   // {
   //   id: 2,
@@ -23,22 +23,22 @@ const featuresInAction = [
   {
     id: 3,
     title: "Programmatic SEO",
-    demo: "https://demo.arcade.software/M2czMUKPTWLHyTzF97vD?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
+    demo: "https://demo.arcade.software/M2czMUKPTWLHyTzF97vD?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 4,
     title: "Social media",
-    demo: "https://demo.arcade.software/n2X2KjTIVHxF6JTMAmhe?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
+    demo: "https://demo.arcade.software/n2X2KjTIVHxF6JTMAmhe?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 5,
     title: "Knowledge bases",
-    demo: "https://demo.arcade.software/iCdSIiMpc8xGZscyecjo?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
+    demo: "https://demo.arcade.software/iCdSIiMpc8xGZscyecjo?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true",
   },
   {
     id: 6,
     title: "Schema markup",
-    demo: "https://demo.arcade.software/8EcyUfcnmIDGlB7aLvxx?embed&embed_mobile=tab&embed_desktop=inline&show_copy_link=true",
+    demo: "https://demo.arcade.software/8EcyUfcnmIDGlB7aLvxx?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true",
   }
 ]
 

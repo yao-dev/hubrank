@@ -48,6 +48,7 @@ import prettify from "pretty";
 import Link from 'next/link';
 import PublishBlogPostButton from '@/components/PublishBlogPostButton/PublishBlogPostButton';
 import useUser from '@/hooks/useUser';
+import ExportBlogPostButton from '@/components/ExportBlogPostButton/ExportBlogPostButton';
 
 const styles = {
   google: {
@@ -276,7 +277,10 @@ ${article.html}
                 Back
               </Button>
 
-              <PublishBlogPostButton id={articleId} />
+              <div className='flex flex-row gap-2'>
+                <ExportBlogPostButton id={articleId} />
+                <PublishBlogPostButton id={articleId} />
+              </div>
             </div>
             <Spin spinning={article?.status === "writing"} tip="Your content is writing">
               <div>

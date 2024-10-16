@@ -1,87 +1,130 @@
 'use client';;
-import { Button, Image, Popconfirm, Space, Spin, Table } from 'antd';
+import { Button, Image, Popconfirm, Spin, Switch, Table, Tag } from 'antd';
 import { useMemo } from 'react';
 import { DeleteTwoTone } from '@ant-design/icons';
 import { brandsLogo } from '@/brands-logo';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import supabase from '@/helpers/supabase/client';
+import { format } from 'date-fns';
+import queryKeys from '@/helpers/queryKeys';
+import useProjectId from '@/hooks/useProjectId';
+import { IconWebhook } from '@tabler/icons-react';
+import useIntegrations from '@/hooks/useIntegrations';
 
 const IntegrationsTable = ({ isLoading }: any) => {
-  const queryClient = useQueryClient();
+  const projectId = useProjectId();
+  const { data: integrations, refetch } = useIntegrations()
 
-  const { data: integrations } = useQuery({
-    queryKey: ["integrations"],
-    queryFn: () => {
-      return supabase.from("integrations").select("*")
+  const updateIntegration = useMutation({
+    mutationKey: queryKeys.integrations({ projectId }),
+    mutationFn: async ({ id, ...updates }) => {
+      return supabase.from("integrations").update(updates).eq("id", id)
     },
-    select: ({ data }) => {
-      return data || []
+    onSuccess: () => {
+      refetch()
     }
-  });
+  })
 
-  const integrationFn = useMutation({
-    mutationKey: ["integrations"],
+  const deleteIntegration = useMutation({
+    mutationKey: queryKeys.integrations({ projectId }),
     mutationFn: async (integrationId) => {
       return supabase.from("integrations").delete().eq("id", integrationId)
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["integrations"],
-      });
+      refetch()
     }
   })
 
   const columns = useMemo(() => {
     return [
-      // {
-      //   title: 'Name',
-      //   dataIndex: 'name',
-      //   key: 'name',
-      //   width: "20%",
-      //   render: (value: any) => {
-      //     return (
-      //       <span>
-      //         {value || "-"}
-      //       </span>
-      //     )
-      //   },
-      // },
       {
         title: 'Platform',
         dataIndex: 'platform',
         key: 'platform',
-        width: "100%",
+        width: 75,
         render: (_value: any, record: any) => {
+          return record.platform === "webhook" ? <IconWebhook /> : <Image height={25} src={brandsLogo[record.platform]} preview={false} />
+        },
+      },
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        key: 'name',
+        width: 500,
+        render: (value: any) => {
           return (
-            <Image height={25} src={brandsLogo[record.platform]} preview={false} />
+            <span>
+              {value || "-"}
+            </span>
           )
         },
       },
-      // {
-      //   title: 'API Key',
-      //   dataIndex: 'api_key',
-      //   key: 'api_key',
-      //   width: "100%",
-      //   render: (value: any) => {
-      //     return (
-      //       <span>
-      //         {value || "-"}
-      //       </span>
-      //     )
-      //   },
-      // },
+      {
+        title: 'API Key',
+        dataIndex: 'api_key',
+        key: 'api_key',
+        width: 300,
+        render: (value: any, record: any) => {
+          if (record?.metadata?.api_key) {
+            return (
+              <span>
+                <Tag>{record.metadata.api_key}</Tag>
+              </span>
+            )
+          }
+          return (
+            <span>-</span>
+          )
+        },
+      },
+      {
+        title: 'Webhook',
+        dataIndex: 'webhook',
+        key: 'webhook',
+        width: 300,
+        render: (value: any, record: any) => {
+          if (record?.metadata?.webhook) {
+            return (
+              <span>
+                <Tag>{record.metadata.webhook}</Tag>
+              </span>
+            )
+          }
+          return (
+            <span>-</span>
+          )
+        },
+      },
+      {
+        title: 'Date',
+        dataIndex: 'date',
+        key: 'date',
+        width: 175,
+        render: (_value: any, record: any) => {
+          return (
+            <p>{format(record.created_at, 'LLL dd, h:mm aaa')}</p>
+          )
+        },
+      },
       {
         // title: 'Action',
         dataIndex: 'action',
         key: 'action',
         render: (_: any, record: any) => (
-          <Space size="small" align='center'>
+          <div className='flex flex-row items-center gap-4'>
             {/* <Button
               icon={<CopyOutlined />}
             />
             <Button
               icon={<EditOutlined />}
             /> */}
+            <Switch
+              className='w-fit'
+              defaultChecked={record.enabled}
+              onChange={(value) => {
+                updateIntegration.mutate({ id: record.id, enabled: value });
+              }}
+            />
             <Popconfirm
               title="Delete integration"
               description="Are you sure to delete this integration?"
@@ -92,7 +135,7 @@ const IntegrationsTable = ({ isLoading }: any) => {
               }}
               style={{ cursor: "pointer" }}
               onConfirm={() => {
-                integrationFn.mutate(record.id)
+                deleteIntegration.mutate(record.id)
               }}
             >
               <Button
@@ -103,7 +146,7 @@ const IntegrationsTable = ({ isLoading }: any) => {
                 )}
               />
             </Popconfirm>
-          </Space >
+          </div >
         ),
       },
     ]
@@ -149,7 +192,8 @@ const IntegrationsTable = ({ isLoading }: any) => {
           //   pageSize: 25,
           // }}
           pagination={false}
-          style={{ minWidth: 900, overflow: "auto" }}
+        // style={{ width: "auto", overflow: "auto" }}
+        // className='w-fit'
         />
       </div>
     </Spin>

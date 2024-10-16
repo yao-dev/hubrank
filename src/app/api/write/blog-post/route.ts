@@ -558,13 +558,8 @@ export async function POST(request: Request) {
       status: 'ready_to_view'
     }
 
-    if (body.auto_publish) {
-      const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.userId, project_id: body.project_id, enabled: true });
-
-      if (integrations && integrations?.length > 0) {
-        // UPDATE ARTICLE STATUS TO PUBLISHING
-        result.status = 'publishing'
-      }
+    if (body.integration_id) {
+      result.status = 'publishing'
     }
 
     await markArticleAs(result);

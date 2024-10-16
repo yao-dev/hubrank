@@ -28,7 +28,8 @@ import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import WritingStyleSelect from "../WritingStyleSelect/WritingStyleSelect";
 import AddMediaModal from "../AddMediaModal/AddMediaModal";
 import { SearchOutlined } from '@ant-design/icons';
-import { IconBrandZapier } from "@tabler/icons-react";
+import AutoPublishIntegrationSelect from "../AutoPublishIntegrationSelect/AutoPublishIntegrationSelect";
+import useIntegrations from "@/hooks/useIntegrations";
 
 type Props = {
   onSubmit: (values: any) => void;
@@ -51,6 +52,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
   const [variableSet, setVariableSet] = useState({});
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const drawers = useDrawers();
+  const { data: integrations } = useIntegrations({ enabled: true });
 
   useEffect(() => {
     if (project && drawers.blogPost.isOpen) {
@@ -183,7 +185,8 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           structured_schemas: [],
           youtube_url: "",
           featured_image: "",
-          auto_publish: false
+          auto_publish: false,
+          integration_id: null,
         }}
         autoComplete="off"
         layout="vertical"
@@ -201,12 +204,24 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             type: "number",
             message: "Select a language"
           }]}
-
         >
           <LanguageSelect languages={languages} />
         </Form.Item>
 
-        {/* TODO: redirect to integrations page if no integrations enabled and user set this toggle to true */}
+        {!isEmpty(integrations) && (
+          <Form.Item
+            name="auto_publish"
+            label={<Label name="Auto publish" />}
+            rules={[{
+              required: false,
+              type: "number",
+            }]}
+          >
+            <AutoPublishIntegrationSelect />
+          </Form.Item>
+        )}
+
+        {/* TODO: redirect to integrations page if no integrations enabled and user set this toggle to true
         <Flex gap="small" align="center" className="mb-6">
           <Form.Item name="auto_publish" rules={[]} style={{ margin: 0 }}>
             <Switch size="small" />
@@ -218,7 +233,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             <p>Auto publish</p>
             <IconBrandZapier size={18} className="text-orange-500" />
           </div>
-        </Flex>
+        </Flex> */}
 
         <Form.Item
           name="title_mode"
