@@ -1,7 +1,7 @@
 'use client';;
 import { Button, Image, Popconfirm, Spin, Switch, Table, Tag } from 'antd';
 import { useMemo } from 'react';
-import { DeleteTwoTone } from '@ant-design/icons';
+import { DeleteTwoTone, SettingOutlined } from '@ant-design/icons';
 import { brandsLogo } from '@/brands-logo';
 import { useMutation } from '@tanstack/react-query';
 import supabase from '@/helpers/supabase/client';
@@ -12,7 +12,7 @@ import { IconWebhook } from '@tabler/icons-react';
 import useIntegrations from '@/hooks/useIntegrations';
 import { compact, isEmpty } from 'lodash';
 
-const IntegrationsTable = ({ isLoading }: any) => {
+const IntegrationsTable = ({ isLoading, onOpenEditMenu }: any) => {
   const projectId = useProjectId();
   const { data: integrations, refetch } = useIntegrations()
 
@@ -73,6 +73,7 @@ const IntegrationsTable = ({ isLoading }: any) => {
             record.metadata?.trigger ?? "",
             record.metadata?.api_url ?? "",
             record.metadata?.admin_api_key ?? "",
+            record.metadata?.access_token ?? "",
             record.metadata?.webhook ?? "",
             record.metadata?.url ?? "",
           ])
@@ -119,6 +120,12 @@ const IntegrationsTable = ({ isLoading }: any) => {
               onChange={(value) => {
                 updateIntegration.mutate({ id: record.id, enabled: value });
               }}
+            />
+            <Button
+              onClick={() => onOpenEditMenu(record)}
+              icon={(
+                <SettingOutlined />
+              )}
             />
             <Popconfirm
               title="Delete integration"

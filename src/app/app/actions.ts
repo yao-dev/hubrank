@@ -5,6 +5,7 @@ import { google } from 'googleapis';
 import { createCheckoutSession } from '@/features/payment/helpers/create-checkout-session';
 import { deductCredits } from '../api/helpers';
 import { getSummary } from 'readability-cyr';
+import { Webflow, WebflowClient } from "webflow-api";
 
 const stripe = require('stripe')(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY ?? "");
 
@@ -115,4 +116,21 @@ export const checkout = async (body: { url: string; words: number; customer_emai
 
 
   return checkoutSessionUrl
+}
+
+const getWebflowClient = (accessToken: string) => new WebflowClient({ accessToken });
+
+export const getWebflowSites = (accessToken: string): Promise<Webflow.Sites> => {
+  const webflow = getWebflowClient(accessToken);
+  return webflow.sites.list();
+}
+
+export const getWebflowCollections = ({ siteId, accessToken }: { siteId: string, accessToken: string }): Promise<Webflow.CollectionList> => {
+  const webflow = getWebflowClient(accessToken);
+  return webflow.collections.list(siteId);
+}
+
+export const getWebflowCollectionItems = ({ collectionId, accessToken }: { siteId: string, collectionId: string, accessToken: string }): Promise<Webflow.Collection> => {
+  const webflow = getWebflowClient(accessToken);
+  return webflow.collections.get(collectionId)
 }

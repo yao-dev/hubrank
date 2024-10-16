@@ -1,5 +1,5 @@
 'use client';;
-import { Button, Dropdown, Modal, Form, Input, message, Select, Tag } from 'antd';
+import { Button, Dropdown, Modal, Form, Input, message, Select, Tag, Spin, Image } from 'antd';
 import { brandsLogo } from '@/brands-logo';
 import PageTitle from '@/components/PageTitle/PageTitle';
 import supabase from '@/helpers/supabase/client';
@@ -10,14 +10,17 @@ import useProjectId from '@/hooks/useProjectId';
 import { IconWebhook } from '@tabler/icons-react';
 import IntegrationsTable from '@/components/IntegrationsTable/IntegrationsTable';
 import { PlusOutlined } from '@ant-design/icons';
-import { useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import Label from '@/components/Label/Label';
-import { capitalize } from 'lodash';
+import { capitalize, isEmpty } from 'lodash';
 import ModalTitle from '@/components/ModalTitle/ModalTitle';
 import { v4 as uuid } from "uuid";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useRouter } from 'next/navigation';
+import WebflowSiteSelect from '@/components/WebflowSiteSelect/WebflowSiteSelect';
+import WebflowCollectionSelect from '@/components/WebflowCollectionSelect/WebflowCollectionSelect';
+import { getWebflowCollectionItems, getWebflowCollections, getWebflowSites } from '@/app/app/actions';
 
 const GhostIntegrationForm = ({ form, onFinish }) => {
   return (
@@ -154,6 +157,237 @@ const ZapierIntegrationForm = ({ form, onFinish }) => {
         </div>
       </Form.Item>
     </Form>
+  );
+};
+
+const WebflowIntegrationForm = ({ form, onFinish }) => {
+  const [isFetchingSites, setIsFetchingSites] = useState(false);
+  const [isFetchingCollections, setIsFetchingCollections] = useState(false);
+  const [isFetchingItems, setIsFetchingItems] = useState(false);
+  const [sites, setSites] = useState<{ label: string | ReactNode; value: string }[]>([]);
+  const [collections, setCollections] = useState<{ label: string | ReactNode; value: string }[]>([]);
+  const [items, setItems] = useState<{ label: string | ReactNode; value: string }[]>([]);
+  const accessToken = Form.useWatch("access_token", form);
+  const siteId = Form.useWatch("site_id", form);
+  const collectionId = Form.useWatch("collection_id", form);
+
+  console.log({
+    accessToken,
+    siteId,
+    collectionId,
+    items
+  })
+
+  const onFetchSites = async () => {
+    try {
+      setIsFetchingSites(true)
+      const result = await getWebflowSites(accessToken);
+      if (result.sites) {
+        setSites(result.sites?.map((item) => ({
+          label: item.displayName,
+          value: item.id
+        })))
+      }
+      setIsFetchingSites(false)
+    } catch (e) {
+      console.error(e);
+      setIsFetchingSites(false)
+
+    }
+  }
+
+  const fetchCollections = useCallback(async () => {
+    try {
+      setIsFetchingCollections(true)
+      const result = await getWebflowCollections({ siteId, accessToken });
+      if (result.collections) {
+        setCollections(result.collections?.map((item) => ({
+          label: item.displayName,
+          value: item.id
+        })))
+      }
+      setIsFetchingCollections(false)
+    } catch (e) {
+      console.error(e);
+      setIsFetchingCollections(false)
+
+    }
+  }, [siteId]);
+
+  const fetchSingleCollection = useCallback(async () => {
+    try {
+      setIsFetchingItems(true)
+      const result = await getWebflowCollectionItems({ collectionId, accessToken });
+
+      if (result?.fields) {
+        setItems(result.fields?.map((item) => ({
+          label: (
+            <div className='flex flex-row items-baseline gap-1'>
+              <p className='font-medium'>{item.displayName}</p>
+              <p className='text-xs text-gray-400'>({item.type})</p>
+            </div>
+          ),
+          value: item.id
+        })))
+      }
+      setIsFetchingItems(false)
+    } catch (e) {
+      console.error(e);
+      setIsFetchingItems(false)
+
+    }
+  }, [collectionId]);
+
+  useEffect(() => {
+    fetchCollections()
+  }, [siteId, fetchCollections]);
+
+  useEffect(() => {
+    fetchSingleCollection()
+  }, [collectionId, fetchSingleCollection]);
+
+  const fieldsArray = [
+    { label: "Created At", value: "created_at" },
+    { label: "Status", value: "status" },
+    { label: "HTML", value: "html" },
+    { label: "Markdown", value: "markdown" },
+    { label: "Title", value: "title" },
+    { label: "Seed Keyword", value: "seed_keyword" },
+    { label: "Meta Description", value: "meta_description" },
+    { label: "Featured Image", value: "featured_image" },
+    { label: "Slug", value: "slug" },
+  ];
+
+  return (
+    <Spin spinning={isFetchingSites || isFetchingCollections || isFetchingItems}>
+      <Form
+        form={form}
+        onFinish={onFinish}
+        layout='vertical'
+        initialValues={{
+          name: "",
+          access_token: "39072e736ae0155b78a3e8d02fdba70cc64060ff44bf7fd723f456465b923edb",
+          site_id: undefined,
+          collection_id: undefined,
+          // TODO: add hubrank fields
+          created_at: undefined,
+          status: undefined,
+          html: undefined,
+          markdown: undefined,
+          title: undefined,
+          seed_keyword: undefined,
+          meta_description: undefined,
+          featured_image: undefined,
+          slug: undefined
+        }}
+        onError={console.log}
+      >
+        <Form.Item
+          name="name"
+          label={<Label name="Name" />}
+          rules={[{ required: true, message: 'Name is required' }]}
+        >
+          <Input placeholder="Name" />
+        </Form.Item>
+
+        <Form.Item
+          name="access_token"
+          label={<Label name="Access token" />}
+          rules={[{ required: true, message: 'Access token is required' }]}
+          className='mb-0'
+        >
+          <Input placeholder="Access token" />
+        </Form.Item>
+
+        <div className='flex flex-row justify-start mt-2 mb-6'>
+          <Button
+            onClick={onFetchSites}
+            loading={isFetchingSites}
+            disabled={!accessToken}
+          >
+            Fetch sites
+          </Button>
+        </div>
+
+        {!isEmpty(sites) && (
+          <Form.Item
+            name="site_id"
+            label={<Label name="Site" />}
+            rules={[{ required: true, message: 'Site is required' }]}
+          >
+            <WebflowSiteSelect options={sites} />
+          </Form.Item>
+        )}
+
+        {!isEmpty(collections) && (
+          <Form.Item
+            name="collection_id"
+            label={<Label name="Collection" />}
+            rules={[{ required: true, message: 'Collection is required' }]}
+          >
+            <WebflowCollectionSelect options={collections} />
+          </Form.Item>
+        )}
+
+        {!isEmpty(items) && (
+          <>
+            <p className='text-base font-semibold mb-1'>Map fields</p>
+            <p className='mb-4 text-gray-500'>Map Hubrank's fields with your Webflow collection</p>
+
+            <div className='grid grid-cols-2 gap-4 mb-6'>
+              {fieldsArray.map((item) => {
+                return (
+                  <Form.Item
+                    key={item.value}
+                    name={item.value}
+                    label={<Label name={item.label} />}
+                    className='mb-0'
+                  >
+                    <Select
+                      placeholder="Select a field"
+                      optionLabelProp="label"
+                      options={items}
+                      className='w-full'
+                    />
+                  </Form.Item>
+                )
+              })}
+            </div>
+
+            {/* created_at, status, html, markdown, title, seed_keyword, meta_description, featured_image, slug */}
+          </>
+        )}
+
+        <Form.Item>
+          <div
+            className='relative h-0 w-full rounded-lg'
+            style={{
+              position: "relative",
+              paddingBottom: "calc(57.46527777777778% + 41px)",
+              height: 0,
+              width: "100%"
+            }}
+          >
+            <iframe
+              src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
+              title="Hubrank"
+              loading="eager"
+              allowFullScreen
+              allow="clipboard-write"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                colorScheme: "light"
+              }}
+              className='rounded-lg'
+            />
+          </div>
+        </Form.Item>
+      </Form>
+    </Spin>
   );
 };
 
@@ -384,6 +618,7 @@ const ShopifyIntegrationForm = ({ form, onFinish }) => {
 
 export default function Integrations() {
   const queryClient = useQueryClient();
+  const [selectedEditIntegration, setSelectedEditIntegration] = useState()
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const userId = useUserId();
   const projectId = useProjectId();
@@ -394,9 +629,11 @@ export default function Integrations() {
   const [webhookForm] = Form.useForm();
   const [wordpressForm] = Form.useForm();
   const [shopifyForm] = Form.useForm();
+  const [webflowForm] = Form.useForm();
 
   const { form, FormComponent } = useMemo(() => {
-    switch (selectedPlatform) {
+    const platform = selectedEditIntegration?.platform || selectedPlatform;
+    switch (platform) {
       case 'ghost':
         return { form: ghostForm, FormComponent: GhostIntegrationForm };
       case 'zapier':
@@ -407,10 +644,23 @@ export default function Integrations() {
         return { form: wordpressForm, FormComponent: WordpressIntegrationForm };
       case 'shopify':
         return { form: shopifyForm, FormComponent: ShopifyIntegrationForm };
+      case 'webflow':
+        return { form: webflowForm, FormComponent: WebflowIntegrationForm };
       default:
         return {};
     }
-  }, [selectedPlatform]);
+  }, [selectedEditIntegration, selectedPlatform]);
+
+
+  useEffect(() => {
+    if (selectedEditIntegration) {
+      const initialValues = {
+        ...(selectedEditIntegration.metadata ?? {}),
+        name: selectedEditIntegration.name ?? "",
+      }
+      form?.setFieldsValue(initialValues)
+    }
+  }, [selectedEditIntegration])
 
   const addIntegration = useMutation({
     mutationFn: async ({ name, ...metadata }) => {
@@ -426,10 +676,36 @@ export default function Integrations() {
     }
   })
 
+  const updateIntegration = useMutation({
+    mutationFn: async ({ name, ...metadata }) => {
+      return supabase.from("integrations").update({ name, platform: selectedEditIntegration.platform, metadata }).eq("id", selectedEditIntegration.id).throwOnError()
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.integrations({ projectId }),
+      });
+    },
+    onError: () => {
+      message.error("We couldn't update your integration please try again.")
+    }
+  })
+
+  console.log(selectedEditIntegration)
+
   const onFinish = async (values) => {
-    await addIntegration.mutateAsync(values);
+    if (selectedEditIntegration) {
+      await updateIntegration.mutateAsync(values);
+    } else {
+      await addIntegration.mutateAsync(values);
+    }
     form?.resetFields();
     setSelectedPlatform("");
+    setSelectedEditIntegration(undefined)
+  }
+
+  const onOpenEditMenu = (record: any) => {
+    console.log(record)
+    setSelectedEditIntegration(record)
   }
 
   return (
@@ -469,12 +745,24 @@ export default function Integrations() {
                 icon: <img src={brandsLogo.webflow} width={20} />,
                 onClick: () => setSelectedPlatform("webflow")
               },
-              {
-                key: "shopify",
-                label: "Shopify",
-                icon: <img src={brandsLogo.shopify} width={20} />,
-                onClick: () => setSelectedPlatform("shopify")
-              },
+              // {
+              //   key: "shopify",
+              //   label: "Shopify",
+              //   icon: <img src={brandsLogo.shopify} width={20} />,
+              //   onClick: () => setSelectedPlatform("shopify")
+              // },
+              // {
+              //   key: "sanity",
+              //   label: "Sanity",
+              //   icon: <img src={brandsLogo.sanity} width={20} />,
+              //   onClick: () => setSelectedPlatform("sanity")
+              // },
+              // {
+              //   key: "notion",
+              //   label: "Notion",
+              //   icon: <img src={brandsLogo.notion} width={20} />,
+              //   onClick: () => setSelectedPlatform("notion")
+              // },
               // {
               //   key: "wix",
               //   label: "Wix",
@@ -488,13 +776,21 @@ export default function Integrations() {
       </div>
 
       <Modal
-        title={<ModalTitle>New {capitalize(selectedPlatform)} integration</ModalTitle>}
-        open={!!selectedPlatform}
+        title={(
+          <ModalTitle>
+            {(selectedEditIntegration?.platform || selectedPlatform) === "webhook" ? <IconWebhook /> : <Image height={40} src={brandsLogo[selectedEditIntegration?.platform || selectedPlatform]} preview={false} />}
+            {selectedEditIntegration ? "Update" : "New"} {capitalize(selectedEditIntegration?.platform || selectedPlatform)} integration
+          </ModalTitle>
+        )}
+        open={!!selectedPlatform || !!selectedEditIntegration}
         style={{ top: 50, left: 100 }}
-        onCancel={() => setSelectedPlatform("")}
-        okText="Add integration"
+        onCancel={() => {
+          setSelectedPlatform("")
+          setSelectedEditIntegration(undefined)
+        }}
+        okText={selectedEditIntegration ? "Update" : "Add integration"}
         onOk={() => form?.submit()}
-        confirmLoading={addIntegration.isPending}
+        confirmLoading={addIntegration.isPending || addIntegration.isPending}
       >
         {FormComponent && (
           <FormComponent
@@ -504,7 +800,7 @@ export default function Integrations() {
         )}
       </Modal>
 
-      <IntegrationsTable isLoading={addIntegration.isPending} />
+      <IntegrationsTable isLoading={addIntegration.isPending || addIntegration.isPending} onOpenEditMenu={onOpenEditMenu} />
     </div>
   )
 }

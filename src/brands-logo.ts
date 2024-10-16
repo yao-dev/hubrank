@@ -6,4 +6,6 @@ export const brandsLogo = {
   webflow: "https://cdn.prod.website-files.com/65e87f68dc636e71667a539c/667bfae829f75ed433514ace_webflow-icon-blue.svg",
   wix: "https://e7.pngegg.com/pngimages/393/72/png-clipart-wix-newest-logo-tech-companies.png",
   ghost: "https://ghost.org/images/logos/ghost-logo-orb.png",
+  sanity: "https://avatars.githubusercontent.com/u/17177659?s=280&v=4",
+  notion: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png"
 }

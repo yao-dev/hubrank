@@ -6,7 +6,7 @@ type Props = {
 
 const ModalTitle = ({ children }: Props) => {
   return (
-    <p className='text-xl font-bold'>{children}</p>
+    <p className='text-xl font-bold flex flex-row items-center gap-2'>{children}</p>
   )
 }
 

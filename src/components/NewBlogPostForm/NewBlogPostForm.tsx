@@ -154,7 +154,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           content_type: "blog_posts",
           // purpose: "", // TODO: remove it in favor of purposes
           writing_mode: "custom",
-          writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default)?.id : null,
+          writing_style_id: !!writingStyles?.data ? writingStyles.data.find((i) => !!i.default)?.id : undefined,
           tones: [],
           purposes: [], // TODO: add in DB, use it in BE write endpoint
           emotions: [], // TODO: add in DB, use it in BE write endpoint
@@ -185,7 +185,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           structured_schemas: [],
           youtube_url: "",
           featured_image: "",
-          auto_publish: false,
+          auto_publish: undefined,
           integration_id: null,
         }}
         autoComplete="off"

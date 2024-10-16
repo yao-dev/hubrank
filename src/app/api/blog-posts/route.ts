@@ -4,6 +4,7 @@ import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
 import GhostAdminAPI from '@tryghost/admin-api';
 import axios from "axios";
+import { WebflowClient } from "webflow-api";
 
 export const maxDuration = 30;
 
@@ -92,6 +93,28 @@ export async function POST(request: Request) {
             case 'zapier': {
               await publishBlogPost({ url: integration.metadata.url, blogPost: body.record });
               break;
+            }
+            case 'webflow': {
+              const webflow = new WebflowClient({ accessToken: integration.metadata.access_token });
+              await webflow.collections.items.createItem(integration.metadata.collection_id, {
+                id: body.record.id,
+                isArchived: false,
+                isDraft: integration.metadata.status === "draft",
+                fieldData: {
+                  id: body.record.id,
+                  created_at: body.record.created_at,
+                  status: body.record.status,
+                  html: body.record.html,
+                  markdown: body.record.markdown,
+                  title: body.record.title,
+                  name: body.record.title,
+                  seed_keyword: body.record.seed_keyword,
+                  meta_description: body.record.meta_description,
+                  featured_image: body.record.featured_image,
+                  slug: body.record.slug
+                }
+              });
+              //  NOTE: webflow.collections.items.updateItem also exist
             }
           }
 
