@@ -1,6 +1,5 @@
 import { Inter } from 'next/font/google';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
-import RealtimeWrapper from '@/components/RealTimeWrapper/RealTimeWrapper';
 import { App, Spin } from 'antd';
 import ReactQueryProvider from '@/components/ReactQueryProvider/ReactQueryProvider';
 import AntdProvider from '@/components/AntdProvider/AntdProvider';
@@ -79,13 +78,11 @@ export default function RootLayout({
           <AntdProvider>
             <App>
               <ReactQueryProvider>
-                <RealtimeWrapper>
-                  <Suspense fallback={<Spin spinning />}>
-                    <Recaptcha>
-                      {children}
-                    </Recaptcha>
-                  </Suspense>
-                </RealtimeWrapper>
+                <Suspense fallback={<Spin spinning />}>
+                  <Recaptcha>
+                    {children}
+                  </Recaptcha>
+                </Suspense>
               </ReactQueryProvider>
             </App>
           </AntdProvider>

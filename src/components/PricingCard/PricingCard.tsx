@@ -21,9 +21,7 @@ const PricingCard = ({
   subtitle
 }: Props) => {
   const user = useUser();
-  const [words, setWords] = useState(15000);
-
-  console.log("user in pricing card", user)
+  const [words, setWords] = useState(ONE_ARTICLE_WORD_COUNT * 3);
 
   let costPerWord;
   let pricingTitle;
@@ -91,7 +89,7 @@ const PricingCard = ({
               <Button
                 size="large"
                 type="primary"
-                href={user ? undefined : LOGIN_URL}
+                href={user ? undefined : `${LOGIN_URL}?create_checkout=${words}`}
                 onClick={async () => {
                   if (user) {
                     const checkoutSessionUrl = await checkout({

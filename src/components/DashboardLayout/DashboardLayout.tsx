@@ -20,7 +20,6 @@ import {
   IconDashboard,
   IconSeo,
   IconWriting,
-  IconCreditCard,
   IconBulb,
   IconMessage,
   IconTextCaption,
@@ -38,6 +37,7 @@ import usePricingModal from '@/hooks/usePricingModal';
 import { useLogout } from '@/hooks/useLogout';
 import supabase from '@/helpers/supabase/client';
 import Confetti from 'react-confetti';
+import { checkout } from '@/app/app/actions';
 
 const { Sider, Content } = Layout;
 
@@ -143,6 +143,7 @@ export default function DashboardLayout({
   const searchParams = useSearchParams();
   const tab = searchParams.get('tab');
   const checkoutSuccess = searchParams.get('checkout_success');
+  const createCheckout = searchParams.get('create_checkout');
   const projectId = useProjectId()
   const [isMobileView, setIsMobileView] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -169,8 +170,19 @@ export default function DashboardLayout({
       setTimeout(() => {
         router.replace(`${location.origin}${location.pathname}`);
       }, 5000);
+    } else if (createCheckout) {
+      if (user) {
+        checkout({
+          url: location.origin + location.pathname,
+          words: +createCheckout,
+          customer_email: user.email,
+          referral: window?.promotekit_referral
+        }).then((checkoutSessionUrl) => {
+          window.location.href = checkoutSessionUrl;
+        })
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, createCheckout]);
 
   const data: MenuItem[] = useMemo(() => {
     const menus = [
