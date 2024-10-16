@@ -67,13 +67,13 @@ const IntegrationsTable = ({ isLoading }: any) => {
         width: 900,
         render: (value: any, record: any) => {
           const tags = compact([
-            record.metadata.admin_api_key,
-            record.metadata.api_url,
-            record.metadata.status,
-            record.metadata.webhook,
-            record.metadata.url,
-            record.metadata.username,
-            record.metadata.password,
+            record.metadata?.admin_api_key ?? "",
+            record.metadata?.api_url ?? "",
+            record.metadata?.status ?? "",
+            record.metadata?.webhook ?? "",
+            record.metadata?.url ?? "",
+            record.metadata?.username ?? "",
+            record.metadata?.password ?? "",
           ])
 
           if (isEmpty(tags)) {
@@ -83,7 +83,7 @@ const IntegrationsTable = ({ isLoading }: any) => {
           }
 
           return (
-            <div className='flex flex-row gap-2'>
+            <div className='flex flex-row gap-1'>
               {tags.map((value, index) => <Tag key={index}>{value}</Tag>)}
             </div>
           )
