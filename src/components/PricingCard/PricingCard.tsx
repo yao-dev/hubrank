@@ -8,6 +8,7 @@ import useUser from "@/hooks/useUser";
 import { checkout } from "@/app/app/actions";
 
 const ONE_ARTICLE_WORD_COUNT = 1500;
+const DEFAULT_WORDS = ONE_ARTICLE_WORD_COUNT * 10 * 3;
 
 type Props = {
   borderless?: boolean;
@@ -21,7 +22,7 @@ const PricingCard = ({
   subtitle
 }: Props) => {
   const user = useUser();
-  const [words, setWords] = useState(ONE_ARTICLE_WORD_COUNT * 10 * 3);
+  const [words, setWords] = useState(DEFAULT_WORDS);
 
   let costPerWord;
   let pricingTitle;
@@ -76,7 +77,7 @@ const PricingCard = ({
             min={15000}
             max={450000}
             step={15000}
-            defaultValue={15000}
+            defaultValue={DEFAULT_WORDS}
             tooltip={{ open: false }}
             onChange={setWords}
           />

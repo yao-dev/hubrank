@@ -151,6 +151,7 @@ export default function DashboardLayout({
   const pricingModal = usePricingModal();
   const logout = useLogout();
   const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
+  const [showLoadingCheckout, setShowLoadingCheckout] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -171,16 +172,15 @@ export default function DashboardLayout({
         router.replace(`${location.origin}${location.pathname}`);
       }, 5000);
     } else if (createCheckout) {
-      if (user) {
-        checkout({
-          url: location.origin + location.pathname,
-          words: +createCheckout,
-          customer_email: user.email,
-          referral: window?.promotekit_referral
-        }).then((checkoutSessionUrl) => {
-          window.location.href = checkoutSessionUrl;
-        })
-      }
+      setShowLoadingCheckout(true)
+      checkout({
+        url: location.origin + location.pathname,
+        words: +createCheckout,
+        customer_email: user.email,
+        referral: window?.promotekit_referral
+      }).then((checkoutSessionUrl) => {
+        window.location.href = checkoutSessionUrl;
+      })
     }
   }, [searchParams, createCheckout]);
 
@@ -346,7 +346,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <>
+    <Spin spinning={showLoadingCheckout} tip="Loading checkout">
       <Drawer
         open={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
@@ -435,6 +435,6 @@ export default function DashboardLayout({
           {/* <Footer style={{ ...styles.footer, background: colorBgContainer }}>Test</Footer> */}
         </Layout>
       </Layout>
-    </>
+    </Spin>
   )
 }
