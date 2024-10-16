@@ -3,6 +3,9 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { google } from 'googleapis';
 import { createCheckoutSession } from '@/features/payment/helpers/create-checkout-session';
+import { deductCredits } from '../api/helpers';
+import { getSummary } from 'readability-cyr';
+
 const stripe = require('stripe')(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY ?? "");
 
 const youtube = google.youtube({
@@ -10,10 +13,21 @@ const youtube = google.youtube({
   auth: process.env.YOUTUBE_API_KEY
 })
 
-export async function getAIAutocomplete(type: string, value: string) {
+export async function getAIAutocomplete({
+  type,
+  value,
+  userId
+}: { type: string, value: string; userId: string }) {
   const { text, finishReason, usage } = await generateText({
     model: openai('gpt-4o'),
     prompt: `${type} the text below:\n\n${value}\n\nOutput the same format as the Input`,
+  });
+
+  await deductCredits({
+    userId,
+    costInCredits: getSummary(text).words,
+    featureName: "ai autocomplete",
+    premiumName: "words",
   });
 
   return { text, finishReason, usage };

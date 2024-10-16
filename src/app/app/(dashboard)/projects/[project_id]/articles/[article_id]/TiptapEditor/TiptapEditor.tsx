@@ -33,6 +33,9 @@ import AddMediaModal from '@/components/AddMediaModal/AddMediaModal';
 import { DOMSerializer } from '@tiptap/pm/model';
 import { Dropdown } from 'antd';
 import { getAIAutocomplete } from '@/app/app/actions';
+import useUser from '@/hooks/useUser';
+import usePricingModal from '@/hooks/usePricingModal';
+import { getSummary } from 'readability-cyr';
 
 const AIContext = createContext({ content: "" })
 
@@ -94,6 +97,8 @@ const MenuButton = ({
 const useMenuButtons = () => {
   const { editor } = useCurrentEditor();
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const pricingModal = usePricingModal();
+  const user = useUser();
 
   if (!editor) {
     return {}
@@ -104,7 +109,11 @@ const useMenuButtons = () => {
   }
 
   const onAI = async (type, selection) => {
-    const response = await getAIAutocomplete(type, selection.content);
+    if (user.premium.words < getSummary(selection.content).words) {
+      return pricingModal.open(true)
+    }
+
+    const response = await getAIAutocomplete({ type, value: selection.content, userId: user.id });
     editor.commands.setTextSelection({ from: selection.from, to: selection.to })
     editor.commands.insertContentAt({ from: selection.from, to: selection.to }, response.text)
   }

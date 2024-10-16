@@ -23,6 +23,8 @@ const PricingCard = ({
   const user = useUser();
   const [words, setWords] = useState(15000);
 
+  console.log("user in pricing card", user)
+
   let costPerWord;
   let pricingTitle;
 

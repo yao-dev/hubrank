@@ -3,6 +3,7 @@ import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost } from
 import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
 import GhostAdminAPI from '@tryghost/admin-api';
+import axios from "axios";
 
 export const maxDuration = 30;
 
@@ -15,8 +16,8 @@ export async function POST(request: Request) {
     switch (body.type) {
       case 'UPDATE': {
         if (
-          body.old_record?.status !== "error" && body.record.status === "error" ||
-          body.old_record?.status !== "ready_to_view" && body.record.status === "ready_to_view"
+          ["queue", "writing"].includes(body.old_record?.status) && body.record.status === "error" ||
+          ["writing"].includes(body.old_record?.status) && body.record.status === "ready_to_view"
         ) {
           const concurrencyLeft = await getWritingConcurrencyLeft()
 
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
             await updateBlogPost(body.record.id, { schedule_id: scheduleId })
           }
         } else if (body.old_record?.status !== "publishing" && body.record.status === "publishing") {
-          // TODO: handle re-publish case
+          // TODO: handle re-publish/update case
           const { data: integration } = await supabase().from("integrations").select("*").eq("id", body.record.integration_id).maybeSingle().throwOnError();
 
           switch (integration?.platform) {
@@ -54,14 +55,42 @@ export async function POST(request: Request) {
               await api.posts.add({
                 title: body.record.title,
                 html: body.record.html,
-                status: "published"
+                status: "published",
+
+                meta_description: body.record.meta_description,
+                feature_image: body.record.featured_image,
+                slug: body.record.slug,
+                meta_title: body.record.title,
+                facebook_title: body.record.title,
+                facebook_description: body.record.meta_description,
+                facebook_image: body.record.featured_image,
+                twitter_title: body.record.title,
+                twitter_description: body.record.meta_description,
+                twitter_image: body.record.featured_image,
+
+                // og_image
+                // og_image_description
               }, { source: 'html' })
               break;
+            }
+            case 'webhook': {
+              const blogPost = {
+                id: body.record.id,
+                created_at: body.record.created_at,
+                status: body.record.status,
+                html: body.record.html,
+                markdown: body.record.markdown,
+                title: body.record.title,
+                seed_keyword: body.record.seed_keyword,
+                meta_description: body.record.meta_description,
+                featured_image: body.record.featured_image,
+                slug: body.record.slug
+              };
+              await axios.post(integration.metadata.webhook, blogPost)
             }
           }
 
           await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
-
 
           // const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
 
