@@ -36,6 +36,8 @@ import { getAIAutocomplete } from '@/app/app/actions';
 import useUser from '@/hooks/useUser';
 import usePricingModal from '@/hooks/usePricingModal';
 import { getSummary } from 'readability-cyr';
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/helpers/queryKeys';
 
 const AIContext = createContext({ content: "" })
 
@@ -99,6 +101,7 @@ const useMenuButtons = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const pricingModal = usePricingModal();
   const user = useUser();
+  const queryClient = useQueryClient();
 
   if (!editor) {
     return {}
@@ -115,7 +118,10 @@ const useMenuButtons = () => {
 
     const response = await getAIAutocomplete({ type, value: selection.content, userId: user.id });
     editor.commands.setTextSelection({ from: selection.from, to: selection.to })
-    editor.commands.insertContentAt({ from: selection.from, to: selection.to }, response.text)
+    editor.commands.insertContentAt({ from: selection.from, to: selection.to }, response.text);
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.user()
+    })
   }
 
   return {

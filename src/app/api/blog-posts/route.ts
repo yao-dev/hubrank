@@ -47,7 +47,7 @@ export async function POST(request: Request) {
           switch (integration?.platform) {
             case 'ghost': {
               const api = new GhostAdminAPI({
-                url: integration.metadata.api_url,
+                url: integration.metadata.api_url.endsWith("/") ? integration.metadata.api_url.slice(0, -1) : integration.metadata.api_url,
                 key: integration.metadata.admin_api_key,
                 version: 'v5.0'
               });
