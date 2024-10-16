@@ -60,6 +60,9 @@ export async function POST(request: Request) {
             }
           }
 
+          await supabase().from("blog_posts").update({ status: "published" }).eq("id", body.record.id);
+
+
           // const { data: integrations } = await supabase().from("integrations").select("*").match({ user_id: body.record.user_id, project_id: body.record.project_id, enabled: true });
 
           // const promises = integrations?.map(async (integration) => {

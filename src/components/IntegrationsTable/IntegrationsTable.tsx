@@ -50,7 +50,7 @@ const IntegrationsTable = ({ isLoading }: any) => {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        width: 500,
+        width: 200,
         render: (value: any) => {
           return (
             <span>
@@ -69,6 +69,24 @@ const IntegrationsTable = ({ isLoading }: any) => {
             return (
               <span>
                 <Tag>{record.metadata.api_key}</Tag>
+              </span>
+            )
+          }
+          return (
+            <span>-</span>
+          )
+        },
+      },
+      {
+        title: 'API URL',
+        dataIndex: 'api_url',
+        key: 'api_url',
+        width: 300,
+        render: (value: any, record: any) => {
+          if (record?.metadata?.api_url) {
+            return (
+              <span>
+                <Tag>{record.metadata.api_url}</Tag>
               </span>
             )
           }
