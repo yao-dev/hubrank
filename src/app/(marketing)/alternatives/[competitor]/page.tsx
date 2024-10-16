@@ -58,30 +58,9 @@ export default function Alternative({ params, searchParams }: Props) {
             {data.description}
           </section>
 
-          {/* <section className="flex flex-col gap-4">
-            <h1 className="text-2xl lg:text-3xl font-bold">Why choose Hubrank over {data.name}?</h1>
-
-            <GetStarted title="Get 5 Free Credits" className='w-fit' />
-            <div className="flex flex-row gap-4">
-              <IconCheck />
-              <p>Senja's free tier allows you to collect up to 15 text and video reviews. No credit card required.</p>
-            </div>
-            <div className="flex flex-row gap-4">
-              <IconCheck />
-              <p>Senja's free tier allows you to collect up to 15 text and video reviews. No credit card required.</p>
-            </div>        <div className="flex flex-row gap-4">
-              <IconCheck />
-              <p>Senja's free tier allows you to collect up to 15 text and video reviews. No credit card required.</p>
-            </div>        <div className="flex flex-row gap-4">
-              <IconCheck />
-              <p>Senja's free tier allows you to collect up to 15 text and video reviews. No credit card required.</p>
-            </div>
-          </section> */}
-
           <section className="flex flex-col gap-6">
             <h2 className="text-2xl lg:text-3xl font-bold text-center">Why choose Hubrank over {data.name}?</h2>
             <FeaturesPreview />
-            {/* <GetStarted title="Get 5 Free Credits" className='w-fit mx-auto' /> */}
           </section>
         </div>
       </section>
