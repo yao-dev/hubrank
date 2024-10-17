@@ -1528,6 +1528,7 @@ export const getOutlineSchema = ({
   }
 
   if (with_sections_image) {
+    // sectionSchema.image = z.boolean().describe(`At least 40% of the sections must contain an image`);
     sectionSchema.image = z.boolean().describe(`At least 40% of the sections must contain an image`);
     sectionSchema.image_description = z.boolean().describe("Search query to get/extract up-to-date information on the web/serp");
   }

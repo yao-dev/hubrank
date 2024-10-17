@@ -38,11 +38,11 @@ import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 import { compact, get, shuffle } from "lodash";
-import { getImages } from "@/helpers/image";
+import { getAiImage, getImages } from "@/helpers/image";
 import { searchYouTubeVideos } from "@/app/app/actions";
 import { generateObject, generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { avoidWords } from "@/options";
+import { avoidWords, imageStyles } from "@/options";
 import { v4 as uuid } from "uuid";
 
 export const maxDuration = 300;
@@ -298,11 +298,19 @@ export async function POST(request: Request) {
 
       let image;
 
-      if (section.image) {
-        const images = await getImages(get(section, "keywords", ""));
-        console.log("unsplash images", images)
-        image = shuffle(images)[0]
+      // image_description
+      // getAiImage({query, image_style})
+      if (section.image && section.image_description) {
+        const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name })
+        image = generatedImage
       }
+
+      // NOTE: disabling it for now as the images found are not really accurate compared to the content
+      // if (section.image) {
+      //   const images = await getImages(get(section, "keywords", ""));
+      //   console.log("unsplash images", images)
+      //   image = shuffle(images)[0]
+      // }
 
       // TODO: add knowledges in writeSection prompt
       // const knowledges = await getProjectKnowledges({
@@ -337,7 +345,6 @@ export async function POST(request: Request) {
 
         external_links = Array.from(new Set(relevantUrls));
         console.log(`links found in the serp matching the section: ${section.name} and query ${section.search_query}`, chalk.bgMagenta(JSON.stringify(external_links, null, 2)));
-
 
         // TODO: scrape urls
         // - get html of each serp url - done
