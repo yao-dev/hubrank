@@ -42,15 +42,16 @@ import { generateObject, generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { avoidWords, imageStyles } from "@/options";
 import { v4 as uuid } from "uuid";
-// import { createAnthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
 
-// const anthropic = createAnthropic({
-//   baseURL: "https://anthropic.hconeai.com/",
-//   apiKey: process.env.ANTHROPIC_API_KEY,
-//   headers: {
-//     "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-//   },
-// });
+const anthropic = createAnthropic({
+  baseURL: "https://api.anthropic.com/v1",
+  // baseURL: "https://anthropic.hconeai.com/",
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  // headers: {
+  //   "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
+  // },
+});
 
 export const maxDuration = 300;
 
@@ -465,8 +466,8 @@ export async function POST(request: Request) {
       try {
         const sectionContentMarkdown = await generateText({
           // output: "object",
-          model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
-          // model: anthropic("claude-3-5-sonnet-20240620"),
+          // model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
+          model: anthropic("claude-3-5-sonnet-20240620"),
           // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
           temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
           // temperature: shuffle([0.3, 0.4, 0.5])[0],
