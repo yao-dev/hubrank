@@ -97,7 +97,6 @@ export const insertBlogPost = async (data: any) => {
         with_key_takeways: data.with_key_takeways,
         outline: data.outline,
         cost: data.cost,
-        auto_publish: data.auto_publish,
         integration_id: data.integration_id,
         metadata: data.metadata,
       })

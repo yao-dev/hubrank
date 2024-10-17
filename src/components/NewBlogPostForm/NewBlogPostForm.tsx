@@ -185,7 +185,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           structured_schemas: [],
           youtube_url: "",
           featured_image: "",
-          auto_publish: undefined,
           integration_id: null,
         }}
         autoComplete="off"
@@ -210,7 +209,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
 
         {!isEmpty(integrations) && (
           <Form.Item
-            name="auto_publish"
+            name="integration_id"
             label={<Label name="Auto publish" />}
             rules={[{
               required: false,
@@ -220,20 +219,6 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
             <AutoPublishIntegrationSelect integrations={integrations} />
           </Form.Item>
         )}
-
-        {/* TODO: redirect to integrations page if no integrations enabled and user set this toggle to true
-        <Flex gap="small" align="center" className="mb-6">
-          <Form.Item name="auto_publish" rules={[]} style={{ margin: 0 }}>
-            <Switch size="small" />
-          </Form.Item>
-          <div
-            className="cursor-pointer flex flex-row items-center gap-1"
-            onClick={() => form.setFieldValue("auto_publish", !form.getFieldValue("auto_publish"))}
-          >
-            <p>Auto publish</p>
-            <IconBrandZapier size={18} className="text-orange-500" />
-          </div>
-        </Flex> */}
 
         <Form.Item
           name="title_mode"
