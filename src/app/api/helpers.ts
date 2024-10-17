@@ -1348,10 +1348,12 @@ export const getTableOfContent = (markdown: string): string => {
   // Loop through the lines to find markdown headings
   lines.forEach((line, index) => {
     // Use a regular expression to match headings (e.g., #, ##, ###)
+    // example of heading ## <a name=\"introduction\"></a>Introduction
     const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+
     if (headingMatch) {
       const level = headingMatch[1].length; // The number of '#' characters determines the level
-      const text = headingMatch[2].trim(); // Extract the heading text
+      const text = headingMatch[2].trim().replace(/<[^>]*>?/gm, ''); // Extract the heading text // Remove any HTML tags
       const id = text
         .toLowerCase()
         .replace(/\s+/g, "-") // Replace spaces with hyphens
