@@ -79,9 +79,6 @@ export async function updateSession(request: NextRequest) {
   }
 
   // rewrite root application to `/`
-  console.log("ENTER 4")
-  console.log({ path })
-  console.log(new URL(`${path === "/" ? "" : path}`, request.url))
   return NextResponse.rewrite(
     new URL(`${path === "/" ? "" : path}`, request.url),
   );
