@@ -1349,7 +1349,7 @@ export const getTableOfContent = (markdown: string): string => {
   lines.forEach((line, index) => {
     // Use a regular expression to match headings (e.g., #, ##, ###)
     // example of heading ## <a name=\"introduction\"></a>Introduction
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+    const headingMatch = line.match(/^(#{2,3})\s+(.*)/);
 
     if (headingMatch) {
       const level = headingMatch[1].length; // The number of '#' characters determines the level
