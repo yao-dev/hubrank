@@ -7,7 +7,6 @@ import { IconDownload } from '@tabler/icons-react';
 import prettify from "pretty";
 import useProjectId from '@/hooks/useProjectId';
 import { NodeHtmlMarkdown } from 'node-html-markdown';
-import { format } from 'date-fns';
 
 const ExportBlogPostButton = ({ id, disabled }) => {
   const projectId = useProjectId()
@@ -60,18 +59,19 @@ ${article?.html}
   }
 
   const onCopyMarkdown = () => {
-    navigator.clipboard.writeText(`
----
-title: "${article.title ?? ""}"
-description: "${article.meta_description ?? ""}"
-image: ${article.og_image_url ?? ""}
-keywords: "${article.keywords.join() ?? ""}"
-date: ${format(article.created_at, "yyyy-MM-dd")}
-modified: ${format(new Date(), "yyyy-MM-dd")}
----
+    navigator.clipboard.writeText(NodeHtmlMarkdown.translate(html));
+    //     navigator.clipboard.writeText(`
+    // ---
+    // title: "${article.title ?? ""}"
+    // description: "${article.meta_description ?? ""}"
+    // image: ${article.og_image_url ?? ""}
+    // keywords: "${article.keywords.join() ?? ""}"
+    // date: ${format(article.created_at, "yyyy-MM-dd")}
+    // modified: ${format(new Date(), "yyyy-MM-dd")}
+    // ---
 
-${NodeHtmlMarkdown.translate(html)}
-      `);
+    // ${NodeHtmlMarkdown.translate(html)}
+    //       `);
     message.success("Copied to clipboard!");
   }
 
