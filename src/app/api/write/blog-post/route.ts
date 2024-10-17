@@ -514,8 +514,8 @@ export async function POST(request: Request) {
         if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
           console.log("- rephrase");
           const rephraseSectionContent = await generateText({
-            model: openai("gpt-4o"),
-            temperature: 0.4,
+            model: openai("gpt-4"),
+            temperature: 0.2,
             prompt: getRephraseInstruction(markdown),
           })
           markdown = rephraseSectionContent.text;
