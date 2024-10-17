@@ -1703,13 +1703,13 @@ export const getSectionPrompt = (values: any): string => {
     prompt += `\n- Do not add a CTA at the end`
   }
 
-  if (values?.internal_links?.length > 0) {
-    prompt += `\nInternal links you could include (no call to action):\n${values.internal_links?.join('\n')}\n\n`
-  }
+  // if (values?.internal_links?.length > 0) {
+  //   prompt += `\nInternal links you could include (no call to action):\n${values.internal_links?.join('\n')}\n\n`
+  // }
 
-  if (values?.external_links?.length > 0) {
-    prompt += `\nExternal links you could include (no call to action):\n${values.external_links?.join('\n')}\n\n`
-  }
+  // if (values?.external_links?.length > 0) {
+  //   prompt += `\nExternal links you could include (no call to action):\n${values.external_links?.join('\n')}\n\n`
+  // }
 
   if (values?.external_resources?.length > 0) {
     prompt += `\nExternal resources for extra context:\n${JSON.stringify(values.external_resources, null, 2)}\n\n`
