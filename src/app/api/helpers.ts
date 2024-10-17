@@ -213,7 +213,7 @@ export const writeHook = async ({
 
 export const getRephraseInstruction = (content: string) => {
   const veryHardSentences = getHemingwayStats(content).filter(i => i.level === "very_hard").map(i => i.text);
-  const sentencesToRephrase = shuffle(veryHardSentences).slice(0, Math.max(1, veryHardSentences.length / 2))
+  const sentencesToRephrase = shuffle(veryHardSentences).slice(0, Math.max(1, Math.max(veryHardSentences.length, 4)))
 
   return [
     `Content:\n${content}
