@@ -27,6 +27,7 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { getCaptions } from '@dofy/youtube-caption-fox';
 import { transcribe } from "yt-transcribe";
+import { getTocMarkdownText } from "markdown-table-of-content";
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
@@ -1341,38 +1342,39 @@ export const publishBlogPost = async ({ url, blogPost }: any) => {
 }
 
 export const getTableOfContent = (markdown: string): string => {
-  // Split the markdown content into lines
-  const lines = markdown.split("\n");
+  return getTocMarkdownText(markdown)
+  // // Split the markdown content into lines
+  // const lines = markdown.split("\n");
 
-  // Initialize the Table of Contents string
-  let toc = "## Contents\n\n";
-  let headingCount = 0;
+  // // Initialize the Table of Contents string
+  // let toc = "## Contents\n\n";
+  // let headingCount = 0;
 
-  // Loop through the lines to find markdown headings
-  lines.forEach((line, index) => {
-    // Use a regular expression to match headings (e.g., #, ##, ###)
-    const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
-    if (headingMatch) {
-      const level = headingMatch[1].length; // The number of '#' characters determines the level
-      const text = headingMatch[2].trim(); // Extract the heading text
-      const id = text
-        .toLowerCase()
-        .replace(/\s+/g, "-") // Replace spaces with hyphens
-        .replace(/[^\w-]+/g, ""); // Remove any non-alphanumeric characters
+  // // Loop through the lines to find markdown headings
+  // lines.forEach((line, index) => {
+  //   // Use a regular expression to match headings (e.g., #, ##, ###)
+  //   const headingMatch = line.match(/^(#{1,6})\s+(.*)/);
+  //   if (headingMatch) {
+  //     const level = headingMatch[1].length; // The number of '#' characters determines the level
+  //     const text = headingMatch[2].trim(); // Extract the heading text
+  //     const id = text
+  //       .toLowerCase()
+  //       .replace(/\s+/g, "-") // Replace spaces with hyphens
+  //       .replace(/[^\w-]+/g, ""); // Remove any non-alphanumeric characters
 
-      // Increment the heading count
-      headingCount++;
+  //     // Increment the heading count
+  //     headingCount++;
 
-      // Add indentation for subheadings based on level
-      const indentation = "   ".repeat(level - 1);
+  //     // Add indentation for subheadings based on level
+  //     const indentation = "   ".repeat(level - 1);
 
-      // Add the heading to the Table of Contents
-      // toc += `${indentation}[${text}](#${id})\n`;
-      toc += `${indentation}${headingCount}. [${text}](#${id})\n`;
-    }
-  });
+  //     // Add the heading to the Table of Contents
+  //     // toc += `${indentation}[${text}](#${id})\n`;
+  //     toc += `${indentation}${headingCount}. [${text}](#${id})\n`;
+  //   }
+  // });
 
-  return toc;
+  // return toc;
 };
 
 

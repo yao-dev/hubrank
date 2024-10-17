@@ -3936,6 +3936,13 @@ markdown-it@^14.0.0:
     punycode.js "^2.3.1"
     uc.micro "^2.1.0"
 
+markdown-table-of-content@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/markdown-table-of-content/-/markdown-table-of-content-1.0.3.tgz#252817ba926f73191327eeb6a99e88c019416355"
+  integrity sha512-1pAYbgNdBF5zQAB3CosuszvJo1q7B9cEQmWiMeWrKGI3nFQMC9AreQmsMUBDx8Qm6uCyooCETkEjLGxHrynH6A==
+  dependencies:
+    uslug "^1.0.4"
+
 marked@^11.1.1:
   version "11.1.1"
   resolved "https://registry.yarnpkg.com/marked/-/marked-11.1.1.tgz#e1b2407241f744fb1935fac224680874d9aff7a3"
@@ -5981,6 +5988,11 @@ unescape-js@^1.1.4:
   dependencies:
     string.fromcodepoint "^0.2.1"
 
+"unorm@>= 1.0.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/unorm/-/unorm-1.6.0.tgz#029b289661fba714f1a9af439eb51d9b16c205af"
+  integrity sha512-b2/KCUlYZUeA7JFUuRJZPUtr4gZvBh7tavtv4fvk4+KV9pfGiR6CQAQAWl49ZpR3ts2dk4FYkP7EIgDJoiOLDA==
+
 unplugin@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/unplugin/-/unplugin-1.0.1.tgz#83b528b981cdcea1cad422a12cd02e695195ef3f"
@@ -6065,6 +6077,13 @@ usehooks-ts@^3.1.0:
   integrity sha512-bBIa7yUyPhE1BCc0GmR96VU/15l/9gP1Ch5mYdLcFBaFGQsdmXkvjV0TtOqW1yUd6VjIwDunm+flSciCQXujiw==
   dependencies:
     lodash.debounce "^4.0.8"
+
+uslug@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/uslug/-/uslug-1.0.4.tgz#b9a22f0914e0a86140633dacc302e5f4fa450677"
+  integrity sha512-Jrbpp/NS3TvIGNjfJT1sn3/BCeykoxR8GbNYW5lF6fUscLkbXFwj1b7m4DvIkHm8k3Qr6Co68lbTmoZTMGk/ow==
+  dependencies:
+    unorm ">= 1.0.0"
 
 utf8@^3.0.0:
   version "3.0.0"
