@@ -215,7 +215,7 @@ export async function POST(request: Request) {
         if (body.with_hook) {
           const { object: hook } = await generateObject({
             output: "object",
-            model: openai("gpt-4o-mini"),
+            model: openai("gpt-4o"),
             schemaName: "article_hook",
             schema: getHookSchema(),
             prompt: getHookPrompt({

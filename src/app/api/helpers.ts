@@ -1614,7 +1614,7 @@ export const getMetaDescriptionSchema = () => {
 
 export const getHookSchema = () => {
   return z.object({
-    markdown: z.string().describe("hook written in markdown."),
+    markdown: z.string().describe("hook written in markdown (no title/heading added)."),
   })
 }
 
@@ -1635,26 +1635,26 @@ export const getHookPrompt = (values: any) => {
   addWritingStyleSection(prompt, values.writingStyle?.perspectives ?? [], "Perspectives");
 
   // NOTE: do I keep this part, it could contribute to keywords stuffing
-  if (!isEmpty(values?.keywords)) {
-    prompt += `\n\nKeywords:\n${values.keywords.join('\n')}\n`
-  }
+  // if (!isEmpty(values?.keywords)) {
+  //   prompt += `\n\nKeywords:\n${values.keywords.join('\n')}\n`
+  // }
 
   prompt += `
-  Write an hook for the article "${values?.title}"
+  Write a 1-2 sentence hook for the article "${values?.title}"
   Choose the hook type that fit the best this article, (Question, Anecdote, Fact/Statistic, Quotation, Bold Statement, Problem-Solution, Surprise, Empathy, Challenge, Personal Story, Prediction, Curiosity, Humor, Rhetorical Question, Metaphor/Analogy)
   Elements that make up a good hook
-  1. State a fact or a statistic
-  2. Begin your writing with a quote
-  3. Ask a question
-  4. Tell a personal story
-  5. Make a statement
-  6. Start with a figure of speech
-  7. Don’t hesitate to contradict popular beliefs
-  8. Use humor
-  9. Connect emotionally to the reader
-  10. Use a contradictory statement
-  11. Define a term
-  12. Explain a common misconception.`;
+  - State a fact or a statistic
+  - Begin your writing with a quote
+  - Ask a question
+  - Tell a personal story
+  - Make a statement
+  - Start with a figure of speech
+  - Don’t hesitate to contradict popular beliefs
+  - Use humor
+  - Connect emotionally to the reader
+  - Use a contradictory statement
+  - Define a term
+  - Explain a common misconception.`;
 
   return prompt;
 }
