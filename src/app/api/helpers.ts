@@ -773,6 +773,7 @@ export const urlToVector = async ({
   namespaceId: string;
   metadata?: any;
 }) => {
+  console.log("starts url to vector")
   try {
     const namespace = upstashVectorIndex.namespace(namespaceId);
     const html = await fetchHtml(url);
@@ -786,7 +787,7 @@ export const urlToVector = async ({
     const promises = output.map(async (document, index) => {
       try {
         const embeddings = await getEmbedding(document.pageContent)
-        console.log("Upsert document number:", index + 1)
+        // console.log("Upsert document number:", index + 1)
         return namespace.upsert({
           id: generateUuid5(document.pageContent),
           vector: embeddings,
