@@ -217,28 +217,22 @@ export const getRephraseInstruction = (content: string) => {
 
   return [
     `Content:\n${content}`,
-    "\n===\n",
-    "Sentences to rephrase",
+    `Sentences to rephrase: ${JSON.stringify(sentencesToRephrase, null, 2)}`,
     JSON.stringify(sentencesToRephrase, null, 2),
     "\n===\n",
-    "Edit like a human using Hemingway principles",
-    "Output a markdown",
+    "diversify vocabulary",
+    "remove adverbs",
+    "remove compound adverbs",
+    "reduce keywords stuffing",
+    "use active voice, idioms and phrasal verbs",
+    "add space to your content with paragraphs",
+    "edit like a human.",
+    // `list of words to absolutely avoid or use alternatives:\n${avoidWords.join('\n- ')}`,
+    "keep all links and images if there are any.",
+    "if there is any links introduce them naturally by guiding the user towards it without directly stating",
+    "Don't end the section like a conclusion, unless it's the conclusion section, but transition smoothly to the next point. This keeps the flow going without making it sound like a conclusion.",
+    "Output the update content in markdown",
   ].join('\n')
-  // return [
-  //   `Content:\n${content}`,
-  //   "\n===\n",
-  //   "diversify vocabulary",
-  //   "remove adverbs",
-  //   "remove compound adverbs",
-  //   "use active voice, idioms and phrasal verbs",
-  //   "add space to your content with paragraphs",
-  //   "edit like a human.",
-  //   `list of words to absolutely avoid or use alternatives:\n${avoidWords.join('\n- ')}`,
-  //   "keep all links and images if there are any.",
-  //   "if there is any links introduce them naturally by guiding the user towards it without directly stating",
-  //   "Don't end the section like a conclusion, unless it's the conclusion section, but transition smoothly to the next point. This keeps the flow going without making it sound like a conclusion.",
-  //   "Output a markdown",
-  // ].join('\n')
 }
 
 export const writeSection = async ({
