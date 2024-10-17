@@ -295,17 +295,6 @@ export async function POST(request: Request) {
         throw new Error(`No section found for index: ${index}`)
       }
 
-      let image;
-
-      // image_description
-      // getAiImage({query, image_style})
-      if (section.image && section.image_description) {
-        const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name })
-        image = generatedImage;
-
-        console.log("ai image", image);
-      }
-
       // NOTE: disabling it for now as the images found are not really accurate compared to the content
       // if (section.image) {
       //   const images = await getImages(get(section, "keywords", ""));
@@ -322,113 +311,146 @@ export async function POST(request: Request) {
       //   minScore: 0.5
       // });
 
+      let image;
       let external_links;
       let external_resources;
-
-      if (section?.search_query) {
-        const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 100, depth: 50 });
-
-        const allLinksFoundInSerp = getAllUrlsFromAnyData(serp);
-        console.log(`all links found in the serp for section: ${section.name} and query ${section.search_query}`, chalk.bgMagenta(JSON.stringify(allLinksFoundInSerp, null, 2)));
-
-        let { object: relevantUrls } = await generateObject({
-          output: "array",
-          model: openai("gpt-4o"),
-          temperature: 0.5,
-          schemaName: "relevant_urls",
-          schema: getRelevantUrlsSchema(),
-          prompt: getRelevantUrlsPrompt({
-            query: section.search_query,
-            count: shuffle([1, 2, 3, 4])[0],
-            urls: allLinksFoundInSerp
-          }),
-        });
-
-        external_links = Array.from(new Set(relevantUrls));
-        console.log(`links found in the serp matching the section: ${section.name} and query ${section.search_query}`, chalk.bgMagenta(JSON.stringify(external_links, null, 2)));
-
-        // TODO: scrape urls
-        // - get html of each serp url - done
-        // - transform them into embeddings - done
-        // - query the embeddings to get the most relevant piece of content - done
-
-        const temporaryNamespaceId = uuid();
-
-        await Promise.all(external_links.map(externalLink => {
-          try {
-            return urlToVector({
-              namespaceId: temporaryNamespaceId,
-              userId: body.userId,
-              url: externalLink,
-              metadata: {
-                url: externalLink
-              }
-            })
-          } catch (e) {
-            console.log("urlToVector error", getErrorMessage(e))
-          }
-        }))
-
-        const externalResources = await queryVector({
-          namespaceId: temporaryNamespaceId,
-          query: section.search_query,
-          topK: 10,
-          minScore: 0.5,
-        });
-
-        external_resources = externalResources.map((item) => ({
-          url: item.metadata.url,
-          content: item.metadata.content,
-        }))
-
-        console.log("external resources", JSON.stringify(external_resources ?? {}, null, 2))
-
-        await deleteNamespace(temporaryNamespaceId)
-
-      }
-
       let selectedYoutubeVideo;
-      if (body.with_youtube_videos && section.youtube_search) {
-        console.log("Search youtube videos, query:", section.youtube_search)
-        const youtubeVideos = (await Promise.all(
-          [
-            searchYouTubeVideos(section.youtube_search),
-            searchYouTubeVideos(section?.keywords?.slice?.(0, 30) ?? "")
-          ]
-        ))
-          .flat()
-          .map((youtubeVideo) => {
-            return {
-              id: youtubeVideo?.id?.videoId,
-              name: youtubeVideo?.snippet?.title,
-              description: youtubeVideo?.snippet?.description,
-            }
-          })
-          .filter(video => video.id && video.name && video.description)
+      const realTimeEnabled = true;
 
-        if (youtubeVideos) {
-          console.log(`We found ${youtubeVideos.length} relevant videos for:`, section.youtube_search, JSON.stringify(youtubeVideos, null, 2));
-          console.log("We search for the most relevant video for this section:", section.name)
-
-          const { object: relevantYoutubeVideo } = await generateObject({
-            output: "object",
-            model: openai("gpt-4o"),
-            temperature: 0.5,
-            schemaName: "relevant_youtube_video",
-            schema: getRelevantYoutubeVideoSchema(),
-            prompt: getRelevantYoutubeVideoPrompt({
-              query: section.youtube_search,
-              youtubeVideos
-            }),
-          });
-
-          selectedYoutubeVideo = relevantYoutubeVideo;
-
-          console.log("The most relevant video is:", JSON.stringify(relevantYoutubeVideo, null, 2));
-        } else {
-          console.log("No video found for the query:", section.youtube_search)
+      async function generateImage() {
+        try {
+          if (section.image && section.image_description) {
+            const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name });
+            image = generatedImage;
+            console.log("ai image", image);
+          }
+        } catch (error) {
+          console.error("Error generating AI image:", getErrorMessage(error));
         }
       }
+
+      const getRealtimeData = async () => {
+        try {
+          if (section?.search_query && realTimeEnabled) {
+            const serp = await getSerp({ query: section.search_query, languageCode: language.code, locationCode: language.location_code, count: 100, depth: 50 });
+
+            const allLinksFoundInSerp = shuffle(getAllUrlsFromAnyData(serp)).slice(0, 5);
+            console.log(`all links found in the serp for section: ${section.name} and query ${section.search_query}`, chalk.bgMagenta(JSON.stringify(allLinksFoundInSerp, null, 2)));
+
+            let { object: relevantUrls } = await generateObject({
+              output: "array",
+              model: openai("gpt-4o"),
+              temperature: 0.5,
+              schemaName: "relevant_urls",
+              schema: getRelevantUrlsSchema(),
+              prompt: getRelevantUrlsPrompt({
+                query: section.search_query,
+                count: shuffle([1, 2, 3, 4])[0],
+                urls: allLinksFoundInSerp
+              }),
+            });
+
+            external_links = Array.from(new Set(relevantUrls));
+            console.log(`links found in the serp matching the section: ${section.name} and query ${section.search_query}`, chalk.bgMagenta(JSON.stringify(external_links, null, 2)));
+
+            // TODO: scrape urls
+            // - get html of each serp url - done
+            // - transform them into embeddings - done
+            // - query the embeddings to get the most relevant piece of content - done
+
+            const temporaryNamespaceId = uuid();
+
+            console.log("external_links to vectors", external_links);
+
+            await Promise.all(external_links.map(externalLink => {
+              try {
+                return urlToVector({
+                  namespaceId: temporaryNamespaceId,
+                  userId: body.userId,
+                  url: externalLink,
+                  metadata: {
+                    url: externalLink
+                  }
+                })
+              } catch (e) {
+                console.log("urlToVector error", getErrorMessage(e))
+              }
+            }))
+
+            const externalResources = await queryVector({
+              namespaceId: temporaryNamespaceId,
+              query: section.search_query,
+              topK: 10,
+              minScore: 0.5,
+            });
+
+            external_resources = externalResources.map((item) => ({
+              url: item.metadata.url,
+              content: item.metadata.content,
+            }))
+
+            console.log("external resources", JSON.stringify(external_resources ?? {}, null, 2))
+
+            await deleteNamespace(temporaryNamespaceId)
+          }
+        } catch (error) {
+          console.error("Error getting realtime data", getErrorMessage(error))
+        }
+      }
+
+      const getYoutube = async () => {
+        try {
+          if (body.with_youtube_videos && section.youtube_search) {
+            console.log("Search youtube videos, query:", section.youtube_search)
+            const youtubeVideos = (await Promise.all(
+              [
+                searchYouTubeVideos(section.youtube_search),
+                searchYouTubeVideos(section?.keywords?.slice?.(0, 30) ?? "")
+              ]
+            ))
+              .flat()
+              .map((youtubeVideo) => {
+                return {
+                  id: youtubeVideo?.id?.videoId,
+                  name: youtubeVideo?.snippet?.title,
+                  description: youtubeVideo?.snippet?.description,
+                }
+              })
+              .filter(video => video.id && video.name && video.description)
+
+            if (youtubeVideos) {
+              console.log(`We found ${youtubeVideos.length} relevant videos for:`, section.youtube_search, JSON.stringify(youtubeVideos, null, 2));
+              console.log("We search for the most relevant video for this section:", section.name)
+
+              const { object: relevantYoutubeVideo } = await generateObject({
+                output: "object",
+                model: openai("gpt-4o"),
+                temperature: 0.5,
+                schemaName: "relevant_youtube_video",
+                schema: getRelevantYoutubeVideoSchema(),
+                prompt: getRelevantYoutubeVideoPrompt({
+                  query: section.youtube_search,
+                  youtubeVideos
+                }),
+              });
+
+              selectedYoutubeVideo = relevantYoutubeVideo;
+
+              console.log("The most relevant video is:", JSON.stringify(relevantYoutubeVideo, null, 2));
+            } else {
+              console.log("No video found for the query:", section.youtube_search)
+            }
+          }
+        } catch (error) {
+          console.error("Error embedding youtube video:", getErrorMessage(error));
+        }
+      }
+
+      await Promise.all([
+        generateImage(),
+        getRealtimeData(),
+        getYoutube()
+      ])
 
       console.log(`[start]: ${index}) ${section.name}`);
 

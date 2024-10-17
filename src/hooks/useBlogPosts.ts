@@ -4,6 +4,7 @@ import queryKeys from "@/helpers/queryKeys";
 import supabase from '@/helpers/supabase/client';
 import { isNaN } from "lodash";
 import useProjectId from "./useProjectId";
+import { secondsToMilliseconds } from "date-fns";
 
 const getOne = async (id: number) => {
   return supabase.from('blog_posts').select('*').eq('id', id).maybeSingle().throwOnError();
@@ -41,6 +42,7 @@ const useGetAll = ({ queue }: { queue?: boolean }) => {
     queryFn: () => getAll(projectId, queue),
     placeholderData: keepPreviousData,
     refetchOnWindowFocus: true,
+    refetchInterval: secondsToMilliseconds(10)
   });
 };
 
