@@ -86,12 +86,12 @@ const features = [
     title: "Embed Youtube videos",
     description: "Automatically embeds relevant videos in your blogs, enriching your content and keeping readers engaged.",
   },
-  {
-    id: 12,
-    icon: <IconLink className="text-primary-500 mx-auto lg:mx-0" />,
-    title: "Internal linking",
-    description: "Your sitemap is used to interlink your articles together to improve your SEO score."
-  },
+  // {
+  //   id: 12,
+  //   icon: <IconLink className="text-primary-500 mx-auto lg:mx-0" />,
+  //   title: "Internal linking",
+  //   description: "Your sitemap is used to interlink your articles together to improve your SEO score."
+  // },
   // {
   //   id: 13,
   //   icon: <IconLayoutCollage className="text-primary-500 mx-auto lg:mx-0" />,

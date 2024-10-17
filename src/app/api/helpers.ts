@@ -1370,7 +1370,7 @@ export const getTableOfContent = (markdown: string): string => {
     }
   });
 
-  return toc.join("\n");
+  return `${toc.join("\n")}\n\n`;
 };
 
 
