@@ -36,8 +36,7 @@ import {
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
-import supabase from "@/helpers/supabase/server";
-import { compact, get, shuffle } from "lodash";
+import { compact, shuffle } from "lodash";
 import { getAiImage, getImages } from "@/helpers/image";
 import { searchYouTubeVideos } from "@/app/app/actions";
 import { generateObject, generateText } from "ai";
@@ -191,7 +190,7 @@ export async function POST(request: Request) {
     const outline = outlinePlan.table_of_content_markdown;
     finalResult.outline = outline;
 
-    console.log(chalk.bgMagenta(JSON.stringify(outlinePlan, null, 2)));
+    console.log("OUTLINE ===", chalk.bgMagenta(JSON.stringify(outlinePlan, null, 2)));
 
     const handleMetaDescription = async () => {
       try {
@@ -302,7 +301,9 @@ export async function POST(request: Request) {
       // getAiImage({query, image_style})
       if (section.image && section.image_description) {
         const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name })
-        image = generatedImage
+        image = generatedImage;
+
+        console.log("ai image", image);
       }
 
       // NOTE: disabling it for now as the images found are not really accurate compared to the content
@@ -436,7 +437,7 @@ export async function POST(request: Request) {
           // output: "object",
           model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
           // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
-          temperature: shuffle([0.5, 0.7, 0.8])[0],
+          temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
           // temperature: shuffle([0.3, 0.4, 0.5])[0],
           // schemaName: "section",
           // schema: getSectionSchema(),
