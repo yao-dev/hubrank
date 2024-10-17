@@ -497,8 +497,8 @@ export async function POST(request: Request) {
 
         let markdown: string = sectionContentMarkdown.text;
 
-        if (image?.href) {
-          markdown = markdown.replace('@@image@@', `<img src="${image.href}" alt="${image.alt ?? ''}" width="600" height="auto" />`)
+        if (image?.href || image?.includes("data:")) {
+          markdown = markdown.replace('@@image@@', `<img src="${image?.href || image}" alt="${image?.alt ?? ''}" width="600" height="auto" />`)
         }
 
         if (selectedYoutubeVideo?.id) {
