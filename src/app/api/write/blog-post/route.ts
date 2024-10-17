@@ -247,7 +247,6 @@ export async function POST(request: Request) {
     finalResult.featured_image = featuredImage
 
     if (body.with_featured_image) {
-      // TODO: we should do it only if the user enable if via body.with_image?
       console.log("We search for a suitable featured image");
       const keywordsSubset = keywords.slice(0, 10)
       let keywordImages = await Promise.all(keywordsSubset.map(

@@ -1,5 +1,3 @@
-import dynamic from "next/dynamic";
-import { Spin } from "antd";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HeroHeader from "./components/HeroHeader";
@@ -8,16 +6,27 @@ import "./style.css";
 import PricingCard from "@/components/PricingCard/PricingCard";
 import PageTitle from "@/components/PageTitle/PageTitle";
 
-const Pricing = dynamic(() => import('./components/Pricing'), {
-  loading: () => <Spin spinning />,
-})
-
 export default function LandingPage() {
   return (
     <div id="home" className="flex flex-col gap:12 min-h-dvh bg-white scroll-smooth">
       <Navbar />
 
       <HeroHeader />
+
+      <div className="container mx-auto my-16 flex flex-col gap-4">
+        <div className="flex flex-col">
+          <h3 className="text-3xl font-semibold text-center mb-2">Automate</h3>
+          {/* <h3 className="text-3xl font-semibold text-center mb-2">Automate your workflow</h3> */}
+          {/* <h4 className="text-lg text-center text-gray-400 mb-8">Auto-publish your blogs in major platforms.</h4> */}
+          <h4 className="text-lg text-center text-gray-400 mb-6">Automate your workflow by auto publishing your blog posts via our integrations.</h4>
+        </div>
+        <div className="flex flex-row justify-center items-center gap-16">
+          <img src="/brands/ghost.png" width={150} />
+          <img src="/brands/webhook.png" width={150} />
+          <img src="/brands/webflow.png" width={150} />
+          <img src="/brands/zapier.png" width={150} />
+        </div>
+      </div>
 
       {/* <div>
         <PainPoints />

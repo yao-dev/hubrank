@@ -269,7 +269,7 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
           access_token: "39072e736ae0155b78a3e8d02fdba70cc64060ff44bf7fd723f456465b923edb",
           site_id: undefined,
           collection_id: undefined,
-          // TODO: add hubrank fields
+          // Hubrank's fields
           created_at: undefined,
           status: undefined,
           html: undefined,

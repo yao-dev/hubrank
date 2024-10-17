@@ -111,7 +111,7 @@ const PricingCard = ({
               >
                 Buy Now
               </Button>
-              <Typography.Text type="secondary" className="text-center text-xs">No subscription</Typography.Text>
+              <Typography.Text type="secondary" className="text-center text-xs">One time purchase</Typography.Text>
             </div>
 
             <Flex vertical gap="large">

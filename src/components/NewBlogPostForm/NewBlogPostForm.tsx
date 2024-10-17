@@ -547,13 +547,14 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           </Form.Item>
         </Flex>
 
-        {/* TODO: disable or hide, if you selected a featured image already */}
-        <Flex gap="small" align="center" className="mt-6">
-          <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
-            <Switch size="small" />
-          </Form.Item>
-          <span>Featured image</span>
-        </Flex>
+        {!featuredImage && (
+          <Flex gap="small" align="center" className="mt-6">
+            <Form.Item name="with_featured_image" rules={[]} style={{ margin: 0 }}>
+              <Switch size="small" />
+            </Form.Item>
+            <span>Featured image</span>
+          </Flex>
+        )}
 
         <Flex gap="small" align="center">
           <Form.Item name="with_table_of_content" rules={[]} style={{ margin: 0 }}>
