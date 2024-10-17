@@ -211,7 +211,7 @@ export const writeHook = async ({
 }
 
 export const getRephraseInstruction = (content: string) => {
-  const veryHardSentences = getHemingwayStats(content).filter(i => i.level === "very_hard");
+  const veryHardSentences = getHemingwayStats(content).filter(i => i.level === "very_hard").map(i => i.text);
   const sentencesToRephrase = shuffle(veryHardSentences).slice(0, Math.max(1, veryHardSentences.length / 2))
 
   return [
@@ -1715,8 +1715,11 @@ export const getSectionPrompt = (values: any): string => {
     prompt += `\nExternal resources for extra context:\n${JSON.stringify(values.external_resources, null, 2)}\n\n`
   }
 
+  // if (hasImage) {
+  //   prompt += `\nInclude the text @@image@@ as a placeholder that will be replaced by an image named "${values.image.alt}"`
+  // }
   if (hasImage) {
-    prompt += `\nInclude the text @@image@@ as a placeholder that will be replaced by an image named "${values.image.alt}"`
+    prompt += `\nInclude the text @@image@@ as a placeholder that will be replaced by an image`
   }
 
   if (hasVideo) {
