@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUpstashDestination, updateCredits } from "../helpers";
 import { createSchedule } from "@/helpers/qstash";
 import supabase from "@/helpers/supabase/server";
+import { upsertUserPremiumData } from "@/features/payment/helpers/handle-webhook-event";
 
 export const maxDuration = 30;
 
@@ -12,16 +13,13 @@ export async function POST(request: Request) {
     switch (body.type) {
       case 'UPDATE': {
         if (!body.old_record.user_id && body.record.user_id) {
-          await updateCredits({ userId: body.record.user_id, credits: 100, action: "increment" });
-          // start a cron that will call an endpoint monthly
-          const messageId = await createSchedule({
-            destination: getUpstashDestination("api/appsumo/update-credits"),
-            body: body.record,
-            headers: {
-              "Upstash-Cron": "0 0 1 * *", // run on the 1st day of each month
-            }
+          const { data: user } = await supabase().from("users").select().eq("id", body.record.user_id).maybeSingle();
+          await upsertUserPremiumData({
+            customerId: user.customer_id,
+            words: 330000,
+            keywords_research: 1100,
+            ai_images: 660
           });
-          await supabase().from("appsumo_code").update({ schedule_id: messageId }).eq("id", body.record.id);
         }
         break;
       }

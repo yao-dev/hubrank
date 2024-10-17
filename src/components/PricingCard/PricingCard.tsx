@@ -80,6 +80,11 @@ const PricingCard = ({
             defaultValue={DEFAULT_WORDS}
             tooltip={{ open: false }}
             onChange={setWords}
+            styles={{
+              track: {
+                background: '#5C5FEF'
+              }
+            }}
           />
 
           <p className="text-xl text-center font-bold mb-6">{wordsCount} words</p>

@@ -68,7 +68,7 @@ export async function updateSession(request: NextRequest) {
 
   // rewrites for app pages
   if (request.url.includes("ngrok-free.app") || hostname == `app.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) {
-    if (!user && path !== "/login") {
+    if (!user && !path.startsWith("/login")) {
       return NextResponse.redirect(new URL("/login", request.url));
     } else if (user && path == "/login") {
       return NextResponse.redirect(new URL("/", request.url));
@@ -79,6 +79,9 @@ export async function updateSession(request: NextRequest) {
   }
 
   // rewrite root application to `/`
+  console.log("ENTER 4")
+  console.log({ path })
+  console.log(new URL(`${path === "/" ? "" : path}`, request.url))
   return NextResponse.rewrite(
     new URL(`${path === "/" ? "" : path}`, request.url),
   );

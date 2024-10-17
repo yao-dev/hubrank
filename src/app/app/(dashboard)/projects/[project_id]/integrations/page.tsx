@@ -160,23 +160,22 @@ const ZapierIntegrationForm = ({ form, onFinish }) => {
   );
 };
 
-const WebflowIntegrationForm = ({ form, onFinish }) => {
+const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
   const [isFetchingSites, setIsFetchingSites] = useState(false);
   const [isFetchingCollections, setIsFetchingCollections] = useState(false);
   const [isFetchingItems, setIsFetchingItems] = useState(false);
   const [sites, setSites] = useState<{ label: string | ReactNode; value: string }[]>([]);
   const [collections, setCollections] = useState<{ label: string | ReactNode; value: string }[]>([]);
   const [items, setItems] = useState<{ label: string | ReactNode; value: string }[]>([]);
-  const accessToken = Form.useWatch("access_token", form);
-  const siteId = Form.useWatch("site_id", form);
-  const collectionId = Form.useWatch("collection_id", form);
+  const accessToken = Form.useWatch("access_token", form) ?? initialValues?.access_token;
+  const siteId = Form.useWatch("site_id", form) ?? initialValues?.site_id;
+  const collectionId = Form.useWatch("collection_id", form) ?? initialValues?.collection_id;
 
-  console.log({
-    accessToken,
-    siteId,
-    collectionId,
-    items
-  })
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues)
+    }
+  }, [initialValues]);
 
   const onFetchSites = async () => {
     try {
@@ -221,13 +220,14 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
 
       if (result?.fields) {
         setItems(result.fields?.map((item) => ({
+          ...item,
           label: (
             <div className='flex flex-row items-baseline gap-1'>
               <p className='font-medium'>{item.displayName}</p>
               <p className='text-xs text-gray-400'>({item.type})</p>
             </div>
           ),
-          value: item.id
+          value: item.id,
         })))
       }
       setIsFetchingItems(false)
@@ -239,6 +239,10 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
   }, [collectionId]);
 
   useEffect(() => {
+    onFetchSites()
+  }, [initialValues]);
+
+  useEffect(() => {
     fetchCollections()
   }, [siteId, fetchCollections]);
 
@@ -247,15 +251,16 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
   }, [collectionId, fetchSingleCollection]);
 
   const fieldsArray = [
-    { label: "Created At", value: "created_at" },
-    { label: "Status", value: "status" },
-    { label: "HTML", value: "html" },
-    { label: "Markdown", value: "markdown" },
-    { label: "Title", value: "title" },
-    { label: "Seed Keyword", value: "seed_keyword" },
-    { label: "Meta Description", value: "meta_description" },
-    { label: "Featured Image", value: "featured_image" },
-    { label: "Slug", value: "slug" },
+    { label: "Created At", value: "created_at", type: "DateTime" },
+    { label: "True", value: true, type: "Switch" },
+    { label: "False", value: false, type: "Switch" },
+    { label: "HTML", value: "html", type: "RichText" },
+    { label: "Markdown", value: "markdown", type: "RichText" },
+    { label: "Title", value: "title", type: "PlainText" },
+    { label: "Seed Keyword", value: "seed_keyword", type: "PlainText" },
+    { label: "Meta Description", value: "meta_description", type: "PlainText" },
+    { label: "Featured Image", value: "featured_image", type: "Image" },
+    { label: "Slug", value: "slug", type: "PlainText" },
   ];
 
   return (
@@ -263,24 +268,14 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
       <Form
         form={form}
         onFinish={onFinish}
+        onError={console.log}
         layout='vertical'
         initialValues={{
-          name: "",
-          access_token: "39072e736ae0155b78a3e8d02fdba70cc64060ff44bf7fd723f456465b923edb",
+          name: undefined,
+          access_token: "",
           site_id: undefined,
           collection_id: undefined,
-          // Hubrank's fields
-          created_at: undefined,
-          status: undefined,
-          html: undefined,
-          markdown: undefined,
-          title: undefined,
-          seed_keyword: undefined,
-          meta_description: undefined,
-          featured_image: undefined,
-          slug: undefined
         }}
-        onError={console.log}
       >
         <Form.Item
           name="name"
@@ -332,29 +327,28 @@ const WebflowIntegrationForm = ({ form, onFinish }) => {
         {!isEmpty(items) && (
           <>
             <p className='text-base font-semibold mb-1'>Map fields</p>
-            <p className='mb-4 text-gray-500'>Map Hubrank's fields with your Webflow collection</p>
+            <p className='mb-4 text-gray-500'>Map your Webflow collection with Hubrank's fields</p>
 
             <div className='grid grid-cols-2 gap-4 mb-6'>
-              {fieldsArray.map((item) => {
+              {items.map((item) => {
                 return (
                   <Form.Item
                     key={item.value}
-                    name={item.value}
-                    label={<Label name={item.label} />}
+                    label={item.label}
                     className='mb-0'
+                    name={`fields.${item.id}`}
+                    required={item.isRequired || item.slug === "post-body"}
                   >
                     <Select
                       placeholder="Select a field"
                       optionLabelProp="label"
-                      options={items}
+                      options={fieldsArray.filter((field) => field.type === item.type)}
                       className='w-full'
                     />
                   </Form.Item>
                 )
               })}
             </div>
-
-            {/* created_at, status, html, markdown, title, seed_keyword, meta_description, featured_image, slug */}
           </>
         )}
 
@@ -424,7 +418,7 @@ const WebhookIntegrationForm = ({ form, onFinish }) => {
           <Tag color="blue" className='w-fit'>POST</Tag>
           <SyntaxHighlighter style={solarizedDark} className="rounded-lg">
             {JSON.stringify({
-              "id": 497,
+              "id": 915,
               "created_at": "2024-08-22T03:45:05.232885+00:00",
               "status": "published",
               "html": "<h1>your article html</h1>",
@@ -653,14 +647,17 @@ export default function Integrations() {
 
 
   useEffect(() => {
-    if (selectedEditIntegration) {
-      const initialValues = {
-        ...(selectedEditIntegration.metadata ?? {}),
-        name: selectedEditIntegration.name ?? "",
-      }
-      form?.setFieldsValue(initialValues)
+    if (form && selectedEditIntegration) {
+      setTimeout(() => {
+        const initialValues = {
+          ...(selectedEditIntegration.metadata ?? {}),
+          name: selectedEditIntegration.name ?? "",
+        }
+        console.log({ initialValues })
+        form.setFieldsValue(initialValues)
+      }, 750);
     }
-  }, [selectedEditIntegration])
+  }, [form, selectedEditIntegration])
 
   const addIntegration = useMutation({
     mutationFn: async ({ name, ...metadata }) => {
@@ -690,8 +687,6 @@ export default function Integrations() {
     }
   })
 
-  console.log(selectedEditIntegration)
-
   const onFinish = async (values) => {
     if (selectedEditIntegration) {
       await updateIntegration.mutateAsync(values);
@@ -704,7 +699,6 @@ export default function Integrations() {
   }
 
   const onOpenEditMenu = (record: any) => {
-    console.log(record)
     setSelectedEditIntegration(record)
   }
 
@@ -796,6 +790,10 @@ export default function Integrations() {
           <FormComponent
             form={form}
             onFinish={onFinish}
+            initialValues={selectedEditIntegration ? {
+              ...(selectedEditIntegration.metadata ?? {}),
+              name: selectedEditIntegration.name ?? "",
+            } : undefined}
           />
         )}
       </Modal>

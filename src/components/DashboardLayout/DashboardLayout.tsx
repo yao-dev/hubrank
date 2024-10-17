@@ -262,6 +262,33 @@ export default function DashboardLayout({
           />
         </div>
         <Flex vertical gap="large" style={{ marginBottom: 12 }}>
+          <div className='px-2'>
+            <div className='bg-gray-100 rounded-md p-3 flex flex-col'>
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>Words</p>
+                <p><b>{user?.premium?.words ?? 0}</b></p>
+              </div>
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>Keywords research</p>
+                <p><b>{user?.premium?.keywords_research ?? 0}</b></p>
+              </div>
+              <div className='flex flex-row justify-between'>
+                <p className='font-semibold'>AI images</p>
+                <p><b>{user?.premium?.ai_images ?? 0}</b></p>
+              </div>
+
+              <Button
+                size="small"
+                type="primary"
+                className='mt-4'
+                onClick={() => pricingModal.open(true, {
+                  title: "Buy more words"
+                })}
+              >
+                Buy More
+              </Button>
+            </div>
+          </div>
           <Flex vertical>
             <Menu
               theme="dark"
@@ -302,34 +329,6 @@ export default function DashboardLayout({
           /> */}
 
           {user?.email && <Typography.Text style={{ color: "rgba(255, 255, 255, 0.65)", marginLeft: 28 }}>{user.email}</Typography.Text>}
-
-          <div className='px-2'>
-            <div className='bg-gray-100 rounded-md p-3 flex flex-col'>
-              <div className='flex flex-row justify-between'>
-                <p className='font-semibold'>Words</p>
-                <p><b>{user?.premium?.words ?? 0}</b></p>
-              </div>
-              <div className='flex flex-row justify-between'>
-                <p className='font-semibold'>Keywords research</p>
-                <p><b>{user?.premium?.keywords_research ?? 0}</b></p>
-              </div>
-              <div className='flex flex-row justify-between'>
-                <p className='font-semibold'>AI images</p>
-                <p><b>{user?.premium?.ai_images ?? 0}</b></p>
-              </div>
-
-              <Button
-                size="small"
-                type="primary"
-                className='mt-4'
-                onClick={() => pricingModal.open(true, {
-                  title: "Buy more words"
-                })}
-              >
-                Buy More
-              </Button>
-            </div>
-          </div>
         </Flex>
       </Flex>
     )

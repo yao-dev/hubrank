@@ -76,6 +76,8 @@ const IntegrationsTable = ({ isLoading, onOpenEditMenu }: any) => {
             record.metadata?.access_token ?? "",
             record.metadata?.webhook ?? "",
             record.metadata?.url ?? "",
+            record.metadata?.site_id ?? "",
+            record.metadata?.collection_id ?? "",
           ])
 
           if (isEmpty(tags)) {
@@ -85,7 +87,7 @@ const IntegrationsTable = ({ isLoading, onOpenEditMenu }: any) => {
           }
 
           return (
-            <div className='flex flex-row gap-1'>
+            <div className='flex flex-row flex-wrap gap-1'>
               {tags.map((value, index) => <Tag key={index}>{value}</Tag>)}
             </div>
           )
