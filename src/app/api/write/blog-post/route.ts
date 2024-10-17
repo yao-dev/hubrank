@@ -172,7 +172,7 @@ export async function POST(request: Request) {
     console.log("=== GET OUTLINE PLAN ===")
     const { object: outlinePlan } = await generateObject({
       output: "object",
-      model: openai("gpt-4o"),
+      model: openai("gpt-4"),
       schemaName: "table_of_content",
       schema: getOutlineSchema({ with_sections_image: body.with_sections_image, with_youtube_videos: body.with_youtube_videos }),
       prompt: getOutlinePrompt({
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
         // WRITE META DESCRIPTION
         const { object: metaDescription } = await generateObject({
           output: "object",
-          model: openai("gpt-4o"),
+          model: openai("gpt-4"),
           schemaName: "article_description",
           schema: getMetaDescriptionSchema(),
           prompt: getMetaDescriptionPrompt({ ...body, keywords, outline }),
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
         if (body.with_hook) {
           const { object: hook } = await generateObject({
             output: "object",
-            model: openai("gpt-4o"),
+            model: openai("gpt-4"),
             schemaName: "article_hook",
             schema: getHookSchema(),
             prompt: getHookPrompt({
@@ -338,7 +338,7 @@ export async function POST(request: Request) {
 
             let { object: relevantUrls } = await generateObject({
               output: "array",
-              model: openai("gpt-4o"),
+              model: openai("gpt-4"),
               temperature: 0.5,
               schemaName: "relevant_urls",
               schema: getRelevantUrlsSchema(),
@@ -423,7 +423,7 @@ export async function POST(request: Request) {
 
               const { object: relevantYoutubeVideo } = await generateObject({
                 output: "object",
-                model: openai("gpt-4o"),
+                model: openai("gpt-4"),
                 temperature: 0.5,
                 schemaName: "relevant_youtube_video",
                 schema: getRelevantYoutubeVideoSchema(),
@@ -456,7 +456,7 @@ export async function POST(request: Request) {
       try {
         const sectionContentMarkdown = await generateText({
           // output: "object",
-          model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
+          model: openai(shuffle(["gpt-4", "gpt-4-0613"])[0]),
           // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
           temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
           // temperature: shuffle([0.3, 0.4, 0.5])[0],
