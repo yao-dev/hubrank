@@ -216,8 +216,9 @@ export const getRephraseInstruction = (content: string) => {
   const sentencesToRephrase = shuffle(veryHardSentences).slice(0, Math.max(1, veryHardSentences.length / 2))
 
   return [
-    `Content:\n${content}`,
-    `Sentences to rephrase: ${JSON.stringify(sentencesToRephrase, null, 2)}`,
+    `Content:\n${content}
+    `,
+    `Sentences to improve: ${JSON.stringify(sentencesToRephrase, null, 2)}`,
     JSON.stringify(sentencesToRephrase, null, 2),
     "\n===\n",
     "diversify vocabulary",
