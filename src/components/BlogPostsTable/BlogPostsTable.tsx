@@ -238,7 +238,7 @@ const BlogPostsTable = () => {
             >
               <Button
                 onClick={(e) => e.preventDefault()}
-                disabled={record.status === "writing"}
+                // disabled={record.status === "writing"}
                 icon={(
                   <DeleteTwoTone
                     onClick={(e) => e.preventDefault()}
