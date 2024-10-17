@@ -38,6 +38,8 @@ import { useLogout } from '@/hooks/useLogout';
 import supabase from '@/helpers/supabase/client';
 import Confetti from 'react-confetti';
 import { checkout } from '@/app/app/actions';
+import { useQueryClient } from '@tanstack/react-query';
+import queryKeys from '@/helpers/queryKeys';
 
 const { Sider, Content } = Layout;
 
@@ -153,6 +155,7 @@ export default function DashboardLayout({
   const [isShowAppSumoModal, setIsShowAppSumoModal] = useState(false);
   const [showLoadingCheckout, setShowLoadingCheckout] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (user) {
@@ -160,6 +163,9 @@ export default function DashboardLayout({
         .then((isRedeemable) => {
           if (isRedeemable) {
             setIsShowAppSumoModal(true);
+            queryClient.invalidateQueries({
+              queryKey: queryKeys.user()
+            })
           }
           localStorage.removeItem("appsumo_code");
         })

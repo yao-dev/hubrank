@@ -130,8 +130,8 @@ const PricingCard = ({
                   { name: "Multi-language support" },
                   { name: "Youtube to blog/social media" },
                   { name: "Export in HTML & Markdown" },
-                  { name: "Auto-publish with Zapier" },
-                  { name: "In-article stock images" },
+                  { name: "Auto-publish via integrations" },
+                  // { name: "In-article stock images" },
                   { name: "Auto-generated slug & meta description" }
                 ].map((feature) => {
                   return (
