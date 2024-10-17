@@ -502,7 +502,7 @@ export async function POST(request: Request) {
         }
 
         if (selectedYoutubeVideo?.id) {
-          markdown = markdown.replace("@@image@@", `<iframe width="560" height="315" src="https://www.youtube.com/embed/${selectedYoutubeVideo.id}" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`);
+          markdown = markdown.replace("@@video@@", `<iframe width="560" height="315" src="https://www.youtube.com/embed/${selectedYoutubeVideo.id}" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`);
         }
 
         markdown = markdown.replaceAll('@@image@@', "")
