@@ -525,7 +525,7 @@ export async function POST(request: Request) {
         if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
           console.log("- rephrase");
           const rephraseSectionContent = await generateText({
-            model: shuffle([anthropic("claude-3-5-sonnet-20240620"), openai("gpt-4o")])[0],
+            model: shuffle([openai("gpt-4o")])[0],
             temperature: 0.2,
             prompt: getRephraseInstruction(markdown),
           })
