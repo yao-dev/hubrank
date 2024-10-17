@@ -32,6 +32,7 @@ import {
   queryVector,
   getErrorMessage,
   deductCredits,
+  getRephraseInstruction,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
@@ -467,7 +468,7 @@ export async function POST(request: Request) {
         const sectionContentMarkdown = await generateText({
           // output: "object",
           // model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
-          model: anthropic("claude-3-5-sonnet-20240620"),
+          model: shuffle([anthropic("claude-3-5-sonnet-20240620"), openai(shuffle(["gpt-4o", "gpt-4-0613"])[0])])[0],
           // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
           temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
           // temperature: shuffle([0.3, 0.4, 0.5])[0],
@@ -521,16 +522,16 @@ export async function POST(request: Request) {
         const avoidWordsRegex = new RegExp(`(${avoidWords.join('|')})`, 'gi');
 
         let stats = getSummary(markdown);
-        // if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
-        //   console.log("- rephrase");
-        //   const rephraseSectionContent = await generateText({
-        //     model: openai("gpt-4"),
-        //     temperature: 0.2,
-        //     prompt: getRephraseInstruction(markdown),
-        //   })
-        //   markdown = rephraseSectionContent.text;
-        //   console.log("- rephrase done");
-        // }
+        if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
+          console.log("- rephrase");
+          const rephraseSectionContent = await generateText({
+            model: shuffle([anthropic("claude-3-5-sonnet-20240620"), openai("gpt-4o")])[0],
+            temperature: 0.2,
+            prompt: getRephraseInstruction(markdown),
+          })
+          markdown = rephraseSectionContent.text;
+          console.log("- rephrase done");
+        }
 
         finalResult.sections[index] = removeMarkdownWrapper(markdown)
       } catch (error) {
