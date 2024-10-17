@@ -1342,7 +1342,7 @@ export const publishBlogPost = async ({ url, blogPost }: any) => {
 }
 
 export const getTableOfContent = (markdown: string): string => {
-  return getTocMarkdownText(markdown)
+  return `## Table of Contents\n\n${getTocMarkdownText(markdown)}\n`;
   // // Split the markdown content into lines
   // const lines = markdown.split("\n");
 
