@@ -1374,7 +1374,6 @@ export const getTableOfContent = (markdown: string): string => {
 };
 
 
-
 export const getHemingwayStats = (text) => {
   const result = [];
   // Split the input text into sentences/phrases based on dots or new lines

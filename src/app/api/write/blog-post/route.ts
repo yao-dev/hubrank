@@ -330,7 +330,7 @@ export async function POST(request: Request) {
       async function generateImage() {
         try {
           if (section.image && section.image_description) {
-            const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name });
+            const generatedImage = await getAiImage({ query: section.image_description, image_style: imageStyles[3].name, articleId });
             image = generatedImage;
             console.log("ai image", image);
           }

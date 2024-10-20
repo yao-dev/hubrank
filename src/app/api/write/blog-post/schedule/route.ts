@@ -12,6 +12,7 @@ import {
 } from "@/app/api/helpers";
 import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
+import { slugify } from "@/helpers/text";
 
 export const maxDuration = 45;
 
@@ -91,9 +92,13 @@ export async function POST(request: Request) {
 
       body.title = headlines?.[0];
 
+      const slug = slugify(body.title);
       await updateBlogPost(articleId, {
-        title: body.title, metadata: {
+        title: body.title,
+        slug,
+        metadata: {
           ...body,
+          slug,
           articleId,
           context,
           writingStyle,

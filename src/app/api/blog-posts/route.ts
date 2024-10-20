@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost, publishBlogPost } from "../helpers";
+import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost, publishBlogPost, getErrorMessage } from "../helpers";
 import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
 import GhostAdminAPI from '@tryghost/admin-api';
 import axios from "axios";
 import { WebflowClient } from "webflow-api";
+import { omit } from "lodash";
 
 export const maxDuration = 30;
 
@@ -95,26 +96,61 @@ export async function POST(request: Request) {
               break;
             }
             case 'webflow': {
-              const webflow = new WebflowClient({ accessToken: integration.metadata.access_token });
-              await webflow.collections.items.createItem(integration.metadata.collection_id, {
-                id: body.record.id,
-                isArchived: false,
-                isDraft: integration.metadata.status === "draft",
-                fieldData: {
-                  id: body.record.id,
-                  created_at: body.record.created_at,
-                  status: body.record.status,
-                  html: body.record.html,
-                  markdown: body.record.markdown,
-                  title: body.record.title,
-                  name: body.record.title,
-                  seed_keyword: body.record.seed_keyword,
-                  meta_description: body.record.meta_description,
-                  featured_image: body.record.featured_image,
-                  slug: body.record.slug
+              const { data: lastPublish } = await supabase().from("publications").select().match({ blog_post_id: body.record.id, integration_id: integration.id }).maybeSingle();
+
+              const fieldData: { [key: string]: any } = {};
+
+              console.log({ integration })
+
+              Object.keys(integration.metadata).filter((key) => key.startsWith("fields")).forEach((key) => {
+                const fieldId = key.replace("fields.", "");
+                fieldData[fieldId] = body.record[integration.metadata[key]]
+
+                if (typeof integration.metadata[key] === "boolean") {
+                  fieldData[fieldId] = integration.metadata[key]
                 }
               });
-              //  NOTE: webflow.collections.items.updateItem also exist
+
+              console.log({
+                payload: {
+                  id: body.record.id.toString(),
+                  isArchived: false,
+                  isDraft: integration.metadata.draft,
+                  fieldData,
+                }
+              })
+
+              const webflow = new WebflowClient({ accessToken: integration.metadata.access_token });
+
+              if (!lastPublish) {
+                const result = await webflow.collections.items.createItem(integration.metadata.collection_id, {
+                  id: body.record.id.toString(),
+                  isArchived: false,
+                  isDraft: integration.metadata.draft,
+                  fieldData: {
+                    ...fieldData,
+                    name: body.record.title,
+                    slug: body.record.slug,
+                  },
+                });
+
+                await supabase().from("publications").insert({ blog_post_id: body.record.id, integration_id: integration.id, metadata: result });
+              } else {
+                const result = await webflow.collections.items.updateItem(integration.metadata.collection_id, lastPublish.metadata.id, {
+                  id: body.record.id.toString(),
+                  isArchived: false,
+                  isDraft: integration.metadata.draft,
+                  fieldData: lastPublish.metadata.slug !== fieldData.slug ? {
+                    ...fieldData,
+                    slug: fieldData.slug,
+                    name: body.record.title,
+                  } : {
+                    ...omit(fieldData, "slug"), // NOTE: seems like the slug can't be edited with the same value
+                    name: body.record.title,
+                  },
+                });
+                await supabase().from("publications").update({ metadata: result }).eq("id", lastPublish.id);
+              }
             }
           }
 
@@ -130,6 +166,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: "Blog post webhook success", body }, { status: 200 })
   } catch (error) {
-    throw new Error("Blog post webhook error", { cause: { error, body } });
+    await supabase().from("blog_posts").update({ status: body.old_record.status }).eq("id", body.record.id)
+    throw new Error("Blog post webhook error", { cause: { error: getErrorMessage(error), body } });
   }
 }

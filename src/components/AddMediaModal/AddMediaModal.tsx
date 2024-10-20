@@ -13,15 +13,18 @@ import useUser from '@/hooks/useUser';
 import queryKeys from '@/helpers/queryKeys';
 import { useQueryClient } from '@tanstack/react-query';
 import ModalTitle from '../ModalTitle/ModalTitle';
+import useArticleId from '@/hooks/useArticleId';
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSubmit: (image?: any, video?: any) => void;
   disableYoutube?: boolean;
+  articleId?: string;
 }
 
 const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
+  const articleId = useArticleId()
   const [tab, setTab] = useState("upload");
   const [images, setImages] = useState([]);
   const [videos, setVideos] = useState([]);
@@ -96,17 +99,17 @@ const AddMediaModal = ({ open, onClose, onSubmit, disableYoutube }: Props) => {
       }
 
       setIsGeneratingImage(true)
-      const { data: base64Url } = await axios.post('/api/images/generate', { user_id: user.id, query, image_style: imageStyle });
+      const { data: url } = await axios.post('/api/images/generate', { user_id: user.id, query, image_style: imageStyle, articleId });
 
       queryClient.invalidateQueries({
         queryKey: queryKeys.user()
       });
-      if (!base64Url) {
+      if (!url) {
         message.info('We couldn\'t generate an image from your query')
         setIsGeneratingImage(false);
         return;
       }
-      setGeneratedImageLink(base64Url)
+      setGeneratedImageLink(url)
       setIsGeneratingImage(false)
     } catch (e) {
       if (e?.response?.status === 401) {

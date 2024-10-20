@@ -1,6 +1,15 @@
 import { imageStyles } from "@/options";
 import axios from "axios";
 import { createClient } from 'pexels';
+import ImageKit from "imagekit";
+import supabase from "./supabase/server";
+
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGE_KIT_PUBLIC_KEY ?? "",
+  privateKey: process.env.IMAGE_KIT_PRIVATE_KEY ?? "",
+  urlEndpoint: process.env.IMAGE_KIT_URL_ENDPOINT ?? "",
+});
+
 
 const getUnsplashImages = async (query: string, count = 5) => {
   const { data } = await axios.get("https://api.unsplash.com/search/photos", {
@@ -84,12 +93,13 @@ export const getImages = async (query: string, count = 5) => {
   }
 }
 
-export const getAiImage = async ({ query, image_style }: { query: string; image_style: string }) => {
+export const getAiImage = async ({ query, image_style, articleId }: { query: string; image_style: string; articleId }) => {
   // const details = "color scheme: pastel orange and faded turquoise"
   const prompt = imageStyles.find((i) => i.name === image_style)
+  const type = "png";
   const formData = {
     prompt: prompt?.prompt.replace("{prompt}", query),
-    output_format: "webp",
+    output_format: type,
     // style_preset: "cinematic",
     aspect_ratio: "1:1",
     negative_prompt: prompt?.negative_prompt,
@@ -110,8 +120,15 @@ export const getAiImage = async ({ query, image_style }: { query: string; image_
   );
 
   const base64Image = Buffer.from(response.data).toString('base64');
-  const mimeType = 'image/webp'; // Use webp as the MIME type
-  const imageSrc = `data:${mimeType};base64,${base64Image}`;
 
-  return imageSrc
+  const metadata = await imagekit.upload({
+    file: base64Image, //required
+    fileName: `${Date.now()}.${type}`,   //required
+  });
+
+  if (articleId) {
+    await supabase().from("blog_posts_images").insert({ blog_post_id: articleId, url: metadata.url, metadata });
+  }
+
+  return metadata.url
 }

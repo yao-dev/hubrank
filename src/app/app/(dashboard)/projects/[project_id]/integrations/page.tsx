@@ -275,6 +275,7 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
           access_token: "",
           site_id: undefined,
           collection_id: undefined,
+          draft: true
         }}
       >
         <Form.Item
@@ -336,7 +337,7 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
                     key={item.value}
                     label={item.label}
                     className='mb-0'
-                    name={`fields.${item.id}`}
+                    name={`fields.${item.slug}`}
                     required={item.isRequired || item.slug === "post-body"}
                   >
                     <Select
@@ -349,6 +350,18 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
                 )
               })}
             </div>
+
+            <Form.Item
+              name="draft"
+              label={<Label name="Draft" />}
+              rules={[{ required: false }]}
+            >
+              <Select
+                placeholder="Select a status"
+                options={[{ label: "True", value: true }, { label: "False", value: false }]}
+                optionLabelProp="label"
+              />
+            </Form.Item>
           </>
         )}
 
@@ -421,8 +434,8 @@ const WebhookIntegrationForm = ({ form, onFinish }) => {
               "id": 915,
               "created_at": "2024-08-22T03:45:05.232885+00:00",
               "status": "published",
-              "html": "<h1>your article html</h1>",
-              "markdown": "# your article markdown",
+              "html": "<h1>your html</h1>",
+              "markdown": "# your markdown",
               "title": "SEM vs. SEO: Key Differences Every Marketer Should Know",
               "seed_keyword": "sem vs seo",
               "meta_description": "Understand the key differences between SEO and SEM to boost your business's digital marketing strategy. Explore cost, result time, sustainability, and when to use SEO vs. SEM.",
@@ -653,7 +666,6 @@ export default function Integrations() {
           ...(selectedEditIntegration.metadata ?? {}),
           name: selectedEditIntegration.name ?? "",
         }
-        console.log({ initialValues })
         form.setFieldsValue(initialValues)
       }, 750);
     }

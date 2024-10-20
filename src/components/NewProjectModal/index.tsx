@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import queryKeys from "@/helpers/queryKeys";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
 import ModalTitle from "../ModalTitle/ModalTitle";
+import { transformUrl } from "@/helpers/url";
 
 const NewProjectModal = ({ opened, onClose }: any) => {
   const [error, setError] = useState(false);
@@ -21,13 +22,6 @@ const NewProjectModal = ({ opened, onClose }: any) => {
 
   const [form] = Form.useForm();
   const { data: languages } = useLanguages().getAll();
-
-  const transformUrl = (url: any) => {
-    if (!url?.startsWith('https://')) {
-      url = `https://${url}`
-    }
-    return new URL(url).origin
-  }
 
   const onCreateProject = async (values: any) => {
     try {
@@ -45,7 +39,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
         queryKey: queryKeys.projects(),
       });
       onCloseCreateProject()
-      router.push(`/projects/${data.projectId}/settings`)
+      router.push(`/projects/${data.projectId}?tab=blog-posts`)
       setIsSaving(false)
     } catch (e) {
       setIsSaving(false)
@@ -71,6 +65,7 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       }}
       confirmLoading={isSaving}
       closable={!projects.create.isPending && !isSaving}
+      maskClosable={false}
     >
       <Form
         form={form}
@@ -83,7 +78,9 @@ const NewProjectModal = ({ opened, onClose }: any) => {
           // description: "",
           // seed_keyword: "",
           // target_audience: "",
-          language_id: 1
+          language_id: 1,
+          sitemap: "",
+          blog_path: "",
         }}
       >
         {error && (
@@ -141,6 +138,23 @@ const NewProjectModal = ({ opened, onClose }: any) => {
       <Form.Item name="target_audience" label="Target audience" rules={[{ required: true, type: "string", max: 150 }]}>
         <Input placeholder="Target audience" count={{ show: true, max: 150 }} />
       </Form.Item> */}
+
+        <Form.Item
+          name="blog_path"
+          label={<Label name="Blog url" />}
+          rules={[{
+            required: true,
+            type: "url",
+            message: "Enter a valid url",
+            transform: transformUrl
+          }]}
+        >
+          <Input addonBefore="https://" placeholder="ex: google.com/blog, blog.google.com" />
+        </Form.Item>
+
+        <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url", transform: transformUrl }]} >
+          <Input addonBefore="https://" placeholder="ex: mywebsite.com/sitemap.xml" />
+        </Form.Item>
       </Form>
     </Modal>
   )

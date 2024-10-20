@@ -10,6 +10,7 @@ import {
   getWritingConcurrencyLeft
 } from "@/app/api/helpers";
 import supabase from "@/helpers/supabase/server";
+import { slugify } from "@/helpers/text";
 
 /**
  * POST handler for bulk scheduling of blog posts
@@ -71,7 +72,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const concurrencyLeft = await getWritingConcurrencyLeft();
 
         if (id && concurrencyLeft > 0) {
+          const slug = slugify(headline);
           await updateBlogPost(id, {
+            slug,
             metadata: {
               ...body,
               title: headline,
@@ -81,6 +84,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
               writingStyle,
               language,
               project,
+              slug,
             }
           })
 

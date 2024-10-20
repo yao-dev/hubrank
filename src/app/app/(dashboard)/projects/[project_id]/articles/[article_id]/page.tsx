@@ -339,7 +339,19 @@ ${article.html}
                   initialValues={{
                     slug: slugify(article?.title ?? "")
                   }}
-                  onFinish={onSaveForm}
+                  onFinish={async (values) => {
+                    const oldSlug = slugify(article?.title ?? "");
+                    const newSlug = slugify(values.slug);
+
+                    const newHtml = article.html.replaceAll(oldSlug, newSlug);
+                    const newMarkdown = article.markdown.replaceAll(oldSlug, newSlug);
+
+                    await onSaveForm({
+                      slug: newSlug,
+                      html: newHtml,
+                      markdown: newMarkdown,
+                    })
+                  }}
                 >
                   <Form.Item style={{ marginBottom: 12 }} name="slug" rules={[{ required: true, type: "string", message: "Add a slug" }]}>
                     <Input addonBefore={getBlogUrl()} placeholder='article-slug-here' />
@@ -476,7 +488,7 @@ ${article.html}
                   }}
                 >
                   <Spin spinning={isUpdatingFeaturedImage}>
-                    <Form.Item style={{ marginBottom: 12 }} name="featured_image" rules={[{ required: false, type: "url", message: "Add a valid url" }]}>
+                    <Form.Item style={{ marginBottom: 12 }} name="featured_image" rules={[{ required: false, type: "string" }]}>
                       <Input placeholder='https://google.com/image-url' disabled={isUpdatingFeaturedImage} />
                     </Form.Item>
 

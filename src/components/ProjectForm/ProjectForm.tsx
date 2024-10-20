@@ -10,6 +10,7 @@ import queryKeys from "@/helpers/queryKeys";
 import { getUserId } from "@/helpers/user";
 import { useState } from "react";
 import LanguageSelect from "../LanguageSelect/LanguageSelect";
+import { transformUrl } from "@/helpers/url";
 
 const ProjectForm = () => {
   const projectId = useProjectId();
@@ -125,19 +126,14 @@ const ProjectForm = () => {
           required: true,
           type: "url",
           message: "Enter a valid url",
-          transform: (url: any) => {
-            if (!url?.startsWith('https://')) {
-              url = `https://${url}`
-            }
-            return new URL(url).origin
-          }
+          transform: transformUrl
         }]}
       >
-        <Input placeholder="ex: https://google.com/blog, https://blog.google.com" />
+        <Input addonBefore="https://" placeholder="ex: mywebsite.com/blog, blog.mywebsite.com" />
       </Form.Item>
 
-      <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url" }]} >
-        <Input placeholder="Sitemap" />
+      <Form.Item name="sitemap" label={<Label name="Sitemap" />} rules={[{ required: false, type: "url", message: "Enter a valid sitemap url", transform: transformUrl }]} >
+        <Input addonBefore="https://" placeholder="ex: mywebsite.com/sitemap.xml" />
       </Form.Item>
 
       <Form.Item style={{ marginTop: 42 }}>
