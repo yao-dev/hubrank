@@ -1,7 +1,7 @@
 'use client';;
 import useBlogPosts from '@/hooks/useBlogPosts';
-import { Button, Dropdown, Image, MenuProps } from 'antd';
-import { isEmpty } from 'lodash';
+import { Button, Dropdown, Image, MenuProps, message } from 'antd';
+import { capitalize, isEmpty } from 'lodash';
 import { IconSend, IconWebhook } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import useProjectId from '@/hooks/useProjectId';
@@ -36,10 +36,15 @@ const PublishBlogPostButton = ({ id, disabled }) => {
       ),
       key: `${item.id}`,
       onClick: () => {
-        updateBlogPost.mutate({ id: article.id, status: "publishing", integration_id: item.id });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.blogPosts(projectId)
-        });
+        try {
+          message.loading(`Publishing on ${capitalize(item.platform)}: "${item.name}"...`)
+          updateBlogPost.mutate({ id: article.id, status: "publishing", integration_id: item.id });
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.blogPosts(projectId)
+          });
+        } catch {
+
+        }
       },
     }
   })

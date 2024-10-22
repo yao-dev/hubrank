@@ -6,6 +6,8 @@ import { createCheckoutSession } from '@/features/payment/helpers/create-checkou
 import { deductCredits } from '../api/helpers';
 import { getSummary } from 'readability-cyr';
 import { Webflow, WebflowClient } from "webflow-api";
+import axios from 'axios';
+import prettify from "pretty";
 
 const stripe = require('stripe')(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY ?? "");
 
@@ -133,4 +135,55 @@ export const getWebflowCollections = ({ siteId, accessToken }: { siteId: string,
 export const getWebflowCollectionItems = ({ collectionId, accessToken }: { siteId: string, collectionId: string, accessToken: string }): Promise<Webflow.Collection> => {
   const webflow = getWebflowClient(accessToken);
   return webflow.collections.get(collectionId)
+}
+
+export const publishZapierBlogPost = async ({ url, blogPost }: any) => {
+  return await axios.post(url, blogPost, {
+    headers: {
+      Authorization: `Bearer ${process.env.ZAPIER_TOKEN ?? ''}`
+    }
+  });
+}
+
+export const getMediumUser = async (token: string): Promise<{
+  id: string;
+  username: string;
+  name: string;
+  url: string;
+  imageUrl: string;
+}> => {
+  const { data } = await axios.get("https://api.medium.com/v1/me", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+  return data?.data;
+}
+
+export const publishMediumPost = async (data: {
+  token: string;
+  authorId: string;
+  blogPost: {
+    title: string;
+    html: string;
+    publishStatus?: "draft" | "unlisted" | "public";
+    notifyFollowers?: boolean;
+  }
+}) => {
+  const url = `https://api.medium.com/v1/users/${data.authorId}/posts`;
+
+  return axios.post(url, {
+    title: data.blogPost.title,
+    contentFormat: "html",
+    content: prettify(
+      `<h1>${data.blogPost.title}</h1>${data.blogPost.html}`
+    ),
+    publishStatus: data.blogPost.publishStatus ?? "draft",
+    notifyFollowers: data.blogPost.notifyFollowers ?? false,
+  }, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${data.token}`,
+    }
+  });
 }

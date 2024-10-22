@@ -93,7 +93,7 @@ export const getImages = async (query: string, count = 5) => {
   }
 }
 
-export const getAiImage = async ({ query, image_style, articleId }: { query: string; image_style: string; articleId }) => {
+export const getAiImage = async ({ query, image_style, articleId }: { query: string; image_style: string; articleId?: number }) => {
   // const details = "color scheme: pastel orange and faded turquoise"
   const prompt = imageStyles.find((i) => i.name === image_style)
   const type = "png";

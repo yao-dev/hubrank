@@ -20,7 +20,7 @@ import { solarizedDark } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useRouter } from 'next/navigation';
 import WebflowSiteSelect from '@/components/WebflowSiteSelect/WebflowSiteSelect';
 import WebflowCollectionSelect from '@/components/WebflowCollectionSelect/WebflowCollectionSelect';
-import { getWebflowCollectionItems, getWebflowCollections, getWebflowSites } from '@/app/app/actions';
+import { getMediumUser, getWebflowCollectionItems, getWebflowCollections, getWebflowSites } from '@/app/app/actions';
 
 const GhostIntegrationForm = ({ form, onFinish }) => {
   return (
@@ -301,7 +301,7 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
             loading={isFetchingSites}
             disabled={!accessToken}
           >
-            Fetch sites
+            Get sites
           </Button>
         </div>
 
@@ -359,6 +359,152 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
               <Select
                 placeholder="Select a status"
                 options={[{ label: "True", value: true }, { label: "False", value: false }]}
+                optionLabelProp="label"
+              />
+            </Form.Item>
+          </>
+        )}
+
+        <Form.Item>
+          <div
+            className='relative h-0 w-full rounded-lg'
+            style={{
+              position: "relative",
+              paddingBottom: "calc(57.46527777777778% + 41px)",
+              height: 0,
+              width: "100%"
+            }}
+          >
+            <iframe
+              src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
+              title="Hubrank"
+              loading="eager"
+              allowFullScreen
+              allow="clipboard-write"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                colorScheme: "light"
+              }}
+              className='rounded-lg'
+            />
+          </div>
+        </Form.Item>
+      </Form>
+    </Spin>
+  );
+};
+
+const MediumIntegrationForm = ({ form, onFinish, initialValues }) => {
+  const [isFetchingUser, setIsFetchingUser] = useState(false);
+  const [user, setUser] = useState<{
+    id: string;
+    username: string;
+    name: string;
+    url: string;
+    imageUrl: string;
+  }>();
+  const token = Form.useWatch("token", form) ?? initialValues?.token;
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue(initialValues)
+    }
+  }, [initialValues]);
+
+  const onFetchUser = async () => {
+    try {
+      setIsFetchingUser(true)
+      const result = await getMediumUser(token);
+      setUser(result)
+      setIsFetchingUser(false)
+    } catch (e) {
+      console.error(e);
+      setIsFetchingUser(false)
+
+    }
+  }
+
+  useEffect(() => {
+    onFetchUser()
+  }, [initialValues]);
+
+  return (
+    <Spin spinning={isFetchingUser}>
+      <Form
+        form={form}
+        onFinish={(values) => onFinish({
+          ...values,
+          author_id: user?.id,
+        })}
+        onError={console.log}
+        layout='vertical'
+        initialValues={{
+          name: "",
+          token: "",
+          status: "draft",
+          notify_followers: false,
+        }}
+      >
+        <Form.Item
+          name="name"
+          label={<Label name="Name" />}
+          rules={[{ required: true, message: 'Name is required' }]}
+        >
+          <Input placeholder="Name" />
+        </Form.Item>
+
+        <Form.Item
+          name="token"
+          label={<Label name="Token" />}
+          rules={[{ required: true, message: 'Token is required' }]}
+          className='mb-0'
+        >
+          <Input placeholder="Token" />
+        </Form.Item>
+
+        <div className='flex flex-row justify-start mt-2 mb-6'>
+          <Button
+            onClick={onFetchUser}
+            loading={isFetchingUser}
+            disabled={!token}
+          >
+            Get author
+          </Button>
+        </div>
+
+        {isEmpty(user) ? null : (
+          <>
+            <Form.Item>
+              <div className='flex flex-row gap-2 items-center'>
+                <img src={user.imageUrl} className='rounded-full w-50 h-50' />
+                <p>{user.name}</p>
+              </div>
+            </Form.Item>
+
+            <Form.Item
+              name="status"
+              label={<Label name="Status" />}
+              rules={[{ required: true }]}
+            >
+              <Select
+                placeholder="Select a status"
+                options={[{ label: "Public", value: "public" }, { label: "Draft", value: "draft" }, { label: "Unlisted", value: "unlisted" }]}
+                optionLabelProp="label"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="notify_followers"
+              label={<Label name="Notify followers?" />}
+              rules={[{ required: false }]}
+            >
+              <Select
+                placeholder="Select a choice"
+                options={[{ label: "Yes", value: true }, { label: "No", value: false }]}
                 optionLabelProp="label"
               />
             </Form.Item>
@@ -637,6 +783,7 @@ export default function Integrations() {
   const [wordpressForm] = Form.useForm();
   const [shopifyForm] = Form.useForm();
   const [webflowForm] = Form.useForm();
+  const [mediumForm] = Form.useForm();
 
   const { form, FormComponent } = useMemo(() => {
     const platform = selectedEditIntegration?.platform || selectedPlatform;
@@ -653,6 +800,8 @@ export default function Integrations() {
         return { form: shopifyForm, FormComponent: ShopifyIntegrationForm };
       case 'webflow':
         return { form: webflowForm, FormComponent: WebflowIntegrationForm };
+      case 'medium':
+        return { form: mediumForm, FormComponent: MediumIntegrationForm }
       default:
         return {};
     }
@@ -739,6 +888,12 @@ export default function Integrations() {
               //   icon: <img src={brandsLogo.wordpress} width={20} />,
               //   onClick: () => setSelectedPlatform("wordPress")
               // },
+              {
+                key: "medium",
+                label: "Medium",
+                icon: <img src={brandsLogo.medium} width={20} />,
+                onClick: () => setSelectedPlatform("medium")
+              },
               {
                 key: "ghost",
                 label: "Ghost",

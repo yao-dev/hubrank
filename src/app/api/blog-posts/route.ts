@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost, publishBlogPost, getErrorMessage } from "../helpers";
+import { getWritingConcurrencyLeft, getUpstashDestination, updateBlogPost, getErrorMessage } from "../helpers";
 import supabase from "@/helpers/supabase/server";
 import { createSchedule } from "@/helpers/qstash";
 import GhostAdminAPI from '@tryghost/admin-api';
 import axios from "axios";
 import { WebflowClient } from "webflow-api";
 import { omit } from "lodash";
+import { publishMediumPost, publishZapierBlogPost } from "@/app/app/actions";
 
 export const maxDuration = 30;
 
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
                 version: 'v5.0'
               });
 
-              await api.posts.add({
+              const result = await api.posts.add({
                 title: body.record.title,
                 html: body.record.html,
                 status: integration.metadata.status ?? "draft",
@@ -72,7 +73,9 @@ export async function POST(request: Request) {
 
                 // og_image
                 // og_image_description
-              }, { source: 'html' })
+              }, { source: 'html' });
+
+              await supabase().from("publications").insert({ blog_post_id: body.record.id, integration_id: integration.id, metadata: result });
               break;
             }
             case 'webhook': {
@@ -89,10 +92,27 @@ export async function POST(request: Request) {
                 slug: body.record.slug
               };
               await axios.post(integration.metadata.webhook, blogPost);
+              await supabase().from("publications").insert({ blog_post_id: body.record.id, integration_id: integration.id });
               break;
             }
             case 'zapier': {
-              await publishBlogPost({ url: integration.metadata.url, blogPost: body.record });
+              await publishZapierBlogPost({ url: integration.metadata.url, blogPost: body.record });
+              break;
+            }
+            case 'medium': {
+              const result = await publishMediumPost({
+                token: integration.metadata.token,
+                authorId: integration.metadata.author_id,
+                blogPost: {
+                  title: body.record.title,
+                  html: body.record.html,
+                  publishStatus: integration.metadata.status,
+                  notifyFollowers: integration.metadata.notify_followers,
+                }
+              });
+
+              await supabase().from("publications").insert({ blog_post_id: body.record.id, integration_id: integration.id, metadata: result?.data });
+
               break;
             }
             case 'webflow': {

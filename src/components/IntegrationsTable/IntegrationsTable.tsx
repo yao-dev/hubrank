@@ -74,6 +74,7 @@ const IntegrationsTable = ({ isLoading, onOpenEditMenu }: any) => {
             record.metadata?.api_url ?? "",
             record.metadata?.admin_api_key ?? "",
             record.metadata?.access_token ?? "",
+            record.metadata?.token ?? "",
             record.metadata?.webhook ?? "",
             record.metadata?.url ?? "",
             record.metadata?.site_id ?? "",
