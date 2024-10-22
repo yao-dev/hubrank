@@ -29,16 +29,16 @@ const PricingCard = ({
 
   if (words >= ONE_ARTICLE_WORD_COUNT * 200) {
     pricingTitle = "Enterprise";
-    costPerWord = 0.0009
+    costPerWord = 0.001034
   } else if (words >= ONE_ARTICLE_WORD_COUNT * 100) {
     pricingTitle = "Pro";
-    costPerWord = 0.0010
+    costPerWord = 0.001134
   } else if (words >= ONE_ARTICLE_WORD_COUNT * 10) {
     pricingTitle = "Growth";
-    costPerWord = 0.0011;
+    costPerWord = 0.001234;
   } else {
     pricingTitle = "Starter";
-    costPerWord = 0.0012;
+    costPerWord = 0.001334;
   }
 
   const addOns = {
