@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import Anthropic from "@anthropic-ai/sdk";
-import dJSON from "dirty-json";
-import { models } from "../AI";
 import { getCompetitors } from "@/helpers/seo";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { generateObject } from "ai";
+import { z } from "zod";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_URL ?? "",
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
         prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\nOutput the outline using a html ul list (no heading tags) wrapped in \`\`\`html\`\`\`.\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
         break;
       case 'meta_description':
-        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description} with ${body.headings}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the descriptions (string) only`;
+        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the descriptions (string) only`;
         break;
       case 'website_competitors': {
         const competitors = await getCompetitors(body.website_url);
@@ -55,44 +55,58 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    console.log({ body, prompt })
-
-    const ai = new Anthropic({
-      baseURL: "https://anthropic.hconeai.com/",
-      apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
-      defaultHeaders: {
-        "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-      },
-    });
-
-    const completion = await ai.messages.create({
-      model: models.sonnet,
-      max_tokens: 500,
-      temperature: 0.7,
-      messages: [{ role: 'user', content: prompt }],
-      top_k: 2,
-      metadata: { user_id: ip }
-    });
-
-    console.log(JSON.stringify(completion, null, 2))
-
-    let content = completion.content[0].text
+    let schema;
 
     switch (body.name) {
       case 'headlines':
       case 'hashtags':
       case 'meta_description':
-        content = dJSON.parse(content).values;
+        schema = z.object({
+          values: z.array(z.string())
+        })
         break;
       case 'outline': {
-        const markup = "html";
-        const html = content.slice(content.indexOf(markup) + markup.length, content.lastIndexOf("```"));
-        content = [html];
+        schema = z.object({
+          html: z.string()
+        })
         break;
       }
     }
 
-    return NextResponse.json(content, { headers });
+    console.log({ body, prompt });
+
+    const anthropic = createAnthropic({
+      baseURL: "https://anthropic.hconeai.com/",
+      apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
+      headers: {
+        "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
+      },
+    });
+
+    //   metadata: { user_id: ip }
+
+    let { object } = await generateObject({
+      output: "object",
+      model: anthropic("claude-3-5-sonnet-20240620"),
+      // model: openai("gpt-4o"),
+      maxTokens: 500,
+      temperature: 0.7,
+      topK: 2,
+      prompt,
+      schemaName: body.name as string,
+      schema
+    });
+
+    console.log(JSON.stringify(object, null, 2))
+
+    switch (body.name) {
+      case 'outline': {
+        object = [object.html];
+        break;
+      }
+    }
+
+    return NextResponse.json(object, { headers });
   } catch (e) {
     console.log(e)
     return NextResponse.json(e)
