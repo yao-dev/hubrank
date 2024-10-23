@@ -36,17 +36,17 @@ export async function POST(req: NextRequest) {
 
     switch (body.name) {
       case 'headlines':
-        prompt = `Write 3 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, others) for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the unformatted headlines (string) only`;
-        // prompt = `Write 1 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery) for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the unformatted headlines (string) only`
+        prompt = `Write 3 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, others) for the following topic/keyword: ${body.topic}. values contain the unformatted headlines only`;
+        // prompt = `Write 1 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery) for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the unformatted headlines only`
         break;
       case 'hashtags':
-        prompt = `Write 10 hashtags for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the hashtags (string) only`;
+        prompt = `Write 10 hashtags for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contain the hashtags only`;
         break;
       case 'outline':
-        prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\nOutput the outline using a html ul list (no heading tags) wrapped in \`\`\`html\`\`\`.\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
+        prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
         break;
       case 'meta_description':
-        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the descriptions (string) only`;
+        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description}. values contain the descriptions only`;
         break;
       case 'website_competitors': {
         const competitors = await getCompetitors(body.website_url);
@@ -76,11 +76,11 @@ export async function POST(req: NextRequest) {
     console.log({ body, prompt });
 
     const anthropic = createAnthropic({
-      baseURL: "https://anthropic.hconeai.com/",
+      // baseURL: "https://anthropic.hconeai.com/",
       apiKey: process.env.ANTHROPIC_API_KEY, // defaults to process.env["ANTHROPIC_API_KEY"]
-      headers: {
-        "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
-      },
+      // headers: {
+      //   "Helicone-Auth": `Bearer ${process.env.HELICONE_AUTH}`,
+      // },
     });
 
     //   metadata: { user_id: ip }
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         prompt,
         schemaName: body.name as string,
         schema: z.object({
-          html: z.string()
+          html: z.string().describe("html ul list (no heading tags)")
         })
       });
 

@@ -65,7 +65,7 @@ export default function Alternative({ params, searchParams }: Props) {
         </div>
       </section>
 
-      <section className="px-4 lg:w-[65%] mx-auto mt-24">
+      <section className="px-4 lg:w-[65%] mx-auto my-24">
         <CallToActionBanner
           title="Outwork your competitors."
           imageName="blog-post"

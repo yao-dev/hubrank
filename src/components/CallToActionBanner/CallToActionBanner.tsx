@@ -23,7 +23,7 @@ const CallToActionBanner = ({
           </p>
         )}
         {CallToAction && (
-          <div className='mt-10 flex mx-auto justify-center'>
+          <div className='mt-10 flex mx-auto justify-center xl:justify-start'>
             {CallToAction}
           </div>
         )}
