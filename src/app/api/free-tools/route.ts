@@ -84,29 +84,43 @@ export async function POST(req: NextRequest) {
     });
 
     //   metadata: { user_id: ip }
+    let content;
 
-    let { object } = await generateObject({
-      output: "object",
-      model: anthropic("claude-3-5-sonnet-20240620"),
-      // model: openai("gpt-4o"),
-      maxTokens: 500,
-      temperature: 0.7,
-      topK: 2,
-      prompt,
-      schemaName: body.name as string,
-      schema
-    });
+    if (body.name === "outline") {
+      const { object } = await generateObject({
+        output: "object",
+        model: anthropic("claude-3-5-sonnet-20240620"),
+        maxTokens: 500,
+        temperature: 0.7,
+        topK: 1,
+        prompt,
+        schemaName: body.name as string,
+        schema: z.object({
+          html: z.string()
+        })
+      });
 
-    console.log(JSON.stringify(object, null, 2))
+      content = [object.html]
+    } else {
+      const { object } = await generateObject({
+        output: "object",
+        model: anthropic("claude-3-5-sonnet-20240620"),
+        maxTokens: 500,
+        temperature: 0.7,
+        topK: 2,
+        prompt,
+        schemaName: body.name as string,
+        schema: z.object({
+          values: z.array(z.string())
+        })
+      });
 
-    switch (body.name) {
-      case 'outline': {
-        object = [object.html];
-        break;
-      }
+      content = object
     }
 
-    return NextResponse.json(object, { headers });
+    console.log(JSON.stringify(content, null, 2))
+
+    return NextResponse.json(content, { headers });
   } catch (e) {
     console.log(e)
     return NextResponse.json(e)
