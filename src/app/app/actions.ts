@@ -77,7 +77,7 @@ export const checkout = async (body: { url: string; words: number; customer_emai
 
   const usdPrice = Math.round(costPerWord * body.words) * 100;
   const addOns = {
-    keywords_research: Math.floor((body.words / ONE_ARTICLE_WORD_COUNT) * 5),
+    keywords_research: Math.floor((body.words / ONE_ARTICLE_WORD_COUNT) * 0.5),
     ai_images: Math.floor((body.words / ONE_ARTICLE_WORD_COUNT) * 3),
   }
 

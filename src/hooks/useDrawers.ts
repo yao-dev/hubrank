@@ -4,6 +4,8 @@ type BlogPostState = {
   isOpen: boolean;
   languageId?: number;
   seedKeyword?: string;
+  headline?: string;
+  slug?: string;
 }
 
 type CaptionState = {
@@ -41,6 +43,8 @@ const openBlogPostDrawer = (state: State, data: BlogPostState): State => {
       isOpen: data.isOpen,
       languageId: data.languageId,
       seedKeyword: data.seedKeyword,
+      headline: data.headline,
+      slug: data.slug,
     }
   };
 };
@@ -81,6 +85,8 @@ const useDrawers = create<State & Action>(
       isOpen: false,
       languageId: undefined,
       seedKeyword: "",
+      headline: "",
+      slug: "",
     },
     caption: {
       isOpen: false,

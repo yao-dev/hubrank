@@ -95,10 +95,12 @@ const NewKnowledgeDrawer = ({ open, onClose }: Props) => {
       }}
       footer={
         <Flex justify="end" align="center" gap="middle">
-          <Button onClick={onClose}>Cancel</Button>
+          <Button size="large" onClick={onClose}>Cancel</Button>
           <Button
             onClick={() => form.submit()}
             type="primary"
+            size="large"
+            style={{ width: 150 }}
             loading={createKnowledge.isPending}
             disabled={createKnowledge.isPending}
           >

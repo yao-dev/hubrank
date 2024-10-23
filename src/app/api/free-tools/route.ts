@@ -74,6 +74,8 @@ export async function POST(req: NextRequest) {
       metadata: { user_id: ip }
     });
 
+    console.log(JSON.stringify(completion, null, 2))
+
     let content = completion.content[0].text
 
     switch (body.name) {

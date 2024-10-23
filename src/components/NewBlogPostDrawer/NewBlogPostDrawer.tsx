@@ -158,6 +158,7 @@ const NewBlogPostDrawer = ({ open, onClose }: Props) => {
         <div className="flex flex-row justify-end items-center gap-4">
           <p>You need at least <b>{wordCredits}</b> words credits</p>
           <Button
+            size="large"
             onClick={() => form.submit()}
             type="primary"
             style={{ width: 150 }}

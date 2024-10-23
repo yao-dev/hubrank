@@ -21,20 +21,20 @@ import { getSerp } from "@/helpers/seo";
 import supabase from "@/helpers/supabase/server";
 import { getSummary } from 'readability-cyr';
 import { embed } from "ai";
-import { createOpenAI, openai } from "@ai-sdk/openai";
+import { openai } from "@ai-sdk/openai";
 import { avoidWords, emotions, instructionalElements, perspectives, purposes, sentenceStructures, tones, vocabularies, writingStructures } from "@/options";
 import { z } from "zod";
 import { format } from "date-fns";
 import { getCaptions } from '@dofy/youtube-caption-fox';
 import { transcribe } from "yt-transcribe";
-import { getTocMarkdownText } from "markdown-table-of-content";
+import { createGroq } from '@ai-sdk/groq';
 
 export const upstashVectorIndex = new Index({
   url: process.env.UPSTASH_VECTOR_URL || "",
   token: process.env.UPSTASH_VECTOR_TOKEN || "",
 })
 
-export const groq = createOpenAI({
+export const groq = createGroq({
   baseURL: 'https://api.groq.com/openai/v1',
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -100,6 +100,7 @@ export const insertBlogPost = async (data: any) => {
         cost: data.cost,
         integration_id: data.integration_id,
         metadata: data.metadata,
+        slug: data.slug,
       })
       .select("id, created_at")
       .single()
@@ -1836,4 +1837,58 @@ export const getWritingConcurrencyLeft = async () => {
 
 export const getUserPremiumData = (user: any) => {
   return user?.users_premium?.[0] ?? {};
+}
+
+// export const getTopicalMapSchema = () => {
+//   return z.object({
+//     topic: z.string(),
+//     category: z.string(),
+//     sub_topics: z.array(
+//       z.object({
+//         topic: z.string(),
+//         keyword: z.object({
+//           name: z.string(),
+//           keyword_difficulty: z.number(),
+//           volume: z.number(),
+//           competition: z.string(),
+//           search_intent: z.string(),
+//         }),
+//         headline: z.string().describe("headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery"),
+//         slug: z.string().describe("formatted as follow /category/topic/headline/"),
+//       })
+//     ),
+//   })
+// }
+
+export const getTopicalMapSchema = () => {
+  return z.object({
+    category: z.string(),
+    topic: z.string(),
+    // sub_topic: z.string(),
+    headline: z.string().describe("headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery"),
+    slug: z.string().describe("formatted as follow /category/topic/headline/"),
+    keyword: z.string(),
+    kd: z.number().describe("Keyword difficulty").nullable().default(null),
+    volume: z.number().nullable().default(null),
+    competition: z.string(),
+  })
+}
+
+export const getTopicalMapPrompt = ({
+  primaryKeyword,
+  keywords,
+  topicsCount,
+  subTopicsPerTopicCount,
+}: {
+  primaryKeyword: string;
+  keywords: string[];
+  topicsCount: number;
+  subTopicsPerTopicCount: number;
+}) => {
+  return [
+    `Give me a topical map for the keyword: ${primaryKeyword} with ${topicsCount} topics and ${subTopicsPerTopicCount} sub-topics per topic`,
+    "Keywords data:",
+    "",
+    JSON.stringify(keywords, null, 2),
+  ].join("\n")
 }

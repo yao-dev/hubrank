@@ -42,7 +42,7 @@ const PricingCard = ({
   }
 
   const addOns = {
-    keywords_research: Math.floor((words / ONE_ARTICLE_WORD_COUNT) * 5),
+    keywords_research: Math.floor((words / ONE_ARTICLE_WORD_COUNT) * 0.5),
     ai_images: Math.floor((words / ONE_ARTICLE_WORD_COUNT) * 3),
   }
   const price = Math.round(costPerWord * words);

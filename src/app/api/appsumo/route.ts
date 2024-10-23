@@ -16,9 +16,9 @@ export async function POST(request: Request) {
           const { data: user } = await supabase().from("users").select().eq("id", body.record.user_id).maybeSingle();
           await upsertUserPremiumData({
             customerId: user.customer_id,
-            words: 330000,
-            keywords_research: 1100,
-            ai_images: 660
+            words: 225000,
+            keywords_research: 75,
+            ai_images: 450
           });
         }
         break;

@@ -68,35 +68,6 @@ const GhostIntegrationForm = ({ form, onFinish }) => {
           optionLabelProp="label"
         />
       </Form.Item>
-
-      <Form.Item>
-        <div
-          className='relative h-0 w-full rounded-lg'
-          style={{
-            position: "relative",
-            paddingBottom: "calc(57.46527777777778% + 41px)",
-            height: 0,
-            width: "100%"
-          }}
-        >
-          <iframe
-            src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-            title="Hubrank"
-            loading="eager"
-            allowFullScreen
-            allow="clipboard-write"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              colorScheme: "light"
-            }}
-            className='rounded-lg'
-          />
-        </div>
-      </Form.Item>
     </Form>
   );
 };
@@ -126,35 +97,6 @@ const ZapierIntegrationForm = ({ form, onFinish }) => {
         name="api_key"
       >
         <Input disabled />
-      </Form.Item>
-
-      <Form.Item>
-        <div
-          className='relative h-0 w-full rounded-lg'
-          style={{
-            position: "relative",
-            paddingBottom: "calc(57.46527777777778% + 41px)",
-            height: 0,
-            width: "100%"
-          }}
-        >
-          <iframe
-            src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-            title="Hubrank"
-            loading="eager"
-            allowFullScreen
-            allow="clipboard-write"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              colorScheme: "light"
-            }}
-            className='rounded-lg'
-          />
-        </div>
       </Form.Item>
     </Form>
   );
@@ -364,35 +306,6 @@ const WebflowIntegrationForm = ({ form, onFinish, initialValues }) => {
             </Form.Item>
           </>
         )}
-
-        <Form.Item>
-          <div
-            className='relative h-0 w-full rounded-lg'
-            style={{
-              position: "relative",
-              paddingBottom: "calc(57.46527777777778% + 41px)",
-              height: 0,
-              width: "100%"
-            }}
-          >
-            <iframe
-              src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-              title="Hubrank"
-              loading="eager"
-              allowFullScreen
-              allow="clipboard-write"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                colorScheme: "light"
-              }}
-              className='rounded-lg'
-            />
-          </div>
-        </Form.Item>
       </Form>
     </Spin>
   );
@@ -510,35 +423,6 @@ const MediumIntegrationForm = ({ form, onFinish, initialValues }) => {
             </Form.Item>
           </>
         )}
-
-        <Form.Item>
-          <div
-            className='relative h-0 w-full rounded-lg'
-            style={{
-              position: "relative",
-              paddingBottom: "calc(57.46527777777778% + 41px)",
-              height: 0,
-              width: "100%"
-            }}
-          >
-            <iframe
-              src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-              title="Hubrank"
-              loading="eager"
-              allowFullScreen
-              allow="clipboard-write"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                colorScheme: "light"
-              }}
-              className='rounded-lg'
-            />
-          </div>
-        </Form.Item>
       </Form>
     </Spin>
   );
@@ -591,35 +475,6 @@ const WebhookIntegrationForm = ({ form, onFinish }) => {
           </SyntaxHighlighter>
         </div>
       </Form.Item>
-
-      <Form.Item>
-        <div
-          className='relative h-0 w-full rounded-lg'
-          style={{
-            position: "relative",
-            paddingBottom: "calc(57.46527777777778% + 41px)",
-            height: 0,
-            width: "100%"
-          }}
-        >
-          <iframe
-            src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-            title="Hubrank"
-            loading="eager"
-            allowFullScreen
-            allow="clipboard-write"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              colorScheme: "light"
-            }}
-            className='rounded-lg'
-          />
-        </div>
-      </Form.Item>
     </Form>
   );
 };
@@ -668,35 +523,6 @@ const WordpressIntegrationForm = ({ form, onFinish }) => {
       >
         <Input.Password placeholder="WordPress Password" />
       </Form.Item>
-
-      <Form.Item>
-        <div
-          className='relative h-0 w-full rounded-lg'
-          style={{
-            position: "relative",
-            paddingBottom: "calc(57.46527777777778% + 41px)",
-            height: 0,
-            width: "100%"
-          }}
-        >
-          <iframe
-            src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-            title="Hubrank"
-            loading="eager"
-            allowFullScreen
-            allow="clipboard-write"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              colorScheme: "light"
-            }}
-            className='rounded-lg'
-          />
-        </div>
-      </Form.Item>
     </Form>
   );
 };
@@ -735,35 +561,6 @@ const ShopifyIntegrationForm = ({ form, onFinish }) => {
         rules={[{ required: true, message: 'Password is required' }]}
       >
         <Input.Password placeholder="Password" />
-      </Form.Item>
-
-      <Form.Item>
-        <div
-          className='relative h-0 w-full rounded-lg'
-          style={{
-            position: "relative",
-            paddingBottom: "calc(57.46527777777778% + 41px)",
-            height: 0,
-            width: "100%"
-          }}
-        >
-          <iframe
-            src="https://demo.arcade.software/wjSykDPRx4mxc6lV8S5W?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true"
-            title="Hubrank"
-            loading="eager"
-            allowFullScreen
-            allow="clipboard-write"
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              colorScheme: "light"
-            }}
-            className='rounded-lg'
-          />
-        </div>
       </Form.Item>
     </Form>
   );

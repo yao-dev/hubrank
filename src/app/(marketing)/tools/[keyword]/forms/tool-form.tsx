@@ -39,7 +39,7 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
         return;
       }
 
-      const { data } = await axios.post("/api/free-tools", {
+      const response = await axios.post("/api/free-tools", {
         ...values,
         name,
       });
@@ -47,10 +47,10 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       setIsSubmitting(false);
       form.resetFields();
 
-      if (data?.rateLimitState?.remaining <= 0) {
+      if (response?.data?.rateLimitState?.remaining <= 0) {
         setIsRateLimited(true);
       } else {
-        setData(data)
+        setData(response?.data ?? {})
       }
     } catch (e) {
       console.log(e);

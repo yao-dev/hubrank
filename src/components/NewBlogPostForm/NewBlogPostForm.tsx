@@ -57,6 +57,11 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
   useEffect(() => {
     if (project && drawers.blogPost.isOpen) {
       form.setFieldValue("seed_keyword", drawers.blogPost.seedKeyword);
+      if (drawers.blogPost.headline) {
+        form.setFieldValue("title_mode", "custom");
+        form.setFieldValue("custom_title", drawers.blogPost.headline);
+      }
+      form.setFieldValue("slug", drawers.blogPost.slug);
       form.setFieldValue("language_id", drawers.blogPost.languageId || project.language_id)
       form.setFieldValue("sitemap", project.sitemap || "");
     }
@@ -186,6 +191,7 @@ const NewBlogPostForm = ({ form, onSubmit, isSubmitting, setEstimatedPseoCredits
           youtube_url: "",
           featured_image: "",
           integration_id: null,
+          slug: "",
         }}
         autoComplete="off"
         layout="vertical"

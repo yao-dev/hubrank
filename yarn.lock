@@ -10,6 +10,14 @@
     "@ai-sdk/provider" "0.0.24"
     "@ai-sdk/provider-utils" "1.0.20"
 
+"@ai-sdk/groq@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@ai-sdk/groq/-/groq-0.0.1.tgz#c649bdc6b030566a0c06b1553c6a9a2b11ca762d"
+  integrity sha512-M8XHUovs2UqOx6xlhABXXCGlzbgeErSyIwvH1LQeDl3Z2CbSSgvttc0k6irm4J7ViuULE5XcIDQurXijIePWqQ==
+  dependencies:
+    "@ai-sdk/provider" "0.0.24"
+    "@ai-sdk/provider-utils" "1.0.20"
+
 "@ai-sdk/openai@^0.0.66":
   version "0.0.66"
   resolved "https://registry.yarnpkg.com/@ai-sdk/openai/-/openai-0.0.66.tgz#abf46fee99d1603cd1a0b2ed5d40745ad2dfaf7d"
