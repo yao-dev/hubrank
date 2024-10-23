@@ -8,6 +8,7 @@ import GoogleSignInButton from "@/components/GoogleSignInButton/GoogleSignInButt
 import { useReCaptcha } from "next-recaptcha-v3";
 import { IconCopy, IconHash } from "@tabler/icons-react";
 import TiptapEditor from "@/app/app/(dashboard)/projects/[project_id]/articles/[article_id]/TiptapEditor/TiptapEditor";
+import { isEmpty } from "lodash";
 
 type Props = {
   name: "hashtags" | "headlines" | "content_ideas" | "meta_description" | "backlink_checker" | "outline" | "website_competitors";
@@ -50,7 +51,7 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       if (response?.data?.rateLimitState?.remaining <= 0) {
         setIsRateLimited(true);
       } else {
-        setData(response?.data)
+        setData(response?.data ?? [])
       }
     } catch (e) {
       console.log(e);
@@ -58,6 +59,8 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       message.error("Something went wrong, please try again.")
     }
   }
+
+  const hasData = !isEmpty(data);
 
   return (
     <div className="flex flex-col gap-20">
@@ -104,9 +107,9 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
         <Skeleton active loading />
       )}
 
-      {name === "outline" && (
+      {hasData && name === "outline" && (
         <div className="text-normal">
-          {data.map((item) => {
+          {data?.map((item) => {
             return (
               <div className="flex justify-center">
                 <div key={item} className="relative p-4 border rounded-lg w-fit overflow-hidden">
@@ -133,7 +136,7 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       )}
 
 
-      {name === "website_competitors" && (
+      {hasData && name === "website_competitors" && (
         <div className="grid grid-cols-2 gap-4 text-normal">
           {data.map((item) => {
             return (
@@ -175,7 +178,7 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       )}
 
       {/* TODO show data/result here per form type */}
-      {name !== "outline" && name !== "website_competitors" && (
+      {hasData && name !== "outline" && name !== "website_competitors" && (
         <div className="grid grid-cols-2 gap-4 text-normal">
           {data.map((item) => {
             return (
