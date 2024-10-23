@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
       'X-RateLimit-Remaining': `${result.remaining}`
     }
 
-    if (process.env.NODE_ENV !== "development" && !result.success) {
-      return NextResponse.json({ message: 'You\'ve reached your daily limit.', rateLimitState: result }, { headers })
-    }
+    // if (process.env.NODE_ENV !== "development" && !result.success) {
+    //   return NextResponse.json({ message: 'You\'ve reached your daily limit.', rateLimitState: result }, { headers })
+    // }
 
     const body = await req.json();
 
