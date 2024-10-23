@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         model: anthropic("claude-3-5-sonnet-20240620"),
         maxTokens: 500,
         temperature: 0.7,
-        topK: 1,
+        topK: 2,
         prompt,
         schemaName: body.name as string,
         schema: z.object({
@@ -103,16 +103,14 @@ export async function POST(req: NextRequest) {
       content = [object.html]
     } else {
       const { object } = await generateObject({
-        output: "object",
+        output: "array",
         model: anthropic("claude-3-5-sonnet-20240620"),
         maxTokens: 500,
         temperature: 0.7,
         topK: 2,
         prompt,
         schemaName: body.name as string,
-        schema: z.object({
-          values: z.array(z.string())
-        })
+        schema: z.string()
       });
 
       content = object
