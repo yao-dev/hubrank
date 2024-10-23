@@ -50,7 +50,7 @@ const ToolForm = ({ children, name, submitText, initialValues = {} }: Props) => 
       if (response?.data?.rateLimitState?.remaining <= 0) {
         setIsRateLimited(true);
       } else {
-        setData(response?.data ?? {})
+        setData(response?.data)
       }
     } catch (e) {
       console.log(e);
