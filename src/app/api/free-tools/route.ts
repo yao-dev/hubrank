@@ -118,6 +118,7 @@ export async function POST(req: NextRequest) {
       content = object
     }
 
+    console.log(content);
     console.log(JSON.stringify(content, null, 2))
 
     return NextResponse.json(content, { headers });
