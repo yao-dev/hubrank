@@ -32,6 +32,7 @@ import {
   queryVector,
   getErrorMessage,
   deductCredits,
+  getRephraseInstruction,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
@@ -576,16 +577,16 @@ export async function POST(request: Request) {
         const avoidWordsRegex = new RegExp(`(${avoidWords.join('|')})`, 'gi');
 
         let stats = getSummary(markdown);
-        // if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
-        //   console.log("- rephrase");
-        //   const rephraseSectionContent = await generateText({
-        //     model: shuffle([openai("gpt-4o")])[0],
-        //     temperature: 0.2,
-        //     prompt: getRephraseInstruction(markdown),
-        //   })
-        //   markdown = rephraseSectionContent.text;
-        //   console.log("- rephrase done");
-        // }
+        if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
+          console.log("- rephrase");
+          const rephraseSectionContent = await generateText({
+            model: shuffle([openai("gpt-4o")])[0],
+            temperature: 0.2,
+            prompt: getRephraseInstruction(markdown),
+          })
+          markdown = rephraseSectionContent.text;
+          console.log("- rephrase done");
+        }
 
         finalResult.sections[index] = removeMarkdownWrapper(markdown)
       } catch (error) {
