@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       })
     }
 
-    const concurrencyLeft = await getWritingConcurrencyLeft()
+    const concurrencyLeft = await getWritingConcurrencyLeft();
 
     if (concurrencyLeft > 0) {
       const scheduleId = await createSchedule({
@@ -124,6 +124,7 @@ export async function POST(request: Request) {
           competitors
         },
       });
+      console.log({ articleId, scheduleId })
 
       if (articleId && scheduleId) {
         await updateBlogPost(articleId, { schedule_id: scheduleId })

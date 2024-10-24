@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
-// import OpenAI from "openai";
+import OpenAI from "openai";
 
 export async function GET() {
   try {
     // const openai = new OpenAI({
-    //   apiKey: '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',
+    //   apiKey: process.env.NVIDIA_TOKEN ?? "",
     //   baseURL: 'https://integrate.api.nvidia.com/v1',
     // })
+
+    // // const openai = createOpenAI({
+    // //   apiKey: process.env.NVIDIA_TOKEN ?? "",
+    // //   baseURL: 'https://integrate.api.nvidia.com/v1',
+    // // })
+
+    // // generateText({
+    // //   model: openai("nvidia/nemotron-4-340b-instruct")
+    // // })
 
     // const completion = await openai.chat.completions.create({
     //   model: "nvidia/nemotron-4-340b-instruct",
@@ -26,7 +35,9 @@ export async function GET() {
     //   stream: false,
     // })
 
-    // return NextResponse.json(completion);
+
+
+    // return NextResponse.json(completion.choices[0].message.content);
 
     return NextResponse.json({
       attempt: '0192046a-b855-37c7-d512-d5a1a9c6f6e7',

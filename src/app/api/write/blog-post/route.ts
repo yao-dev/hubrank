@@ -32,18 +32,18 @@ import {
   queryVector,
   getErrorMessage,
   deductCredits,
-  getRephraseInstruction,
 } from "../../helpers";
 import chalk from "chalk";
 import { getKeywordsForKeywords, getSerp } from "@/helpers/seo";
 import { compact, shuffle } from "lodash";
 import { getAiImage, getImages } from "@/helpers/image";
 import { searchYouTubeVideos } from "@/app/app/actions";
-import { generateObject, generateText } from "ai";
+import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { avoidWords, imageStyles } from "@/options";
 import { v4 as uuid } from "uuid";
 import { createAnthropic } from '@ai-sdk/anthropic';
+import OpenAI from "openai";
 
 const anthropic = createAnthropic({
   baseURL: "https://api.anthropic.com/v1",
@@ -465,46 +465,100 @@ export async function POST(request: Request) {
       console.log(`[start]: ${index}) ${section.name}`);
 
       try {
-        const sectionContentMarkdown = await generateText({
-          // output: "object",
-          // model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
-          model: shuffle([anthropic("claude-3-5-sonnet-20240620"), openai(shuffle(["gpt-4o", "gpt-4-0613"])[0])])[0],
-          // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
-          temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
-          // temperature: shuffle([0.3, 0.4, 0.5])[0],
-          // schemaName: "section",
-          // schema: getSectionSchema(),
-          prompt: getSectionPrompt({
-            outline,
-            headline: body.title,
-            prefix: "##",
-            // keywords: section?.keywords ?? "",
-            word_count: section?.word_count ?? 250,
-            name: section.name,
-            call_to_action: section?.call_to_action,
-            call_to_action_example: section?.call_to_action_example,
-            custom_prompt: section?.custom_prompt,
-            image,
-            internal_links: section?.internal_links,
-            external_links,
-            external_resources,
-            // images: section?.images,
-            // video_url: section?.video_url,
-            video: selectedYoutubeVideo?.id ? {
-              id: selectedYoutubeVideo.id,
-              name: selectedYoutubeVideo?.name,
-              description: selectedYoutubeVideo?.description,
-            } : undefined,
-            tones: section?.tones,
-            purposes: section?.purposes,
-            emotions: section?.emotions,
-            vocabularies: section?.vocabularies,
-            sentence_structures: section?.sentence_structures,
-            perspectives: section?.perspectives,
-            writing_structures: section?.writing_structures,
-            instructional_elements: section?.instructional_elements,
-          }),
+        const _openai = new OpenAI({
+          apiKey: process.env.NVIDIA_TOKEN ?? "",
+          baseURL: 'https://integrate.api.nvidia.com/v1',
         })
+
+        const completion = await _openai.chat.completions.create({
+          model: "nvidia/nemotron-4-340b-instruct",
+          messages: [
+            {
+              "role": "system",
+              "content": "You are a Storyteller & SEO writer expert who writes engaging content that speak to the right target audience.\nProduct info:\nProject name: TEST2\nWebsite: https://netflix.com\nDescription: Watch Netflix movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more.\nLanguage: English\n===\nWriting style example to imitate:\nundefined"
+            },
+            {
+              "role": "user",
+              "content": getSectionPrompt({
+                outline,
+                headline: body.title,
+                prefix: "##",
+                // keywords: section?.keywords ?? "",
+                word_count: section?.word_count ?? 250,
+                name: section.name,
+                call_to_action: section?.call_to_action,
+                call_to_action_example: section?.call_to_action_example,
+                custom_prompt: section?.custom_prompt,
+                image,
+                internal_links: section?.internal_links,
+                external_links,
+                external_resources,
+                // images: section?.images,
+                // video_url: section?.video_url,
+                video: selectedYoutubeVideo?.id ? {
+                  id: selectedYoutubeVideo.id,
+                  name: selectedYoutubeVideo?.name,
+                  description: selectedYoutubeVideo?.description,
+                } : undefined,
+                tones: section?.tones,
+                purposes: section?.purposes,
+                emotions: section?.emotions,
+                vocabularies: section?.vocabularies,
+                sentence_structures: section?.sentence_structures,
+                perspectives: section?.perspectives,
+                writing_structures: section?.writing_structures,
+                instructional_elements: section?.instructional_elements,
+              })
+            }
+          ],
+          temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
+          top_p: 0.7,
+          max_tokens: 1024,
+          stream: false,
+        })
+
+        const sectionContentMarkdown = { text: completion.choices[0].message.content }
+
+        // const sectionContentMarkdown = await generateText({
+        //   // output: "object",
+        //   // model: openai(shuffle(["gpt-4o", "gpt-4-0613"])[0]),
+        //   model: shuffle([anthropic("claude-3-5-sonnet-20240620"), openai(shuffle(["gpt-4o", "gpt-4-0613"])[0])])[0],
+        //   // temperature: shuffle([0.3, 0.4, 0.5, 0.7, 0.8])[0],
+        //   temperature: shuffle([0.4, 0.5, 0.6, 0.7])[0],
+        //   // temperature: shuffle([0.3, 0.4, 0.5])[0],
+        //   // schemaName: "section",
+        //   // schema: getSectionSchema(),
+        //   prompt: getSectionPrompt({
+        //     outline,
+        //     headline: body.title,
+        //     prefix: "##",
+        //     // keywords: section?.keywords ?? "",
+        //     word_count: section?.word_count ?? 250,
+        //     name: section.name,
+        //     call_to_action: section?.call_to_action,
+        //     call_to_action_example: section?.call_to_action_example,
+        //     custom_prompt: section?.custom_prompt,
+        //     image,
+        //     internal_links: section?.internal_links,
+        //     external_links,
+        //     external_resources,
+        //     // images: section?.images,
+        //     // video_url: section?.video_url,
+        //     video: selectedYoutubeVideo?.id ? {
+        //       id: selectedYoutubeVideo.id,
+        //       name: selectedYoutubeVideo?.name,
+        //       description: selectedYoutubeVideo?.description,
+        //     } : undefined,
+        //     tones: section?.tones,
+        //     purposes: section?.purposes,
+        //     emotions: section?.emotions,
+        //     vocabularies: section?.vocabularies,
+        //     sentence_structures: section?.sentence_structures,
+        //     perspectives: section?.perspectives,
+        //     writing_structures: section?.writing_structures,
+        //     instructional_elements: section?.instructional_elements,
+        //   }),
+        // })
 
         let markdown: string = sectionContentMarkdown.text;
 
@@ -522,16 +576,16 @@ export async function POST(request: Request) {
         const avoidWordsRegex = new RegExp(`(${avoidWords.join('|')})`, 'gi');
 
         let stats = getSummary(markdown);
-        if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
-          console.log("- rephrase");
-          const rephraseSectionContent = await generateText({
-            model: shuffle([openai("gpt-4o")])[0],
-            temperature: 0.2,
-            prompt: getRephraseInstruction(markdown),
-          })
-          markdown = rephraseSectionContent.text;
-          console.log("- rephrase done");
-        }
+        // if (avoidWordsRegex.test(markdown) || stats.FleschKincaidGrade > 12) {
+        //   console.log("- rephrase");
+        //   const rephraseSectionContent = await generateText({
+        //     model: shuffle([openai("gpt-4o")])[0],
+        //     temperature: 0.2,
+        //     prompt: getRephraseInstruction(markdown),
+        //   })
+        //   markdown = rephraseSectionContent.text;
+        //   console.log("- rephrase done");
+        // }
 
         finalResult.sections[index] = removeMarkdownWrapper(markdown)
       } catch (error) {

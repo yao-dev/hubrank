@@ -11,7 +11,7 @@ import usePricingModal from '@/hooks/usePricingModal';
 import useUser from '@/hooks/useUser';
 import axios from 'axios';
 import { isEmpty } from 'lodash';
-import { IconLink, IconStar } from '@tabler/icons-react';
+import { IconLink } from '@tabler/icons-react';
 import queryKeys from '@/helpers/queryKeys';
 
 const TopicalMapTable = () => {
@@ -180,7 +180,7 @@ const TopicalMapTable = () => {
                   topicalMapForm.submit();
                 }}
               >
-                create map
+                Create map
               </Button>
               <Button
                 type="primary"
@@ -194,7 +194,7 @@ const TopicalMapTable = () => {
                   })
                 }}
               >
-                write
+                Write
               </Button>
             </Space>
           )
