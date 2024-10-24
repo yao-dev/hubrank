@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import supabase from "@/helpers/supabase/server";
-import { groq } from "@ai-sdk/groq";
+
+export const maxDuration = 90;
 
 export async function POST(request: NextRequest) {
   try {
