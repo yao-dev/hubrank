@@ -1479,7 +1479,7 @@ const formatMarkdownTableOfContentExample = () => {
 `;
 }
 
-const getPromptDate = () => {
+export const getPromptDate = () => {
   return `Date: ${format(new Date(), "dd/MM/yyyy")}`
 }
 
@@ -1839,32 +1839,10 @@ export const getUserPremiumData = (user: any) => {
   return user?.users_premium?.[0] ?? {};
 }
 
-// export const getTopicalMapSchema = () => {
-//   return z.object({
-//     topic: z.string(),
-//     category: z.string(),
-//     sub_topics: z.array(
-//       z.object({
-//         topic: z.string(),
-//         keyword: z.object({
-//           name: z.string(),
-//           keyword_difficulty: z.number(),
-//           volume: z.number(),
-//           competition: z.string(),
-//           search_intent: z.string(),
-//         }),
-//         headline: z.string().describe("headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery"),
-//         slug: z.string().describe("formatted as follow /category/topic/headline/"),
-//       })
-//     ),
-//   })
-// }
-
 export const getTopicalMapSchema = () => {
   return z.object({
     category: z.string(),
     topic: z.string(),
-    // sub_topic: z.string(),
     headline: z.string().describe("headline types: guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery"),
     slug: z.string().describe("formatted as follow /category/topic/headline/"),
     keyword: z.string(),
@@ -1886,6 +1864,7 @@ export const getTopicalMapPrompt = ({
   subTopicsPerTopicCount: number;
 }) => {
   return [
+    getPromptDate(),
     `Give me a topical map for the keyword: ${primaryKeyword} with ${topicsCount} topics and ${subTopicsPerTopicCount} sub-topics per topic`,
     "Keywords data:",
     "",

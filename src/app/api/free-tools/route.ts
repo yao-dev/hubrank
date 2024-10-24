@@ -5,6 +5,7 @@ import { getCompetitors } from "@/helpers/seo";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { getPromptDate } from "../helpers";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_URL ?? "",
@@ -26,9 +27,9 @@ export async function POST(req: NextRequest) {
       'X-RateLimit-Remaining': `${result.remaining}`
     }
 
-    // if (process.env.NODE_ENV !== "development" && !result.success) {
-    //   return NextResponse.json({ message: 'You\'ve reached your daily limit.', rateLimitState: result }, { headers })
-    // }
+    if (process.env.NODE_ENV !== "development" && !result.success) {
+      return NextResponse.json({ message: 'You\'ve reached your daily limit.', rateLimitState: result }, { headers })
+    }
 
     const body = await req.json();
 
@@ -36,17 +37,17 @@ export async function POST(req: NextRequest) {
 
     switch (body.name) {
       case 'headlines':
-        prompt = `Write 3 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, others) for the following topic/keyword: ${body.topic}. values contain the unformatted headlines only`;
-        // prompt = `Write 1 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery) for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the unformatted headlines only`
+        prompt = `${getPromptDate()}\n\nWrite 3 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, others) for the following topic/keyword: ${body.topic}. values contain the unformatted headlines only`;
+        // prompt = `${getPromptDate()}\n\nWrite 1 ${body.headline_type} headlines for each category (guide/how to, questions, listicles, Problem-Solution, Curiosity-Driven, Benefit-Oriented, Command/Action-Oriented, Comparison, Statistics or Numbers, Testimonial or Case Study, Expert Advice, Controversial or Opinionated, Newsjacking, Challenge, Storytelling, Negative Angle, Time-Sensitive, Intriguing Mystery) for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contains the unformatted headlines only`
         break;
       case 'hashtags':
-        prompt = `Write 10 hashtags for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contain the hashtags only`;
+        prompt = `${getPromptDate()}\n\nWrite 10 hashtags for the following topic/keyword: ${body.topic}\n\nOutput a JSON object like\ntype Response = {values: string[];} where values contain the hashtags only`;
         break;
       case 'outline':
-        prompt = `Write 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
+        prompt = `${getPromptDate()}\n\nWrite 1 outline with ${body.headings} headings for the following topic/keyword: ${body.topic}\n\n-don't add any text before/after the markup\n-don't number the headings\n-sub-headings are optional\n-make the headings bold, not the sub-headings if there is any`
         break;
       case 'meta_description':
-        prompt = `Write 4 product description of 170 characters max for the following description: ${body.product_description}. values contain the descriptions only`;
+        prompt = `${getPromptDate()}\n\nWrite 4 product description of 170 characters max for the following description: ${body.product_description}. values contain the descriptions only`;
         break;
       case 'website_competitors': {
         const competitors = await getCompetitors(body.website_url);
